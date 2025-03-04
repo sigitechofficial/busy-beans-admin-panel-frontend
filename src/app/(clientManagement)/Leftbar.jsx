@@ -200,14 +200,14 @@ export default function Leftbar(props) {
             <>
               <div className="m-2 relative space-y-1">
                 <ListItems title="All Clients" to="/customers" />
-                <ListItems title="Active Clients" to="/active-clients" />
-                <ListItems title="Inactive Clients" to="/inactive-clients" />
+                <ListItems title="Active Clients" to="" />
+                <ListItems title="Inactive Clients" to="" />
               </div>
               <hr className="w-full" />
             </>
           )}
 
-        {/* <ListHead
+        <ListHead
           title="Report Management"
           Icon={TbReportAnalytics}
           Angle={
@@ -235,7 +235,7 @@ export default function Leftbar(props) {
               </div>
               <hr className="w-full" />
             </>
-          )} */}
+          )}
 
         <ListHead
           title="Roles & Employee Manag."
@@ -253,16 +253,15 @@ export default function Leftbar(props) {
               active?.roleandEmployeeManagement?.status
             )
           }
-          disabled={true}
         />
         {active?.roleandEmployeeManagement?.tab ===
           "roleandEmployeeManagement" &&
           active?.roleandEmployeeManagement?.status && (
             <>
               <div className="m-2 relative space-y-1">
-                <ListItems title="All Employees" to="/all-employees" />
-                <ListItems title="Add new Employee" to="/add-new-employee" />
-                <ListItems title="All Roles & Permissions" to="/all-roles-permissions" />
+                <ListItems title="All Employees" to="" />
+                <ListItems title="Add new Employee" to="" />
+                <ListItems title="All Roles & Permissions" to="" />
               </div>
               <hr className="w-full" />
             </>
@@ -285,9 +284,9 @@ export default function Leftbar(props) {
           active?.notandAlerts?.status && (
             <>
               <div className="m-2 relative space-y-1">
-                <ListItems title="Supplier Notifications" to="/supplier-notifications" />
-                <ListItems title="Clients Notifications" to="/clients-notifications" />
-                <ListItems title="Alerts" to="/notification-alerts" />
+                <ListItems title="Supplier Notifications" to="" />
+                <ListItems title="Clients Notifications" to="" />
+                <ListItems title="Alerts" to="" />
               </div>
               <hr className="w-full" />
             </>
@@ -308,9 +307,9 @@ export default function Leftbar(props) {
           active?.collection?.status && (
             <>
               <div className="m-2 relative space-y-1">
-                <ListItems title="Add Cheque" to="/add-cheque" />
-                <ListItems title="Collection History" to="/collection-history" />
-                <ListItems title="Cheques Due Date" to="/cheques-due-date" />
+                <ListItems title="Add Cheque" to="" />
+                <ListItems title="Collection History" to="" />
+                <ListItems title="Cheques Due Date" to="" />
               </div>
               <hr className="w-full" />
             </>
@@ -333,8 +332,8 @@ export default function Leftbar(props) {
           active?.disbursement?.status && (
             <>
               <div className="m-2 relative space-y-1">
-                <ListItems title="Add Disbursement" to="/add-disbursement" />
-                <ListItems title="Disbursement History" to="/disbursement-history" />
+                <ListItems title="Add Disbursement" to="" />
+                <ListItems title="Disbursement History" to="" />
               </div>
               <hr className="w-full" />
             </>

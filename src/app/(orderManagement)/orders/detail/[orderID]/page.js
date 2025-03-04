@@ -4,8 +4,9 @@ import OrderCard from "@/components/ui/OrderCard";
 import TrackOrder from "@/components/ui/TrackOrder";
 import React, { useState } from "react";
 
+
 export default function OrderDetail({ params }) {
-  // const { orderID } = params;
+  const { orderID } = params;
   const [modal, setModal] = useState({
     type: "",
     status: false,

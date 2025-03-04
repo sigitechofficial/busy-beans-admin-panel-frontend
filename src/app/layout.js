@@ -92,10 +92,10 @@ const geistMono = Geist_Mono({
 export default function RootLayout({ children }) {
   const pathname = usePathname();
   const isSignInPage = pathname.startsWith("/sign-in");
-  const [navbarVis, setNavbarVis] = useState(
-    window.innerWidth < 640 ? false : true
-  );
-  // const [navbarVis, setNavbarVis] = useState(true);
+  // const [navbarVis, setNavbarVis] = useState(
+  //   window.innerWidth < 640 ? false : true
+  // );
+  const [navbarVis, setNavbarVis] = useState(true);
 
   return (
     <html lang="en">

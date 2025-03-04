@@ -1,101 +1,180 @@
-import Image from "next/image";
+"use client";
+import Charts from "@/components/ui/Charts";
+import HomeCards from "@/components/ui/HomeCards";
+import HomeMiniCards from "@/components/ui/HomeMiniCards";
+import { BsCardList } from "react-icons/bs";
+import { FaChartLine } from "react-icons/fa";
+import { PiHandbagFill, PiUsersThreeBold } from "react-icons/pi";
+
+ // ✅ Required since PrimeReact requires Client Components
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain">
+      <div className="relative z-30 py-5 px-6 2xl:px-12">
+        
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-white text-xl lg:text-3xl font-inter font-semibold">
+              Welcome, Zeeshan N.
+            </h1>
+            <p className="text-white font-inter">
+              Monitor your business analytics and statistics
+            </p>
+          </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          {/* <div className="min-w-40">
+            {displayCustomFilters ? (
+              <div className="flex gap-x-2 items-center h-[42px]">
+                <div className=" space-x-2">
+                  <label
+                    htmlFor="startDate"
+                    className=" text-labelColor font-workSans font-semibold"
+                  >
+                    Start Date:
+                  </label>
+                  <input
+                    type="date"
+                    id="startDate"
+                    name="startDate"
+                    value={customDates?.startDate}
+                    onChange={handleCustomDates}
+                    className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium 
+                            text-labelColor"
+                  />
+                </div>
+                <div className="space-x-2">
+                  <label
+                    htmlFor="endDate"
+                    className=" text-labelColor font-workSans font-semibold"
+                  >
+                    End Date:
+                  </label>
+                  <input
+                    type="date"
+                    id="endDate"
+                    name="endDate"
+                    value={customDates?.endDate}
+                    onChange={handleCustomDates}
+                    className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium 
+                            text-labelColor"
+                  />
+                </div>
+                <div className="h-full flex items-center gap-x-2">
+                  <button
+                    onClick={handleCancel}
+                    className="px-2 h-full rounded-lg border border-black text-black bg-white hover:text-white hover:bg-black duration-200 group"
+                  >
+                    <ImCross size={24} />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="font-bold">
+                <Select
+                  styles={selectStyles}
+                  defaultValue={{ value: "allTime", label: "All Time" }}
+                  placeholder="Select Year, Month, Week ..."
+                  value={selectedOption ? selectedOption : null}
+                  onChange={(val) => handleChange(val)}
+                  options={options ? options : null}
+                />
+              </div>
+            )}
+          </div> */}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mt-5">
+          <HomeCards
+            title="Total Countries"
+            // description="Upcoming bookings + completed bookings + Cancelled bookings"
+            total={"25"}
+            Icon={BsCardList}
+            bgColor="bg-homeCards"
+            iconBg="bg-white"
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+          <HomeCards
+            currecncyunit={"$"}
+            title="Total Cities"
+            // description="Total of all the completed bookings only"
+            total={"180"}
+            Icon={FaChartLine}
+            bgColor="bg-homeCards"
+            iconBg="bg-white"
           />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
+          <HomeCards
+            title="Total Suppliers"
+            // description="All active and inactive Customers"
+            total={"1348"}
+            Icon={PiUsersThreeBold}
+            bgColor="bg-homeCards"
+            iconBg="bg-white"
           />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <HomeCards
+            title="Total Clients"
+            // description="Salons that have completed at least one registration step. Specifically Add your business address and team size"
+            total={"3500"}
+            Icon={PiHandbagFill}
+            bgColor="bg-homeCards"
+            iconBg="bg-white"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mt-12">
+          <HomeMiniCards
+            title="Total Sale"
+            // description="The bookings that are booked and an employee has been assigned to them."
+            total={"$2000"}
+            // Icon={FiBox}
+          />
+          <HomeMiniCards
+            title="Admin Earnings"
+            total={"$2000"}
+            // Icon={LuPackageCheck}
+          />
+          <HomeMiniCards
+            title="Suppliers Earning"
+            total={"$2000"}
+            // Icon={LuPackageX}
+          />
+          <HomeMiniCards
+            title="Pending Payments"
+            // description="The bookings in which minimum 1 service is not assigned to any employee"
+            total={"$2000"}
+            // Icon={FiBox}
+          />
+          <HomeMiniCards
+            title="Total Orders"
+            // description="The bookings in which minimum 1 service is not assigned to any employee"
+            total={"2000"}
+            // Icon={FiBox}
+          />
+          <HomeMiniCards
+            title="Pending Orders"
+            // description="The bookings in which minimum 1 service is not assigned to any employee"
+            total={"2000"}
+            // Icon={FiBox}
+          />
+          <HomeMiniCards
+            title="Cancelled Orders"
+            // description="The bookings in which minimum 1 service is not assigned to any employee"
+            total={"2000"}
+            // Icon={FiBox}
+          />
+          <HomeMiniCards
+            title="Delivered Orders"
+            // description="The bookings in which minimum 1 service is not assigned to any employee"
+            total={"2000"}
+            // Icon={FiBox}
+          />
+        </div>
+
+
+        <div className="mt-12">
+          {/* <Charts today={today} /> */}
+          <Charts  />
+        </div>
+      </div>
     </div>
   );
 }

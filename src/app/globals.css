@@ -1,21 +1,29 @@
+@import "primereact/resources/themes/lara-light-blue/theme.css"; /* Choose a theme */
+@import "primereact/resources/primereact.min.css"; /* Core styles */
+@import "primeicons/primeicons.css"; /* Icons */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+::-webkit-scrollbar {
+  width: 5px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+::-webkit-scrollbar-track {
+  background-color: #f4f5fa;
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 32px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.manageTable ::-webkit-scrollbar {
+  display: none !important;
+  width: 5px;
 }

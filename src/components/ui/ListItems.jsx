@@ -1,0 +1,19 @@
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+export default function ListItems(props) {
+  const pathName = usePathname()
+  return (
+    <Link
+      className={`flex gap-x-2 items-center py-2 px-2 rounded-lg font-inter font-medium text-themeLightGray hover:bg-theme hover:text-white duration-200
+    ${
+      pathName === props.to || props.active
+        ? "bg-theme text-white"
+        : "bg-transparent text-black"
+    }`}
+      href={props.to}
+    >
+      {props.title}
+    </Link>
+  );
+}

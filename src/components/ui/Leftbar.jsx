@@ -13,6 +13,17 @@ import { BiSupport } from "react-icons/bi";
 import { MdLogout } from "react-icons/md";
 import { PiChartBar } from "react-icons/pi";
 import { RiAdminLine } from "react-icons/ri";
+import { MdInventory } from "react-icons/md";
+import { GiProgression } from "react-icons/gi";
+import { GoPeople } from "react-icons/go";
+import { RiTimeZoneLine } from "react-icons/ri";
+import { AiOutlineUnorderedList } from "react-icons/ai";
+import { MdPayment } from "react-icons/md";
+import { BsFillCollectionFill } from "react-icons/bs";
+import { IoNotifications } from "react-icons/io5";
+import { MdManageAccounts } from "react-icons/md";
+import { TbReportAnalytics } from "react-icons/tb";
+import { GiHumanTarget } from "react-icons/gi";
 import { ImCross } from "react-icons/im";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -115,7 +126,7 @@ export default function Leftbar(props) {
 
         <ListHead
           title="Order Management"
-          Icon={RiAdminLine}
+          Icon={AiOutlineUnorderedList}
           active={pathname === "/orders"}
           Angle={
             active?.orderManagement?.tab === "orderManagement" &&
@@ -143,7 +154,7 @@ export default function Leftbar(props) {
 
         <ListHead
           title="Supplier Management"
-          Icon={RiAdminLine}
+          Icon={GiHumanTarget}
           active={pathname === "/suppliers" || pathname === "/add-new-supplier"}
           Angle={
             active?.supplierManagement?.tab === "supplierManagement" &&
@@ -172,7 +183,7 @@ export default function Leftbar(props) {
 
         <ListHead
           title="Client Management"
-          Icon={RiAdminLine}
+          Icon={GoPeople}
           active={pathname === "/customers"}
           Angle={
             active?.clientManagement?.tab === "clientManagement" &&
@@ -198,7 +209,7 @@ export default function Leftbar(props) {
 
         <ListHead
           title="Report Management"
-          Icon={RiAdminLine}
+          Icon={TbReportAnalytics}
           Angle={
             active?.reportManagement?.tab === "reportManagement" &&
             active?.reportManagement?.status
@@ -228,7 +239,7 @@ export default function Leftbar(props) {
 
         <ListHead
           title="Roles & Employee Manag."
-          Icon={RiAdminLine}
+          Icon={MdManageAccounts}
           Angle={
             active?.roleandEmployeeManagement?.tab ===
               "roleandEmployeeManagement" &&
@@ -258,7 +269,7 @@ export default function Leftbar(props) {
 
         <ListHead
           title="Notification & Alerts"
-          Icon={RiAdminLine}
+          Icon={IoNotifications}
           Angle={
             active?.notandAlerts?.tab === "notandAlerts" &&
             active?.notandAlerts?.status
@@ -283,7 +294,7 @@ export default function Leftbar(props) {
 
         <ListHead
           title="Collection"
-          Icon={RiAdminLine}
+          Icon={BsFillCollectionFill}
           Angle={
             active?.collection?.tab === "collection" &&
             active?.collection?.status
@@ -306,7 +317,7 @@ export default function Leftbar(props) {
 
         <ListHead
           title="Disbursement"
-          Icon={RiAdminLine}
+          Icon={MdPayment}
           Angle={
             active?.disbursement?.tab === "disbursement" &&
             active?.disbursement?.status
@@ -332,7 +343,7 @@ export default function Leftbar(props) {
           title="Inventory Management"
           // to="/inventory/stock"
           active={pathname === "/inventory/stock"}
-          Icon={RiAdminLine}
+          Icon={MdInventory}
           Angle={
             active?.inventoryManagement?.tab === "inventoryManagement" &&
             active?.inventoryManagement?.status
@@ -400,7 +411,7 @@ export default function Leftbar(props) {
 
         <ListHead
           title="Zone Management"
-          Icon={RiAdminLine}
+          Icon={RiTimeZoneLine}
           active={
             pathname === "/zones" ||
             pathname === "/countries" ||
@@ -431,7 +442,7 @@ export default function Leftbar(props) {
 
         <ListHead
           title="Promotion Management"
-          Icon={RiAdminLine}
+          Icon={GiProgression}
           active={pathname === "/promotions"}
           Angle={
             active?.promotionManagement?.tab === "promotionManagement" &&

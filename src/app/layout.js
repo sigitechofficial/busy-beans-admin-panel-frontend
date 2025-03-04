@@ -92,9 +92,10 @@ const geistMono = Geist_Mono({
 export default function RootLayout({ children }) {
   const pathname = usePathname();
   const isSignInPage = pathname.startsWith("/sign-in");
-  const [navbarVis, setNavbarVis] = useState(
-    window.innerWidth < 640 ? false : true
-  );
+  // const [navbarVis, setNavbarVis] = useState(
+  //   window.innerWidth < 640 ? false : true
+  // );
+  const [navbarVis, setNavbarVis] = useState(true);
 
   return (
     <html lang="en">
@@ -102,8 +103,12 @@ export default function RootLayout({ children }) {
         className={`${switzer.variable} ${satoshi.variable} ${inter.variable} ${nunito.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ToastContainer />
-        {!isSignInPage && <Header navbarVis={navbarVis} setNavbarVis={setNavbarVis} />}
-        {!isSignInPage && <Leftbar navbarVis={navbarVis} setNavbarVis={setNavbarVis} />}
+        {!isSignInPage && (
+          <Header navbarVis={navbarVis} setNavbarVis={setNavbarVis} />
+        )}
+        {!isSignInPage && (
+          <Leftbar navbarVis={navbarVis} setNavbarVis={setNavbarVis} />
+        )}
         <section
           className={
             isSignInPage

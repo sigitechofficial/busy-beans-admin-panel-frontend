@@ -11,7 +11,7 @@ export default function SignIn() {
           <div className="h-4/5 w-full flex items-center justify-center">
             <img
               src="/images/logo.png"
-              alt="logo"
+              alt="logo_image"
               className="object-contain w-full h-36"
             />
           </div>

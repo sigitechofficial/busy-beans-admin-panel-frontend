@@ -1,11 +1,13 @@
+import { BASE_URL } from "@/utilities/URL";
+
 export default function StockCard(props) {
-  const { itemName, quantity } = props;
+  const { itemName, quantity, unit, imageURL } = props;
   return (
     <div className="rounded-xl border border-tabBorderColor border-opacity-60 shadow-tabShadow bg-white">
       <div className="border-b border-tabBorderColor border-opacity-20 py-4">
         <div className="h-28">
           <img
-            src="/images/stock1.png"
+            src={BASE_URL+imageURL}
             alt="stock-images"
             className="object-contain h-full w-full"
           />
@@ -18,7 +20,7 @@ export default function StockCard(props) {
             <span>Item Name</span> <span>{itemName}</span>
           </p>
           <p>
-            <span>Quantity</span> <span>{quantity}</span>
+            <span>Quantity</span> <span>{quantity} {unit}</span>
           </p>
         </div>
         <div className="flex justify-end">

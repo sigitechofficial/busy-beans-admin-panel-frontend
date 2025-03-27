@@ -5,18 +5,18 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    reactStrictMode: true,
-    experimental: {
-      appDir: true,
-    },
-    output: "standalone",
-    eslint: {
-      ignoreDuringBuilds: true,
-    },
-  };
-  
-  export default nextConfig;
-  
+  reactStrictMode: true,
+  experimental: {
+    appDir: true,
+    // turbopack: false
+  },
+  // output: "export",
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+};
+
+export default nextConfig;
 
 // /** @type {import('next').NextConfig} */
 // const nextConfig = {
@@ -25,6 +25,5 @@ const nextConfig = {
 //     },
 //     trailingSlash: true, // Helps with serving files properly
 //   };
-  
+
 //   export default nextConfig;
-  

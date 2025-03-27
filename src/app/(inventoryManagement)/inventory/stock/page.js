@@ -6,12 +6,72 @@ import { RiFileDownloadLine } from "react-icons/ri";
 import Select from "react-select";
 import { selectStyles2 } from "@/utilities/SelectStyle";
 import { useState } from "react";
+import { PostAPI } from "@/utilities/PostAPI";
+import { error_toaster, success_toaster } from "@/utilities/Toaster";
+import GetAPI from "@/utilities/GetAPI";
 
 export default function Stock() {
+  const { data } = GetAPI("api/v1/admin/product");
+  console.log("🚀 ~ Stock ~ data:", data?.data?.data);
+
+  const [productDetail, setProductDetail] = useState({
+    name: "",
+    quantity: "",
+    unit: "",
+    image: "",
+    price: "",
+    desc: "",
+  });
+  const [imagePreview, setImagePreview] = useState("");
   const [modal, setModal] = useState({
     type: "",
     status: false,
   });
+
+  const handleChange = (e) => {
+    setProductDetail({ ...productDetail, [e.target.name]: e.target.value });
+  };
+
+  const handleImageClick = () => {
+    const image = document.querySelector(".image");
+    image.click();
+    // const file = e.target.files[0]
+    // console.log("🚀 ~ handleImage ~ file:", file)
+  };
+
+  const handleImage = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setProductDetail({ ...productDetail, image: file });
+      const imageURL = URL.createObjectURL(file);
+      setImagePreview(imageURL);
+    }
+  };
+
+  const handleAddStock = async () => {
+    const formData = new FormData();
+    formData.append("name", productDetail?.name);
+    formData.append("quantity", productDetail?.quantity);
+    formData.append("unit", productDetail?.unit);
+    formData.append("price", productDetail?.price);
+    formData.append("desc", productDetail?.desc);
+    formData.append("image", productDetail?.image);
+
+    const res = await PostAPI("api/v1/admin/product", formData);
+    if (res?.data?.status === "success") {
+      success_toaster("Product Added Successfully");
+      setProductDetail({
+        name: "",
+        quantity: "",
+        unit: "",
+        image: "",
+      });
+      setModal({ type: "", status: false });
+      setImagePreview("");
+    } else if (res?.data?.status === "error") {
+      error_toaster(res?.data?.message);
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -41,19 +101,27 @@ export default function Stock() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-        <StockCard itemName="Coffee" quantity="100kga" />
+        {data?.data?.data?.map((item, i) => (
+          <StockCard
+            key={i}
+            itemName={item?.name}
+            quantity={item?.quantity}
+            unit={item?.unit}
+            imageURL={item?.image}
+          />
+        ))}
+        {/* <StockCard itemName="Coffee" quantity="100kg" />
         <StockCard itemName="Coffee" quantity="100kg" />
         <StockCard itemName="Coffee" quantity="100kg" />
         <StockCard itemName="Coffee" quantity="100kg" />
-        <StockCard itemName="Coffee" quantity="100kg" />
-        <StockCard itemName="Coffee" quantity="100kg" />
+        <StockCard itemName="Coffee" quantity="100kg" /> */}
       </div>
 
       {/* Modal */}
       <Dialog
         visible={modal?.type === "addStock" && modal?.status}
         // style={{ width: "40vw" }}
-        breakpoints={{"1496px": "40vw", "1024px": "70vw" ,"641px": "80vw" }}
+        breakpoints={{ "1496px": "40vw", "1024px": "70vw", "641px": "80vw" }}
         className="font-nunito"
         onHide={() => setModal({ type: "", status: false })}
         header={
@@ -64,9 +132,26 @@ export default function Stock() {
       >
         <div className="space-y-4 flex flex-col items-center">
           {/* header */}
-          <div className="rounded-xl border border-tabBorderColor border-opacity-40 size-28 flex items-center justify-center">
-            <LuImageUp size={"100"} color="rgba(0, 0, 0, 0.6)" />
-          </div>
+          <button
+            onClick={handleImageClick}
+            className="overflow-hidden rounded-xl border border-tabBorderColor border-opacity-40 size-28 flex items-center justify-center"
+          >
+            <input
+              type="file"
+              name="name"
+              className="image hidden"
+              onChange={handleImage}
+            />
+            {imagePreview ? (
+              <img
+                src={imagePreview}
+                alt="product image"
+                className="h-full w-full object-cover object-center"
+              />
+            ) : (
+              <LuImageUp size={"100"} color="rgba(0, 0, 0, 0.6)" />
+            )}
+          </button>
 
           {/* body */}
           <div className="w-full space-y-4">
@@ -74,21 +159,29 @@ export default function Stock() {
               <label className="text-labelColor font-medium font-satoshi">
                 Item Name
               </label>
-              <Select
+              <input
+                type="text"
+                name="name"
+                onChange={handleChange}
+                placeholder="Enter Item Name"
+                className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+              />
+              {/* <Select
                 placeholder="Coffee"
                 className="w-full"
                 styles={selectStyles2}
-              />
+              /> */}
             </div>
-            <div className="grid sm:grid-cols-2 gap-y-4 gap-x-6">
+            <div className="grid sm:grid-cols-3 gap-y-4 gap-x-6">
               <div className="flex flex-col gap-y-2">
                 <label className="text-labelColor font-medium font-satoshi">
                   Quantity
                 </label>
                 <input
-                  type="text"
-                  name="Supplier Name"
-                  placeholder="1000"
+                  type="number"
+                  name="quantity"
+                  onChange={handleChange}
+                  placeholder="Enter Quantity"
                   className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                 />
               </div>
@@ -96,12 +189,48 @@ export default function Stock() {
                 <label className="text-labelColor font-medium font-satoshi">
                   Units
                 </label>
-                <Select
+                <input
+                  type="text"
+                  name="unit"
+                  onChange={handleChange}
+                  placeholder="Enter unit"
+                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                />
+                {/* <Select
                   placeholder="Kg"
                   className="w-full"
                   styles={selectStyles2}
-                />
+                /> */}
               </div>
+              <div className="flex flex-col gap-y-2 w-full">
+                <label className="text-labelColor font-medium font-satoshi">
+                  Price($)
+                </label>
+                <input
+                  type="text"
+                  name="price"
+                  onChange={handleChange}
+                  placeholder="Enter price"
+                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                />
+                {/* <Select
+                  placeholder="Kg"
+                  className="w-full"
+                  styles={selectStyles2}
+                /> */}
+              </div>
+            </div>
+            <div className="flex flex-col gap-y-2">
+              <label className="text-labelColor font-medium font-satoshi">
+                Description
+              </label>
+              <input
+                type="text"
+                name="desc"
+                onChange={handleChange}
+                placeholder="Enter Description"
+                className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+              />
             </div>
             <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
               <button
@@ -110,7 +239,10 @@ export default function Stock() {
               >
                 Cancel
               </button>
-              <button className="rounded-lg border border-theme text-white px-10  bg-theme">
+              <button
+                onClick={handleAddStock}
+                className="rounded-lg border border-theme text-white px-10  bg-theme"
+              >
                 Add Stock
               </button>
             </div>

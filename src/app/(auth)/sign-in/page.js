@@ -1,8 +1,47 @@
-// "use client"
+"use client";
+import { loginSchema } from "@/schema";
+import { loginAPI } from "@/utilities/PostAPI";
+import { error_toaster, success_toaster } from "@/utilities/Toaster";
+import { useFormik } from "formik";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Checkbox } from "primereact/checkbox";
 
 export default function SignIn() {
+  const router = useRouter()
+  const initialValues = {
+    email: "",
+    password: "",
+  };
+  const { values, errors, touched, handleBlur, handleChange, handleSubmit } =
+    useFormik({
+      initialValues,
+      validationSchema: loginSchema,
+      onSubmit: async (values, action) => {
+        // setLoader(true);
+        console.log("i am inside admin login");
+        let res = await loginAPI("api/v1/admin/login", {
+          email: values.email,
+          password: values.password,
+        });
+        console.log("🚀 ~ onSubmit: ~ res:", res);
+        if (res?.data?.status === "success") {
+          // setLoader(false);
+          router.push("/");
+          localStorage.setItem("accessToken", res?.data?.data?.token);
+          localStorage.setItem("loginStatus", true);
+          // localStorage.setItem("userName", res?.data?.data?.user?.name);
+          localStorage.setItem("adminEmail", res?.data?.data?.user?.email);
+          localStorage.setItem("adminID", res?.data?.data?.user?.id);
+          // setLoginStatus(true);
+          success_toaster("Login Successfully");
+        } else if (res?.data?.status === "error") {
+          // setLoader(false);
+          error_toaster(res?.data?.message);
+        }
+        action.resetForm();
+      },
+    });
   return (
     <div className="bg-signInBackgroundImage bg-cover min-h-screen flex items-center justify-center">
       <div className="grid grid-cols-2 w-3/5 backdrop-blur-md rounded-lg border border-theme [&>div]:px-14">
@@ -28,7 +67,7 @@ export default function SignIn() {
             Sign In to Busy Bean
           </h1>
 
-          <div className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="flex flex-col gap-y-4">
               <div className="flex flex-col gap-y-2">
                 <label className="text-white font-medium font-satoshi">
@@ -37,9 +76,19 @@ export default function SignIn() {
                 <input
                   type="email"
                   name="email"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
                   placeholder="Email"
                   className="border border-inputBorder rounded-lg outline-none px-3 py-2"
                 />
+                <div className={errors.email && touched.email}>
+                  {errors.email && touched.email && (
+                    <div className=" text-red-600 space-y-1 pb-1">
+                      <hr className="border-none h-0.5 bg-white bg-opacity-20" />
+                      <p>{errors.email}</p>
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="flex flex-col gap-y-2">
                 <label className="text-white font-medium font-satoshi">
@@ -48,9 +97,20 @@ export default function SignIn() {
                 <input
                   type="password"
                   name="password"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
                   placeholder="password"
                   className="border border-inputBorder rounded-lg outline-none px-3 py-2"
                 />
+                <div className={errors.password && touched.password}>
+                  {" "}
+                  {errors.password && touched.password && (
+                    <div className="text-red-600 space-y-1 pb-1">
+                      <hr className="border-none h-0.5 bg-white bg-opacity-20" />
+                      <p>{errors.password}</p>
+                    </div>
+                  )}
+                </div>
                 <p className="text-white text-sm text-end font-normal">
                   Forgot Password?
                 </p>
@@ -66,7 +126,7 @@ export default function SignIn() {
                   <label htmlFor="adminLogin" className="ml-2 font-inter">
                     Admin Login
                   </label>
-                </div> 
+                </div>
                 <div className="flex align-items-center">
                   <Checkbox
                     inputId="supplierLogin"
@@ -81,11 +141,14 @@ export default function SignIn() {
               </div>
             </div>
             <div>
-              <button className="bg-theme font-satoshi text-white py-2 rounded-lg w-full font-medium">
+              <button
+                type="submit"
+                className="bg-theme font-satoshi text-white py-2 rounded-lg w-full font-medium"
+              >
                 Sign In
               </button>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </div>

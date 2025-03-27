@@ -8,8 +8,7 @@ export default function Header(props) {
     <header className="w-full bg-themeTab shadow-tabShadow fixed border-b-2 border-tabBorderColor border-opacity-60 z-50 max-h-[94px]">
       <nav className="flex justify-between items-center max-md:px-6 py-3 sm:w-11/12 mx-auto">
         <Link href="/" className="flex items-center font-bold text-4xl min-h-[70px] max-h-[71px]">
-          Busy Bean
-          {/* <img src="/images/logo.png" alt="logo" className="max-w-16 max-h-[70px]" /> */}
+          <img src="/images/logocoffee.png" alt="logo" className="max-h-[70px]" />
         </Link>
 
         <div className="flex items-center gap-x-3 max-sm:hidden">

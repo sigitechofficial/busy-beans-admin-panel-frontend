@@ -23,6 +23,8 @@ export default {
       },
       backgroundColor: {
         theme: "#86644C",
+        themeLight: "#3e342c",
+        themeDark: "#322a23",
         themeBlue: "#12466F",
         themeGray: "#FAFAFA",
         themeGray2: "#F8F8F8",
@@ -45,6 +47,8 @@ export default {
       },
       colors: {
         theme: "#86644C",
+        themeLight: "#3e342c",
+        themeDark: "#322a23",
         labelColor: "#212B36",
         inputBorder: "#00000033",
         themeLightGray: "#8F95B2",

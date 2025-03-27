@@ -6,7 +6,7 @@ import selectStyles from "@/utilities/SelectStyle";
 import { selectStyles2 } from "@/utilities/SelectStyle";
 import { Dialog } from "primereact/dialog";
 import { useState } from "react";
-
+ 
 export default function Zones() {
   const [modal, setModal] = useState(false);
 

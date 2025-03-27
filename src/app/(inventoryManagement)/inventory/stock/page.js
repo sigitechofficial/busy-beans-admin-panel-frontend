@@ -4,14 +4,22 @@ import { Dialog } from "primereact/dialog";
 import { LuImageUp } from "react-icons/lu";
 import { RiFileDownloadLine } from "react-icons/ri";
 import Select from "react-select";
-import { selectStyles2 } from "@/utilities/SelectStyle";
+import selectStyles, { selectStyles2 } from "@/utilities/SelectStyle";
 import { useState } from "react";
 import { PostAPI } from "@/utilities/PostAPI";
 import { error_toaster, success_toaster } from "@/utilities/Toaster";
 import GetAPI from "@/utilities/GetAPI";
+import ManagementTab from "@/components/ui/ManagementTab";
+import MyDataTable from "@/components/ui/MyDataTable";
+import { MdDelete } from "react-icons/md";
+import { FaEdit } from "react-icons/fa";
+import { BASE_URL } from "@/utilities/URL";
+import { DeleteAPI } from "@/utilities/DeleteAPI";
+import Switch from "react-switch";
+import { PatchAPI } from "@/utilities/PatchAPI";
 
 export default function Stock() {
-  const { data } = GetAPI("api/v1/admin/product");
+  const { data, reFetch } = GetAPI("api/v1/admin/product");
   console.log("🚀 ~ Stock ~ data:", data?.data?.data);
 
   const [productDetail, setProductDetail] = useState({
@@ -22,11 +30,9 @@ export default function Stock() {
     price: "",
     desc: "",
   });
+  const [productID, setProductID] = useState("");
   const [imagePreview, setImagePreview] = useState("");
-  const [modal, setModal] = useState({
-    type: "",
-    status: false,
-  });
+  const [modal, setModal] = useState("");
 
   const handleChange = (e) => {
     setProductDetail({ ...productDetail, [e.target.name]: e.target.value });
@@ -35,8 +41,6 @@ export default function Stock() {
   const handleImageClick = () => {
     const image = document.querySelector(".image");
     image.click();
-    // const file = e.target.files[0]
-    // console.log("🚀 ~ handleImage ~ file:", file)
   };
 
   const handleImage = (e) => {
@@ -48,30 +52,184 @@ export default function Stock() {
     }
   };
 
-  const handleAddStock = async () => {
-    const formData = new FormData();
-    formData.append("name", productDetail?.name);
-    formData.append("quantity", productDetail?.quantity);
-    formData.append("unit", productDetail?.unit);
-    formData.append("price", productDetail?.price);
-    formData.append("desc", productDetail?.desc);
-    formData.append("image", productDetail?.image);
+  const handleStock = async (e) => {
+    e.preventDefault();
+    if (modal === "add") {
+      const formData = new FormData();
+      formData.append("name", productDetail?.name);
+      formData.append("quantity", productDetail?.quantity);
+      formData.append("unit", productDetail?.unit);
+      formData.append("price", productDetail?.price);
+      formData.append("desc", productDetail?.desc);
+      formData.append("image", productDetail?.image);
+      const res = await PostAPI("api/v1/admin/product", formData);
+      if (res?.data?.status === "success") {
+        success_toaster("Product Added Successfully");
+        setProductDetail({
+          name: "",
+          quantity: "",
+          unit: "",
+          image: "",
+        });
+        setModal("");
+        reFetch()
+        setImagePreview("");
+      } else if (res?.data?.status === "error") {
+        error_toaster(res?.data?.message);
+      }
+    } else if (modal === "edit") {
+      const formData = new FormData();
+      formData.append("name", productDetail?.name);
+      formData.append("quantity", productDetail?.quantity);
+      formData.append("unit", productDetail?.unit);
+      formData.append("price", productDetail?.price);
+      formData.append("desc", productDetail?.desc);
+      formData.append("image", productDetail?.image);
+      const res = await PatchAPI(`api/v1/admin/product/${productID}`, formData);
+      if (res?.data?.status === "success") {
+        success_toaster("Product Updated Successfully");
+        setProductDetail({
+          name: "",
+          quantity: "",
+          unit: "",
+          image: "",
+        });
+        setModal("");
+        reFetch()
+        setImagePreview("");
+      } else if (res?.data?.status === "error") {
+        error_toaster(res?.data?.message);
+      }
+    } else {
+      const res = await DeleteAPI(`api/v1/admin/product/${productID}`);
+      if (res?.data?.status === "success") {
+        success_toaster("Product Deleted Successfully");
+        reFetch();
+        setModal("");
+      } else if (res?.data?.status === "error") {
+        error_toaster(res?.data?.message);
+      }
+    }
+  };
 
-    const res = await PostAPI("api/v1/admin/product", formData);
+  const handleCancel = () => {
+    setProductDetail({
+      name: "",
+      quantity: "",
+      unit: "",
+      image: "",
+      price: "",
+      desc: "",
+    });
+    setModal("");
+    setImagePreview("");
+  };
+
+  const handleStatus = async (id, status) => {
+    const res = await PatchAPI(`api/v1/admin/product/${id}`, {
+      status: !status,
+    });
     if (res?.data?.status === "success") {
-      success_toaster("Product Added Successfully");
-      setProductDetail({
-        name: "",
-        quantity: "",
-        unit: "",
-        image: "",
-      });
-      setModal({ type: "", status: false });
-      setImagePreview("");
+      success_toaster("Status updated successfully");
+      reFetch();
     } else if (res?.data?.status === "error") {
       error_toaster(res?.data?.message);
     }
   };
+
+  const columns = [
+    { field: "sl", header: "SL", sort: true },
+    { field: "name", header: "Name" },
+    { field: "quantity", header: "Quantity" },
+    { field: "price", header: "Price" },
+    { field: "image", header: "Image" },
+    {
+      field: "currentStatus",
+      header: "Current Status",
+    },
+    {
+      field: "changeStatus",
+      header: "Change Status",
+    },
+    { field: "action", header: "Action" },
+  ];
+
+  const datas = [];
+  data?.data?.data?.map((prod, i) => {
+    return datas.push({
+      sl: i + 1,
+      name: prod?.name,
+      quantity: prod?.quantity,
+      price: prod?.price,
+      image: (
+        <img
+          src={BASE_URL + prod?.image}
+          alt={prod?.image}
+          className="w-20 h-12 object-contain"
+        />
+      ),
+      currentStatus: (
+        <div>
+          {prod?.status ? (
+            <div className="w-24 bg-theme text-white font-semibold p-2 rounded-md flex justify-center">
+              Active
+            </div>
+          ) : (
+            <div className="w-24 bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+              Inactive
+            </div>
+          )}
+        </div>
+      ),
+      changeStatus: (
+        <label>
+          <Switch
+            onChange={() => {
+              handleStatus(prod?.id, prod?.status);
+            }}
+            checked={prod?.status}
+            uncheckedIcon={false}
+            checkedIcon={false}
+            onColor="#86644c"
+            onHandleColor="#fff"
+            className="react-switch"
+            boxShadow="none"
+          />
+        </label>
+      ),
+      action: (
+        <div className="flex gap-x-2">
+          <button
+            className="border border-theme rounded-md p-2 text-theme"
+            onClick={() => {
+              setProductDetail({
+                name: prod?.name,
+                quantity: prod?.quantity,
+                unit: prod?.unit,
+                image: prod?.image,
+                price: prod?.price,
+                desc: prod?.desc,
+              });
+              setProductID(prod?.id);
+              setImagePreview(BASE_URL + prod?.image);
+              setModal("edit");
+            }}
+          >
+            <FaEdit size={24} />
+          </button>
+          <button
+            className="border border-red-400 rounded-md p-2 text-red-400"
+            onClick={() => {
+              setProductID(prod?.id);
+              setModal("delete");
+            }}
+          >
+            <MdDelete size={24} />
+          </button>
+        </div>
+      ),
+    });
+  });
 
   return (
     <div className="space-y-8">
@@ -81,18 +239,23 @@ export default function Stock() {
             Available Stock
           </h2>
 
-          <div className="flex items-center gap-x-4">
+          <Select
+            placeholder="Filters"
+            className="w-40"
+            styles={selectStyles}
+          />
+          {/* <div className="flex items-center gap-x-4">
             <div>
               <button className="flex items-center gap-x-2 px-2 sm:px-5 md:px-8 py-2.5 md:py-3 rounded-lg shadow-buttonShadow border border-buttonBorderColor bg-white ">
                 <RiFileDownloadLine size={24} />
                 <span className="font-nunito text-black">Download CSV</span>
               </button>
             </div>
-          </div>
+          </div> */}
         </div>
         <div className="flex justify-end">
           <button
-            onClick={() => setModal({ type: "addStock", status: true })}
+            onClick={() => setModal("add")}
             className="rounded-lg font-inter font-medium text-white px-10 py-2.5 sm:py-4 bg-theme"
           >
             + Add Stock
@@ -100,7 +263,22 @@ export default function Stock() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+        <ManagementTab title="Total Products" desc={data?.data?.data?.length} />
+        {/* <ManagementTab title="Total Countries" desc="5000" /> */}
+        {/* <ManagementTab title="Total Cities" desc="55000" /> */}
+      </div>
+
+      <div>
+        <MyDataTable
+          columns={columns}
+          data={datas}
+          placeholder={"Search ..."}
+          search={true}
+        />
+      </div>
+
+      {/* <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
         {data?.data?.data?.map((item, i) => (
           <StockCard
             key={i}
@@ -110,144 +288,171 @@ export default function Stock() {
             imageURL={item?.image}
           />
         ))}
-        {/* <StockCard itemName="Coffee" quantity="100kg" />
-        <StockCard itemName="Coffee" quantity="100kg" />
-        <StockCard itemName="Coffee" quantity="100kg" />
-        <StockCard itemName="Coffee" quantity="100kg" />
-        <StockCard itemName="Coffee" quantity="100kg" /> */}
-      </div>
+      </div> */}
 
       {/* Modal */}
       <Dialog
-        visible={modal?.type === "addStock" && modal?.status}
-        // style={{ width: "40vw" }}
-        breakpoints={{ "1496px": "40vw", "1024px": "70vw", "641px": "80vw" }}
+        visible={modal === "add" || modal === "edit" || modal === "delete"}
+        style={{ width: "40vw" }}
+        // breakpoints={{ "1496px": "40vw", "1024px": "70vw", "641px": "80vw" }}
         className="font-nunito"
-        onHide={() => setModal({ type: "", status: false })}
+        onHide={handleCancel}
         header={
           <div className="font-nunito font-bold text-2xl text-center">
-            Add Stock/ Inventory
+            {modal === "add"
+              ? "Add"
+              : modal === "edit"
+              ? "Update"
+              : modal === "delete"
+              ? "Delete"
+              : ""}{" "}
+            Stock/ Inventory
           </div>
         }
       >
-        <div className="space-y-4 flex flex-col items-center">
+        <form className="space-y-4 flex flex-col items-center">
           {/* header */}
-          <button
-            onClick={handleImageClick}
-            className="overflow-hidden rounded-xl border border-tabBorderColor border-opacity-40 size-28 flex items-center justify-center"
-          >
-            <input
-              type="file"
-              name="name"
-              className="image hidden"
-              onChange={handleImage}
-            />
-            {imagePreview ? (
-              <img
-                src={imagePreview}
-                alt="product image"
-                className="h-full w-full object-cover object-center"
+          {modal !== "delete" && (
+            <button
+            type="button"
+              onClick={handleImageClick}
+              className="overflow-hidden rounded-xl border border-tabBorderColor border-opacity-40 size-28 flex items-center justify-center"
+            >
+              <input
+                type="file"
+                name="name"
+                className="image hidden"
+                onChange={handleImage}
               />
-            ) : (
-              <LuImageUp size={"100"} color="rgba(0, 0, 0, 0.6)" />
-            )}
-          </button>
+              {imagePreview ? (
+                <img
+                  src={imagePreview}
+                  alt="product image"
+                  className="h-full w-full object-cover object-center"
+                />
+              ) : (
+                <LuImageUp size={"100"} color="rgba(0, 0, 0, 0.6)" />
+              )}
+            </button>
+          )}
 
           {/* body */}
           <div className="w-full space-y-4">
-            <div className="flex flex-col gap-y-2 w-full">
-              <label className="text-labelColor font-medium font-satoshi">
-                Item Name
-              </label>
-              <input
-                type="text"
-                name="name"
-                onChange={handleChange}
-                placeholder="Enter Item Name"
-                className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-              />
-              {/* <Select
+            {modal === "delete" ? (
+              <p className="text-labelColor font-nunito font-medium text-lg text-center">
+                Are you sure you want to delete this Stock ?
+              </p>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex flex-col gap-y-2 w-full">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Item Name
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={productDetail?.name}
+                    onChange={handleChange}
+                    placeholder="Enter Item Name"
+                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  />
+                  {/* <Select
                 placeholder="Coffee"
                 className="w-full"
                 styles={selectStyles2}
               /> */}
-            </div>
-            <div className="grid sm:grid-cols-3 gap-y-4 gap-x-6">
-              <div className="flex flex-col gap-y-2">
-                <label className="text-labelColor font-medium font-satoshi">
-                  Quantity
-                </label>
-                <input
-                  type="number"
-                  name="quantity"
-                  onChange={handleChange}
-                  placeholder="Enter Quantity"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                />
-              </div>
-              <div className="flex flex-col gap-y-2 w-full">
-                <label className="text-labelColor font-medium font-satoshi">
-                  Units
-                </label>
-                <input
-                  type="text"
-                  name="unit"
-                  onChange={handleChange}
-                  placeholder="Enter unit"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                />
-                {/* <Select
+                </div>
+                <div className="grid sm:grid-cols-3 gap-y-4 gap-x-6">
+                  <div className="flex flex-col gap-y-2">
+                    <label className="text-labelColor font-medium font-satoshi">
+                      Quantity
+                    </label>
+                    <input
+                      type="number"
+                      name="quantity"
+                      value={productDetail?.quantity}
+                      onChange={handleChange}
+                      placeholder="Enter Quantity"
+                      className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-y-2 w-full">
+                    <label className="text-labelColor font-medium font-satoshi">
+                      Units
+                    </label>
+                    <input
+                      type="text"
+                      name="unit"
+                      value={productDetail?.unit}
+                      onChange={handleChange}
+                      placeholder="Enter unit"
+                      className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    />
+                    {/* <Select
                   placeholder="Kg"
                   className="w-full"
                   styles={selectStyles2}
                 /> */}
-              </div>
-              <div className="flex flex-col gap-y-2 w-full">
-                <label className="text-labelColor font-medium font-satoshi">
-                  Price($)
-                </label>
-                <input
-                  type="text"
-                  name="price"
-                  onChange={handleChange}
-                  placeholder="Enter price"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                />
-                {/* <Select
+                  </div>
+                  <div className="flex flex-col gap-y-2 w-full">
+                    <label className="text-labelColor font-medium font-satoshi">
+                      Price($)
+                    </label>
+                    <input
+                      type="text"
+                      name="price"
+                      value={productDetail?.price}
+                      onChange={handleChange}
+                      placeholder="Enter price"
+                      className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    />
+                    {/* <Select
                   placeholder="Kg"
                   className="w-full"
                   styles={selectStyles2}
                 /> */}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-y-2">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Description
+                  </label>
+                  <input
+                    type="text"
+                    name="desc"
+                    value={productDetail?.desc}
+                    onChange={handleChange}
+                    placeholder="Enter Description"
+                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  />
+                </div>
               </div>
-            </div>
-            <div className="flex flex-col gap-y-2">
-              <label className="text-labelColor font-medium font-satoshi">
-                Description
-              </label>
-              <input
-                type="text"
-                name="desc"
-                onChange={handleChange}
-                placeholder="Enter Description"
-                className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-              />
-            </div>
+            )}
             <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
               <button
-                onClick={() => setModal({ type: "", status: false })}
+                type="button"
+                onClick={handleCancel}
                 className="rounded-lg border border-black shadow-buttonShadow  px-6"
               >
                 Cancel
               </button>
               <button
-                onClick={handleAddStock}
+                type="submit"
+                onClick={handleStock}
                 className="rounded-lg border border-theme text-white px-10  bg-theme"
               >
-                Add Stock
+                {modal === "add"
+                  ? "Add"
+                  : modal === "edit"
+                  ? "Update"
+                  : modal === "delete"
+                  ? "Delete"
+                  : ""}{" "}
+                Stock
               </button>
             </div>
           </div>
-        </div>
+        </form>
       </Dialog>
     </div>
   );

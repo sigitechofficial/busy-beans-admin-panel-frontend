@@ -3,20 +3,46 @@ import ManagementTab from "@/components/ui/ManagementTab";
 import MyDataTable from "@/components/ui/MyDataTable";
 import Select from "react-select";
 import selectStyles from "@/utilities/SelectStyle";
+import GetAPI from "@/utilities/GetAPI";
 
 export default function Orders() {
+  const { data } = GetAPI("api/v1/admin/orders");
+  console.log("🚀 ~ Orders ~ data:", data?.data?.data);
+
   const columns = [
     { field: "sl", header: "SL", sort: true },
-    { field: "orderID", header: "Order ID" },
-    { field: "companyName", header: "Company Name" },
-    { field: "orderDate", header: "Order Date" },
-    { field: "orderQuantity", header: "Order Quantiity" },
-    { field: "orderAmount", header: "Order Amount" },
-    { field: "country", header: "Country" },
-    { field: "city", header: "City" },
-    { field: "address", header: "Address Zip" },
-    { field: "action", header: "Action" },
+    { field: "customerName", header: "Customer Name" },
+    { field: "totalBill", header: "Total Bill" },
+    { field: "subTotal", header: "Sub Total" },
+    { field: "discountPrice", header: "Discount Price" },
+    { field: "discountPercentage", header: "Discount Percentage" },
+    { field: "itemsPrice", header: "Iitems Price" },
+    { field: "vat", header: "Vat" },
+    { field: "totalWeight", header: "Total Weight" },
+    { field: "note", header: "Note" },
+    { field: "paymentMethod", header: "Payment Method" },
+    { field: "poNumber", header: "Po Number" },
+    { field: "orderFrequency", header: "Order Frequency" },
   ];
+
+  const datas = [];
+  data?.data?.data?.map((detail, i) => {
+    return datas.push({
+      sl: i + 1,
+      customerName: detail?.customerName,
+      totalBill: "$" + detail?.totalBill,
+      subTotal: "$" + detail?.subTotal,
+      discountPrice: "$" + detail?.discountPrice,
+      discountPercentage: detail?.discountPercentage + "%",
+      itemsPrice: "$" + detail?.itemsPrice,
+      vat: detail?.vat,
+      totalWeight: detail?.totalWeight + "kg",
+      note: detail?.note,
+      paymentMethod: detail?.paymentMethod,
+      poNumber: detail?.poNumber,
+      orderFrequency: detail?.orderFrequency,
+    });
+  });
 
   return (
     <div className="space-y-8">
@@ -28,15 +54,19 @@ export default function Orders() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-        <ManagementTab title="Complete Orders" desc="5000" />
-        <ManagementTab title="New Orders" desc="5%" />
+        <ManagementTab title="Total Orders" desc={data?.data?.results} />
+        {/* <ManagementTab title="New Orders" desc="5%" />
         <ManagementTab title="Pending Orders" desc="5000" />
         <ManagementTab title="In progress Orders" desc="5,000" />
-        <ManagementTab title="Cancelled Orders" desc="5,000" />
+        <ManagementTab title="Cancelled Orders" desc="5,000" /> */}
       </div>
 
       <div>
-        <MyDataTable columns={columns} data={[]} placeholder={"Search ..."} />
+        <MyDataTable
+          columns={columns}
+          data={datas}
+          placeholder={"Search ..."}
+        />
       </div>
     </div>
   );

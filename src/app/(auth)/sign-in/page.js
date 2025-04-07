@@ -1,4 +1,5 @@
 "use client";
+import MiniLoader from "@/components/ui/MiniLoader";
 import { loginSchema } from "@/schema";
 import { loginAPI } from "@/utilities/PostAPI";
 import { error_toaster, success_toaster } from "@/utilities/Toaster";
@@ -6,9 +7,11 @@ import { useFormik } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Checkbox } from "primereact/checkbox";
+import { useState } from "react";
 
 export default function SignIn() {
-  const router = useRouter()
+  const router = useRouter();
+  const [loader, setLoader] = useState(false);
   const initialValues = {
     email: "",
     password: "",
@@ -18,25 +21,23 @@ export default function SignIn() {
       initialValues,
       validationSchema: loginSchema,
       onSubmit: async (values, action) => {
-        // setLoader(true);
-        console.log("i am inside admin login");
+        setLoader(true);
         let res = await loginAPI("api/v1/admin/login", {
           email: values.email,
           password: values.password,
         });
         console.log("🚀 ~ onSubmit: ~ res:", res);
         if (res?.data?.status === "success") {
-          // setLoader(false);
+          setLoader(false);
           router.push("/");
           localStorage.setItem("accessToken", res?.data?.data?.token);
           localStorage.setItem("loginStatus", true);
-          // localStorage.setItem("userName", res?.data?.data?.user?.name);
+          localStorage.setItem("userName", res?.data?.data?.user?.name);
           localStorage.setItem("adminEmail", res?.data?.data?.user?.email);
           localStorage.setItem("adminID", res?.data?.data?.user?.id);
-          // setLoginStatus(true);
           success_toaster("Login Successfully");
         } else if (res?.data?.status === "error") {
-          // setLoader(false);
+          setLoader(false);
           error_toaster(res?.data?.message);
         }
         action.resetForm();
@@ -67,7 +68,7 @@ export default function SignIn() {
             Sign In to Busy Bean
           </h1>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+         {loader ? <MiniLoader />:<form onSubmit={handleSubmit} className="space-y-6">
             <div className="flex flex-col gap-y-4">
               <div className="flex flex-col gap-y-2">
                 <label className="text-white font-medium font-satoshi">
@@ -143,12 +144,12 @@ export default function SignIn() {
             <div>
               <button
                 type="submit"
-                className="bg-theme font-satoshi text-white py-2 rounded-lg w-full font-medium"
+                className="bg-theme text-white hover:bg-white hover:text-theme border border-theme outline-none duration-150 font-satoshi py-2 rounded-lg w-full font-medium"
               >
                 Sign In
               </button>
             </div>
-          </form>
+          </form>}
         </div>
       </div>
     </div>

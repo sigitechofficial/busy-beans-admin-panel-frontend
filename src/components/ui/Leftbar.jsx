@@ -25,14 +25,16 @@ import { MdManageAccounts } from "react-icons/md";
 import { TbReportAnalytics } from "react-icons/tb";
 import { GiHumanTarget } from "react-icons/gi";
 import { ImCross } from "react-icons/im";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import ListHead from "./ListHead";
 import ListItems from "./ListItems";
 import Link from "next/link";
+import { success_toaster } from "@/utilities/Toaster";
 
 export default function Leftbar(props) {
   const pathname = usePathname();
+  const router = useRouter();
   const [active, setActive] = useState({
     orderManagement: {
       tab: "",
@@ -96,6 +98,12 @@ export default function Leftbar(props) {
         status: !status,
       },
     });
+  };
+
+  const logoutFunc = () => {
+    localStorage.clear();
+    router.push("/sign-in");
+    success_toaster("Logout Successfully");
   };
 
   return (
@@ -524,7 +532,7 @@ export default function Leftbar(props) {
           <button
             className="w-full font-inter font-medium text-lg sm:text-sm lg:text-base flex items-center gap-x-2 px-2 py-3 rounded-lg text-black hover:bg-black hover:text-white 
           duration-200"
-            // onClick={logoutFunc}
+            onClick={logoutFunc}
           >
             <MdLogout size={26} />
             <span>Logout</span>

@@ -4,6 +4,7 @@ import MyDataTable from "@/components/ui/MyDataTable";
 import Select from "react-select";
 import selectStyles from "@/utilities/SelectStyle";
 import GetAPI from "@/utilities/GetAPI";
+import Loader from "@/components/ui/Loader";
 
 export default function Orders() {
   const { data } = GetAPI("api/v1/admin/orders");
@@ -44,7 +45,9 @@ export default function Orders() {
     });
   });
 
-  return (
+  return data?.length === 0 ? (
+    <Loader />
+  ) : (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">

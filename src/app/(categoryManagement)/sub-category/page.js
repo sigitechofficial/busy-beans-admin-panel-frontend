@@ -1,3 +1,3 @@
 export default function SubCategory() {
-  return <div>page</div>;
+  return <div>In progress.....</div>;
 }

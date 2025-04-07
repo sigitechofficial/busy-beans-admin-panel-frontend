@@ -15,13 +15,16 @@ import { FaEdit } from "react-icons/fa";
 import Switch from "react-switch";
 import { PatchAPI } from "@/utilities/PatchAPI";
 import { DeleteAPI } from "@/utilities/DeleteAPI";
+import Loader from "@/components/ui/Loader";
+import MiniLoader from "@/components/ui/MiniLoader";
 
 export default function Category() {
   const { data, reFetch } = GetAPI("api/v1/admin/category");
-  console.log("🚀 ~ Category ~ data:", data?.data?.data);
+
   const [modal, setModal] = useState("");
   const [name, setName] = useState("");
   const [categoryID, setCategoryID] = useState("");
+  const [loader, setLoader] = useState("");
 
   const handleModalClose = () => {
     setModal("");
@@ -43,37 +46,46 @@ export default function Category() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (modal === "add") {
+      setLoader("add");
       const res = await PostAPI("api/v1/admin/category", {
         name: name,
       });
       if (res?.data?.status === "success") {
         setModal("");
+        setLoader("");
         reFetch();
         success_toaster("Category added successfully");
       } else if (res?.data?.status === "error") {
         setModal("");
+        setLoader("");
         error_toaster(res?.data?.message);
       }
     } else if (modal === "edit") {
+      setLoader("edit");
       const res = await PatchAPI(`api/v1/admin/category/${categoryID}`, {
         name: name,
       });
       if (res?.data?.status === "success") {
         setModal("");
+        setLoader("");
         reFetch();
         success_toaster("Category updated successfully");
       } else if (res?.data?.status === "error") {
         setModal("");
+        setLoader("");
         error_toaster(res?.data?.message);
       }
     } else {
+      setLoader("delete");
       const res = await DeleteAPI(`api/v1/admin/category/${categoryID}`);
       if (res?.data?.status === "success") {
         success_toaster("Category Deleted Successfully");
         reFetch();
         setModal("");
+        setLoader("");
       } else if (res?.data?.status === "error") {
         error_toaster(res?.data?.message);
+        setLoader("");
       }
     }
   };
@@ -153,7 +165,9 @@ export default function Category() {
     });
   });
 
-  return (
+  return data?.length === 0 ? (
+    <Loader />
+  ) : (
     <div className="space-y-8">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -222,49 +236,53 @@ export default function Category() {
           className="space-y-4 flex flex-col items-center"
         >
           {/* body */}
-          <div className="w-full space-y-4">
-            {modal === "delete" ? (
-              <p className="text-labelColor font-nunito font-medium text-lg text-center">
-                Are you sure you want to delete this Category ?
-              </p>
-            ) : (
-              <div className="flex flex-col gap-y-2">
-                <label className="text-labelColor font-medium font-satoshi">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter Category name"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                />
+          {loader === "add" || loader === "edit" || loader === "delete" ? (
+            <MiniLoader />
+          ) : (
+            <div className="w-full space-y-4">
+              {modal === "delete" ? (
+                <p className="text-labelColor font-nunito font-medium text-lg text-center">
+                  Are you sure you want to delete this Category ?
+                </p>
+              ) : (
+                <div className="flex flex-col gap-y-2">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Enter Category name"
+                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  />
+                </div>
+              )}
+              <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
+                <button
+                  type="button"
+                  onClick={handleModalClose}
+                  className="rounded-lg border border-black shadow-buttonShadow  px-6"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-lg border border-theme text-white px-10 bg-theme"
+                >
+                  {modal === "add"
+                    ? "Add"
+                    : modal === "edit"
+                    ? "Update"
+                    : modal === "delete"
+                    ? "Delete"
+                    : ""}{" "}
+                  Category
+                </button>
               </div>
-            )}
-            <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
-              <button
-                type="button"
-                onClick={handleModalClose}
-                className="rounded-lg border border-black shadow-buttonShadow  px-6"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="rounded-lg border border-theme text-white px-10 bg-theme"
-              >
-                {modal === "add"
-                  ? "Add"
-                  : modal === "edit"
-                  ? "Update"
-                  : modal === "delete"
-                  ? "Delete"
-                  : ""}{" "}
-                Category
-              </button>
             </div>
-          </div>
+          )}
         </form>
       </Dialog>
     </div>

@@ -7,7 +7,11 @@ import Select from "react-select";
 import selectStyles, { selectStyles2 } from "@/utilities/SelectStyle";
 import { useState } from "react";
 import { PostAPI } from "@/utilities/PostAPI";
-import { error_toaster, success_toaster } from "@/utilities/Toaster";
+import {
+  error_toaster,
+  info_toaster,
+  success_toaster,
+} from "@/utilities/Toaster";
 import GetAPI from "@/utilities/GetAPI";
 import ManagementTab from "@/components/ui/ManagementTab";
 import MyDataTable from "@/components/ui/MyDataTable";
@@ -17,6 +21,8 @@ import { BASE_URL } from "@/utilities/URL";
 import { DeleteAPI } from "@/utilities/DeleteAPI";
 import Switch from "react-switch";
 import { PatchAPI } from "@/utilities/PatchAPI";
+import Loader from "@/components/ui/Loader";
+import MiniLoader from "@/components/ui/MiniLoader";
 
 export default function Stock() {
   const { data, reFetch } = GetAPI("api/v1/admin/product");
@@ -33,6 +39,7 @@ export default function Stock() {
   const [productID, setProductID] = useState("");
   const [imagePreview, setImagePreview] = useState("");
   const [modal, setModal] = useState("");
+  const [loader, setLoader] = useState("");
 
   const handleChange = (e) => {
     setProductDetail({ ...productDetail, [e.target.name]: e.target.value });
@@ -55,59 +62,99 @@ export default function Stock() {
   const handleStock = async (e) => {
     e.preventDefault();
     if (modal === "add") {
-      const formData = new FormData();
-      formData.append("name", productDetail?.name);
-      formData.append("quantity", productDetail?.quantity);
-      formData.append("unit", productDetail?.unit);
-      formData.append("price", productDetail?.price);
-      formData.append("desc", productDetail?.desc);
-      formData.append("image", productDetail?.image);
-      const res = await PostAPI("api/v1/admin/product", formData);
-      if (res?.data?.status === "success") {
-        success_toaster("Product Added Successfully");
-        setProductDetail({
-          name: "",
-          quantity: "",
-          unit: "",
-          image: "",
-        });
-        setModal("");
-        reFetch()
-        setImagePreview("");
-      } else if (res?.data?.status === "error") {
-        error_toaster(res?.data?.message);
+      if (productDetail?.image === "") {
+        info_toaster("Product image cannot be empty");
+      } else if (productDetail?.name.trim() === 0) {
+        info_toaster("Product Name cannot be empty");
+      } else if (productDetail?.quantity.trim() === 0) {
+        info_toaster("Product quantity cannot be empty");
+      } else if (productDetail?.unit.trim() === 0) {
+        info_toaster("Product unit cannot be empty");
+      } else if (productDetail?.price.trim() === 0) {
+        info_toaster("Product price cannot be empty");
+      } else if (productDetail?.desc.trim() === 0) {
+        info_toaster("Product description cannot be empty");
+      } else {
+        const formData = new FormData();
+        formData.append("name", productDetail?.name);
+        formData.append("quantity", productDetail?.quantity);
+        formData.append("unit", productDetail?.unit);
+        formData.append("price", productDetail?.price);
+        formData.append("desc", productDetail?.desc);
+        formData.append("image", productDetail?.image);
+        setLoader("add");
+        const res = await PostAPI("api/v1/admin/product", formData);
+        if (res?.data?.status === "success") {
+          success_toaster("Product Added Successfully");
+          setProductDetail({
+            name: "",
+            quantity: "",
+            unit: "",
+            image: "",
+          });
+          setModal("");
+          setLoader("");
+          reFetch();
+          setImagePreview("");
+        } else if (res?.data?.status === "error") {
+          error_toaster(res?.data?.message);
+          setLoader("");
+        }
       }
     } else if (modal === "edit") {
-      const formData = new FormData();
-      formData.append("name", productDetail?.name);
-      formData.append("quantity", productDetail?.quantity);
-      formData.append("unit", productDetail?.unit);
-      formData.append("price", productDetail?.price);
-      formData.append("desc", productDetail?.desc);
-      formData.append("image", productDetail?.image);
-      const res = await PatchAPI(`api/v1/admin/product/${productID}`, formData);
-      if (res?.data?.status === "success") {
-        success_toaster("Product Updated Successfully");
-        setProductDetail({
-          name: "",
-          quantity: "",
-          unit: "",
-          image: "",
-        });
-        setModal("");
-        reFetch()
-        setImagePreview("");
-      } else if (res?.data?.status === "error") {
-        error_toaster(res?.data?.message);
+      if (productDetail?.image === "") {
+        info_toaster("Product image cannot be empty");
+      } else if (productDetail?.name.trim() === 0) {
+        info_toaster("Product Name cannot be empty");
+      } else if (productDetail?.quantity.trim() === 0) {
+        info_toaster("Product quantity cannot be empty");
+      } else if (productDetail?.unit.trim() === 0) {
+        info_toaster("Product unit cannot be empty");
+      } else if (productDetail?.price.trim() === 0) {
+        info_toaster("Product price cannot be empty");
+      } else if (productDetail?.desc.trim() === 0) {
+        info_toaster("Product description cannot be empty");
+      } else {
+        const formData = new FormData();
+        formData.append("name", productDetail?.name);
+        formData.append("quantity", productDetail?.quantity);
+        formData.append("unit", productDetail?.unit);
+        formData.append("price", productDetail?.price);
+        formData.append("desc", productDetail?.desc);
+        formData.append("image", productDetail?.image);
+        setLoader("edit");
+        const res = await PatchAPI(
+          `api/v1/admin/product/${productID}`,
+          formData
+        );
+        if (res?.data?.status === "success") {
+          success_toaster("Product Updated Successfully");
+          setProductDetail({
+            name: "",
+            quantity: "",
+            unit: "",
+            image: "",
+          });
+          setModal("");
+          setLoader("");
+          reFetch();
+          setImagePreview("");
+        } else if (res?.data?.status === "error") {
+          error_toaster(res?.data?.message);
+          setLoader("");
+        }
       }
     } else {
+      setLoader("delete");
       const res = await DeleteAPI(`api/v1/admin/product/${productID}`);
       if (res?.data?.status === "success") {
         success_toaster("Product Deleted Successfully");
         reFetch();
         setModal("");
+        setLoader("");
       } else if (res?.data?.status === "error") {
         error_toaster(res?.data?.message);
+        setLoader("");
       }
     }
   };
@@ -231,7 +278,9 @@ export default function Stock() {
     });
   });
 
-  return (
+  return data.length === 0 ? (
+    <Loader />
+  ) : (
     <div className="space-y-8">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -310,149 +359,153 @@ export default function Stock() {
           </div>
         }
       >
-        <form className="space-y-4 flex flex-col items-center">
-          {/* header */}
-          {modal !== "delete" && (
-            <button
-            type="button"
-              onClick={handleImageClick}
-              className="overflow-hidden rounded-xl border border-tabBorderColor border-opacity-40 size-28 flex items-center justify-center"
-            >
-              <input
-                type="file"
-                name="name"
-                className="image hidden"
-                onChange={handleImage}
-              />
-              {imagePreview ? (
-                <img
-                  src={imagePreview}
-                  alt="product image"
-                  className="h-full w-full object-cover object-center"
+        {loader === "add" || loader === "edit" || loader === "delete" ? (
+          <MiniLoader />
+        ) : (
+          <form className="space-y-4 flex flex-col items-center">
+            {/* header */}
+            {modal !== "delete" && (
+              <button
+                type="button"
+                onClick={handleImageClick}
+                className="overflow-hidden rounded-xl border border-tabBorderColor border-opacity-40 size-28 flex items-center justify-center"
+              >
+                <input
+                  type="file"
+                  name="name"
+                  className="image hidden"
+                  onChange={handleImage}
                 />
-              ) : (
-                <LuImageUp size={"100"} color="rgba(0, 0, 0, 0.6)" />
-              )}
-            </button>
-          )}
-
-          {/* body */}
-          <div className="w-full space-y-4">
-            {modal === "delete" ? (
-              <p className="text-labelColor font-nunito font-medium text-lg text-center">
-                Are you sure you want to delete this Stock ?
-              </p>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex flex-col gap-y-2 w-full">
-                  <label className="text-labelColor font-medium font-satoshi">
-                    Item Name
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={productDetail?.name}
-                    onChange={handleChange}
-                    placeholder="Enter Item Name"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                {imagePreview ? (
+                  <img
+                    src={imagePreview}
+                    alt="product image"
+                    className="h-full w-full object-cover object-center"
                   />
-                  {/* <Select
+                ) : (
+                  <LuImageUp size={"100"} color="rgba(0, 0, 0, 0.6)" />
+                )}
+              </button>
+            )}
+
+            {/* body */}
+            <div className="w-full space-y-4">
+              {modal === "delete" ? (
+                <p className="text-labelColor font-nunito font-medium text-lg text-center">
+                  Are you sure you want to delete this Stock ?
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-y-2 w-full">
+                    <label className="text-labelColor font-medium font-satoshi">
+                      Item Name
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={productDetail?.name}
+                      onChange={handleChange}
+                      placeholder="Enter Item Name"
+                      className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    />
+                    {/* <Select
                 placeholder="Coffee"
                 className="w-full"
                 styles={selectStyles2}
               /> */}
-                </div>
-                <div className="grid sm:grid-cols-3 gap-y-4 gap-x-6">
+                  </div>
+                  <div className="grid sm:grid-cols-3 gap-y-4 gap-x-6">
+                    <div className="flex flex-col gap-y-2">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Quantity
+                      </label>
+                      <input
+                        type="number"
+                        name="quantity"
+                        value={productDetail?.quantity}
+                        onChange={handleChange}
+                        placeholder="Enter Quantity"
+                        className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-y-2 w-full">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Units
+                      </label>
+                      <input
+                        type="text"
+                        name="unit"
+                        value={productDetail?.unit}
+                        onChange={handleChange}
+                        placeholder="Enter unit"
+                        className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      />
+                      {/* <Select
+                  placeholder="Kg"
+                  className="w-full"
+                  styles={selectStyles2}
+                /> */}
+                    </div>
+                    <div className="flex flex-col gap-y-2 w-full">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Price($)
+                      </label>
+                      <input
+                        type="text"
+                        name="price"
+                        value={productDetail?.price}
+                        onChange={handleChange}
+                        placeholder="Enter price"
+                        className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      />
+                      {/* <Select
+                  placeholder="Kg"
+                  className="w-full"
+                  styles={selectStyles2}
+                /> */}
+                    </div>
+                  </div>
                   <div className="flex flex-col gap-y-2">
                     <label className="text-labelColor font-medium font-satoshi">
-                      Quantity
-                    </label>
-                    <input
-                      type="number"
-                      name="quantity"
-                      value={productDetail?.quantity}
-                      onChange={handleChange}
-                      placeholder="Enter Quantity"
-                      className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-y-2 w-full">
-                    <label className="text-labelColor font-medium font-satoshi">
-                      Units
+                      Description
                     </label>
                     <input
                       type="text"
-                      name="unit"
-                      value={productDetail?.unit}
+                      name="desc"
+                      value={productDetail?.desc}
                       onChange={handleChange}
-                      placeholder="Enter unit"
+                      placeholder="Enter Description"
                       className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     />
-                    {/* <Select
-                  placeholder="Kg"
-                  className="w-full"
-                  styles={selectStyles2}
-                /> */}
-                  </div>
-                  <div className="flex flex-col gap-y-2 w-full">
-                    <label className="text-labelColor font-medium font-satoshi">
-                      Price($)
-                    </label>
-                    <input
-                      type="text"
-                      name="price"
-                      value={productDetail?.price}
-                      onChange={handleChange}
-                      placeholder="Enter price"
-                      className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    />
-                    {/* <Select
-                  placeholder="Kg"
-                  className="w-full"
-                  styles={selectStyles2}
-                /> */}
                   </div>
                 </div>
-                <div className="flex flex-col gap-y-2">
-                  <label className="text-labelColor font-medium font-satoshi">
-                    Description
-                  </label>
-                  <input
-                    type="text"
-                    name="desc"
-                    value={productDetail?.desc}
-                    onChange={handleChange}
-                    placeholder="Enter Description"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                  />
-                </div>
+              )}
+              <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="rounded-lg border border-black shadow-buttonShadow  px-6"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  onClick={handleStock}
+                  className="rounded-lg border border-theme text-white px-10  bg-theme"
+                >
+                  {modal === "add"
+                    ? "Add"
+                    : modal === "edit"
+                    ? "Update"
+                    : modal === "delete"
+                    ? "Delete"
+                    : ""}{" "}
+                  Stock
+                </button>
               </div>
-            )}
-            <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="rounded-lg border border-black shadow-buttonShadow  px-6"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                onClick={handleStock}
-                className="rounded-lg border border-theme text-white px-10  bg-theme"
-              >
-                {modal === "add"
-                  ? "Add"
-                  : modal === "edit"
-                  ? "Update"
-                  : modal === "delete"
-                  ? "Delete"
-                  : ""}{" "}
-                Stock
-              </button>
             </div>
-          </div>
-        </form>
+          </form>
+        )}
       </Dialog>
     </div>
   );

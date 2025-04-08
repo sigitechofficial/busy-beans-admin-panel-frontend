@@ -7,7 +7,11 @@ import { selectStyles2 } from "@/utilities/SelectStyle";
 import { Dialog } from "primereact/dialog";
 import { useState } from "react";
 import { PostAPI } from "@/utilities/PostAPI";
-import { error_toaster, success_toaster } from "@/utilities/Toaster";
+import {
+  error_toaster,
+  info_toaster,
+  success_toaster,
+} from "@/utilities/Toaster";
 import GetAPI from "@/utilities/GetAPI";
 import { Tooltip } from "primereact/tooltip";
 import { MdDelete } from "react-icons/md";
@@ -46,34 +50,42 @@ export default function Category() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (modal === "add") {
-      setLoader("add");
-      const res = await PostAPI("api/v1/admin/category", {
-        name: name,
-      });
-      if (res?.data?.status === "success") {
-        setModal("");
-        setLoader("");
-        reFetch();
-        success_toaster("Category added successfully");
-      } else if (res?.data?.status === "error") {
-        setModal("");
-        setLoader("");
-        error_toaster(res?.data?.message);
+      if (name.trim() === "") {
+        info_toaster("Category name cannot be empty");
+      } else {
+        setLoader("add");
+        const res = await PostAPI("api/v1/admin/category", {
+          name: name,
+        });
+        if (res?.data?.status === "success") {
+          setModal("");
+          setLoader("");
+          reFetch();
+          success_toaster("Category added successfully");
+        } else if (res?.data?.status === "error") {
+          setModal("");
+          setLoader("");
+          error_toaster(res?.data?.message);
+        }
       }
     } else if (modal === "edit") {
-      setLoader("edit");
-      const res = await PatchAPI(`api/v1/admin/category/${categoryID}`, {
-        name: name,
-      });
-      if (res?.data?.status === "success") {
-        setModal("");
-        setLoader("");
-        reFetch();
-        success_toaster("Category updated successfully");
-      } else if (res?.data?.status === "error") {
-        setModal("");
-        setLoader("");
-        error_toaster(res?.data?.message);
+      if (name.trim() === "") {
+        info_toaster("Category name cannot be empty");
+      } else {
+        setLoader("edit");
+        const res = await PatchAPI(`api/v1/admin/category/${categoryID}`, {
+          name: name,
+        });
+        if (res?.data?.status === "success") {
+          setModal("");
+          setLoader("");
+          reFetch();
+          success_toaster("Category updated successfully");
+        } else if (res?.data?.status === "error") {
+          setModal("");
+          setLoader("");
+          error_toaster(res?.data?.message);
+        }
       }
     } else {
       setLoader("delete");

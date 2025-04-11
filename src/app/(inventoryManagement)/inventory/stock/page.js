@@ -26,7 +26,7 @@ import MiniLoader from "@/components/ui/MiniLoader";
 
 export default function Stock() {
   const { data, reFetch } = GetAPI("api/v1/admin/product");
-  console.log("🚀 ~ Stock ~ data:", data?.data?.data);
+  const { data:category, reFetch:categoryRefetch } = GetAPI("api/v1/admin/category");
 
   const [productDetail, setProductDetail] = useState({
     name: "",
@@ -338,7 +338,6 @@ export default function Stock() {
           />
         ))}
       </div> */}
-
       {/* Modal */}
       <Dialog
         visible={modal === "add" || modal === "edit" || modal === "delete"}
@@ -414,13 +413,53 @@ export default function Stock() {
                 styles={selectStyles2}
               /> */}
                   </div>
+
+                  <div className="flex flex-col gap-y-2">
+                    <label className="text-labelColor font-medium font-satoshi">
+                      Description
+                    </label>
+                    <input
+                      type="text"
+                      name="desc"
+                      value={productDetail?.desc}
+                      onChange={handleChange}
+                      placeholder="Enter Description"
+                      className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-y-2 w-full">
+                    <label className="text-labelColor font-medium font-satoshi">
+                      Units
+                    </label>
+                    {/* <input
+                        type="text"
+                        name="unit"
+                        value={productDetail?.unit}
+                        onChange={handleChange}
+                        placeholder="Enter unit"
+                        className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      /> */}
+
+                    <Select
+                      placeholder="Kg"
+                      className="w-full"
+                      styles={selectStyles2}
+                      options={[
+                        { value: "kg", label: "Kilogram (kg)" },
+                        { value: "g", label: "Gram (g)" },
+                        { value: "lb", label: "Pound (lb)" },
+                        { value: "pad", label: "pad" },
+                      ]}
+                    />
+                  </div>
+
                   <div className="grid sm:grid-cols-3 gap-y-4 gap-x-6">
                     <div className="flex flex-col gap-y-2">
                       <label className="text-labelColor font-medium font-satoshi">
-                        Quantity
+                        Available Stock
                       </label>
                       <input
-                        type="number"
+                        type="text"
                         name="quantity"
                         value={productDetail?.quantity}
                         onChange={handleChange}
@@ -432,19 +471,25 @@ export default function Stock() {
                       <label className="text-labelColor font-medium font-satoshi">
                         Units
                       </label>
-                      <input
+                      {/* <input
                         type="text"
                         name="unit"
                         value={productDetail?.unit}
                         onChange={handleChange}
                         placeholder="Enter unit"
                         className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      /> */}
+
+                      <Select
+                        placeholder="Kg"
+                        className="w-full"
+                        styles={selectStyles2}
+                        options={[
+                          { value: "kg", label: "Kilogram (kg)" },
+                          { value: "g", label: "Gram (g)" },
+                          { value: "pounds", label: "pounds" },
+                        ]}
                       />
-                      {/* <Select
-                  placeholder="Kg"
-                  className="w-full"
-                  styles={selectStyles2}
-                /> */}
                     </div>
                     <div className="flex flex-col gap-y-2 w-full">
                       <label className="text-labelColor font-medium font-satoshi">
@@ -464,19 +509,6 @@ export default function Stock() {
                   styles={selectStyles2}
                 /> */}
                     </div>
-                  </div>
-                  <div className="flex flex-col gap-y-2">
-                    <label className="text-labelColor font-medium font-satoshi">
-                      Description
-                    </label>
-                    <input
-                      type="text"
-                      name="desc"
-                      value={productDetail?.desc}
-                      onChange={handleChange}
-                      placeholder="Enter Description"
-                      className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    />
                   </div>
                 </div>
               )}

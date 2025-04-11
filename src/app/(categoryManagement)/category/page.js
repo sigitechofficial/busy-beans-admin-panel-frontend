@@ -21,6 +21,7 @@ import { PatchAPI } from "@/utilities/PatchAPI";
 import { DeleteAPI } from "@/utilities/DeleteAPI";
 import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
+import ErrorHandler from "@/utilities/ErrorHandler";
 
 export default function Category() {
   const { data, reFetch } = GetAPI("api/v1/admin/category");
@@ -36,14 +37,19 @@ export default function Category() {
   };
 
   const handleStatus = async (id, status) => {
-    const res = await PatchAPI(`api/v1/admin/category/${id}`, {
-      status: !status,
-    });
-    if (res?.data?.status === "success") {
-      success_toaster("Status updated successfully");
-      reFetch();
-    } else if (res?.data?.status === "error") {
-      error_toaster(res?.data?.message);
+    try {
+      const res = await PatchAPI(`api/v1/admin/category/${id}`, {
+        status: !status,
+      });
+      if (res?.data?.status === "success") {
+        success_toaster("Status updated successfully");
+        reFetch();
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
+      setLoader(false);
     }
   };
 
@@ -54,18 +60,24 @@ export default function Category() {
         info_toaster("Category name cannot be empty");
       } else {
         setLoader("add");
-        const res = await PostAPI("api/v1/admin/category", {
-          name: name,
-        });
-        if (res?.data?.status === "success") {
+        try {
+          const res = await PostAPI("api/v1/admin/category", {
+            name: name,
+          });
+          if (res?.data?.status === "success") {
+            setModal("");
+            setLoader("");
+            reFetch();
+            success_toaster("Category added successfully");
+          } else {
+            throw new Error(
+              res?.data?.message || "An unexpected error occurred."
+            );
+          }
+        } catch (error) {
           setModal("");
           setLoader("");
-          reFetch();
-          success_toaster("Category added successfully");
-        } else if (res?.data?.status === "error") {
-          setModal("");
-          setLoader("");
-          error_toaster(res?.data?.message);
+          ErrorHandler(error);
         }
       }
     } else if (modal === "edit") {
@@ -73,30 +85,38 @@ export default function Category() {
         info_toaster("Category name cannot be empty");
       } else {
         setLoader("edit");
-        const res = await PatchAPI(`api/v1/admin/category/${categoryID}`, {
-          name: name,
-        });
-        if (res?.data?.status === "success") {
+        try {
+          const res = await PatchAPI(`api/v1/admin/category/${categoryID}`, {
+            name: name,
+          });
+          if (res?.data?.status === "success") {
+            setModal("");
+            setLoader("");
+            reFetch();
+            success_toaster("Category updated successfully");
+          } else {
+            throw new Error(
+              res?.data?.message || "An unexpected error occurred."
+            );
+          }
+        } catch (error) {
           setModal("");
           setLoader("");
-          reFetch();
-          success_toaster("Category updated successfully");
-        } else if (res?.data?.status === "error") {
-          setModal("");
-          setLoader("");
-          error_toaster(res?.data?.message);
+          ErrorHandler(error);
         }
       }
     } else {
       setLoader("delete");
-      const res = await DeleteAPI(`api/v1/admin/category/${categoryID}`);
-      if (res?.data?.status === "success") {
-        success_toaster("Category Deleted Successfully");
-        reFetch();
-        setModal("");
-        setLoader("");
-      } else if (res?.data?.status === "error") {
-        error_toaster(res?.data?.message);
+      try {
+        const res = await DeleteAPI(`api/v1/admin/category/${categoryID}`);
+        if (res?.data?.status === "success") {
+          success_toaster("Category Deleted Successfully");
+          reFetch();
+          setModal("");
+          setLoader("");
+        }
+      } catch (error) {
+        ErrorHandler(error);
         setLoader("");
       }
     }

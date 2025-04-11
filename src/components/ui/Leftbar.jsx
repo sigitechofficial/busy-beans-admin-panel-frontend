@@ -121,8 +121,9 @@ export default function Leftbar(props) {
             href="/"
             className="flex items-center font-bold text-4xl min-h-[70px] max-h-[71px]"
           >
-            Busy Bean
-            {/* <img src="/images/logo.png" alt="logo" className="max-w-16 max-h-[70px]" /> */}
+            {/* Busy Bean */}
+            {/* <img src="/images/logocoffee.png" alt="logo" className="max-w-16 max-h-[70px]" /> */}
+            <img src="/images/logocoffee.png" alt="logo" className="max-w-48 max-h-[70px]" />
           </Link>
         </div>
         <div

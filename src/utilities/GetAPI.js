@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import { useEffect, useState } from "react";
 import { info_toaster } from "./Toaster";
 import axios from "axios";

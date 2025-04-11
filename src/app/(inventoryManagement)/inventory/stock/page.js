@@ -23,6 +23,7 @@ import Switch from "react-switch";
 import { PatchAPI } from "@/utilities/PatchAPI";
 import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
+import ErrorHandler from "@/utilities/ErrorHandler";
 
 export default function Stock() {
   const { data, reFetch } = GetAPI("api/v1/admin/product");
@@ -83,21 +84,27 @@ export default function Stock() {
         formData.append("desc", productDetail?.desc);
         formData.append("image", productDetail?.image);
         setLoader("add");
-        const res = await PostAPI("api/v1/admin/product", formData);
-        if (res?.data?.status === "success") {
-          success_toaster("Product Added Successfully");
-          setProductDetail({
-            name: "",
-            quantity: "",
-            unit: "",
-            image: "",
-          });
-          setModal("");
-          setLoader("");
-          reFetch();
-          setImagePreview("");
-        } else if (res?.data?.status === "error") {
-          error_toaster(res?.data?.message);
+        try {
+          const res = await PostAPI("api/v1/admin/product", formData);
+          if (res?.data?.status === "success") {
+            success_toaster("Product Added Successfully");
+            setProductDetail({
+              name: "",
+              quantity: "",
+              unit: "",
+              image: "",
+            });
+            setModal("");
+            setLoader("");
+            reFetch();
+            setImagePreview("");
+          } else {
+            throw new Error(
+              res?.data?.message || "An unexpected error occurred."
+            );
+          }
+        } catch (error) {
+          ErrorHandler(error);
           setLoader("");
         }
       }
@@ -123,37 +130,49 @@ export default function Stock() {
         formData.append("desc", productDetail?.desc);
         formData.append("image", productDetail?.image);
         setLoader("edit");
-        const res = await PatchAPI(
-          `api/v1/admin/product/${productID}`,
-          formData
-        );
-        if (res?.data?.status === "success") {
-          success_toaster("Product Updated Successfully");
-          setProductDetail({
-            name: "",
-            quantity: "",
-            unit: "",
-            image: "",
-          });
-          setModal("");
-          setLoader("");
-          reFetch();
-          setImagePreview("");
-        } else if (res?.data?.status === "error") {
-          error_toaster(res?.data?.message);
+        try {
+          const res = await PatchAPI(
+            `api/v1/admin/product/${productID}`,
+            formData
+          );
+          if (res?.data?.status === "success") {
+            success_toaster("Product Updated Successfully");
+            setProductDetail({
+              name: "",
+              quantity: "",
+              unit: "",
+              image: "",
+            });
+            setModal("");
+            setLoader("");
+            reFetch();
+            setImagePreview("");
+          } else {
+            throw new Error(
+              res?.data?.message || "An unexpected error occurred."
+            );
+          }
+        } catch (error) {
+          ErrorHandler(error);
           setLoader("");
         }
       }
     } else {
       setLoader("delete");
-      const res = await DeleteAPI(`api/v1/admin/product/${productID}`);
-      if (res?.data?.status === "success") {
-        success_toaster("Product Deleted Successfully");
-        reFetch();
-        setModal("");
-        setLoader("");
-      } else if (res?.data?.status === "error") {
-        error_toaster(res?.data?.message);
+      try {
+        const res = await DeleteAPI(`api/v1/admin/product/${productID}`);
+        if (res?.data?.status === "success") {
+          success_toaster("Product Deleted Successfully");
+          reFetch();
+          setModal("");
+          setLoader("");
+        } else {
+          throw new Error(
+            res?.data?.message || "An unexpected error occurred."
+          );
+        }
+      } catch (error) {
+        ErrorHandler(error);
         setLoader("");
       }
     }
@@ -173,14 +192,18 @@ export default function Stock() {
   };
 
   const handleStatus = async (id, status) => {
-    const res = await PatchAPI(`api/v1/admin/product/${id}`, {
-      status: !status,
-    });
-    if (res?.data?.status === "success") {
-      success_toaster("Status updated successfully");
-      reFetch();
-    } else if (res?.data?.status === "error") {
-      error_toaster(res?.data?.message);
+    try {
+      const res = await PatchAPI(`api/v1/admin/product/${id}`, {
+        status: !status,
+      });
+      if (res?.data?.status === "success") {
+        success_toaster("Status updated successfully");
+        reFetch();
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
     }
   };
 

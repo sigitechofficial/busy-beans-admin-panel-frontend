@@ -87,7 +87,7 @@ export default function MyDataTable(props) {
       <div className="manageTable">
         <DataTable
           value={filteredData}
-          paginator
+          paginator={props.pagination}
           selectionMode="single"
           rows={10}
           rowsPerPageOptions={[10, 25, 50, 100]}

@@ -27,7 +27,15 @@ import ErrorHandler from "@/utilities/ErrorHandler";
 
 export default function Stock() {
   const { data, reFetch } = GetAPI("api/v1/admin/product");
-  const { data:category, reFetch:categoryRefetch } = GetAPI("api/v1/admin/category");
+  const { data: category, reFetch: categoryRefetch } = GetAPI(
+    "api/v1/admin/category"
+  );
+
+  const catOptions = [];
+
+  category?.data?.data?.map((item) => {
+    catOptions.push({ value: item?.id, label: item?.name });
+  });
 
   const [productDetail, setProductDetail] = useState({
     name: "",
@@ -36,7 +44,9 @@ export default function Stock() {
     image: "",
     price: "",
     desc: "",
+    category: "",
   });
+  console.log("🚀 ~ Stock ~ productDetail:", productDetail);
   const [productID, setProductID] = useState("");
   const [imagePreview, setImagePreview] = useState("");
   const [modal, setModal] = useState("");
@@ -69,7 +79,7 @@ export default function Stock() {
         info_toaster("Product Name cannot be empty");
       } else if (productDetail?.quantity.trim() === 0) {
         info_toaster("Product quantity cannot be empty");
-      } else if (productDetail?.unit.trim() === 0) {
+      } else if (productDetail?.unit === "") {
         info_toaster("Product unit cannot be empty");
       } else if (productDetail?.price.trim() === 0) {
         info_toaster("Product price cannot be empty");
@@ -79,10 +89,11 @@ export default function Stock() {
         const formData = new FormData();
         formData.append("name", productDetail?.name);
         formData.append("quantity", productDetail?.quantity);
-        formData.append("unit", productDetail?.unit);
+        formData.append("unit", productDetail?.unit?.value);
         formData.append("price", productDetail?.price);
         formData.append("desc", productDetail?.desc);
         formData.append("image", productDetail?.image);
+        formData.append("categoryId", productDetail?.category?.value);
         setLoader("add");
         try {
           const res = await PostAPI("api/v1/admin/product", formData);
@@ -93,6 +104,7 @@ export default function Stock() {
               quantity: "",
               unit: "",
               image: "",
+              category:"",
             });
             setModal("");
             setLoader("");
@@ -115,7 +127,7 @@ export default function Stock() {
         info_toaster("Product Name cannot be empty");
       } else if (productDetail?.quantity.trim() === 0) {
         info_toaster("Product quantity cannot be empty");
-      } else if (productDetail?.unit.trim() === 0) {
+      } else if (productDetail?.unit==="") {
         info_toaster("Product unit cannot be empty");
       } else if (productDetail?.price.trim() === 0) {
         info_toaster("Product price cannot be empty");
@@ -211,7 +223,7 @@ export default function Stock() {
     { field: "sl", header: "SL", sort: true },
     { field: "name", header: "Name" },
     { field: "quantity", header: "Quantity" },
-    { field: "price", header: "Price" },
+    { field: "price", header: "Price ($)" },
     { field: "image", header: "Image" },
     {
       field: "currentStatus",
@@ -230,7 +242,7 @@ export default function Stock() {
       sl: i + 1,
       name: prod?.name,
       quantity: prod?.quantity,
-      price: prod?.price,
+      price: "$" + prod?.price,
       image: (
         <img
           src={BASE_URL + prod?.image}
@@ -301,6 +313,8 @@ export default function Stock() {
     });
   });
 
+  console.log(datas.length,"datasdatas")
+
   return data.length === 0 ? (
     <Loader />
   ) : (
@@ -347,6 +361,7 @@ export default function Stock() {
           data={datas}
           placeholder={"Search ..."}
           search={true}
+          pagination={datas.length >10 ?true:false}
         />
       </div>
 
@@ -452,7 +467,7 @@ export default function Stock() {
                   </div>
                   <div className="flex flex-col gap-y-2 w-full">
                     <label className="text-labelColor font-medium font-satoshi">
-                      Units
+                      Category
                     </label>
                     {/* <input
                         type="text"
@@ -464,15 +479,13 @@ export default function Stock() {
                       /> */}
 
                     <Select
-                      placeholder="Kg"
+                      placeholder="Category"
                       className="w-full"
                       styles={selectStyles2}
-                      options={[
-                        { value: "kg", label: "Kilogram (kg)" },
-                        { value: "g", label: "Gram (g)" },
-                        { value: "lb", label: "Pound (lb)" },
-                        { value: "pad", label: "pad" },
-                      ]}
+                      options={catOptions}
+                      onChange={(e) => {
+                        setProductDetail({ ...productDetail, category: e });
+                      }}
                     />
                   </div>
 
@@ -512,6 +525,9 @@ export default function Stock() {
                           { value: "g", label: "Gram (g)" },
                           { value: "pounds", label: "pounds" },
                         ]}
+                        onChange={(e) => {
+                          setProductDetail({ ...productDetail, unit: e });
+                        }}
                       />
                     </div>
                     <div className="flex flex-col gap-y-2 w-full">

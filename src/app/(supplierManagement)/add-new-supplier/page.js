@@ -3,8 +3,38 @@ import BackButton from "@/components/ui/BackButton";
 import { LuImageUp } from "react-icons/lu";
 import Select from "react-select";
 import { selectStyles2 } from "@/utilities/SelectStyle";
+import { useState } from "react";
 
 export default function AddNewSupplier() {
+
+  const [supplier, setSupplier] = useState({
+    supplierName: '',
+    email: '',
+    password: '',
+    country: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    phoneNum: '',
+    addressOne: '',
+    addressTwo: '',
+    businessWeb: '',
+    image: '',
+    phoneNumber: '',
+    businessRegistrationNumber: '',
+    supplierType: '',
+    status: false,
+    deleted: false,
+    registerDate: '',
+    bankAccount: ''
+  });
+  console.log("🚀 ~ AddNewSupplier ~ supplier:", supplier)
+
+
+  const handleChange = (e) => {
+    setSupplier({ ...supplier, [e.target.name]: e.target.value });
+  };
+
   return ( 
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -30,10 +60,12 @@ export default function AddNewSupplier() {
                 </label>
                 <input
                   type="text"
-                  name="Supplier Name"
+                  name="supplierName"
                   placeholder="Enter Supplier Name"
                   className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                />
+                  onChange={handleChange}
+               
+               />
               </div>
               <div className="flex flex-col gap-y-2 w-full">
                 <label className="text-labelColor font-medium font-satoshi">
@@ -75,10 +107,11 @@ export default function AddNewSupplier() {
                 </label>
                 <input
                   type="text"
-                  name=""
+                  name="zipCode"
                   placeholder="Enter Zip code"
                   className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                />
+                  onChange={handleChange}
+               />
               </div>
               <div className="flex flex-col gap-y-2">
                 <label className="text-labelColor font-medium font-satoshi">
@@ -86,9 +119,10 @@ export default function AddNewSupplier() {
                 </label>
                 <input
                   type="text"
-                  name=""
+                  name="phoneNum"
                   placeholder="Enter Phone Number"
                   className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  onChange={handleChange}
                 />
               </div>
             </div>
@@ -98,9 +132,10 @@ export default function AddNewSupplier() {
               </label>
               <input
                 type="text"
-                name=""
+                name="addressOne"
                 placeholder="Enter Address 1"
                 className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                onChange={handleChange}
               />
             </div>
             <div className="flex flex-col gap-y-2">
@@ -109,10 +144,11 @@ export default function AddNewSupplier() {
               </label>
               <input
                 type="text"
-                name=""
+                name="addressTwo"
                 placeholder="Enter Address 2"
                 className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-              />
+                onChange={handleChange}
+             />
             </div>
             <div className="flex flex-col gap-y-2">
               <label className="text-labelColor font-medium font-satoshi">
@@ -120,10 +156,11 @@ export default function AddNewSupplier() {
               </label>
               <input
                 type="text"
-                name=""
+                name="businessWeb"
                 placeholder="Enter Business name"
                 className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-              />
+                onChange={handleChange}
+             />
             </div>
           </div>
 
@@ -135,9 +172,10 @@ export default function AddNewSupplier() {
               </label>
               <input
                 type="text"
-                name=""
+                name="businessRegistrationNumber"
                 placeholder="Enter Tax ID, VAT, GST"
                 className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                onChange={handleChange}
               />
             </div>
             <div className="flex flex-col gap-y-2 w-full">
@@ -166,10 +204,11 @@ export default function AddNewSupplier() {
               </label>
               <input
                 type="date"
-                name=""
+                name="registerDate"
                 placeholder=""
                 className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-              />
+                onChange={handleChange}
+            />
             </div>
             <div className="flex flex-col gap-y-2">
               <label className="text-labelColor font-medium font-satoshi">
@@ -177,9 +216,10 @@ export default function AddNewSupplier() {
               </label>
               <input
                 type="text"
-                name=""
+                name="bankAccount"
                 placeholder="000322655655654454"
                 className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                onChange={handleChange}
               />
             </div>
             <div className="flex flex-col gap-y-2">
@@ -188,10 +228,11 @@ export default function AddNewSupplier() {
               </label>
               <input
                 type="password"
-                name=""
+                name="password"
                 placeholder="Enter password"
                 className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-              />
+                onChange={handleChange}
+             />
             </div>
             <div>
               <button className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3">

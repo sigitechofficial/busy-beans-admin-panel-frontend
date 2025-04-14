@@ -4,38 +4,40 @@ import { LuImageUp } from "react-icons/lu";
 import Select from "react-select";
 import { selectStyles2 } from "@/utilities/SelectStyle";
 import { useState } from "react";
+import { useParams } from "next/navigation";
 
 export default function AddNewSupplier() {
+  const { action, supplierID } = useParams();
+  console.log("🚀 ~ page ~ supplierID:", supplierID);
+  console.log("🚀 ~ page ~ action:", action);
 
   const [supplier, setSupplier] = useState({
-    supplierName: '',
-    email: '',
-    password: '',
-    country: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    phoneNum: '',
-    addressOne: '',
-    addressTwo: '',
-    businessWeb: '',
-    image: '',
-    phoneNumber: '',
-    businessRegistrationNumber: '',
-    supplierType: '',
+    supplierName: "",
+    email: "",
+    password: "",
+    country: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    phoneNum: "",
+    addressOne: "",
+    addressTwo: "",
+    businessWeb: "",
+    image: "",
+    phoneNumber: "",
+    businessRegistrationNumber: "",
+    supplierType: "",
     status: false,
     deleted: false,
-    registerDate: '',
-    bankAccount: ''
+    registerDate: "",
+    bankAccount: "",
   });
-  console.log("🚀 ~ AddNewSupplier ~ supplier:", supplier)
-
 
   const handleChange = (e) => {
     setSupplier({ ...supplier, [e.target.name]: e.target.value });
   };
 
-  return ( 
+  return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-x-2">
@@ -64,8 +66,7 @@ export default function AddNewSupplier() {
                   placeholder="Enter Supplier Name"
                   className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
-               
-               />
+                />
               </div>
               <div className="flex flex-col gap-y-2 w-full">
                 <label className="text-labelColor font-medium font-satoshi">
@@ -111,7 +112,7 @@ export default function AddNewSupplier() {
                   placeholder="Enter Zip code"
                   className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
-               />
+                />
               </div>
               <div className="flex flex-col gap-y-2">
                 <label className="text-labelColor font-medium font-satoshi">
@@ -148,7 +149,7 @@ export default function AddNewSupplier() {
                 placeholder="Enter Address 2"
                 className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                 onChange={handleChange}
-             />
+              />
             </div>
             <div className="flex flex-col gap-y-2">
               <label className="text-labelColor font-medium font-satoshi">
@@ -160,7 +161,7 @@ export default function AddNewSupplier() {
                 placeholder="Enter Business name"
                 className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                 onChange={handleChange}
-             />
+              />
             </div>
           </div>
 
@@ -208,7 +209,7 @@ export default function AddNewSupplier() {
                 placeholder=""
                 className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                 onChange={handleChange}
-            />
+              />
             </div>
             <div className="flex flex-col gap-y-2">
               <label className="text-labelColor font-medium font-satoshi">
@@ -232,7 +233,7 @@ export default function AddNewSupplier() {
                 placeholder="Enter password"
                 className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                 onChange={handleChange}
-             />
+              />
             </div>
             <div>
               <button className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3">

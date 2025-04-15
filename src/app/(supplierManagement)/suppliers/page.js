@@ -24,7 +24,6 @@ export default function Suppliers() {
   const [modal, setModal] = useState("");
 
   const { data, reFetch } = GetAPI("api/v1/admin/supplier/?sort=-createdAt");
-  console.log("🚀 ~ Suppliers ~ data:", data?.data?.data);
 
   const handleStatus = async (id, status) => {
     try {

@@ -8,11 +8,9 @@ import GetAPI from "@/utilities/GetAPI";
 
 export default function Customers() {
   const { data } = GetAPI("api/v1/admin/customer-management/customer-list/all");
-  console.log("🚀 ~ Customers ~ data:", data?.data?.data);
   const { data: dashboardCards } = GetAPI(
     "api/v1/admin/customer-management/dahboard-cards"
   );
-  // console.log("🚀 ~ Customers ~ data:", data?.data?.data)
 
   const columns = [
     { field: "sl", header: "SL", sort: true },

@@ -8,7 +8,6 @@ import Loader from "@/components/ui/Loader";
 
 export default function Orders() {
   const { data } = GetAPI("api/v1/admin/orders");
-  console.log("🚀 ~ Orders ~ data:", data?.data?.data);
 
   const columns = [
     { field: "sl", header: "SL", sort: true },

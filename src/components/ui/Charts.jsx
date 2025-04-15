@@ -27,7 +27,6 @@ export default function Charts() {
   //     : "admin/dashboard-charts",
   //     "dashboard"
   //   );
-  //   console.log("🚀 ~ Charts ~ data:", data?.data?.currencyUnit)
 
   //   const TotalRevenue =
   //     data?.data?.dashboardBarChartData?.datasets[0]?.data?.reduce(

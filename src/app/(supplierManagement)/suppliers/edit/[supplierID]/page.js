@@ -41,11 +41,7 @@ export default function EditSupplier() {
     registerDate: "",
     bankAccount: "",
   });
-  console.log(
-    "🚀 ~ EditSupplier ~ supplier:",
-    supplier?.status,
-    typeof supplier?.status
-  );
+
 
   const handleChange = (e) => {
     setSupplier({ ...supplier, [e.target.name]: e.target.value });

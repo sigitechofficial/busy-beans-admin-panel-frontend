@@ -32,7 +32,6 @@ export default function AddNewSupplier() {
   });
   const [imagePreview, setImagePreview] = useState("");
   const [loader, setLoader] = useState(false);
-  // console.log("🚀 ~ AddNewSupplier ~ supplier:", supplier);
 
   const handleChange = (e) => {
     setSupplier({ ...supplier, [e.target.name]: e.target.value });
@@ -49,7 +48,6 @@ export default function AddNewSupplier() {
       setSupplier({ ...supplier, image: file });
       const url = URL.createObjectURL(file);
       setImagePreview(url);
-      console.log("🚀 ~ handleImage ~ url:", url);
     } else {
       info_toaster("File not selected");
     }

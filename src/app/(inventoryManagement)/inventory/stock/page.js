@@ -46,7 +46,6 @@ export default function Stock() {
     desc: "",
     category: "",
   });
-  console.log("🚀 ~ Stock ~ productDetail:", productDetail);
   const [productID, setProductID] = useState("");
   const [imagePreview, setImagePreview] = useState("");
   const [modal, setModal] = useState("");
@@ -313,7 +312,6 @@ export default function Stock() {
     });
   });
 
-  console.log(datas.length,"datasdatas")
 
   return data.length === 0 ? (
     <Loader />

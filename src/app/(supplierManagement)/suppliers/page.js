@@ -145,7 +145,7 @@ export default function Suppliers() {
             //   setModal("edit");
             //   setCategoryID(cat?.id);
             // }}
-            onClick={() => router.push("/add/supplier")}
+            onClick={() => router.push(`/suppliers/edit/${supplier?.id}`)}
           >
             <FaEdit size={24} />
           </button>
@@ -179,7 +179,7 @@ export default function Suppliers() {
         </div>
         <div className="flex justify-end">
           <button
-            onClick={() => router.push("/add/supplier")}
+            onClick={() => router.push("/suppliers/add")}
             className="rounded-lg font-inter font-medium text-white px-2 sm:px-3 py-2.5 sm:py-4 bg-theme"
           >
             + Add New Supplier
@@ -237,7 +237,7 @@ export default function Suppliers() {
         onHide={handleModalClose}
         header={
           <div className="font-nunito font-bold text-2xl text-center">
-            Delete Category
+            Delete Supplier
           </div>
         }
       >

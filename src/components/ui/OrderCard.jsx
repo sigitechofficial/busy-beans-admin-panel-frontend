@@ -2,8 +2,16 @@ import { FaEdit } from "react-icons/fa";
 import MyDataTable from "./MyDataTable";
 import { Dialog } from "primereact/dialog";
 import AssignSupplierCard from "./AssignSupplierCard";
+import GetAPI from "@/utilities/GetAPI";
+import { useState } from "react";
+import { info_toaster } from "@/utilities/Toaster";
 
 export default function OrderCard(props) {
+  const [supplierID, setSupplierID] = useState("");
+  const { data: suppliersData } = GetAPI(
+    "api/v1/admin/supplier/?sort=-createdAt"
+  );
+
   const columns = [
     { field: "#", header: "#", sort: true, minWidth: "1rem" },
     { field: "product", header: "Product", minWidth: "12rem" },
@@ -11,28 +19,37 @@ export default function OrderCard(props) {
     { field: "price", header: "Price", minWidth: "3rem" },
   ];
 
-  const datas = [
-    {
-      "#": "01",
-      product: (
-        <div className="flex items-center gap-x-2">
-          <div className="rounded-lg bg-white shadow-tabShadow h-16 py-1 px-2">
-            <img
-              src="/images/stock1.png"
-              alt="product-image"
-              className="bg-contain w-full h-full"
-            />
-          </div>
-          <div className="font-inter">
-            <p className="text-lg font-medium text-black">Coffee</p>
-            <p className="text-sm">3x $110</p>
-          </div>
-        </div>
-      ),
-      discount: <p className="font-inter font-medium text-black">$30.00</p>,
-      price: <p className="font-inter font-medium text-black">$300.00</p>,
-    },
-  ];
+  const datas = [];
+  props?.orderData?.items?.map((item, i) => {
+    datas.push({
+      "#": i + 1,
+      product: item?.product,
+      discount: item?.discount,
+      price: item?.price,
+    });
+  });
+  // const datas = [
+  //   {
+  //     "#": "01",
+  //     product: (
+  //       <div className="flex items-center gap-x-2">
+  //         <div className="rounded-lg bg-white shadow-tabShadow h-16 py-1 px-2">
+  //           <img
+  //             src="/images/stock1.png"
+  //             alt="product-image"
+  //             className="bg-contain w-full h-full"
+  //           />
+  //         </div>
+  //         <div className="font-inter">
+  //           <p className="text-lg font-medium text-black">Coffee</p>
+  //           <p className="text-sm">3x $110</p>
+  //         </div>
+  //       </div>
+  //     ),
+  //     discount: <p className="font-inter font-medium text-black">$30.00</p>,
+  //     price: <p className="font-inter font-medium text-black">$300.00</p>,
+  //   },
+  // ];
 
   return (
     <div className="space-y-10 py-4 px-8 border border-borderColor shadow-tableShadow ">
@@ -58,7 +75,9 @@ export default function OrderCard(props) {
             <div className="space-y-1">
               <p className="flex">
                 <span className="text-black/60 w-2/4">Payment Method:</span>
-                <span className="font-medium ">Cheque</span>
+                <span className="font-medium ">
+                  {props?.orderData?.paymentMethod}
+                </span>
               </p>
               <p className="flex">
                 <span className="text-black/60 w-2/4">Payment Status:</span>
@@ -74,18 +93,19 @@ export default function OrderCard(props) {
               </p>
               <p className="flex">
                 <span className="text-black/60 w-2/4">Total Amount:</span>
-                <span className="font-medium">$ 300.00</span>
+                <span className="font-medium">
+                  $ {props?.orderData?.totalBill}
+                </span>
               </p>
             </div>
           </div>
           <div className="bg-themeYellowDark text-black font-medium py-2 px-4 rounded-md flex gap-x-4">
             <p>
-              Important note here regarding default 30 days but you also set
-              enter a rendom date for cheque submittion in their records
+             {props?.orderData?.note}
             </p>
-            <div>
+            {/* <div>
               <FaEdit size={24} />
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
@@ -100,19 +120,27 @@ export default function OrderCard(props) {
         <div className="font-inter flex flex-col sm:items-end sm:[&>p]:w-2/4 [&>p]:flex [&>p]:justify-between pt-4 space-y-0.5">
           <p>
             <span className="font-bold">Items Price:</span>{" "}
-            <span className="font-semibold">$330.00</span>
+            <span className="font-semibold">${props?.orderData?.itemsPrice}</span>
           </p>
           <p>
-            <span className="font-bold">Discount:</span>{" "}
-            <span className="font-semibold">$30.00</span>
+            <span className="font-bold">Discount({props?.orderData?.discountPercentage}%):</span>{" "}
+            <span className="font-semibold">${props?.orderData?.discountPrice}</span>
           </p>
           <p>
             <span className="font-bold">Vat/Tax:</span>{" "}
-            <span className="font-semibold">$0.00</span>
+            <span className="font-semibold">${props?.orderData?.vat}</span>
+          </p>
+          <p>
+            <span className="font-bold">Total Weight:</span>{" "}
+            <span className="font-semibold">${props?.orderData?.totalWeight}</span>
+          </p>
+          <p>
+            <span className="font-bold">Sub Total:</span>{" "}
+            <span className="font-semibold">${props?.orderData?.subTotal}</span>
           </p>
           <p>
             <span className="font-bold">Total:</span>{" "}
-            <span className="font-semibold">$300.00</span>
+            <span className="font-semibold">${props?.orderData?.totalBill}</span>
           </p>
         </div>
       </div>
@@ -120,41 +148,52 @@ export default function OrderCard(props) {
       {/* Modal */}
       <Dialog
         visible={
-          props?.modal?.type === "assignSupplier" && props?.modal?.status
+          suppliersData?.data?.data?.length === 0
+            ? info_toaster("No supplier found")
+            : props?.modal?.type === "assignSupplier" && props?.modal?.status
         }
         style={{ width: "30vw" }}
         className="font-nunito"
-        onHide={() =>
+        onHide={() => {
           props?.setModal({
             type: "",
             status: false,
-          })
-        }
+          });
+          setSupplierID("");
+        }}
         header={
           <div className="font-nunito font-bold text-2xl ">Assign Supplier</div>
         }
       >
         <div className="space-y-4">
-          <AssignSupplierCard
-            name="Ali Ali"
-            email="Ahsanmunir753@gmail.com"
-            phoneNo="+6362735238"
-          />
-          <AssignSupplierCard
-            name="Ali Ali"
-            email="Ahsanmunir753@gmail.com"
-            phoneNo="+6362735238"
-          />
-          <AssignSupplierCard
-            name="Ali Ali"
-            email="Ahsanmunir753@gmail.com"
-            phoneNo="+6362735238"
-          />
-          <AssignSupplierCard
-            name="Ali Ali"
-            email="Ahsanmunir753@gmail.com"
-            phoneNo="+6362735238"
-          />
+          <div className="space-y-4">
+            {suppliersData?.data?.data?.map((supplier, i) => (
+              <AssignSupplierCard
+                id={supplier?.id}
+                setSupplierID={setSupplierID}
+                checked={
+                  i === 0 && !supplierID
+                    ? setSupplierID(supplier?.id)
+                    : supplier?.id === supplierID
+                    ? true
+                    : false
+                }
+                name={supplier?.supplierName}
+                email={supplier?.email}
+                phoneNo={supplier?.phoneNum}
+                image={supplier?.image}
+              />
+            ))}
+          </div>
+          <div className="text-end">
+            <button
+              // type="submit"
+              onClick={() => console.log("supplierID:- ", supplierID)}
+              className="rounded-lg border border-theme text-white px-10 bg-theme font-nunito py-3 font-medium"
+            >
+              Assign Supplier
+            </button>
+          </div>
         </div>
       </Dialog>
     </div>

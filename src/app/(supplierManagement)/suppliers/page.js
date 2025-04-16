@@ -93,7 +93,7 @@ export default function Suppliers() {
   const datas = [];
   data?.data?.data?.map((supplier, i) => {
     datas.push({
-      sl: i + 1,
+      sl: i + 1, 
       supplierName: supplier?.supplierName,
       email: supplier?.email,
       address: `${supplier?.addressOne}, ${supplier?.addressTwo}, ${supplier?.city}, ${supplier?.state}, ${supplier?.zipCode}, ${supplier?.country}`,

@@ -5,8 +5,11 @@ import Select from "react-select";
 import selectStyles from "@/utilities/SelectStyle";
 import GetAPI from "@/utilities/GetAPI";
 import Loader from "@/components/ui/Loader";
+import { FaEye } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 
 export default function Orders() {
+  const router = useRouter()
   const { data } = GetAPI("api/v1/admin/orders");
 
   const columns = [
@@ -16,13 +19,14 @@ export default function Orders() {
     { field: "subTotal", header: "Sub Total" },
     { field: "discountPrice", header: "Discount Price" },
     { field: "discountPercentage", header: "Discount Percentage" },
-    { field: "itemsPrice", header: "Iitems Price" },
+    { field: "itemsPrice", header: "Items Price" },
     { field: "vat", header: "Vat" },
     { field: "totalWeight", header: "Total Weight" },
     { field: "note", header: "Note" },
     { field: "paymentMethod", header: "Payment Method" },
     { field: "poNumber", header: "Po Number" },
     { field: "orderFrequency", header: "Order Frequency" },
+    { field: "action", header: "Action" },
   ];
 
   const datas = [];
@@ -41,6 +45,16 @@ export default function Orders() {
       paymentMethod: detail?.paymentMethod,
       poNumber: detail?.poNumber,
       orderFrequency: detail?.orderFrequency,
+      action: (
+        <button
+          className="border border-yellow-400 rounded-md p-2 text-yellow-400"
+          onClick={() => {
+            router.push(`/orders/detail/${detail?.id}`);
+          }}
+        >
+          <FaEye size={24} />
+        </button>
+      ),
     });
   });
 

@@ -10,8 +10,10 @@ import ErrorHandler from "@/utilities/ErrorHandler";
 import Select from "react-select";
 import { selectStyles2 } from "@/utilities/SelectStyle";
 import MiniLoader from "./MiniLoader";
+import { useRouter } from "next/navigation";
 
 export default function OrderCard(props) {
+  const router = useRouter();
   const [supplierID, setSupplierID] = useState("");
   const [loader, setLoader] = useState("");
   const [dispatchOrderData, setDispatchOrderData] = useState({
@@ -33,33 +35,38 @@ export default function OrderCard(props) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (props?.orderData?.statusId === 1) {
-      setLoader("assignSupplier");
-      try {
-        const res = await PatchAPI("api/v1/admin/assign-supplier", {
-          orderId: props?.orderData?.id,
-          orderData: {
-            supplierId: supplierID,
-            statusId: 2,
-          },
-        });
-        console.log("🚀 ~ handleSubmit ~ res:", res);
-        if (res?.data?.status === "success") {
-          success_toaster("Supplier assign successfully");
-          props?.reFetch();
-          props?.setModal({
-            type: "",
-            status: false,
+      if (suppliersData?.data?.data?.length === 0) {
+        info_toaster("No supplier found. Add supplier");
+        router.push("/suppliers");
+      } else {
+        setLoader("assignSupplier");
+        try {
+          const res = await PatchAPI("api/v1/admin/assign-supplier", {
+            orderId: props?.orderData?.id,
+            orderData: {
+              supplierId: supplierID,
+              statusId: 2,
+            },
           });
+          console.log("🚀 ~ handleSubmit ~ res:", res);
+          if (res?.data?.status === "success") {
+            success_toaster("Supplier assign successfully");
+            props?.reFetch();
+            props?.setModal({
+              type: "",
+              status: false,
+            });
+            setLoader("");
+          } else {
+            setLoader("");
+            throw new Error(
+              res?.data?.message || "An unexpected error occurred."
+            );
+          }
+        } catch (error) {
           setLoader("");
-        } else {
-          setLoader("");
-          throw new Error(
-            res?.data?.message || "An unexpected error occurred."
-          );
+          ErrorHandler(error);
         }
-      } catch (error) {
-        setLoader("");
-        ErrorHandler(error);
       }
     } else if (props?.orderData?.statusId === 3) {
       try {
@@ -234,11 +241,8 @@ export default function OrderCard(props) {
       {/* Modal */}
       <Dialog
         visible={
-          suppliersData?.data?.data?.length === 0
-            ? info_toaster("No supplier found")
-            : (props?.modal?.type === "assignSupplier" &&
-                props?.modal?.status) ||
-              (props?.modal?.type === "dispatchOrder" && props?.modal?.status)
+          (props?.modal?.type === "assignSupplier" && props?.modal?.status) ||
+          (props?.modal?.type === "dispatchOrder" && props?.modal?.status)
         }
         style={{ width: "30vw" }}
         className="font-nunito"
@@ -266,25 +270,31 @@ export default function OrderCard(props) {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             {props?.orderData?.statusId === 1 ? (
-              <div className="space-y-4">
-                {suppliersData?.data?.data?.map((supplier, i) => (
-                  <AssignSupplierCard
-                    id={supplier?.id}
-                    setSupplierID={setSupplierID}
-                    checked={
-                      i === 0 && !supplierID
-                        ? setSupplierID(supplier?.id)
-                        : supplier?.id === supplierID
-                        ? true
-                        : false
-                    }
-                    name={supplier?.supplierName}
-                    email={supplier?.email}
-                    phoneNo={supplier?.phoneNum}
-                    image={supplier?.image}
-                  />
-                ))}
-              </div>
+              suppliersData?.data?.data?.length === 0 ? (
+                <p className="text-labelColor font-nunito font-medium text-lg text-center">
+                  No Supplier Found
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {suppliersData?.data?.data?.map((supplier, i) => (
+                    <AssignSupplierCard
+                      id={supplier?.id}
+                      setSupplierID={setSupplierID}
+                      checked={
+                        i === 0 && !supplierID
+                          ? setSupplierID(supplier?.id)
+                          : supplier?.id === supplierID
+                          ? true
+                          : false
+                      }
+                      name={supplier?.supplierName}
+                      email={supplier?.email}
+                      phoneNo={supplier?.phoneNum}
+                      image={supplier?.image}
+                    />
+                  ))}
+                </div>
+              )
             ) : (
               <div className="space-y-2">
                 <div className="flex flex-col gap-y-2">
@@ -333,7 +343,11 @@ export default function OrderCard(props) {
                 // onClick={() => console.log("supplierID:- ", supplierID)}
                 className="rounded-lg border border-theme text-white px-10 bg-theme font-nunito py-3 font-medium"
               >
-                {props?.orderData?.statusId === 1
+                {props?.orderData?.statusId === 1 &&
+                suppliersData?.data?.data?.length === 0
+                  ? "Add Supplier"
+                  : props?.orderData?.statusId === 1 &&
+                    suppliersData?.data?.data?.length > 0
                   ? "Assign Supplier"
                   : "Dispatch Order"}
               </button>

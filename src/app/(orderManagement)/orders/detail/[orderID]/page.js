@@ -189,13 +189,13 @@ export default function OrderDetail() {
                 "Company Name": "Sigi Technologies",
                 "Sale Tax": data?.data?.order?.user?.saleTaxNumber,
                 Address: `
-                  ${data?.data?.order?.address.companyaddress ?? ""}
-                  ${data?.data?.order?.address.addressLineOne ?? ""}
-                  ${data?.data?.order?.address.addressLineTwo ?? ""}
-                    ${data?.data?.order?.address.town ?? ""}, ${
-                  data?.data?.order?.address.state ?? ""
-                } - ${data?.data?.order?.address.zipCode ?? ""}
-                  ${data?.data?.order?.address.country ?? ""}`,
+                  ${data?.data?.order?.address?.companyaddress ?? ""}
+                  ${data?.data?.order?.address?.addressLineOne ?? ""}
+                  ${data?.data?.order?.address?.addressLineTwo ?? ""}
+                    ${data?.data?.order?.address?.town ?? ""}, ${
+                  data?.data?.order?.address?.state ?? ""
+                } - ${data?.data?.order?.address?.zipCode ?? ""}
+                  ${data?.data?.order?.address?.country ?? ""}`,
               }}
             />
             {data?.data?.order?.statusId >= 2 && (
@@ -210,12 +210,12 @@ export default function OrderDetail() {
                   "Business Tax No": `${data?.data?.order?.supplier?.businessRegistrationNumber}`,
                   "Business Website": `${data?.data?.order?.supplier?.businessWeb}`,
                   Address: `
-                ${data?.data?.order?.supplier.addressOne ?? ""}
-                ${data?.data?.order?.supplier.addressTwo ?? ""}
-                  ${data?.data?.order?.supplier.city ?? ""}, ${
-                    data?.data?.order?.supplier.state ?? ""
-                  } - ${data?.data?.order?.supplier.zipCode ?? ""}
-                ${data?.data?.order?.supplier.country ?? ""}`,
+                ${data?.data?.order?.supplier?.addressOne ?? ""}
+                ${data?.data?.order?.supplier?.addressTwo ?? ""}
+                  ${data?.data?.order?.supplier?.city ?? ""}, ${
+                    data?.data?.order?.supplier?.state ?? ""
+                  } - ${data?.data?.order?.supplier?.zipCode ?? ""}
+                ${data?.data?.order?.supplier?.country ?? ""}`,
                 }}
               />
             )}

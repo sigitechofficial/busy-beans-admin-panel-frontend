@@ -141,6 +141,7 @@ export default function Stock() {
       } else if (productDetail?.desc.trim() === 0) {
         info_toaster("Product description cannot be empty");
       } else {
+        setLoader("edit");
         const formData = new FormData();
         formData.append("name", productDetail?.name);
         formData.append("quantity", productDetail?.quantity);
@@ -148,7 +149,6 @@ export default function Stock() {
         formData.append("price", productDetail?.price);
         formData.append("desc", productDetail?.desc);
         formData.append("image", productDetail?.image);
-        setLoader("edit");
         try {
           const res = await PatchAPI(
             `api/v1/admin/product/${productID}`,

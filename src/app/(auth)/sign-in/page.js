@@ -13,6 +13,7 @@ import { useState } from "react";
 export default function SignIn() {
   const router = useRouter();
   const [loader, setLoader] = useState(false);
+  const [type, setType] = useState("admin"); // sales-rep, admin, supplier
   const initialValues = {
     email: "",
     password: "",
@@ -24,18 +25,27 @@ export default function SignIn() {
       onSubmit: async (values, action) => {
         setLoader(true);
         try {
-          let res = await loginAPI("api/v1/admin/login", {
-            email: values.email,
-            password: values.password,
-          });
+          let res = await loginAPI(
+            type === "admin"
+              ? "api/v1/admin/login"
+              : `api/v1/admin/login/${type}`,
+            {
+              email: values.email,
+              password: values.password,
+            }
+          );
           if (res?.data?.status === "success") {
             setLoader(false);
             router.push("/");
             localStorage.setItem("accessToken", res?.data?.data?.token);
             localStorage.setItem("loginStatus", true);
-            localStorage.setItem("userName", res?.data?.data?.user?.name);
-            localStorage.setItem("adminEmail", res?.data?.data?.user?.email);
-            localStorage.setItem("adminID", res?.data?.data?.user?.id);
+            localStorage.setItem("userName", res?.data?.data?.user?.srName);
+            localStorage.setItem("email", res?.data?.data?.user?.email);
+            localStorage.setItem("userID", res?.data?.data?.user?.id);
+            localStorage.setItem(
+              "userType",
+              type === "sales-rep" ? "salesRepresentative" : type
+            );
             success_toaster("Login Successfully");
           } else {
             throw new Error(
@@ -78,7 +88,7 @@ export default function SignIn() {
             <MiniLoader />
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="flex flex-col gap-y-4">
+              <div className="flex flex-col gap-y-2">
                 <div className="flex flex-col gap-y-2">
                   <label className="text-white font-medium font-satoshi">
                     Email
@@ -125,27 +135,41 @@ export default function SignIn() {
                     Forgot Password?
                   </p> */}
                 </div>
-                <div className="flex items-center gap-x-4 text-white font-inter font-normal">
+                <div className="flex flex-col  gap-2 text-white font-inter font-normal">
                   <div className="flex align-items-center">
                     <Checkbox
-                      inputId="adminLogin"
-                      name="adminLogin"
-                      value="adminLogin"
-                      checked={true}
+                      inputId="admin"
+                      name="admin"
+                      value="admin"
+                      checked={type === "admin" ?? false}
+                      onClick={() => setType("admin")}
                     />
-                    <label htmlFor="adminLogin" className="ml-2 font-inter">
-                      Admin Login
+                    <label htmlFor="admin" className="ml-2 font-inter">
+                      Admin
                     </label>
                   </div>
                   <div className="flex align-items-center">
                     <Checkbox
-                      inputId="supplierLogin"
-                      name="supplierLogin"
-                      value="supplierLogin"
-                      checked={false}
+                      inputId="supplier"
+                      name="supplier"
+                      value="supplier"
+                      checked={type === "supplier" ?? false}
+                      onClick={() => setType("supplier")}
                     />
-                    <label htmlFor="supplierLogin" className="ml-2 font-inter">
-                      Supplier Login
+                    <label htmlFor="supplier" className="ml-2 font-inter">
+                      Supplier
+                    </label>
+                  </div>
+                  <div className="flex align-items-center">
+                    <Checkbox
+                      inputId="sales-rep"
+                      name="sales-rep"
+                      value="sales-rep"
+                      checked={type === "sales-rep" ?? false}
+                      onClick={() => setType("sales-rep")}
+                    />
+                    <label htmlFor="sales-rep" className="ml-2 font-inter">
+                      Sales Representative
                     </label>
                   </div>
                 </div>

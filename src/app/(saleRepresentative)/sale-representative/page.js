@@ -1,33 +1,33 @@
 "use client";
+import HomeMiniCards from "@/components/ui/HomeMiniCards";
 import ManagementTab from "@/components/ui/ManagementTab";
 import MyDataTable from "@/components/ui/MyDataTable";
 import Select from "react-select";
 import selectStyles from "@/utilities/SelectStyle";
-import HomeMiniCards from "@/components/ui/HomeMiniCards";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import GetAPI from "@/utilities/GetAPI";
 import { FaEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import Switch from "react-switch";
+import GetAPI from "@/utilities/GetAPI";
 import ErrorHandler from "@/utilities/ErrorHandler";
-import { PatchAPI } from "@/utilities/PatchAPI";
 import { success_toaster } from "@/utilities/Toaster";
-import { DeleteAPI } from "@/utilities/DeleteAPI";
-import MiniLoader from "@/components/ui/MiniLoader";
+import { PatchAPI } from "@/utilities/PatchAPI";
+import { useState } from "react";
 import { Dialog } from "primereact/dialog";
+import MiniLoader from "@/components/ui/MiniLoader";
+import { DeleteAPI } from "@/utilities/DeleteAPI";
+import { useRouter } from "next/navigation";
 
-export default function Suppliers() {
-  const router = useRouter();
-  const [supplierID, setSupplierID] = useState("");
-  const [loader, setLoader] = useState("");
+export default function SaleRepresentative() {
+  const router = useRouter()
   const [modal, setModal] = useState("");
+  const [saleRepresentativeID, setSaleRepresentativeID] = useState("");
+  const [loader, setLoader] = useState("")
 
-  const { data, reFetch } = GetAPI("api/v1/admin/supplier/?sort=-createdAt");
+  const { data, reFetch } = GetAPI("api/v1/admin/sales-rep");
 
   const handleStatus = async (id, status) => {
     try {
-      const res = await PatchAPI(`api/v1/admin/supplier/${id}`, {
+      const res = await PatchAPI(`api/v1/admin/sales-rep/${id}`, {
         status: !status,
       });
       if (res?.data?.status === "success") {
@@ -43,14 +43,14 @@ export default function Suppliers() {
 
   const handleModalClose = () => {
     setModal("");
-    setSupplierID("");
+    setSaleRepresentativeID("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoader("delete");
     try {
-      const res = await DeleteAPI(`api/v1/admin/supplier/${supplierID}`);
+      const res = await DeleteAPI(`api/v1/admin/sales-rep/${saleRepresentativeID}`);
       if (res?.data?.status === "success") {
         success_toaster("Supplier Deleted Successfully");
         reFetch();
@@ -62,22 +62,16 @@ export default function Suppliers() {
       setLoader("");
     }
   };
+
   const columns = [
     { field: "sl", header: "SL", sort: true },
-    { field: "supplierName", header: "supplierName" },
+    { field: "srName", header: "Name" },
     { field: "email", header: "email" },
     { field: "address", header: "Address" },
     { field: "phoneNum", header: "phoneNum" },
-    // { field: "addressOne", header: "addressOne" },
-    // { field: "addressTwo", header: "addressTwo" },
-    {
-      field: "businessRegistrationNumber",
-      header: "businessRegistrationNumber",
-    },
-    { field: "supplierType", header: "supplierType" },
+
     { field: "registerDate", header: "registerDate" },
 
-    { field: "bankAccount", header: "bankAccount" },
     { field: "registerBy", header: "registerBy" },
     {
       field: "currentStatus",
@@ -91,23 +85,19 @@ export default function Suppliers() {
   ];
 
   const datas = [];
-  data?.data?.data?.map((supplier, i) => {
+  data?.data?.data?.map((sR, i) => {
     datas.push({
-      sl: i + 1, 
-      supplierName: supplier?.supplierName,
-      email: supplier?.email,
-      address: `${supplier?.addressOne}, ${supplier?.addressTwo}, ${supplier?.city}, ${supplier?.state}, ${supplier?.zipCode}, ${supplier?.country}`,
-      phoneNum: supplier?.phoneNum,
-      // addressOne: supplier?.addressOne,
-      // addressTwo: supplier?.addressTwo,
-      businessRegistrationNumber: supplier?.businessRegistrationNumber,
-      supplierType: supplier?.supplierType,
-      registerDate: supplier?.registerDate,
-      bankAccount: supplier?.bankAccount,
-      registerBy: supplier?.registerBy,
+      sl: i + 1,
+      srName: sR?.srName,
+      email: sR?.email,
+      address: `${sR?.address}, ${sR?.city}, ${sR?.state}, ${sR?.territory}, ${sR?.country}`,
+      phoneNum: sR?.phoneNumber,
+      sRType: sR?.sRType,
+      registerDate: sR?.registerDate ?? "No date found",
+      registerBy: sR?.registerBy,
       currentStatus: (
         <div>
-          {supplier?.status ? (
+          {sR?.status ? (
             <div className="w-24 bg-theme text-white font-semibold p-2 rounded-md flex justify-center">
               Active
             </div>
@@ -122,9 +112,9 @@ export default function Suppliers() {
         <label>
           <Switch
             onChange={() => {
-              handleStatus(supplier?.id, supplier?.status);
+              handleStatus(sR?.id, sR?.status);
             }}
-            checked={supplier?.status}
+            checked={sR?.status}
             uncheckedIcon={false}
             checkedIcon={false}
             onColor="#86644c"
@@ -139,12 +129,7 @@ export default function Suppliers() {
           <button
             too
             className="border border-theme rounded-md p-2 text-theme"
-            // onClick={() => {
-            //   setName(cat?.name);
-            //   setModal("edit");
-            //   setCategoryID(cat?.id);
-            // }}
-            onClick={() => router.push(`/suppliers/edit/${supplier?.id}`)}
+            onClick={() => router.push(`/sale-representative/edit/${sR?.id}`)}
           >
             <FaEdit size={24} />
           </button>
@@ -152,7 +137,7 @@ export default function Suppliers() {
             className="border border-red-400 rounded-md p-2 text-red-400"
             onClick={() => {
               setModal("delete");
-              setSupplierID(supplier?.id);
+              setSaleRepresentativeID(sR?.id);
             }}
           >
             <MdDelete size={24} />
@@ -167,7 +152,7 @@ export default function Suppliers() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-            Supplier Management
+            Sales Representatives
           </h2>
 
           <Select
@@ -178,46 +163,21 @@ export default function Suppliers() {
         </div>
         <div className="flex justify-end">
           <button
-            onClick={() => router.push("/suppliers/add")}
+            onClick={() => router.push("/sale-representative/add")}
             className="rounded-lg font-inter font-medium text-white px-2 sm:px-3 py-2.5 sm:py-4 bg-theme"
           >
-            + Add New Supplier
+            + Add New Sales Representative
           </button>
         </div>
       </div>
 
       <div className="space-y-4">
         <div className="grid  grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-          <ManagementTab title="Total Supplier" desc="5000" />
-          <ManagementTab title="New Supplier" desc="5000" />
-          <ManagementTab title="Pending Request" desc="500" />
-          <ManagementTab title="Active Supplier" desc="55,000" />
-          <ManagementTab title="Inactive supplier" desc="18,000" />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mt-12">
-          <HomeMiniCards
-            title="Total Earning"
-            // description="The bookings that are booked and an employee has been assigned to them."
-            total={"$2000"}
-            // Icon={FiBox}
+          <ManagementTab
+            title="All Sales Represenatives"
+            desc={data?.data?.data?.length ?? 0}
           />
-          <HomeMiniCards
-            title="Payable Balance"
-            total={"$2000"}
-            // Icon={LuPackageCheck}
-          />
-          <HomeMiniCards
-            title="Total Withdrawn"
-            total={"$2000"}
-            // Icon={LuPackageX}
-          />
-          <HomeMiniCards
-            title="Pending"
-            // description="The bookings in which minimum 1 service is not assigned to any employee"
-            total={"$2000"}
-            // Icon={FiBox}
-          />
+          <ManagementTab title="New Sales Represenatives" desc="5000" />
         </div>
       </div>
 
@@ -244,14 +204,13 @@ export default function Suppliers() {
           onSubmit={handleSubmit}
           className="space-y-4 flex flex-col items-center"
         >
-          {/* body */}
           {loader === "delete" ? (
             <MiniLoader />
           ) : (
             <div className="w-full space-y-4">
               {modal === "delete" && (
                 <p className="text-labelColor font-nunito font-medium text-lg text-center">
-                  Are you sure you want to delete this Suuplier ?
+                  Are you sure you want to delete this Sales Representative ?
                 </p>
               )}
               <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
@@ -266,7 +225,7 @@ export default function Suppliers() {
                   type="submit"
                   className="rounded-lg border border-theme text-white px-10 bg-theme"
                 >
-                  Delete Supplier
+                  Delete 
                 </button>
               </div>
             </div>
@@ -274,5 +233,5 @@ export default function Suppliers() {
         </form>
       </Dialog>
     </div>
-  ); 
+  );
 }

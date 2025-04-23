@@ -78,10 +78,14 @@ export default function Stock() {
         info_toaster("Product Name cannot be empty");
       } else if (productDetail?.quantity.trim() === 0) {
         info_toaster("Product quantity cannot be empty");
+      } else if (productDetail?.quantity.trim() < 0) {
+        info_toaster("Invalid Quanity");
       } else if (productDetail?.unit === "") {
         info_toaster("Product unit cannot be empty");
       } else if (productDetail?.price.trim() === 0) {
         info_toaster("Product price cannot be empty");
+      } else if (productDetail?.price.trim() < 0) {
+        info_toaster("Invalid Price");
       } else if (productDetail?.desc.trim() === 0) {
         info_toaster("Product description cannot be empty");
       } else {
@@ -103,7 +107,7 @@ export default function Stock() {
               quantity: "",
               unit: "",
               image: "",
-              category:"",
+              category: "",
             });
             setModal("");
             setLoader("");
@@ -126,10 +130,14 @@ export default function Stock() {
         info_toaster("Product Name cannot be empty");
       } else if (productDetail?.quantity.trim() === 0) {
         info_toaster("Product quantity cannot be empty");
-      } else if (productDetail?.unit==="") {
+      } else if (productDetail?.quantity.trim() < 0) {
+        info_toaster("Invalid Quanity");
+      } else if (productDetail?.unit === "") {
         info_toaster("Product unit cannot be empty");
       } else if (productDetail?.price.trim() === 0) {
         info_toaster("Product price cannot be empty");
+      } else if (productDetail?.price.trim() < 0) {
+        info_toaster("Invalid Price");
       } else if (productDetail?.desc.trim() === 0) {
         info_toaster("Product description cannot be empty");
       } else {
@@ -312,7 +320,6 @@ export default function Stock() {
     });
   });
 
-
   return data.length === 0 ? (
     <Loader />
   ) : (
@@ -359,7 +366,7 @@ export default function Stock() {
           data={datas}
           placeholder={"Search ..."}
           search={true}
-          pagination={datas.length >10 ?true:false}
+          pagination={datas.length > 10 ? true : false}
         />
       </div>
 
@@ -493,13 +500,22 @@ export default function Stock() {
                         Available Stock
                       </label>
                       <input
-                        type="text"
+                        type="number"
                         name="quantity"
+                        min="0"
                         value={productDetail?.quantity}
                         onChange={handleChange}
                         placeholder="Enter Quantity"
                         className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       />
+                      <div
+                        className={`text-red-600 space-y-1 pb-1 ${
+                          productDetail?.quantity < 0 ? "block" : "hidden"
+                        }`}
+                      >
+                        <hr className="border-none h-0.5 bg-white bg-opacity-20" />
+                        <p>Invalid Quantity</p>
+                      </div>
                     </div>
                     <div className="flex flex-col gap-y-2 w-full">
                       <label className="text-labelColor font-medium font-satoshi">
@@ -533,13 +549,22 @@ export default function Stock() {
                         Price($)
                       </label>
                       <input
-                        type="text"
+                        type="number"
                         name="price"
+                        min="0"
                         value={productDetail?.price}
                         onChange={handleChange}
                         placeholder="Enter price"
                         className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       />
+                      <div
+                        className={`text-red-600 space-y-1 pb-1 ${
+                          productDetail?.price < 0 ? "block" : "hidden"
+                        }`}
+                      >
+                        <hr className="border-none h-0.5 bg-white bg-opacity-20" />
+                        <p>Invalid Price</p>
+                      </div>
                       {/* <Select
                   placeholder="Kg"
                   className="w-full"

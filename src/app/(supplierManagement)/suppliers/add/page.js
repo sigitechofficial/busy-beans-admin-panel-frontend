@@ -8,6 +8,7 @@ import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import MiniLoader from "@/components/ui/MiniLoader";
 import { PostAPI } from "@/utilities/PostAPI";
 import ErrorHandler from "@/utilities/ErrorHandler";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
 export default function AddNewSupplier() {
   const [supplier, setSupplier] = useState({
@@ -30,6 +31,8 @@ export default function AddNewSupplier() {
     registerDate: "",
     bankAccount: "",
   });
+  console.log("🚀 ~ AddNewSupplier ~ supplier:", supplier)
+  const [visible, setVisible] = useState(false);
   const [imagePreview, setImagePreview] = useState("");
   const [loader, setLoader] = useState(false);
 
@@ -79,7 +82,7 @@ export default function AddNewSupplier() {
       info_toaster("Enter business registration number");
     } else if (!supplier?.supplierType.trim()) {
       info_toaster("Select supplier type ");
-    } else if (!supplier?.status) {
+    } else if (supplier?.status === "") {
       info_toaster("Select supplier status");
     } else if (!supplier?.registerDate.trim()) {
       info_toaster("Select registration date");
@@ -202,7 +205,7 @@ export default function AddNewSupplier() {
                     name="supplierName"
                     value={supplier?.supplierName}
                     placeholder="Enter Supplier Name"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
                 </div>
@@ -215,7 +218,7 @@ export default function AddNewSupplier() {
                     name="country"
                     value={supplier?.country}
                     placeholder="Enter Country Name"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
                   {/* <Select
@@ -235,7 +238,7 @@ export default function AddNewSupplier() {
                     name="city"
                     value={supplier?.city}
                     placeholder="Enter City Name"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
                   {/* <Select
@@ -253,7 +256,7 @@ export default function AddNewSupplier() {
                     name="state"
                     value={supplier?.state}
                     placeholder="Enter State Name"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
                   {/* <Select
@@ -273,7 +276,7 @@ export default function AddNewSupplier() {
                     name="zipCode"
                     value={supplier?.zipCode}
                     placeholder="Enter Zip code"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
                 </div>
@@ -282,11 +285,11 @@ export default function AddNewSupplier() {
                     Phone number
                   </label>
                   <input
-                    type="text"
+                    type="number"
                     name="phoneNum"
                     value={supplier?.phoneNum}
                     placeholder="Enter Phone Number"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
                 </div>
@@ -301,7 +304,7 @@ export default function AddNewSupplier() {
                   name="addressOne"
                   value={supplier?.addressOne}
                   placeholder="Enter Address 1"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div>
@@ -314,7 +317,7 @@ export default function AddNewSupplier() {
                   name="addressTwo"
                   value={supplier?.addressTwo}
                   placeholder="Enter Address 2"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div>
@@ -327,7 +330,7 @@ export default function AddNewSupplier() {
                   name="businessWeb"
                   value={supplier?.businessWeb}
                   placeholder="Enter Business name"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div>
@@ -344,7 +347,7 @@ export default function AddNewSupplier() {
                   name="businessRegistrationNumber"
                   value={supplier?.businessRegistrationNumber}
                   placeholder="Enter Tax ID, VAT, GST"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div>
@@ -358,7 +361,7 @@ export default function AddNewSupplier() {
                   onChange={(e) =>
                     setSupplier({ ...supplier, supplierType: e.value })
                   }
-                  className="w-full"
+                  className="w-full text-black"
                   styles={selectStyles2}
                 />
               </div>
@@ -388,7 +391,7 @@ export default function AddNewSupplier() {
                   name="registerDate"
                   value={supplier?.registerDate}
                   placeholder="Select registration date"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div>
@@ -401,7 +404,7 @@ export default function AddNewSupplier() {
                   name="bankAccount"
                   value={supplier?.bankAccount}
                   placeholder="000322655655654454"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div>
@@ -412,24 +415,37 @@ export default function AddNewSupplier() {
                 <input
                   type="email"
                   name="email"
+                  autoComplete="off"
                   value={supplier?.email}
                   placeholder="Enter Email"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div>
-              <div className="flex flex-col gap-y-2">
+              <div className="flex flex-col gap-y-2 relative">
                 <label className="text-labelColor font-medium font-satoshi">
                   Password
                 </label>
                 <input
-                  type="password"
+                  type={visible ? "text" : "password"}
                   name="password"
+                  autoComplete="off"
                   value={supplier?.password}
                   placeholder="Enter password"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none ps-2.5 pe-12 py-3"
                   onChange={handleChange}
                 />
+                <button
+                  onClick={() => setVisible(!visible)}
+                  type="button"
+                  className="text-labelColor absolute right-4 top-11"
+                >
+                  {visible ? (
+                    <AiOutlineEye size={24} color="#000000" />
+                  ) : (
+                    <AiOutlineEyeInvisible size={24} color="#64748b" />
+                  )}
+                </button>
               </div>
               <div>
                 <button

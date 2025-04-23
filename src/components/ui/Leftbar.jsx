@@ -48,6 +48,10 @@ export default function Leftbar(props) {
       tab: "",
       status: false,
     },
+    saleRepresentative: {
+      tab: "",
+      status: false,
+    },
     reportManagement: {
       tab: "",
       status: false,
@@ -123,7 +127,11 @@ export default function Leftbar(props) {
           >
             {/* Busy Bean */}
             {/* <img src="/images/logocoffee.png" alt="logo" className="max-w-16 max-h-[70px]" /> */}
-            <img src="/images/logocoffee.png" alt="logo" className="max-w-48 max-h-[70px]" />
+            <img
+              src="/images/logocoffee.png"
+              alt="logo"
+              className="max-w-48 max-h-[70px]"
+            />
           </Link>
         </div>
         <div
@@ -215,6 +223,30 @@ export default function Leftbar(props) {
                 <ListItems title="All Clients" to="/customers" />
                 <ListItems title="Active Clients" to="/active-clients" />
                 <ListItems title="Inactive Clients" to="/inactive-clients" />
+              </div>
+              <hr className="w-full" />
+            </>
+          )}
+
+        <ListHead
+          title="Sales Representatives"
+          Icon={GoPeople}
+          active={pathname === "/sale-representative"}
+          Angle={
+            active?.saleRepresentative?.tab === "saleRepresentative" &&
+            active?.saleRepresentative?.status
+              ? FaAngleUp
+              : FaAngleDown
+          }
+          onClick={() =>
+            handleActive("saleRepresentative", active?.saleRepresentative?.status)
+          }
+        />
+        {active?.saleRepresentative?.tab === "saleRepresentative" &&
+          active?.saleRepresentative?.status && (
+            <>
+              <div className="m-2 relative space-y-1">
+                <ListItems title="All Sales Representatives" to="/sale-representative" />
               </div>
               <hr className="w-full" />
             </>

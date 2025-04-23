@@ -45,7 +45,7 @@ export const selectStyles2 = {
   }),
   singleValue: (provided) => ({
     ...provided,
-    color: "#64748B",
+    color: "#000000",
   }),
   dropdownIndicator: (provided, state) => ({
     ...provided,

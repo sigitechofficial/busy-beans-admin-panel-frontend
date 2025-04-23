@@ -114,8 +114,10 @@ export default function OrderCard(props) {
   const columns = [
     { field: "#", header: "#", sort: true, minWidth: "1rem" },
     { field: "product", header: "Product", minWidth: "12rem" },
-    { field: "discount", header: "Discount", minWidth: "3rem" },
-    { field: "price", header: "Price", minWidth: "3rem" },
+    { field: "qty", header: "Quantity", minWidth: "6rem" },
+    { field: "price", header: "Price", minWidth: "6rem" },
+    { field: "discount", header: "Discount", minWidth: "6rem" },
+    { field: "total", header: "Total", minWidth: "6rem" },
   ];
 
   const datas = [];
@@ -123,8 +125,10 @@ export default function OrderCard(props) {
     datas.push({
       "#": i + 1,
       product: item?.product,
+      qty: item?.qty,
       discount: item?.discount,
-      price: item?.price,
+      price: `$${item?.price}`,
+      total: "$" + item?.qty * item?.price,
     });
   });
 

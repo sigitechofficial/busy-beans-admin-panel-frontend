@@ -121,9 +121,9 @@ export default function SignIn() {
                       </div>
                     )}
                   </div>
-                  <p className="text-white text-sm text-end font-normal">
+                  {/* <p className="text-white text-sm text-end font-normal">
                     Forgot Password?
-                  </p>
+                  </p> */}
                 </div>
                 <div className="flex items-center gap-x-4 text-white font-inter font-normal">
                   <div className="flex align-items-center">

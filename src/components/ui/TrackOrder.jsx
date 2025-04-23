@@ -1,9 +1,6 @@
 import TrackOrderTab from "./TrackOrderTab";
 
 export default function TrackOrder({statusId, orderHistories}) {
-  console.log("🚀 ~ TrackOrder ~ statusId:", statusId)
-
-  
   const handleTrackOrderTab = (statusId) => {
     const result = orderHistories?.find((history) => history?.statusId === statusId)
     return result ? true:false

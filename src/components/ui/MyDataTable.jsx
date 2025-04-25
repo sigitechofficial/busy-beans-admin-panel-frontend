@@ -1,4 +1,3 @@
-"use client";
 import { useState } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -6,12 +5,17 @@ import { RiFileDownloadLine } from "react-icons/ri";
 import { LuSearch } from "react-icons/lu";
 import Select from "react-select";
 import selectStyles from "@/utilities/SelectStyle";
-
+import { Checkbox } from "primereact/checkbox";
 export default function MyDataTable(props) {
+  const { selectedRows, setSelectedRows } = props;
   const [globalFilter, setGlobalFilter] = useState("");
 
   const onGlobalFilterChange = (event) => {
     setGlobalFilter(event?.target?.value);
+  };
+
+  const onSelectionChange = (e) => {
+    setSelectedRows(e.value);
   };
 
   const filteredData = props?.data?.filter((item) =>
@@ -23,6 +27,47 @@ export default function MyDataTable(props) {
     )
   );
 
+  const headerCheckbox = (
+    <Checkbox
+      checked={selectedRows?.length === filteredData?.length}
+      onChange={(e) => {
+        if (e.checked) {
+          setSelectedRows(filteredData);
+        } else {
+          setSelectedRows([]);
+        }
+      }}
+    />
+  );
+
+  const checkboxBody = (rowData) => {
+    return (
+      <Checkbox
+        checked={selectedRows?.some((row) => row?.id === rowData?.id)}
+        onChange={() => {
+          let _selectedRows = [...selectedRows];
+          const index = _selectedRows.findIndex(
+            (row) => row?.id === rowData?.id
+          );
+          if (index === -1) {
+            _selectedRows.push(rowData);
+          } else {
+            _selectedRows.splice(index, 1);
+          }
+          setSelectedRows(_selectedRows);
+        }}
+        className="custom-checkbox"
+      />
+    );
+  };
+
+  // Function to apply custom class for selected rows
+  const rowClassName = (rowData) => {
+    return selectedRows?.some((row) => row?.id === rowData?.id)
+      ? "selected-row"
+      : "";
+  };
+
   return (
     <div className="bg-white p-5 sm:p-8 rounded-xl border border-borderColor shadow-tableShadow space-y-6">
       <div className="flex justify-between items-end md:items-center flex-wrap gap-3">
@@ -31,7 +76,6 @@ export default function MyDataTable(props) {
             type="search"
             value={globalFilter}
             onChange={onGlobalFilterChange}
-            //  placeholder="Global Search"
             placeholder={props?.placeholder}
             className="w-[280px] sm:w-[330px] md:w-[430px] h-10 md:h-12 bg-themeGray rounded-lg ps-10 pe-5 outline-none placeholder:font-inter placeholder:font-medium focus:bg-gray-200"
           />
@@ -40,12 +84,6 @@ export default function MyDataTable(props) {
             color="#111827"
             className="absolute top-3.5 left-3"
           />
-          {/* <InputText
-        type="search"
-        value={globalFilter}
-        onChange={onGlobalFilterChange}
-        placeholder="Global Search"
-      /> */}
         </div>
 
         <div className={`flex gap-x-5 ${props?.hide ? "hidden" : "block"}`}>
@@ -60,19 +98,6 @@ export default function MyDataTable(props) {
               styles={selectStyles}
             />
           </div>
-          {/* <button
-          className="flex items-center gap-x-2 p-3 bg-themeGray rounded-lg hover:bg-gray-200 duration-200"
-          onClick={props.onClick}
-        >
-          <TbAdjustmentsHorizontal size={24} color="#A0AEC0" />
-          <span className="text-[#718096] font-workSans">Filters</span>
-        </button> */}
-          {/* <button className="flex items-center gap-x-2 p-3 bg-themeGray rounded-lg hover:bg-gray-200 duration-200">
-          <CiCalendarDate size={24} color="#A0AEC0" />
-          <span className="text-[#718096] font-workSans">
-            April 11 - April 24
-          </span>
-        </button> */}
           <button
             onClick={props?.handleDownload}
             className="flex items-center gap-x-2 px-5 md:px-8 py-1.5 md:py-3 rounded-lg border border-black text-white bg-black hover:text-black hover:bg-white duration-200 group"
@@ -84,18 +109,31 @@ export default function MyDataTable(props) {
           </button>
         </div>
       </div>
+
       <div className="manageTable">
         <DataTable
           value={filteredData}
           paginator={props.pagination}
-          selectionMode="single"
+          selectionMode="multiple" // Allow multiple row selection
+          selection={selectedRows} // Bind the selected rows to the state
+          onSelectionChange={onSelectionChange} // Update selected rows when selection changes
           rows={10}
           rowsPerPageOptions={[10, 25, 50, 100]}
           removableSort
-          // filterDisplay="row"
           dataKey="id"
           emptyMessage="No Data Found"
+          rowClassName={rowClassName} // Apply custom row class
         >
+          {/* Header column with checkbox to select all rows */}
+          {props?.checkbox && (
+            <Column
+              header={headerCheckbox}
+              body={checkboxBody}
+              style={{ width: "3rem", textAlign: "center" }}
+            />
+          )}
+
+          {/* Other columns */}
           {props.columns?.map((col, ind) =>
             col?.filter ? (
               <Column

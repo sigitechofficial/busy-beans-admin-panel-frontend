@@ -240,6 +240,7 @@ export default function Category() {
           columns={columns}
           data={datas}
           placeholder={"Search ..."}
+          pagination={true}
           search={true}
         />
       </div>

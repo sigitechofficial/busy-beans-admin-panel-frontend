@@ -52,7 +52,7 @@ export default function Employees() {
       </div>
 
       <div>
-        <MyDataTable columns={columns} data={[]} placeholder={"Search ..."} />
+        <MyDataTable columns={columns} data={[]} placeholder={"Search ..."}    pagination={true} />
       </div>
     </div>
   );

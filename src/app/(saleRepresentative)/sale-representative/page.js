@@ -186,6 +186,7 @@ export default function SaleRepresentative() {
           columns={columns}
           data={datas}
           placeholder={"Search ..."}
+          pagination={true}
         />
       </div>
 

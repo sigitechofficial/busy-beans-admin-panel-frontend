@@ -82,6 +82,7 @@ export default function Orders() {
           columns={columns}
           data={datas}
           placeholder={"Search ..."}
+          pagination={true}
         />
       </div>
     </div>

@@ -70,7 +70,7 @@ export default function Stock() {
   };
 
   const handleStock = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); 
     if (modal === "add") {
       if (productDetail?.image === "") {
         info_toaster("Product image cannot be empty");
@@ -365,8 +365,8 @@ export default function Stock() {
           columns={columns}
           data={datas}
           placeholder={"Search ..."}
+          pagination={true}
           search={true}
-          pagination={datas.length > 10 ? true : false}
         />
       </div>
 

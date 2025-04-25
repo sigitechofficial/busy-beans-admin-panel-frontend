@@ -226,6 +226,7 @@ export default function Suppliers() {
           columns={columns}
           data={datas}
           placeholder={"Search ..."}
+          pagination={true}
         />
       </div>
 

@@ -27,3 +27,48 @@
   display: none !important;
   width: 5px;
 }
+
+.selected-row {
+  background-color: #86644c !important;
+  color: white;
+}
+
+.custom-checkbox .p-checkbox-box {
+  border: 1px solid black;
+  background-color: transparent;
+}
+
+.custom-checkbox .p-checkbox-box.p-highlight {
+  background-color: #3e342c !important;
+  border-color: #3e342c !important;
+}
+
+.custom-checkbox .p-checkbox-box.p-highlight .p-checkbox-icon {
+  color: white !important;
+}
+
+.custom-checkbox .p-checkbox-box:not(.p-highlight) {
+  border-color: black !important;
+}
+
+.p-datatable thead .p-checkbox-box {
+  border: 1px solid black;
+  background-color: transparent;
+}
+
+.p-datatable thead .p-checkbox-box.p-highlight {
+  background-color: #3e342c !important;
+  border-color: #3e342c !important;
+}
+
+.p-datatable thead .p-checkbox-box.p-highlight .p-checkbox-icon {
+  color: white !important;
+}
+
+.p-datatable thead .p-checkbox-box:not(.p-highlight) {
+  border-color: black !important;
+}
+
+.p-datatable thead .p-checkbox-box:hover {
+  border-color: #3e342c;
+}

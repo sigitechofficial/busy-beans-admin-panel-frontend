@@ -203,6 +203,7 @@ export default function OrderCard(props) {
           columns={columns}
           hide="hidden"
           search={false}
+          pagination={true}
         />
         <div className="font-inter flex flex-col sm:items-end sm:[&>p]:w-2/4 [&>p]:flex [&>p]:justify-between pt-4 space-y-0.5">
           <p>

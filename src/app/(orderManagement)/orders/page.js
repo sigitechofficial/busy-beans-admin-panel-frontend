@@ -44,7 +44,7 @@ export default function Orders() {
       note: detail?.note,
       paymentMethod: detail?.paymentMethod,
       poNumber: detail?.poNumber,
-      orderFrequency: detail?.orderFrequency,
+      orderFrequency: detail?.frequency,
       action: (
         <button
           className="border border-yellow-400 rounded-md p-2 text-yellow-400"

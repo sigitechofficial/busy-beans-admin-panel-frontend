@@ -6,7 +6,7 @@ import { LuImageUp } from "react-icons/lu";
 import Select from "react-select";
 import { selectStyles2 } from "@/utilities/SelectStyle";
 import ErrorHandler from "@/utilities/ErrorHandler";
-import { success_toaster } from "@/utilities/Toaster";
+import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import { PostAPI } from "@/utilities/PostAPI";
 import { useParams, useRouter } from "next/navigation";
 import GetAPI from "@/utilities/GetAPI";
@@ -61,6 +61,7 @@ export default function EditsSalesRepresentative() {
   };
 
   const handleSubmit = async (e) => {
+    console.log("i am in")
     e.preventDefault();
     if (!saleRepresentative?.image) {
       info_toaster("Select image");
@@ -78,9 +79,7 @@ export default function EditsSalesRepresentative() {
       info_toaster("Enter Phone Number");
     } else if (!saleRepresentative?.address?.trim()) {
       info_toaster("Enter Address");
-    } else if (!saleRepresentative?.businessWeb?.trim()) {
-      info_toaster("Enter business webiste");
-    } else if (!saleRepresentative?.territory?.trim()) {
+    }  else if (!saleRepresentative?.territory?.trim()) {
       info_toaster("Enter Territory");
     } else if (!saleRepresentative?.status) {
       info_toaster("Select Status");
@@ -101,7 +100,6 @@ export default function EditsSalesRepresentative() {
         formData.append("zipCode", saleRepresentative?.zipCode);
         formData.append("address", saleRepresentative?.address);
         formData.append("territory", saleRepresentative?.territory);
-        formData.append("businessWeb", saleRepresentative?.businessWeb);
         formData.append("image", saleRepresentative?.image);
         formData.append("phoneNumber", saleRepresentative?.phoneNumber);
         formData.append("status", saleRepresentative?.status);
@@ -404,7 +402,7 @@ export default function EditsSalesRepresentative() {
                   type="submit"
                   className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
                 >
-                  Update Sales Representative
+                  Update Sales Representative edwd
                 </button>
               </div>
             </div>

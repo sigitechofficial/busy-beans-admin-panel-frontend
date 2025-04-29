@@ -100,6 +100,7 @@ export default function Leftbar(props) {
       status: false,
     },
   });
+
   const [salesRepresentativeActive, setSalesRepresentativeActive] = useState({
     inventoryManagement: {
       tab: "",
@@ -110,10 +111,6 @@ export default function Leftbar(props) {
       status: false,
     },
   });
-  console.log(
-    "🚀 ~ Leftbar ~ salesRepresentativeActive:",
-    salesRepresentativeActive
-  );
 
   const handleActive = (name, status) => {
     if (userType === "admin") {
@@ -141,14 +138,6 @@ export default function Leftbar(props) {
     router.push("/sign-in");
     success_toaster("Logout Successfully");
   };
-
-  // useEffect(() => {
-  // if (typeof window !== "undefined") {
-  // const userTypeFromStorage = localStorage.getItem("userType");
-  // console.log("🚀 ~ useEffect ~ userTypeFromStorage:", userTypeFromStorage)
-  // setUserType(userTypeFromStorage);
-  // }
-  // }, []);
 
   return (
     <section
@@ -633,7 +622,6 @@ export default function Leftbar(props) {
 
           <ListHead
             title="Inventory Management"
-            // to="/inventory/stock"
             active={pathname === "/sales-representative/inventory"}
             Icon={MdInventory}
             Angle={
@@ -679,6 +667,7 @@ export default function Leftbar(props) {
               handleActive("clientManagement", salesRepresentativeActive?.clientManagement?.status)
             }
           />
+          
           {salesRepresentativeActive?.clientManagement?.tab === "clientManagement" &&
             salesRepresentativeActive?.clientManagement?.status && (
               <>

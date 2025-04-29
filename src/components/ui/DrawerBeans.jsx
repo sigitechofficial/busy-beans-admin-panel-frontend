@@ -8,78 +8,258 @@ import { useRouter } from "next/navigation";
 import { BASE_URL } from "@/utilities/URL";
 import { Sidebar } from "primereact/sidebar";
 import { Button } from "primereact/button";
+import { PostAPI } from "@/utilities/PostAPI";
+import ErrorHandler from "@/utilities/ErrorHandler";
+import { error_toaster, success_toaster } from "@/utilities/Toaster";
 
-const DrawerBeans = ({ drawerOpen: open, setDrawerOpen: setOpen }) => {
+const DrawerBeans = ({
+  drawerOpen: open,
+  setDrawerOpen: setOpen,
+  setQuotationData,
+}) => {
   const router = useRouter();
   const [counter, setCounter] = useState(null);
   const [render, setRender] = useState(false);
-  const [drawerScroll, setDrawerScroll] = useState(0);
+
   if (typeof window !== "undefined") {
-    var cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
+    var cartItems = JSON.parse(localStorage.getItem("quotationData")) || [];
   }
   const totalPrice = cartItems?.reduce((a, b) => {
     return Number(a) + Number(b?.price) * Number(b?.qty);
   }, 0);
+
+  const totalWeight = cartItems?.reduce((a, b) => {
+    return Number(a) + Number(b?.quantity) * Number(b?.qty);
+  }, 0);
+  console.log("🚀 ~ totalWeight ~ totalWeight:", totalWeight);
 
   const handleCounterClick = (index) => {
     setCounter(index);
   };
 
   const drawerBodyRef = useRef(null);
+
   const handleDrawerScroll = (event) => {
     const scrollTop = event.target.scrollTop;
     setDrawerScroll(scrollTop);
   };
 
   const handleItemClick = (type, id) => {
-    let cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
     if (type === "plus") {
       let updatedCart = cartItems.map((item) => {
-        if (Number(item.productId) === id) {
+        if (Number(item.id) === id) {
           return { ...item, qty: item.qty + 1 };
         }
         return item;
       });
-      localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+      localStorage.setItem("quotationData", JSON.stringify(updatedCart));
+      setQuotationData(updatedCart);
       setRender(!render);
     } else if (type === "minus") {
       let updatedCart = cartItems.map((item) => {
-        if (Number(item.productId) === id && item.qty > 1) {
+        if (Number(item.id) === id && item.qty > 1) {
           return { ...item, qty: item.qty - 1 };
         }
         return item;
       });
-      localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+      localStorage.setItem("quotationData", JSON.stringify(updatedCart));
+      setQuotationData(updatedCart);
       setRender(!render);
     } else if (type === "delete") {
-      let updatedCart = cartItems.filter(
-        (item) => Number(item.productId) !== id
-      );
-      localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+      let updatedCart = cartItems.filter((item) => Number(item.id) !== id);
+      localStorage.setItem("quotationData", JSON.stringify(updatedCart));
+      setQuotationData(updatedCart);
       setRender(!render);
     }
   };
 
-  useEffect(() => {
-    if (drawerBodyRef.current) {
-      drawerBodyRef.current.addEventListener("scroll", handleDrawerScroll);
-    }
-    return () => {
-      if (drawerBodyRef.current) {
-        drawerBodyRef.current.removeEventListener("scroll", handleDrawerScroll);
+  const handleSendQuotation = async () => {
+    try {
+      const res = await PostAPI("api/v1/admin/send-quotation", {
+        email: ["sigidevelopers@gmail.com"],
+        order: {
+          totalBill: totalPrice,
+          subTotal: totalPrice,
+          itemsPrice: totalPrice,
+          vat: 0.0,
+          totalWeight: totalWeight,
+        },
+        items: cartItems,
+      });
+      if (res?.data?.status === "success") {
+        setOpen(false);
+        success_toaster("Quotation send Successfully");
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
       }
-    };
-  }, []);
+    } catch (error) {
+      ErrorHandler(error);
+    }
+  };
+
+  // useEffect(() => {
+  //   if (drawerBodyRef.current) {
+  //     drawerBodyRef.current.addEventListener("scroll", handleDrawerScroll);
+  //   }
+  //   return () => {
+  //     if (drawerBodyRef.current) {
+  //       drawerBodyRef.current.removeEventListener("scroll", handleDrawerScroll);
+  //     }
+  //   };
+  // }, []);
 
   return (
-    <div className="card">
+    <div className="card relative">
       <Sidebar
         visible={open}
         position="right"
         onHide={() => setOpen(false)}
-        className="rounded-tl-xl rounded-bl-xl bg-theme text-white"
+        className="rounded-tl-xl rounded-bl-xl bg-theme text-white w-[512px]"
       >
+        <div className="relative space-y-6 font-sf px-4 mb-28 bg-theme text-white">
+          <div>
+            <div className="flex justify-between items-center">
+              <h2 className="text-[32px] font-black font-nunito text-theme-black-2">
+                Send Quotation
+              </h2>
+            </div>
+          </div>
+          <p className="font-medium text-base">Order Details</p>
 
+          <div className="">
+            <div className="h-3/5 overflow-y-auto">
+              {cartItems?.map((cartI, index) => (
+                <div
+                  key={index}
+                  className="font-sf relative flex sm:flex-row items-start rounded-2xl h-full mb-3"
+                >
+                  <div className="flex justify-center sm:w-[150px] w-[72px] sm:h-[72px] h-[72px] rounded-2xl">
+                    <img
+                      src={BASE_URL + cartI?.image}
+                      alt="cutlery"
+                      className="w-full h-full rounded-md object-cover"
+                    />
+                  </div>
+                  <div className="px-5 w-full font-sf">
+                    <h3 className="capitalize font-semibold text-base">
+                      {cartI?.name}
+                    </h3>
+                    <div className="capitalize text-sm font-light text-white">
+                      <ul>
+                        {/* {cartI?.addOnsCat &&
+                                cartI?.addOnsCat?.length > 0
+                                  ? cartI?.addOnsCat
+                                      ?.filter(
+                                        (ele) =>
+                                          ele?.id ===
+                                          cartI?.addOns?.find(
+                                            (fil) =>
+                                              fil?.collectionId === ele?.id
+                                          )?.collectionId
+                                      )
+                                      ?.map((cat, key) => (
+                                        <li key={key}>
+                                          <span>{cat?.name}: </span>
+                                          <br />
+                                          {cartI?.addOns
+                                            ?.filter(
+                                              (fil) =>
+                                                fil?.collectionId === cat?.id
+                                            )
+                                            ?.map((add, addKey) => (
+                                              <div
+                                                key={addKey}
+                                                className="ml-2 mt-1"
+                                              >
+                                                {`${add?.qty}x ${add?.name} ${
+                                                  add?.total > 0
+                                                    ? `(${add?.total}.00)`
+                                                    : ""
+                                                }`}
+                                              </div>
+                                            ))}
+                                        </li>
+                                      ))
+                                  : cartI?.addOns?.map((add, addKey) => (
+                                      <li key={addKey}>
+                                        <div className="ml-2 mt-1">
+                                          {`${add?.qty}x ${add?.name} ${
+                                            add?.total > 0
+                                              ? `(${add?.total}.00)`
+                                              : ""
+                                          }`}
+                                        </div>
+                                      </li>
+                                    ))} */}
+                      </ul>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-x-3">
+                        <span className="font-semibold text-sm text-white mt-1">
+                          {parseFloat(Number(cartI?.price) * cartI?.qty)} {"$"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="cursor-pointer mt-2 mr-1 rounded-full flex items-center justify-around text-white p-1 absolute bg-black right-0">
+                    {counter === index ? (
+                      <div className="flex">
+                        <button
+                          onClick={() => {
+                            handleItemClick("minus", cartI?.id);
+                          }}
+                          className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-white hover:text-black duration-300"
+                        >
+                          <RiSubtractFill />
+                        </button>
+                        <span className="text-lg font-sf w-7 text-center">
+                          {cartI?.qty}
+                        </span>
+                        <button
+                          onClick={() => {
+                            handleItemClick("plus", cartI?.id);
+                          }}
+                          className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-white hover:text-black duration-300"
+                        >
+                          <BiPlus />
+                        </button>
+                        <button
+                          onClick={() => {
+                            handleItemClick("delete", cartI?.id);
+                          }}
+                          className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-red-600 hover:text-white duration-300"
+                        >
+                          <BiTrash />
+                        </button>
+                      </div>
+                    ) : (
+                      <span
+                        onClick={() => handleCounterClick(index)}
+                        className="text-lg font-sf w-7 text-center"
+                      >
+                        {cartI?.qty}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="absolute bottom-0 left-[30px] py-10 flex justify-center bg-theme w-[452px]">
+          <button
+            className="bg-themeLight font-bold text-white rounded-full px-5 min-h-14 w-full flex items-center justify-between"
+            onClick={handleSendQuotation}
+          >
+            <div className="flex space-x-4 items-center">
+              <div className="bg-white text-black text-sm py-[1px] px-[7px] rounded-full">
+                {String(cartItems?.length).padStart(2)}
+              </div>
+              <p>Send Quotation</p>
+            </div>
+            ${totalPrice.toFixed(2)} {"$"}
+          </button>
+        </div>
       </Sidebar>
     </div>
     // <Drawer.Root

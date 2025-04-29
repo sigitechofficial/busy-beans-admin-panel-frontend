@@ -1,9 +1,25 @@
 import { BASE_URL } from "@/utilities/URL";
+import { useEffect, useState } from "react";
 import { BiPlus } from "react-icons/bi";
 import { RiSubtractFill } from "react-icons/ri";
 
 export default function StockCard(props) {
-  const { itemName, quantity, unit, imageURL } = props;
+  const {
+    id,
+    itemName,
+    quantity,
+    unit,
+    imageURL,
+    handlePlus,
+    handleMinus,
+    qty,
+  } = props;
+  const [itemQuantity, setItemQuantity] = useState(qty);
+
+  useEffect(() => {
+    setItemQuantity(qty)
+  }, [qty]);
+
   return (
     <div className="rounded-xl border border-tabBorderColor border-opacity-60 shadow-tabShadow bg-white">
       <div className="border-b border-tabBorderColor border-opacity-20 py-4">
@@ -15,7 +31,6 @@ export default function StockCard(props) {
           />
         </div>
       </div>
-
       <div className="px-4 py-3 font-inter space-y-2">
         <div className="[&>p]:flex [&>p]:justify-between [&>p]:text-black">
           <p>
@@ -35,13 +50,11 @@ export default function StockCard(props) {
         </div> */}
         <div className="border border-tabBorderColor/50 bg-themeSilver shadow-smButtonShadow w-36 h-14 rounded-full flex items-center justify-around text-[#707175] ">
           <button
-            // disabled={orderStatus?.qty === 1}
-            // onClick={() =>
-            //   setOrderStatus({
-            //     ...orderStatus,
-            //     qty: orderStatus?.qty - 1,
-            //   })
-            // }
+            disabled={itemQuantity <= 0}
+            onClick={() => {
+              setItemQuantity(itemQuantity - 1);
+              handleMinus(id, itemQuantity - 1);
+            }}
             // className={`
             //   ${
             //   (orderStatus?.qty === 0 &&
@@ -52,20 +65,18 @@ export default function StockCard(props) {
             //     !existingCartItems?.find((ele) => ele?.productId === productId))
             //     ? "cursor-not-allowed bg-theme text-white text-opacity-20 border border-theme"
             //     : "hover:bg-white hover:text-theme border border-theme bg-theme text-white duration-300"
-            // } 
+            // }
             // w-10 h-10 flex justify-center items-center rounded-full outline-none`}
-            className="w-10 h-10 flex justify-center items-center rounded-full bg-black text-white hover:bg-white hover:text-theme border border-theme duration-300"
+            className="w-10 h-10 flex justify-center items-center rounded-full disabled:cursor-not-allowed bg-black text-white hover:bg-white hover:text-theme border border-theme duration-300"
           >
             <RiSubtractFill />
           </button>
-          <span className="text-2xl font-sf text-black">{0}</span>
+          <span className="text-2xl font-sf text-black">{itemQuantity}</span>
           <button
-            // onClick={() =>
-            //   setOrderStatus({
-            //     ...orderStatus,
-            //     qty: orderStatus?.qty + 1,
-            //   })
-            // }
+            onClick={() => {
+              setItemQuantity(itemQuantity + 1);
+              handlePlus(id, itemQuantity + 1);
+            }}
             className="w-10 h-10 flex justify-center items-center rounded-full bg-black text-white hover:bg-white hover:text-theme border border-theme duration-300"
           >
             <BiPlus />

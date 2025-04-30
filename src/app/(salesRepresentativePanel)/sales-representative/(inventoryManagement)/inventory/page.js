@@ -10,9 +10,12 @@ import { success_toaster } from "@/utilities/Toaster";
 
 
 export default function SalesRepresentativeInventory() {
+  if(typeof window !== 'undefined'){
+    var quotationData = JSON.parse(localStorage.getItem("quotationData")) || []
+  }
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [quotationData, setQuotationData] = useState(
-    JSON.parse(localStorage.getItem("quotationData")) || []
+    quotationData
   );
 
   const [visibleRight, setVisibleRight] = useState(false);

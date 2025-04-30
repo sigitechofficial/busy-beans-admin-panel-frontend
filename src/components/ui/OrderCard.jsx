@@ -170,8 +170,8 @@ export default function OrderCard(props) {
               </p>
               <p className="flex">
                 <span className="text-black/60 w-2/4">Payment Status:</span>
-                <button className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium">
-                  Pending
+                <button className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none">
+                  {props?.orderData?.paymentStatus}
                 </button>
               </p>
               {/* <p className="flex">

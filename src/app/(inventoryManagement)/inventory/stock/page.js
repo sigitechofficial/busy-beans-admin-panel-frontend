@@ -24,12 +24,15 @@ import { PatchAPI } from "@/utilities/PatchAPI";
 import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
 import ErrorHandler from "@/utilities/ErrorHandler";
+import { numberValidity } from "@/utilities/Validations";
 
 export default function Stock() {
   const { data, reFetch } = GetAPI("api/v1/admin/product");
+
   const { data: category, reFetch: categoryRefetch } = GetAPI(
     "api/v1/admin/category"
   );
+  console.log("🚀 ~ Stock ~ data:", data?.data?.data);
 
   const catOptions = [];
 
@@ -70,21 +73,21 @@ export default function Stock() {
   };
 
   const handleStock = async (e) => {
-    e.preventDefault(); 
+    e.preventDefault();
     if (modal === "add") {
       if (productDetail?.image === "") {
         info_toaster("Product image cannot be empty");
-      } else if (productDetail?.name.trim() === 0) {
+      } else if (productDetail?.name.trim() === "") {
         info_toaster("Product Name cannot be empty");
-      } else if (productDetail?.quantity.trim() === 0) {
-        info_toaster("Product quantity cannot be empty");
-      } else if (productDetail?.quantity.trim() < 0) {
-        info_toaster("Invalid Quanity");
+      } else if (productDetail?.quantity.trim() === "") {
+        info_toaster("Invalid Product quantity");
+      } else if (numberValidity?.test(productDetail?.quantity)) {
+        info_toaster("Invalid Product Quanity");
       } else if (productDetail?.unit === "") {
         info_toaster("Product unit cannot be empty");
-      } else if (productDetail?.price.trim() === 0) {
-        info_toaster("Product price cannot be empty");
-      } else if (productDetail?.price.trim() < 0) {
+      } else if (productDetail?.price.trim() === "") {
+        info_toaster("Invalid Product price");
+      } else if (numberValidity?.test(productDetail?.price)) {
         info_toaster("Invalid Price");
       } else if (productDetail?.desc.trim() === 0) {
         info_toaster("Product description cannot be empty");
@@ -126,17 +129,17 @@ export default function Stock() {
     } else if (modal === "edit") {
       if (productDetail?.image === "") {
         info_toaster("Product image cannot be empty");
-      } else if (productDetail?.name.trim() === 0) {
+      } else if (productDetail?.name.trim() === "") {
         info_toaster("Product Name cannot be empty");
-      } else if (productDetail?.quantity.trim() === 0) {
-        info_toaster("Product quantity cannot be empty");
-      } else if (productDetail?.quantity.trim() < 0) {
-        info_toaster("Invalid Quanity");
+      } else if (productDetail?.quantity.trim() === "") {
+        info_toaster("Invalid Product quantity");
+      } else if (numberValidity?.test(productDetail?.quantity)) {
+        info_toaster("Invalid Product Quanity");
       } else if (productDetail?.unit === "") {
         info_toaster("Product unit cannot be empty");
-      } else if (productDetail?.price.trim() === 0) {
-        info_toaster("Product price cannot be empty");
-      } else if (productDetail?.price.trim() < 0) {
+      } else if (productDetail?.price.trim() === "") {
+        info_toaster("Invalid Product price");
+      } else if (numberValidity?.test(productDetail?.price)) {
         info_toaster("Invalid Price");
       } else if (productDetail?.desc.trim() === 0) {
         info_toaster("Product description cannot be empty");
@@ -320,7 +323,7 @@ export default function Stock() {
     });
   });
 
-  return data.length === 0 ? (
+  return data?.length === 0 ? (
     <Loader />
   ) : (
     <div className="space-y-8">
@@ -448,7 +451,7 @@ export default function Stock() {
                       value={productDetail?.name}
                       onChange={handleChange}
                       placeholder="Enter Item Name"
-                      className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     />
                     {/* <Select
                 placeholder="Coffee"
@@ -467,7 +470,7 @@ export default function Stock() {
                       value={productDetail?.desc}
                       onChange={handleChange}
                       placeholder="Enter Description"
-                      className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     />
                   </div>
                   <div className="flex flex-col gap-y-2 w-full">
@@ -480,7 +483,7 @@ export default function Stock() {
                         value={productDetail?.unit}
                         onChange={handleChange}
                         placeholder="Enter unit"
-                        className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       /> */}
 
                     <Select
@@ -500,17 +503,19 @@ export default function Stock() {
                         Available Stock
                       </label>
                       <input
-                        type="number"
+                        type="text"
                         name="quantity"
                         min="0"
                         value={productDetail?.quantity}
                         onChange={handleChange}
                         placeholder="Enter Quantity"
-                        className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       />
                       <div
                         className={`text-red-600 space-y-1 pb-1 ${
-                          productDetail?.quantity < 0 ? "block" : "hidden"
+                          !/^\d*\.?\d*$/?.test(productDetail?.quantity)
+                            ? "block"
+                            : "hidden"
                         }`}
                       >
                         <hr className="border-none h-0.5 bg-white bg-opacity-20" />
@@ -527,7 +532,7 @@ export default function Stock() {
                         value={productDetail?.unit}
                         onChange={handleChange}
                         placeholder="Enter unit"
-                        className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       /> */}
 
                       <Select
@@ -549,17 +554,19 @@ export default function Stock() {
                         Price($)
                       </label>
                       <input
-                        type="number"
+                        type="text"
                         name="price"
                         min="0"
                         value={productDetail?.price}
                         onChange={handleChange}
                         placeholder="Enter price"
-                        className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       />
                       <div
                         className={`text-red-600 space-y-1 pb-1 ${
-                          productDetail?.price < 0 ? "block" : "hidden"
+                          !/^\d*\.?\d*$/.test(productDetail?.price)
+                            ? "block"
+                            : "hidden"
                         }`}
                       >
                         <hr className="border-none h-0.5 bg-white bg-opacity-20" />

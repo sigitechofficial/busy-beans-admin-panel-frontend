@@ -81,7 +81,7 @@ export default function EditsSalesRepresentative() {
       info_toaster("Enter Address");
     }  else if (!saleRepresentative?.territory?.trim()) {
       info_toaster("Enter Territory");
-    } else if (!saleRepresentative?.status) {
+    } else if (saleRepresentative?.status === "") {
       info_toaster("Select Status");
     } else if (!saleRepresentative?.email?.trim()) {
       info_toaster("Enter email");
@@ -294,7 +294,7 @@ export default function EditsSalesRepresentative() {
                     Phone number
                   </label>
                   <input
-                    type="text"
+                    type="number"
                     name="phoneNumber"
                     value={saleRepresentative?.phoneNumber}
                     placeholder="Enter Phone Number"
@@ -402,7 +402,7 @@ export default function EditsSalesRepresentative() {
                   type="submit"
                   className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
                 >
-                  Update Sales Representative edwd
+                  Update Sales Representative
                 </button>
               </div>
             </div>

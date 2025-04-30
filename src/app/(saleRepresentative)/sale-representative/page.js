@@ -164,7 +164,7 @@ export default function SaleRepresentative() {
         <div className="flex justify-end">
           <button
             onClick={() => router.push("/sale-representative/add")}
-            className="rounded-lg font-inter font-medium text-white px-2 sm:px-3 py-2.5 sm:py-4 bg-theme"
+            className="rounded-lg font-inter font-medium border border-theme text-white bg-theme hover:bg-white hover:text-theme duration-150 px-2 sm:px-3 py-2.5 sm:py-4"
           >
             + Add New Sales Representative
           </button>

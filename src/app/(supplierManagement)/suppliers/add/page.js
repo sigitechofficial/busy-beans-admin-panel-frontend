@@ -9,6 +9,7 @@ import MiniLoader from "@/components/ui/MiniLoader";
 import { PostAPI } from "@/utilities/PostAPI";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import { emailValidity } from "@/utilities/Validations";
 
 export default function AddNewSupplier() {
   const [supplier, setSupplier] = useState({
@@ -31,7 +32,7 @@ export default function AddNewSupplier() {
     registerDate: "",
     bankAccount: "",
   });
-  console.log("🚀 ~ AddNewSupplier ~ supplier:", supplier)
+  console.log("🚀 ~ AddNewSupplier ~ supplier:", supplier);
   const [visible, setVisible] = useState(false);
   const [imagePreview, setImagePreview] = useState("");
   const [loader, setLoader] = useState(false);
@@ -90,6 +91,8 @@ export default function AddNewSupplier() {
       info_toaster("Select bank account detail");
     } else if (!supplier?.email.trim()) {
       info_toaster("Enter email");
+    } else if (!emailValidity.test(supplier?.email)) {
+      info_toaster("Invalid Email Format");
     } else if (!supplier?.password.trim()) {
       info_toaster("Enter password");
     } else {
@@ -397,13 +400,13 @@ export default function AddNewSupplier() {
               </div>
               <div className="flex flex-col gap-y-2">
                 <label className="text-labelColor font-medium font-satoshi">
-                  Bank Account Details
+                  Bank Account Number
                 </label>
                 <input
                   type="text"
                   name="bankAccount"
                   value={supplier?.bankAccount}
-                  placeholder="000322655655654454"
+                  placeholder="Enter account number"
                   className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
@@ -421,6 +424,17 @@ export default function AddNewSupplier() {
                   className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
+                <div
+                  className={`text-red-600 space-y-1 pb-1 ${
+                    supplier?.email.length > 0 &&
+                    !emailValidity.test(supplier?.email)
+                      ? "block"
+                      : "hidden"
+                  }`}
+                >
+                  <hr className="border-none h-0.5 bg-white bg-opacity-20" />
+                  <p>Invalid Email Format</p>
+                </div>
               </div>
               <div className="flex flex-col gap-y-2 relative">
                 <label className="text-labelColor font-medium font-satoshi">

@@ -74,7 +74,7 @@ export default function AddSaleRepresentative() {
       info_toaster("Enter business webiste");
     } else if (!saleRepresentative?.territory?.trim()) {
       info_toaster("Enter Territory");
-    } else if (!saleRepresentative?.status) {
+    } else if (saleRepresentative?.status === "") {
       info_toaster("Select Status");
     } else if (!saleRepresentative?.email?.trim()) {
       info_toaster("Enter email");
@@ -181,7 +181,7 @@ export default function AddSaleRepresentative() {
                     name="srName"
                     value={saleRepresentative?.srName}
                     placeholder="Enter Name"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
                 </div>
@@ -194,7 +194,7 @@ export default function AddSaleRepresentative() {
                     name="country"
                     value={saleRepresentative?.country}
                     placeholder="Enter Country Name"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
                   {/* <Select
@@ -214,7 +214,7 @@ export default function AddSaleRepresentative() {
                     name="city"
                     value={saleRepresentative?.city}
                     placeholder="Enter City Name"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
                   {/* <Select
@@ -232,7 +232,7 @@ export default function AddSaleRepresentative() {
                     name="state"
                     value={saleRepresentative?.state}
                     placeholder="Enter State Name"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
                   {/* <Select
@@ -252,7 +252,7 @@ export default function AddSaleRepresentative() {
                     name="zipCode"
                     value={saleRepresentative?.zipCode}
                     placeholder="Enter Zip code"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
                 </div>
@@ -261,11 +261,11 @@ export default function AddSaleRepresentative() {
                     Phone number
                   </label>
                   <input
-                    type="text"
+                    type="number"
                     name="phoneNumber"
                     value={saleRepresentative?.phoneNumber}
                     placeholder="Enter Phone Number"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
                 </div>
@@ -279,7 +279,7 @@ export default function AddSaleRepresentative() {
                   name="address"
                   value={saleRepresentative?.address}
                   placeholder="Enter Address"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div>
@@ -292,7 +292,7 @@ export default function AddSaleRepresentative() {
                   name="businessWeb"
                   value={saleRepresentative?.businessWeb}
                   placeholder="Enter Business name"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div>
@@ -309,7 +309,7 @@ export default function AddSaleRepresentative() {
                   name="territory"
                   value={saleRepresentative?.territory}
                   placeholder="Enter Territory name"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div>
@@ -340,9 +340,10 @@ export default function AddSaleRepresentative() {
                 <input
                   type="email"
                   name="email"
+                  autoComplete="off"
                   value={saleRepresentative?.email}
                   placeholder="Enter Email"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div>
@@ -353,9 +354,10 @@ export default function AddSaleRepresentative() {
                 <input
                   type="password"
                   name="password"
+                  autoComplete="off"
                   value={saleRepresentative?.password}
                   placeholder="Enter password"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div>

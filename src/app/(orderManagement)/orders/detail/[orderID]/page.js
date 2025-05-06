@@ -17,10 +17,12 @@ import Select from "react-select";
 
 export default function OrderDetail() {
   const { orderID } = useParams();
+  const [chequeId, setChequeId] = useState("");
   const [modal, setModal] = useState({
     type: "", // addCheque , editCheque
     status: false,
   });
+
   const [loader, setLoader] = useState("");
   const [addCheque, setAddCheque] = useState({
     chequeNumber: "",
@@ -37,7 +39,6 @@ export default function OrderDetail() {
     },
     chequeReceiptDate: "",
   });
-  console.log("🚀 ~ OrderDetail ~ addCheque:", addCheque);
 
   const chequeStatusOptions = [
     { value: "Pending", label: "Pending" },
@@ -52,6 +53,7 @@ export default function OrderDetail() {
   ];
 
   const { data, reFetch } = GetAPI(`api/v1/admin/order-details/${orderID}`);
+  console.log("🚀 ~ OrderDetail ~ data:", data?.data?.order);
 
   const handleSupplierAcknowledgement = async () => {
     setLoader("acknowledgeSupplier");
@@ -166,10 +168,7 @@ export default function OrderDetail() {
       setLoader("editCheque");
       try {
         const res = await PatchAPI("api/v1/admin/edit-cheque", {
-          orderId: orderID,
-          orderData: {
-            paymentMethod: "cheque",
-          },
+          chequeId: chequeId,
           cheque: {
             chequeNumber: addCheque?.chequeNumber,
             chequeDate: addCheque?.chequeDate,
@@ -183,6 +182,7 @@ export default function OrderDetail() {
         if (res?.data?.status === "success") {
           success_toaster("Cheque Updated successfully");
           reFetch();
+          setChequeId("");
           setModal({
             type: "",
             status: false,
@@ -236,6 +236,7 @@ export default function OrderDetail() {
         type: "editCheque",
         status: true,
       });
+      setChequeId(data?.data?.order?.chequeDetail?.id);
       setAddCheque({
         chequeNumber: data?.data?.order?.chequeDetail?.chequeNumber,
         chequeDate: data?.data?.order?.chequeDetail?.chequeDate,
@@ -277,6 +278,12 @@ export default function OrderDetail() {
 
         <div className="flex items-center gap-x-2 sm:gap-x-4 [&>button]:py-2 sm:[&>button]:py-3 [&>button]:px-2 sm:[&>button]:px-5 [&>button]:rounded-lg [&>button]:font-nunito [&>button]:font-medium max-sm:[&>button]:text-sm">
           <button
+            onClick={handleAddChequeModel}
+            className="bg-black text-white disabled:cursor-not-allowed"
+          >
+            {data?.data?.order?.chequeDetail ? "Edit Cheque" : "Add Cheque"}
+          </button>
+          <button
             disabled={
               data?.data?.order?.statusId === 5 ||
               data?.data?.order?.statusId === 6
@@ -294,12 +301,7 @@ export default function OrderDetail() {
               ? "Dispatch Order"
               : "Order Delivered"}
           </button>
-          <button
-            onClick={handleAddChequeModel}
-            className="bg-black text-white disabled:cursor-not-allowed"
-          >
-            {data?.data?.order?.chequeDetail ? "Edit Cheque" : "Add Cheque"}
-          </button>
+
           <button
             disabled={
               data?.data?.order?.statusId === 5 ||
@@ -326,6 +328,7 @@ export default function OrderDetail() {
           <div className="space-y-6">
             <CusSupInformationCard
               heading="Customer Information"
+              image={data?.data?.order?.user?.image}
               name={data?.data?.order?.user?.name}
               email={data?.data?.order?.user?.email}
               phoneNo={data?.data?.order?.user?.phoneNumber}
@@ -346,6 +349,7 @@ export default function OrderDetail() {
             {data?.data?.order?.statusId >= 2 && (
               <CusSupInformationCard
                 heading="Supplier Information"
+                image={data?.data?.order?.supplier?.image}
                 name={data?.data?.order?.supplier?.supplierName}
                 email={data?.data?.order?.supplier?.email}
                 phoneNo={data?.data?.order?.supplier?.phoneNum}
@@ -459,9 +463,13 @@ export default function OrderDetail() {
                       className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     /> */}
                     <Select
-                      placeholder="Cheque Status"
+                      placeholder="Select Cheque Status"
                       className="w-full"
-                      value={addCheque?.chequeStatus}
+                      value={
+                        addCheque?.chequeStatus?.value
+                          ? addCheque?.chequeStatus
+                          : null
+                      }
                       styles={selectStyles2}
                       options={chequeStatusOptions}
                       onChange={(e) => {
@@ -508,9 +516,13 @@ export default function OrderDetail() {
                       className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     /> */}
                     <Select
-                      placeholder="Cheque Type"
+                      placeholder="Select Cheque Type"
                       className="w-full"
-                      value={addCheque?.chequeType}
+                      value={
+                        addCheque?.chequeType?.value
+                          ? addCheque?.chequeType
+                          : null
+                      }
                       styles={selectStyles2}
                       options={chequeTypeOptions}
                       onChange={(e) => {

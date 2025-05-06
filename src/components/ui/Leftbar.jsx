@@ -12,7 +12,7 @@ import { MdOutlineSubscriptions } from "react-icons/md";
 import { FaRegBell } from "react-icons/fa";
 import { BiSupport } from "react-icons/bi";
 import { MdLogout } from "react-icons/md";
-import { PiChartBar } from "react-icons/pi";
+import { PiChartBar, PiInvoiceBold } from "react-icons/pi";
 import { RiAdminLine } from "react-icons/ri";
 import { MdInventory } from "react-icons/md";
 import { GiProgression } from "react-icons/gi";
@@ -36,8 +36,8 @@ export default function Leftbar(props) {
   // const userType = localStorage.getItem("userType");
   // const userType = "salesRepresentative";
   // const userType = "admin";
-  if(typeof window !== 'undefined'){
-    var userType = localStorage.getItem("userType")
+  if (typeof window !== "undefined") {
+    var userType = localStorage.getItem("userType");
   }
 
   const pathname = usePathname();
@@ -56,6 +56,10 @@ export default function Leftbar(props) {
       status: false,
     },
     saleRepresentative: {
+      tab: "",
+      status: false,
+    },
+    invoiceManagement: {
       tab: "",
       status: false,
     },
@@ -287,6 +291,33 @@ export default function Leftbar(props) {
                     title="All Sales Representatives"
                     to="/sale-representative"
                   />
+                </div>
+                <hr className="w-full" />
+              </>
+            )}
+
+          <ListHead
+            title="Invoice Management"
+            Icon={PiInvoiceBold}
+            Angle={
+              active?.invoiceManagement?.tab === "invoiceManagement" &&
+              active?.invoiceManagement?.status
+                ? FaAngleUp
+                : FaAngleDown
+            }
+            onClick={() =>
+              handleActive(
+                "invoiceManagement",
+                active?.invoiceManagement?.status
+              )
+            }
+            disabled={true}
+          />
+          {active?.invoiceManagement?.tab === "invoiceManagement" &&
+            active?.invoiceManagement?.status && (
+              <>
+                <div className="m-2 relative space-y-1">
+                  <ListItems title="All Invoices" to="/invoices" />
                 </div>
                 <hr className="w-full" />
               </>
@@ -658,21 +689,29 @@ export default function Leftbar(props) {
             Icon={GoPeople}
             active={pathname === "/customers"}
             Angle={
-              salesRepresentativeActive?.clientManagement?.tab === "clientManagement" &&
+              salesRepresentativeActive?.clientManagement?.tab ===
+                "clientManagement" &&
               salesRepresentativeActive?.clientManagement?.status
                 ? FaAngleUp
                 : FaAngleDown
             }
             onClick={() =>
-              handleActive("clientManagement", salesRepresentativeActive?.clientManagement?.status)
+              handleActive(
+                "clientManagement",
+                salesRepresentativeActive?.clientManagement?.status
+              )
             }
           />
-          
-          {salesRepresentativeActive?.clientManagement?.tab === "clientManagement" &&
+
+          {salesRepresentativeActive?.clientManagement?.tab ===
+            "clientManagement" &&
             salesRepresentativeActive?.clientManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  <ListItems title="All Clients" to="/sales-representative/customers" />
+                  <ListItems
+                    title="All Clients"
+                    to="/sales-representative/customers"
+                  />
                 </div>
                 <hr className="w-full" />
               </>

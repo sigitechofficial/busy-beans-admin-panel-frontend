@@ -32,7 +32,7 @@ export default function Orders() {
   const datas = [];
   data?.data?.data?.map((detail, i) => {
     return datas.push({
-      sl: i + 1,
+      sl: i + 1, 
       customerName: detail?.customerName,
       totalBill: "$" + detail?.totalBill,
       subTotal: "$" + detail?.subTotal,

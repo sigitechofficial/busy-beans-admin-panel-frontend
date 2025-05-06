@@ -16,6 +16,12 @@ export default function OrderCard(props) {
   const router = useRouter();
   const [supplierID, setSupplierID] = useState("");
   const [loader, setLoader] = useState("");
+
+  const paymentStausOptions = [
+    { value: "done", label: "Done" },
+    { value: "pending", label: "Pending" },
+  ];
+
   const [dispatchOrderData, setDispatchOrderData] = useState({
     trackingNumber: "",
     shippingCompany: "",
@@ -30,6 +36,25 @@ export default function OrderCard(props) {
       ...dispatchOrderData,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const handlePaymentStatus = async (status) => {
+    try {
+      const res = await PatchAPI("api/v1/admin/edit-order", {
+        orderId: props?.orderData?.id,
+        orderData: {
+          paymentStatus: status?.value, //"pending" , 'done'
+        },
+      });
+      if (res?.data?.status === "success") {
+        success_toaster("Status Updated successfully");
+        props?.reFetch();
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -161,7 +186,7 @@ export default function OrderCard(props) {
         <div className="space-y-4">
           <div className="space-y-2">
             <p className="font-semibold text-lg underline">Order Information</p>
-            <div className="space-y-1">
+            <div className="space-y-4">
               <p className="flex">
                 <span className="text-black/60 w-2/4">Payment Method:</span>
                 <span className="font-medium ">
@@ -170,9 +195,25 @@ export default function OrderCard(props) {
               </p>
               <p className="flex">
                 <span className="text-black/60 w-2/4">Payment Status:</span>
-                <button className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none">
+                {/* <button className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none">
                   {props?.orderData?.paymentStatus}
-                </button>
+                </button> */}
+                <span className="w-40">
+                  <Select
+                    placeholder="Select Payment Status"
+                    className="w-full"
+                    value={
+                      props?.orderData?.paymentStatus === "pending"
+                        ? { value: "pending", label: "Pending" }
+                        : { value: "done", label: "Done" }
+                    }
+                    styles={selectStyles2}
+                    options={paymentStausOptions}
+                    onChange={(e) => {
+                      handlePaymentStatus(e);
+                    }}
+                  />
+                </span>
               </p>
               {/* <p className="flex">
                 <span className="text-black/60 w-2/4">

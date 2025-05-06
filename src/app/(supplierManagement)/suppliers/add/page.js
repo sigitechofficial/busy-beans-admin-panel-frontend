@@ -400,13 +400,13 @@ export default function AddNewSupplier() {
               </div>
               <div className="flex flex-col gap-y-2">
                 <label className="text-labelColor font-medium font-satoshi">
-                  Bank Account Number
+                  Bank Account Detail
                 </label>
                 <input
                   type="text"
                   name="bankAccount"
                   value={supplier?.bankAccount}
-                  placeholder="Enter account number"
+                  placeholder="Enter Valid IBAN Number"
                   className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />

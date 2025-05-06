@@ -20,7 +20,7 @@ export default function EditSupplier() {
   const [loader, setLoader] = useState(false);
 
   const { data } = GetAPI(`api/v1/admin/supplier/${supplierID}`);
-  console.log("🚀 ~ EditSupplier ~ data:", data?.data?.data)
+  console.log("🚀 ~ EditSupplier ~ data:", data?.data?.data);
 
   const [supplier, setSupplier] = useState({
     supplierName: "",
@@ -86,10 +86,10 @@ export default function EditSupplier() {
       info_toaster("Enter address two");
     } else if (!supplier?.businessWeb.trim()) {
       info_toaster("Enter business webiste");
-    } 
+    }
     // else if (!supplier?.businessRegistrationNumber.trim()) {
     //   info_toaster("Enter business registration number");
-    // } 
+    // }
     else if (!supplier?.supplierType.trim()) {
       info_toaster("Select supplier type ");
     } else if (!supplier?.status) {
@@ -469,6 +469,7 @@ export default function EditSupplier() {
                 <input
                   type="email"
                   name="email"
+                  autoComplete="off"
                   value={supplier?.email}
                   placeholder="Enter Email"
                   className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"

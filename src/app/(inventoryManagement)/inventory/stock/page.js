@@ -24,7 +24,6 @@ import { PatchAPI } from "@/utilities/PatchAPI";
 import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
 import ErrorHandler from "@/utilities/ErrorHandler";
-import { numberValidity } from "@/utilities/Validations";
 
 export default function Stock() {
   const { data, reFetch } = GetAPI("api/v1/admin/product");
@@ -32,7 +31,6 @@ export default function Stock() {
   const { data: category, reFetch: categoryRefetch } = GetAPI(
     "api/v1/admin/category"
   );
-  console.log("🚀 ~ Stock ~ data:", data?.data?.data);
 
   const catOptions = [];
 
@@ -81,13 +79,13 @@ export default function Stock() {
         info_toaster("Product Name cannot be empty");
       } else if (productDetail?.quantity.trim() === "") {
         info_toaster("Invalid Product quantity");
-      } else if (numberValidity?.test(productDetail?.quantity)) {
+      } else if (!/^\d*\.?\d*$/?.test(productDetail?.quantity)) {
         info_toaster("Invalid Product Quanity");
       } else if (productDetail?.unit === "") {
         info_toaster("Product unit cannot be empty");
       } else if (productDetail?.price.trim() === "") {
         info_toaster("Invalid Product price");
-      } else if (numberValidity?.test(productDetail?.price)) {
+      } else if (!/^\d*\.?\d*$/?.test(productDetail?.price)) {
         info_toaster("Invalid Price");
       } else if (productDetail?.desc.trim() === 0) {
         info_toaster("Product description cannot be empty");
@@ -133,13 +131,13 @@ export default function Stock() {
         info_toaster("Product Name cannot be empty");
       } else if (productDetail?.quantity.trim() === "") {
         info_toaster("Invalid Product quantity");
-      } else if (numberValidity?.test(productDetail?.quantity)) {
+      } else if (!/^\d*\.?\d*$/?.test(productDetail?.quantity)) {
         info_toaster("Invalid Product Quanity");
       } else if (productDetail?.unit === "") {
         info_toaster("Product unit cannot be empty");
       } else if (productDetail?.price.trim() === "") {
         info_toaster("Invalid Product price");
-      } else if (numberValidity?.test(productDetail?.price)) {
+      } else if (!/^\d*\.?\d*$/?.test(productDetail?.price)) {
         info_toaster("Invalid Price");
       } else if (productDetail?.desc.trim() === 0) {
         info_toaster("Product description cannot be empty");

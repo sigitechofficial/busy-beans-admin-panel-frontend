@@ -1,12 +1,14 @@
+import { BASE_URL } from "@/utilities/URL";
+
 export default function CusSupInformationCard(props) {
-  const { heading, name, email, phoneNo, subHeading, subHeadingData } = props;
+  const { image, heading, name, email, phoneNo, subHeading, subHeadingData } = props;
   return (
     <div className="py-4 px-8 space-y-4 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm">
       <p className="font-semibold text-xl">{heading}</p>
       <div className="space-y-2">
         <div className="space-y-2">
           <div>
-            <div className="rounded-full bg-profilePhoto size-16"></div>
+            {image ? <img src={BASE_URL+image} alt={name} className="size-16 rounded-full object-center object-cover border-2 border-[#d9d9d9]" />:<div className="rounded-full bg-profilePhoto size-16"></div>}
           </div>
           <div>
             <p className="font-medium">{name}</p>

@@ -96,6 +96,7 @@ export default function SignIn() {
                   <input
                     type="email"
                     name="email"
+                    autoComplete="off"
                     onChange={handleChange}
                     onBlur={handleBlur}
                     placeholder="Email"

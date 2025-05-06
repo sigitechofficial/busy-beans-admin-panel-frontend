@@ -285,7 +285,8 @@ export default function Customers() {
               <button
                 type="button"
                 onClick={handleCancel}
-                className="rounded-lg border border-black shadow-buttonShadow px-6 font-nunito py-3 font-medium"
+                className="rounded-lg border border-theme bg-theme text-white hover:bg-white hover:text-theme duration-150
+                 shadow-buttonShadow px-6 font-nunito py-3 font-medium"
               >
                 Cancel
               </button>

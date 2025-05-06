@@ -8,6 +8,8 @@ import Leftbar from "@/components/ui/Leftbar";
 import { usePathname } from "next/navigation";
 import { ToastContainer } from "react-toastify";
 import { useState } from "react";
+import ProtectedRoute from "@/utilities/ProtectedRoute";
+import { AuthCheck } from "@/utilities/AuthCheck";
 
 const satoshi = localFont({
   src: [
@@ -99,7 +101,7 @@ export default function RootLayout({ children }) {
 
   return (
     <html lang="en">
-       <title>Busy Beans Coffee</title>
+      <title>Busy Beans Coffee</title>
       <link rel="icon" type="image/x-icon" href="/images/logowhite.png" />
 
       <body
@@ -112,6 +114,7 @@ export default function RootLayout({ children }) {
         {!isSignInPage && (
           <Leftbar navbarVis={navbarVis} setNavbarVis={setNavbarVis} />
         )}
+
         <section
           className={
             isSignInPage
@@ -121,7 +124,7 @@ export default function RootLayout({ children }) {
                 }`
           }
         >
-          {children}
+          <ProtectedRoute>{children}</ProtectedRoute>
         </section>
       </body>
     </html>

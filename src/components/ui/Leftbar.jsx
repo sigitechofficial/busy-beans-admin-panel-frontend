@@ -30,7 +30,7 @@ import { usePathname, useRouter } from "next/navigation";
 import ListHead from "./ListHead";
 import ListItems from "./ListItems";
 import Link from "next/link";
-import { success_toaster } from "@/utilities/Toaster";
+import { info_toaster, success_toaster } from "@/utilities/Toaster";
 
 export default function Leftbar(props) {
   // const userType = localStorage.getItem("userType");
@@ -114,6 +114,10 @@ export default function Leftbar(props) {
       tab: "",
       status: false,
     },
+    orderManagement: {
+      tab: "",
+      status: false,
+    },
   });
 
   const handleActive = (name, status) => {
@@ -141,6 +145,10 @@ export default function Leftbar(props) {
     localStorage.clear();
     router.push("/sign-in");
     success_toaster("Logout Successfully");
+  };
+
+  const handleInvalidUser = () => {
+    router.push("/sign-in");
   };
 
   return (
@@ -198,6 +206,7 @@ export default function Leftbar(props) {
               <>
                 <div className="m-2 relative space-y-1">
                   <ListItems title="All Orders" to="/orders" />
+                  <ListItems title="Upcoming Orders" to="/orders/upcoming" />
                   <ListItems title="Pending Orders" to="/orders/cancelled" />
                   <ListItems title="Delivered Orders" to="/orders/delivered" />
                   <ListItems title="Cancelled Orders" to="/orders/pending" />
@@ -647,7 +656,7 @@ export default function Leftbar(props) {
         </ul>
       ) : userType === "supplier" ? (
         <div>Suuplier</div>
-      ) : (
+      ) : userType === "salesRepresentative" ? (
         <ul className="flex flex-col space-y-1 overflow-auto h-[90%]">
           <ListHead title="Dashboard" to="/" Icon={MdDashboard} />
 
@@ -687,7 +696,7 @@ export default function Leftbar(props) {
           <ListHead
             title="Client Management"
             Icon={GoPeople}
-            active={pathname === "/customers"}
+            active={pathname === "/sales-representative/customers"}
             Angle={
               salesRepresentativeActive?.clientManagement?.tab ===
                 "clientManagement" &&
@@ -717,6 +726,31 @@ export default function Leftbar(props) {
               </>
             )}
 
+          <ListHead
+            title="Order Management"
+            Icon={AiOutlineUnorderedList}
+            active={pathname === "/sales-representative/upcoming-orders"}
+            Angle={
+              salesRepresentativeActive?.orderManagement?.tab === "orderManagement" &&
+              salesRepresentativeActive?.orderManagement?.status
+                ? FaAngleUp
+                : FaAngleDown
+            }
+            onClick={() =>
+              handleActive("orderManagement", salesRepresentativeActive?.orderManagement?.status)
+            }
+          />
+
+          {salesRepresentativeActive?.orderManagement?.tab === "orderManagement" &&
+            salesRepresentativeActive?.orderManagement?.status && (
+              <>
+                <div className="m-2 relative space-y-1">
+                  <ListItems title="Upcoming Orders" to="/sales-representative/upcoming-orders" />
+                </div>
+                <hr className="w-full" />
+              </>
+            )}
+
           <div className="mx-2 pb-7">
             <button
               className="w-full font-inter font-medium text-lg sm:text-sm lg:text-base flex items-center gap-x-2 px-2 py-3 rounded-lg text-black hover:bg-black hover:text-white 
@@ -728,6 +762,8 @@ export default function Leftbar(props) {
             </button>
           </div>
         </ul>
+      ) : (
+        handleInvalidUser()
       )}
     </section>
   );

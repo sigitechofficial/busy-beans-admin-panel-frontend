@@ -34,13 +34,20 @@ export default function SignIn() {
               password: values.password,
             }
           );
-          console.log("🚀 ~ onSubmit: ~ res:", res?.data)
+          console.log("🚀 ~ onSubmit: ~ res:", res?.data);
           if (res?.data?.status === "success") {
             setLoader(false);
             router.push("/");
             localStorage.setItem("accessToken", res?.data?.data?.token);
             localStorage.setItem("loginStatus", true);
-            localStorage.setItem("userName", res?.data?.data?.user?.srName);
+            localStorage.setItem(
+              "userName",
+              type === "admin"
+                ? res?.data?.data?.user?.name
+                : type === "supplier"
+                ? res?.data?.data?.user?.supplierName
+                : res?.data?.data?.user?.srName
+            );
             localStorage.setItem("email", res?.data?.data?.user?.email);
             localStorage.setItem("userID", res?.data?.data?.user?.id);
             localStorage.setItem(

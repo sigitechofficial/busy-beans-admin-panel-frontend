@@ -6,6 +6,7 @@ import { LuSearch } from "react-icons/lu";
 import Select from "react-select";
 import selectStyles from "@/utilities/SelectStyle";
 import { Checkbox } from "primereact/checkbox";
+
 export default function MyDataTable(props) {
   const { selectedRows, setSelectedRows } = props;
   const [globalFilter, setGlobalFilter] = useState("");
@@ -61,7 +62,6 @@ export default function MyDataTable(props) {
     );
   };
 
-  // Function to apply custom class for selected rows
   const rowClassName = (rowData) => {
     return selectedRows?.some((row) => row?.id === rowData?.id)
       ? "selected-row"
@@ -116,7 +116,9 @@ export default function MyDataTable(props) {
           paginator={props.pagination}
           selectionMode="multiple" // Allow multiple row selection
           selection={selectedRows} // Bind the selected rows to the state
-          onSelectionChange={onSelectionChange} // Update selected rows when selection changes
+          onSelectionChange={props?.checkbox ? onSelectionChange : null} // Update selected rows when selection changes
+          // scrollable 
+          // scrollHeight="500px"
           rows={10}
           rowsPerPageOptions={[10, 25, 50, 100]}
           removableSort

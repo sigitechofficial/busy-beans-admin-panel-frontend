@@ -10,18 +10,45 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Dialog } from "primereact/dialog";
 import MiniLoader from "@/components/ui/MiniLoader";
+import { PostAPI } from "@/utilities/PostAPI";
+import ErrorHandler from "@/utilities/ErrorHandler";
+import { success_toaster } from "@/utilities/Toaster";
 
 export default function UpcomingOrders() {
   const router = useRouter();
   const [modal, setModal] = useState("");
   const [items, setItems] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
+  console.log("🚀 ~ UpcomingOrders ~ selectedRows:", selectedRows);
 
-  const { data } = GetAPI("api/v1/admin/order-frequency/upcomming-orders");
-  console.log("🚀 ~ UpcomingOrders ~ data:", data?.data?.order);
+  const { data, reFetch } = GetAPI(
+    "api/v1/admin/order-frequency/upcomming-orders"
+  );
+  console.log("🚀 ~ UpcomingOrders ~ data:", data?.data);
 
   const handleCancel = () => {
     setModal("");
     setItems([]);
+  };
+
+  const handleRebookOrder = async () => {
+    let orderIds = [];
+    selectedRows.map((row) => orderIds.push(row?.id));
+    try {
+      const res = await PostAPI("api/v1/admin/order-frequency/book-orders", {
+        ids: orderIds,
+      });
+      if (res?.data?.status === "success") {
+        success_toaster("Order Rebook Successfully");
+        orderIds = [];
+        setSelectedRows([]);
+        reFetch();
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
+    }
   };
 
   const columns = [
@@ -45,6 +72,7 @@ export default function UpcomingOrders() {
   const datasItems = [];
   data?.data?.order?.map((detail, i) => {
     return datas.push({
+      id: detail?.id,
       sl: i + 1,
       customerName: detail?.customerName,
       email: detail?.email,
@@ -85,6 +113,15 @@ export default function UpcomingOrders() {
         <Select placeholder="Filters" className="w-40" styles={selectStyles} />
       </div>
 
+      <div className="flex justify-end">
+        <button
+          onClick={handleRebookOrder}
+          className="rounded-lg font-inter font-medium text-white px-5 py-3 sm:h-full bg-theme"
+        >
+          Rebook Order
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
         <ManagementTab title="Total Orders" desc={data?.data?.order?.length} />
         {/* <ManagementTab title="New Orders" desc="5%" />
@@ -99,6 +136,9 @@ export default function UpcomingOrders() {
           data={datas}
           placeholder={"Search ..."}
           pagination={true}
+          checkbox={true}
+          selectedRows={selectedRows}
+          setSelectedRows={setSelectedRows}
         />
       </div>
 

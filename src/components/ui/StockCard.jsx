@@ -17,11 +17,11 @@ export default function StockCard(props) {
   const [itemQuantity, setItemQuantity] = useState(qty);
 
   useEffect(() => {
-    setItemQuantity(qty)
+    setItemQuantity(qty);
   }, [qty]);
 
   return (
-    <div className="rounded-xl border border-tabBorderColor border-opacity-60 shadow-tabShadow bg-white">
+    <div className="flex flex-col justify-between rounded-xl border border-tabBorderColor border-opacity-60 shadow-tabShadow bg-white ">
       <div className="border-b border-tabBorderColor border-opacity-20 py-4">
         <div className="h-28">
           <img
@@ -31,10 +31,10 @@ export default function StockCard(props) {
           />
         </div>
       </div>
-      <div className="px-4 py-3 font-inter space-y-2">
-        <div className="[&>p]:flex [&>p]:justify-between [&>p]:text-black">
+      <div className="h-full px-4 py-3 font-inter space-y-2 flex flex-col justify-between">
+        <div className="[&>p]:flex [&>p]:justify-between [&>p]:gap-x-1 [&>p]:text-black">
           <p>
-            <span>Item Name</span> <span>{itemName}</span>
+            <span>Item Name</span> <span className="text-end">{itemName}</span>
           </p>
           <p>
             <span>Quantity</span>{" "}
@@ -48,7 +48,8 @@ export default function StockCard(props) {
             Update Stock
           </button>
         </div> */}
-        <div className="border border-tabBorderColor/50 bg-themeSilver shadow-smButtonShadow w-36 h-14 rounded-full flex items-center justify-around text-[#707175] ">
+
+        <div className="border border-tabBorderColor/50 bg-themeSilver shadow-smButtonShadow w-36 h-14 rounded-full flex items-center justify-around text-[#707175]">
           <button
             disabled={itemQuantity <= 0}
             onClick={() => {

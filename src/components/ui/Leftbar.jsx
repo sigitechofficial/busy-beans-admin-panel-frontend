@@ -655,7 +655,20 @@ export default function Leftbar(props) {
           </div>
         </ul>
       ) : userType === "supplier" ? (
-        <div>Suuplier</div>
+        <ul className="flex flex-col space-y-1 overflow-auto h-[90%]">
+          <ListHead title="Dashboard" to="/" Icon={MdDashboard} />
+
+          <div className="mx-2 pb-7">
+            <button
+              className="w-full font-inter font-medium text-lg sm:text-sm lg:text-base flex items-center gap-x-2 px-2 py-3 rounded-lg text-black hover:bg-black hover:text-white 
+        duration-200"
+              onClick={logoutFunc}
+            >
+              <MdLogout size={26} />
+              <span>Logout</span>
+            </button>
+          </div>
+        </ul>
       ) : userType === "salesRepresentative" ? (
         <ul className="flex flex-col space-y-1 overflow-auto h-[90%]">
           <ListHead title="Dashboard" to="/" Icon={MdDashboard} />
@@ -731,21 +744,29 @@ export default function Leftbar(props) {
             Icon={AiOutlineUnorderedList}
             active={pathname === "/sales-representative/upcoming-orders"}
             Angle={
-              salesRepresentativeActive?.orderManagement?.tab === "orderManagement" &&
+              salesRepresentativeActive?.orderManagement?.tab ===
+                "orderManagement" &&
               salesRepresentativeActive?.orderManagement?.status
                 ? FaAngleUp
                 : FaAngleDown
             }
             onClick={() =>
-              handleActive("orderManagement", salesRepresentativeActive?.orderManagement?.status)
+              handleActive(
+                "orderManagement",
+                salesRepresentativeActive?.orderManagement?.status
+              )
             }
           />
 
-          {salesRepresentativeActive?.orderManagement?.tab === "orderManagement" &&
+          {salesRepresentativeActive?.orderManagement?.tab ===
+            "orderManagement" &&
             salesRepresentativeActive?.orderManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  <ListItems title="Upcoming Orders" to="/sales-representative/upcoming-orders" />
+                  <ListItems
+                    title="Upcoming Orders"
+                    to="/sales-representative/upcoming-orders"
+                  />
                 </div>
                 <hr className="w-full" />
               </>

@@ -78,6 +78,7 @@ export default function Customers() {
     { field: "saleTaxNumber", header: "Sale Tax Number", sort: true },
     { field: "totalOrderAmount", header: "Total Orders", sort: true },
     { field: "totalOrderPlaced", header: "Total Orders Placed", sort: true },
+    { field: "salesRepName", header: "salesRepName", sort: true,  minWidth: "14rem" },
     { field: "status", header: "status", sort: true },
   ];
 
@@ -108,6 +109,11 @@ export default function Customers() {
       saleTaxNumber: customer?.saleTaxNumber,
       totalOrderAmount: customer?.totalOrderAmount,
       totalOrderPlaced: customer?.totalOrderPlaced,
+      salesRepName: customer?.salesRepName ?? (
+        <di className="w-44 bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+          Not Assigned Yet
+        </di>
+      ),
       status: (
         <div>
           {customer?.status ? (

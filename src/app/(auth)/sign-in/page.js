@@ -144,7 +144,7 @@ export default function SignIn() {
                     Forgot Password?
                   </p> */}
                 </div>
-                <div className="flex flex-col  gap-2 text-white font-inter font-normal">
+                {/* <div className="flex flex-col  gap-2 text-white font-inter font-normal">
                   <div className="flex align-items-center">
                     <Checkbox
                       inputId="admin"
@@ -181,7 +181,7 @@ export default function SignIn() {
                       Sales Representative
                     </label>
                   </div>
-                </div>
+                </div> */}
               </div>
               <div>
                 <button

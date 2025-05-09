@@ -25,7 +25,7 @@ export const PatchAPI = async (url, postData) => {
         error.response.data?.message ||
         error.response.statusText ||
         "Server Error";
-      throw new Error(`HTTP Error: ${error.response.status} - ${errorMessage}`);
+      throw new Error(`HTTP Error: - ${errorMessage}`);
     } else if (error.request) {
       throw new Error("Network Error: No response received from the server.");
     } else {

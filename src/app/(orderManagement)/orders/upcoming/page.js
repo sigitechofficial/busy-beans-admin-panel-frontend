@@ -12,7 +12,7 @@ import { Dialog } from "primereact/dialog";
 import MiniLoader from "@/components/ui/MiniLoader";
 import { PostAPI } from "@/utilities/PostAPI";
 import ErrorHandler from "@/utilities/ErrorHandler";
-import { success_toaster } from "@/utilities/Toaster";
+import { info_toaster, success_toaster } from "@/utilities/Toaster";
 
 export default function UpcomingOrders() {
   const router = useRouter();
@@ -24,7 +24,7 @@ export default function UpcomingOrders() {
   const { data, reFetch } = GetAPI(
     "api/v1/admin/order-frequency/upcomming-orders"
   );
-  console.log("🚀 ~ UpcomingOrders ~ data:", data?.data);
+  // console.log("🚀 ~ UpcomingOrders ~ data:", data?.data);
 
   const handleCancel = () => {
     setModal("");
@@ -32,22 +32,26 @@ export default function UpcomingOrders() {
   };
 
   const handleRebookOrder = async () => {
-    let orderIds = [];
-    selectedRows.map((row) => orderIds.push(row?.id));
-    try {
-      const res = await PostAPI("api/v1/admin/order-frequency/book-orders", {
-        ids: orderIds,
-      });
-      if (res?.data?.status === "success") {
-        success_toaster("Order Rebook Successfully");
-        orderIds = [];
-        setSelectedRows([]);
-        reFetch();
-      } else {
-        throw new Error(res?.data?.message || "An unexpected error occurred.");
+    if(selectedRows.length > 0){
+      let orderIds = [];
+      selectedRows.map((row) => orderIds.push(row?.id));
+      try {
+        const res = await PostAPI("api/v1/admin/order-frequency/book-orders", {
+          ids: orderIds,
+        });
+        if (res?.data?.status === "success") {
+          success_toaster("Order Rebook Successfully");
+          orderIds = [];
+          setSelectedRows([]);
+          reFetch();
+        } else {
+          throw new Error(res?.data?.message || "An unexpected error occurred.");
+        }
+      } catch (error) {
+        ErrorHandler(error);
       }
-    } catch (error) {
-      ErrorHandler(error);
+    }else{
+      info_toaster("No Order is selected")
     }
   };
 

@@ -3,17 +3,95 @@ import CountryCard from "@/components/ui/CountryCard";
 import { Dialog } from "primereact/dialog";
 import { LuImageUp } from "react-icons/lu";
 import { RiFileDownloadLine } from "react-icons/ri";
-import countries from "world-countries";
+// import countries from "world-countries";
 import Select from "react-select";
 import { selectStyles2 } from "@/utilities/SelectStyle";
 import { useState } from "react";
+import GetAPI from "@/utilities/GetAPI";
+import { PostAPI } from "@/utilities/PostAPI";
+import ErrorHandler from "@/utilities/ErrorHandler";
+import { success_toaster } from "@/utilities/Toaster";
+import { DeleteAPI } from "@/utilities/DeleteAPI";
+import { allCountries } from "country-region-data";
+import { Country, State, City } from "country-state-city";
 
 export default function Countries() {
-  const [modal, setModal] = useState(false);
-  const allCountries = countries.map((country) => ({
-    name: country?.name?.common,
-    code: country?.cca2?.toLowerCase(),
-  }));
+  const countries = Country.getAllCountries();
+  // const states = State.getStatesOfCountry("PK");
+  // console.log("🚀 ~ Countries ~ states:", states);
+
+  const [modal, setModal] = useState("");
+  const [countryID, setCountryID] = useState("");
+  const [countryName, setCountryName] = useState({
+    value: "",
+    label: "",
+  });
+  const allCountriesData = [];
+  // countries.map((country) =>
+  //   allCountries.push({
+  //     value: country?.name?.common,
+  //     label: country?.name?.common,
+  //     // name: country?.name?.common,
+  //     // code: country?.cca2?.toLowerCase(),
+  //   })
+  // );
+
+  countries?.map((country) =>
+    allCountriesData.push({
+      value: country?.isoCode,
+      label: country?.name,
+      // name: country?.name?.common,
+      // code: country?.cca2?.toLowerCase(),
+    })
+  );
+
+  const { data, reFetch } = GetAPI("api/v1/admin/address-management/country");
+  console.log("🚀 ~ Countries ~ data:", data?.data?.data)
+
+  const handleAddCountry = async (e) => {
+    e.preventDefault();
+    if (modal === "add") {
+      try {
+        const res = await PostAPI("api/v1/admin/address-management/country", {
+          name: countryName?.label,
+          isoCode: countryName?.value,
+        });
+        if (res?.data?.status === "success") {
+          success_toaster("Country Added Successfully");
+          reFetch();
+          setModal("");
+          setCountryName({
+            value: "",
+            label: "",
+          });
+        } else {
+          throw new Error(
+            res?.data?.message || "An unexpected error occurred."
+          );
+        }
+      } catch (error) {
+        ErrorHandler(error);
+      }
+    } else {
+      try {
+        const res = await DeleteAPI(
+          `api/v1/admin/address-management/country/${countryID}`
+        );
+        if (res?.data?.status === "success") {
+          success_toaster("Country Delete Successfully");
+          reFetch();
+          setModal("");
+          setCountryID("");
+        } else {
+          throw new Error(
+            res?.data?.message || "An unexpected error occurred."
+          );
+        }
+      } catch (error) {
+        ErrorHandler(error);
+      }
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -34,7 +112,7 @@ export default function Countries() {
         </div>
         <div className="flex justify-end">
           <button
-            onClick={() => setModal(true)}
+            onClick={() => setModal("add")}
             className="rounded-lg font-inter font-medium text-white px-6 sm:px-10 py-2.5 sm:py-4 bg-theme"
           >
             + Add Country
@@ -43,56 +121,84 @@ export default function Countries() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        <CountryCard countryName="Germany" countryCode="DE" />
-        <CountryCard countryName="Denmark" countryCode="DK" />
+        {data?.data?.data?.map((country, i) => (
+          <CountryCard
+            countryName={country?.name}
+            id={country?.id}
+            setModal={setModal}
+            setCountryID={setCountryID}
+            countryCode={country?.isoCode}
+          />
+        ))}
+        {/* <CountryCard countryName="Denmark" countryCode="DK" />
         <CountryCard countryName="Australia" countryCode="AU" />
         <CountryCard countryName="Canada" countryCode="CA" />
-        <CountryCard countryName="Austria" countryCode="AT" />
+        <CountryCard countryName="Austria" countryCode="AT" /> */}
       </div>
 
       {/* Modal */}
       <Dialog
-        visible={modal}
+        visible={modal === "add" || modal === "delete"}
         style={{ width: "40vw" }}
         className="font-nunito"
         onHide={() => setModal(false)}
         header={
           <div className="font-nunito font-bold text-2xl text-center">
-            Add Country
+            {modal === "add" ? "Add" : modal === "delete" ? "Delete" : ""}{" "}
+            Country
           </div>
         }
       >
-        <div className="space-y-4 flex flex-col items-center">
+        <form
+          onSubmit={handleAddCountry}
+          className="space-y-4 flex flex-col items-center"
+        >
           {/* header */}
-          <div className="rounded-xl border border-tabBorderColor border-opacity-40 size-28 flex items-center justify-center">
+          {/* <div className="rounded-xl border border-tabBorderColor border-opacity-40 size-28 flex items-center justify-center">
             <LuImageUp size={"100"} color="rgba(0, 0, 0, 0.6)" />
-          </div>
+          </div> */}
 
           {/* body */}
+
           <div className="w-full space-y-4">
-            <div className="flex flex-col gap-y-2 w-full">
-              <label className="text-labelColor font-medium font-satoshi">
-                Country
-              </label>
-              <Select
-                placeholder="Germany"
-                className="w-full"
-                styles={selectStyles2}
-              />
-            </div>
+            {modal === "add" ? (
+              <div className="flex flex-col gap-y-2 w-full">
+                <label className="text-labelColor font-medium font-satoshi">
+                  Country
+                </label>
+                <Select
+                  placeholder="Germany"
+                  className="w-full"
+                  styles={selectStyles2}
+                  options={allCountriesData}
+                  onChange={(e) =>
+                    setCountryName({ label: e.label, value: e.value })
+                  }
+                />
+              </div>
+            ) : (
+              <p className="text-labelColor font-nunito font-medium text-lg text-center">
+                Are you sure you want to delete this Country ?
+              </p>
+            )}
             <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
               <button
-                onClick={() => setModal(false)}
+                type="button"
+                onClick={() => setModal("")}
                 className="rounded-lg border border-black shadow-buttonShadow  px-6"
               >
                 Cancel
               </button>
-              <button className="rounded-lg border border-theme text-white px-10 bg-theme">
-                Add Country
+              <button
+                type="submit"
+                className="rounded-lg border border-theme text-white px-10 bg-theme"
+              >
+                {modal === "add" ? "Add" : modal === "delete" ? "Delete" : ""}{" "}
+                Country
               </button>
             </div>
           </div>
-        </div>
+        </form>
       </Dialog>
     </div>
   );

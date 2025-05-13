@@ -12,14 +12,17 @@ import { Country, State, City } from "country-state-city";
 import MyDataTable from "@/components/ui/MyDataTable";
 import { MdDelete } from "react-icons/md";
 import { PostAPI } from "@/utilities/PostAPI";
-import { success_toaster } from "@/utilities/Toaster";
+import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import { DeleteAPI } from "@/utilities/DeleteAPI";
 import BackButton from "@/components/ui/BackButton";
+import Loader from "@/components/ui/Loader";
+import MiniLoader from "@/components/ui/MiniLoader";
 
 export default function Cities() {
   const router = useRouter();
   const citiesDataOptions = [];
+  const [loading, setLoading] = useState(false);
   const { countryID, stateID } = useParams();
   const [modal, setModal] = useState("");
   const [cityID, setCityID] = useState("");
@@ -80,26 +83,34 @@ export default function Cities() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (modal === "add") {
-      try {
-        const res = await PostAPI("api/v1/admin/address-management/city", {
-          name: cityName?.value,
-          countryInSystemId: countryID,
-          stateInSystemId: stateID,
-        });
-        if (res?.data?.status === "success") {
-          success_toaster("City Added Successfully");
-          reFetch();
-          setModal("");
-          setCityName({ value: "", label: "" });
-        } else {
-          throw new Error(
-            res?.data?.message || "An unexpected error occurred."
-          );
+      if (!cityName?.value || !cityName?.label) {
+        info_toaster("Select city name");
+      } else {
+        setLoading(true);
+        try {
+          const res = await PostAPI("api/v1/admin/address-management/city", {
+            name: cityName?.value,
+            countryInSystemId: countryID,
+            stateInSystemId: stateID,
+          });
+          if (res?.data?.status === "success") {
+            success_toaster("City Added Successfully");
+            reFetch();
+            setModal("");
+            setCityName({ value: "", label: "" });
+          } else {
+            throw new Error(
+              res?.data?.message || "An unexpected error occurred."
+            );
+          }
+        } catch (error) {
+          ErrorHandler(error);
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        ErrorHandler(error);
       }
     } else {
+      setLoading(true);
       try {
         const res = await DeleteAPI(
           `api/v1/admin/address-management/city/${cityID}`
@@ -116,11 +127,15 @@ export default function Cities() {
         }
       } catch (error) {
         ErrorHandler(error);
+      } finally {
+        setLoading(false);
       }
     }
   };
 
-  return (
+  return data?.length === 0 ? (
+    <Loader />
+  ) : (
     <div className="space-y-8">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -194,54 +209,58 @@ export default function Cities() {
           </div>
         }
       >
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4 flex flex-col items-center"
-        >
-          {/* body */}
-          <div className="w-full space-y-4">
-            {modal === "add" ? (
-              <div className="flex flex-col gap-y-2 w-full">
-                <label className="text-labelColor font-medium font-satoshi">
-                  City
-                </label>
-                <Select
-                  placeholder="Select City"
-                  className="w-full"
-                  styles={selectStyles2}
-                  options={citiesDataOptions}
-                  onChange={(e) =>
-                    setCityName({ label: e.label, value: e.value })
-                  }
-                />
+        {loading ? (
+          <MiniLoader />
+        ) : (
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4 flex flex-col items-center"
+          >
+            {/* body */}
+            <div className="w-full space-y-4">
+              {modal === "add" ? (
+                <div className="flex flex-col gap-y-2 w-full">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    City
+                  </label>
+                  <Select
+                    placeholder="Select City"
+                    className="w-full"
+                    styles={selectStyles2}
+                    options={citiesDataOptions}
+                    onChange={(e) =>
+                      setCityName({ label: e.label, value: e.value })
+                    }
+                  />
+                </div>
+              ) : (
+                <p className="text-labelColor font-nunito font-medium text-lg text-center">
+                  Are you sure you want to delete this City?
+                </p>
+              )}
+              <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setModal("");
+                    setTerritotyName("");
+                    setCityID("");
+                    setSelectedRows([]);
+                  }}
+                  className="rounded-lg border border-black shadow-buttonShadow  px-6"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-lg border border-theme text-white px-10 bg-theme"
+                >
+                  {modal === "add" ? "Add" : "Delete"} City
+                </button>
               </div>
-            ) : (
-              <p className="text-labelColor font-nunito font-medium text-lg text-center">
-                Are you sure you want to delete this City?
-              </p>
-            )}
-            <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
-              <button
-                type="button"
-                onClick={() => {
-                  setModal("");
-                  setTerritotyName("");
-                  setCityID("");
-                  setSelectedRows([]);
-                }}
-                className="rounded-lg border border-black shadow-buttonShadow  px-6"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="rounded-lg border border-theme text-white px-10 bg-theme"
-              >
-                {modal === "add" ? "Add" : "Delete"} City
-              </button>
             </div>
-          </div>
-        </form>
+          </form>
+        )}
       </Dialog>
     </div>
   );

@@ -12,18 +12,21 @@ import { useParams } from "next/navigation";
 import { allCountries } from "country-region-data";
 import { MdDelete } from "react-icons/md";
 import { PostAPI } from "@/utilities/PostAPI";
-import { success_toaster } from "@/utilities/Toaster";
+import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import { DeleteAPI } from "@/utilities/DeleteAPI";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Country, State, City } from "country-state-city";
 import BackButton from "@/components/ui/BackButton";
+import Loader from "@/components/ui/Loader";
+import MiniLoader from "@/components/ui/MiniLoader";
 
 export default function States() {
   // const router = useRouter();
   const { countryID } = useParams();
   let stateListOptions = [];
+  const [loading, setLoading] = useState(false);
   const [modal, setModal] = useState("");
   const [stateID, setStateID] = useState("");
   const [stateName, setStateName] = useState({
@@ -103,6 +106,10 @@ export default function States() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (modal === "add") {
+      if(!stateName?.value || !stateName?.label){
+        info_toaster("Select State first")
+      }
+      else{setLoading(true);
       try {
         const res = await PostAPI("api/v1/admin/address-management/state", {
           name: stateName?.label,
@@ -121,8 +128,11 @@ export default function States() {
         }
       } catch (error) {
         ErrorHandler(error);
-      }
+      } finally {
+        setLoading(false);
+      }}
     } else {
+      setLoading(true);
       try {
         const res = await DeleteAPI(
           `api/v1/admin/address-management/state/${stateID}`
@@ -139,11 +149,15 @@ export default function States() {
         }
       } catch (error) {
         ErrorHandler(error);
+      } finally {
+        setLoading(false);
       }
     }
   };
 
-  return (
+  return data?.length === 0 ? (
+    <Loader />
+  ) : (
     <div className="space-y-8">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -198,33 +212,36 @@ export default function States() {
           </div>
         }
       >
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4 flex flex-col items-center"
-        >
-          {/* body */}
-          <div className="w-full space-y-4">
-            {modal === "add" ? (
-              <div className="flex flex-col gap-y-2 w-full">
-                <label className="text-labelColor font-medium font-satoshi">
-                  State
-                </label>
-                <Select
-                  placeholder="Select State"
-                  className="w-full"
-                  styles={selectStyles2}
-                  options={stateListOptions}
-                  onChange={(e) =>
-                    setStateName({ label: e.label, value: e.value })
-                  }
-                />
-              </div>
-            ) : (
-              <p className="text-labelColor font-nunito font-medium text-lg text-center">
-                Are you sure you want to delete this State ?
-              </p>
-            )}
-            {/* <div className="flex flex-col gap-y-2 w-full">
+        {loading ? (
+          <MiniLoader />
+        ) : (
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4 flex flex-col items-center"
+          >
+            {/* body */}
+            <div className="w-full space-y-4">
+              {modal === "add" ? (
+                <div className="flex flex-col gap-y-2 w-full">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    State
+                  </label>
+                  <Select
+                    placeholder="Select State"
+                    className="w-full"
+                    styles={selectStyles2}
+                    options={stateListOptions}
+                    onChange={(e) =>
+                      setStateName({ label: e.label, value: e.value })
+                    }
+                  />
+                </div>
+              ) : (
+                <p className="text-labelColor font-nunito font-medium text-lg text-center">
+                  Are you sure you want to delete this State ?
+                </p>
+              )}
+              {/* <div className="flex flex-col gap-y-2 w-full">
               <label className="text-labelColor font-medium font-satoshi">
                 Select City
               </label>
@@ -245,24 +262,25 @@ export default function States() {
                 className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
               />
             </div> */}
-            <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
-              <button
-                type="button"
-                onClick={() => setModal("")}
-                className="rounded-lg border border-black shadow-buttonShadow  px-6"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="rounded-lg border border-theme text-white px-10 bg-theme"
-              >
-                {modal === "add" ? "Add" : modal === "delete" ? "Delete" : ""}{" "}
-                State
-              </button>
+              <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
+                <button
+                  type="button"
+                  onClick={() => setModal("")}
+                  className="rounded-lg border border-black shadow-buttonShadow  px-6"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-lg border border-theme text-white px-10 bg-theme"
+                >
+                  {modal === "add" ? "Add" : modal === "delete" ? "Delete" : ""}{" "}
+                  State
+                </button>
+              </div>
             </div>
-          </div>
-        </form>
+          </form>
+        )}
       </Dialog>
     </div>
   );

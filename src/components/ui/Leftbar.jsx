@@ -605,7 +605,6 @@ export default function Leftbar(props) {
             active?.zoneManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  <ListItems title="All Zones" to="/zones" />
                   <ListItems title="All Countries" to="/countries" />
                 </div>
                 <hr className="w-full" />

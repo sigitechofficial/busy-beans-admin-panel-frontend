@@ -12,15 +12,17 @@ import { Country, State, City } from "country-state-city";
 import MyDataTable from "@/components/ui/MyDataTable";
 import { MdDelete } from "react-icons/md";
 import { PostAPI } from "@/utilities/PostAPI";
-import { success_toaster } from "@/utilities/Toaster";
+import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import { DeleteAPI } from "@/utilities/DeleteAPI";
 import BackButton from "@/components/ui/BackButton";
 import ZoneEditTab from "@/components/ui/ZoneEditTab";
 import { PatchAPI } from "@/utilities/PatchAPI";
+import Loader from "@/components/ui/Loader";
 
 export default function AddTerritory() {
   const { countryID, stateID } = useParams();
+  const [loading, setLoading] = useState(false);
   const [modal, setModal] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
   const [territotyName, setTerritotyName] = useState("");
@@ -70,6 +72,7 @@ export default function AddTerritory() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (modal === "delete") {
+      setLoading(true);
       try {
         const res = await PatchAPI(
           `api/v1/admin/address-management/city/${id}`,
@@ -90,8 +93,11 @@ export default function AddTerritory() {
         }
       } catch (error) {
         ErrorHandler(error);
+      } finally {
+        setLoading(false);
       }
     } else if (modal === "deleteTerritory") {
+      setLoading(true);
       try {
         const res = await DeleteAPI(
           `api/v1/admin/address-management/territory/${id}`
@@ -109,61 +115,82 @@ export default function AddTerritory() {
         }
       } catch (error) {
         ErrorHandler(error);
+      } finally {
+        setLoading(false);
       }
     } else if (modal === "territory") {
-      const citiesID = [];
-      selectedRows?.map((city, i) => citiesID.push(city?.id));
-      try {
-        const res = await PostAPI("api/v1/admin/address-management/territory", {
-          name: territotyName,
-          countryInSystemId: countryID,
-          stateInSystemId: stateID,
-          cities: citiesID,
-        });
-        if (res?.data?.status === "success") {
-          success_toaster("Territory Created Successfully");
-          reFetch();
-          refetchTerritoryCities();
-          setModal("");
-          setTerritotyName("");
-          setSelectedRows([]);
-        } else {
-          throw new Error(
-            res?.data?.message || "An unexpected error occurred."
+      if (selectedRows.length === 0) {
+        info_toaster("No City is Selected");
+      } else {
+        const citiesID = [];
+        selectedRows?.map((city, i) => citiesID.push(city?.id));
+        setLoading(true);
+        try {
+          const res = await PostAPI(
+            "api/v1/admin/address-management/territory",
+            {
+              name: territotyName,
+              countryInSystemId: countryID,
+              stateInSystemId: stateID,
+              cities: citiesID,
+            }
           );
+          if (res?.data?.status === "success") {
+            success_toaster("Territory Created Successfully");
+            reFetch();
+            refetchTerritoryCities();
+            setModal("");
+            setTerritotyName("");
+            setSelectedRows([]);
+          } else {
+            throw new Error(
+              res?.data?.message || "An unexpected error occurred."
+            );
+          }
+        } catch (error) {
+          ErrorHandler(error);
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        ErrorHandler(error);
       }
     } else if (modal === "edit") {
-      const citiesID = [];
-      selectedRows?.map((city, i) => citiesID.push(city?.id));
-      try {
-        const res = await PatchAPI(
-          `api/v1/admin/address-management/add-cities-in-territory/${id}`,
-          {
-            cities: citiesID,
-          }
-        );
-        if (res?.data?.status === "success") {
-          success_toaster("Territory Updated Successfully");
-          reFetch();
-          refetchTerritoryCities();
-          setModal("");
-          setTerritotyName("");
-          setSelectedRows([]);
-        } else {
-          throw new Error(
-            res?.data?.message || "An unexpected error occurred."
+      if (selectedRows.length === 0) {
+        info_toaster("No City is Selected");
+      } else {
+        setLoading(true);
+        const citiesID = [];
+        selectedRows?.map((city, i) => citiesID.push(city?.id));
+        try {
+          const res = await PatchAPI(
+            `api/v1/admin/address-management/add-cities-in-territory/${id}`,
+            {
+              cities: citiesID,
+            }
           );
+          if (res?.data?.status === "success") {
+            success_toaster("Territory Updated Successfully");
+            reFetch();
+            refetchTerritoryCities();
+            setModal("");
+            setTerritotyName("");
+            setSelectedRows([]);
+          } else {
+            throw new Error(
+              res?.data?.message || "An unexpected error occurred."
+            );
+          }
+        } catch (error) {
+          ErrorHandler(error);
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        ErrorHandler(error);
       }
     }
   };
 
-  return (
+  return data?.length === 0 ? (
+    <Loader />
+  ) : (
     <div className="space-y-8">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -202,34 +229,40 @@ export default function AddTerritory() {
         <CityCard name="Chemnitz" /> */}
       </div>
 
-      <div className="space-y-6">
-        {data?.data?.results.map((territory, i) => (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-              <ZoneEditTab
-                id={territory?.id}
-                handleDeleteCity={handleDeleteCity}
-                handleEditTerritory={() => {
-                  setModal("edit");
-                  setTerritotyName(territory?.name);
-                  setID(territory?.id);
-                }}
-                name={territory?.name}
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-x-6 gap-y-4">
-              {territory?.cityInSystems?.map((city, i) => (
-                <CityCard
-                  id={city?.id}
+      {data?.data?.results?.length === 0 ? (
+        <p className="text-red-500 text-center text-xl font-inter font-bold">
+          No Territory Found !
+        </p>
+      ) : (
+        <div className="space-y-6">
+          {data?.data?.results.map((territory, i) => (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                <ZoneEditTab
+                  id={territory?.id}
                   handleDeleteCity={handleDeleteCity}
-                  name={city?.name}
-                  delete={true}
+                  handleEditTerritory={() => {
+                    setModal("edit");
+                    setTerritotyName(territory?.name);
+                    setID(territory?.id);
+                  }}
+                  name={territory?.name}
                 />
-              ))}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-x-6 gap-y-4">
+                {territory?.cityInSystems?.map((city, i) => (
+                  <CityCard
+                    id={city?.id}
+                    handleDeleteCity={handleDeleteCity}
+                    name={city?.name}
+                    delete={true}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Modal */}
       <Dialog

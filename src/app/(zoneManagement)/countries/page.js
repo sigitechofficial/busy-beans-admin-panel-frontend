@@ -10,16 +10,19 @@ import { useState } from "react";
 import GetAPI from "@/utilities/GetAPI";
 import { PostAPI } from "@/utilities/PostAPI";
 import ErrorHandler from "@/utilities/ErrorHandler";
-import { success_toaster } from "@/utilities/Toaster";
+import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import { DeleteAPI } from "@/utilities/DeleteAPI";
 import { allCountries } from "country-region-data";
 import { Country, State, City } from "country-state-city";
+import Loader from "@/components/ui/Loader";
+import MiniLoader from "@/components/ui/MiniLoader";
 
 export default function Countries() {
   const countries = Country.getAllCountries();
   // const states = State.getStatesOfCountry("PK");
   // console.log("🚀 ~ Countries ~ states:", states);
 
+  const [loading, setLoading] = useState(false);
   const [modal, setModal] = useState("");
   const [countryID, setCountryID] = useState("");
   const [countryName, setCountryName] = useState({
@@ -46,33 +49,42 @@ export default function Countries() {
   );
 
   const { data, reFetch } = GetAPI("api/v1/admin/address-management/country");
-  console.log("🚀 ~ Countries ~ data:", data?.data?.data)
+  console.log("🚀 ~ Countries ~ data:", data?.data?.data);
 
   const handleAddCountry = async (e) => {
     e.preventDefault();
     if (modal === "add") {
-      try {
-        const res = await PostAPI("api/v1/admin/address-management/country", {
-          name: countryName?.label,
-          isoCode: countryName?.value,
-        });
-        if (res?.data?.status === "success") {
-          success_toaster("Country Added Successfully");
-          reFetch();
-          setModal("");
-          setCountryName({
-            value: "",
-            label: "",
+      if (!countryName?.label || !countryName?.value) {
+        info_toaster("Select Country");
+      } else {
+        try {
+          setLoading(true);
+          const res = await PostAPI("api/v1/admin/address-management/country", {
+            name: countryName?.label,
+            isoCode: countryName?.value,
           });
-        } else {
-          throw new Error(
-            res?.data?.message || "An unexpected error occurred."
-          );
+          if (res?.data?.status === "success") {
+            success_toaster("Country Added Successfully");
+            reFetch();
+            setModal("");
+            setCountryName({
+              value: "",
+              label: "",
+            });
+            setLoading(false);
+          } else {
+            throw new Error(
+              res?.data?.message || "An unexpected error occurred."
+            );
+          }
+        } catch (error) {
+          ErrorHandler(error);
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        ErrorHandler(error);
       }
     } else {
+      setLoading(true);
       try {
         const res = await DeleteAPI(
           `api/v1/admin/address-management/country/${countryID}`
@@ -89,11 +101,15 @@ export default function Countries() {
         }
       } catch (error) {
         ErrorHandler(error);
+      } finally {
+        setLoading(false);
       }
     }
   };
 
-  return (
+  return data?.length === 0 ? (
+    <Loader />
+  ) : (
     <div className="space-y-8">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -149,56 +165,60 @@ export default function Countries() {
           </div>
         }
       >
-        <form
-          onSubmit={handleAddCountry}
-          className="space-y-4 flex flex-col items-center"
-        >
-          {/* header */}
-          {/* <div className="rounded-xl border border-tabBorderColor border-opacity-40 size-28 flex items-center justify-center">
+        {loading ? (
+          <MiniLoader />
+        ) : (
+          <form
+            onSubmit={handleAddCountry}
+            className="space-y-4 flex flex-col items-center"
+          >
+            {/* header */}
+            {/* <div className="rounded-xl border border-tabBorderColor border-opacity-40 size-28 flex items-center justify-center">
             <LuImageUp size={"100"} color="rgba(0, 0, 0, 0.6)" />
           </div> */}
 
-          {/* body */}
+            {/* body */}
 
-          <div className="w-full space-y-4">
-            {modal === "add" ? (
-              <div className="flex flex-col gap-y-2 w-full">
-                <label className="text-labelColor font-medium font-satoshi">
+            <div className="w-full space-y-4">
+              {modal === "add" ? (
+                <div className="flex flex-col gap-y-2 w-full">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Country
+                  </label>
+                  <Select
+                    placeholder="Germany"
+                    className="w-full"
+                    styles={selectStyles2}
+                    options={allCountriesData}
+                    onChange={(e) =>
+                      setCountryName({ label: e.label, value: e.value })
+                    }
+                  />
+                </div>
+              ) : (
+                <p className="text-labelColor font-nunito font-medium text-lg text-center">
+                  Are you sure you want to delete this Country ?
+                </p>
+              )}
+              <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
+                <button
+                  type="button"
+                  onClick={() => setModal("")}
+                  className="rounded-lg border border-black shadow-buttonShadow  px-6"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-lg border border-theme text-white px-10 bg-theme"
+                >
+                  {modal === "add" ? "Add" : modal === "delete" ? "Delete" : ""}{" "}
                   Country
-                </label>
-                <Select
-                  placeholder="Germany"
-                  className="w-full"
-                  styles={selectStyles2}
-                  options={allCountriesData}
-                  onChange={(e) =>
-                    setCountryName({ label: e.label, value: e.value })
-                  }
-                />
+                </button>
               </div>
-            ) : (
-              <p className="text-labelColor font-nunito font-medium text-lg text-center">
-                Are you sure you want to delete this Country ?
-              </p>
-            )}
-            <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
-              <button
-                type="button"
-                onClick={() => setModal("")}
-                className="rounded-lg border border-black shadow-buttonShadow  px-6"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="rounded-lg border border-theme text-white px-10 bg-theme"
-              >
-                {modal === "add" ? "Add" : modal === "delete" ? "Delete" : ""}{" "}
-                Country
-              </button>
             </div>
-          </div>
-        </form>
+          </form>
+        )}
       </Dialog>
     </div>
   );

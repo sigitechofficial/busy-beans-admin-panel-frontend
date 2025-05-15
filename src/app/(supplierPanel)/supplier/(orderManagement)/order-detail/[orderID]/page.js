@@ -17,40 +17,40 @@ import Select from "react-select";
 
 export default function OrderDetail() {
   const { orderID } = useParams();
-  const [chequeId, setChequeId] = useState("");
+  // const [chequeId, setChequeId] = useState("");
   const [modal, setModal] = useState({
     type: "", // addCheque , editCheque
     status: false,
   });
 
   const [loader, setLoader] = useState("");
-  const [addCheque, setAddCheque] = useState({
-    chequeNumber: "",
-    chequeDate: "",
-    chequeStatus: {
-      value: "",
-      label: "",
-    },
-    bankName: "",
-    bankBranch: "",
-    chequeType: {
-      value: "",
-      label: "",
-    },
-    chequeReceiptDate: "",
-  });
+  // const [addCheque, setAddCheque] = useState({
+  //   chequeNumber: "",
+  //   chequeDate: "",
+  //   chequeStatus: {
+  //     value: "",
+  //     label: "",
+  //   },
+  //   bankName: "",
+  //   bankBranch: "",
+  //   chequeType: {
+  //     value: "",
+  //     label: "",
+  //   },
+  //   chequeReceiptDate: "",
+  // });
 
-  const chequeStatusOptions = [
-    { value: "Pending", label: "Pending" },
-    { value: "Cleared", label: "Cleared" },
-    { value: "Bounced", label: "Bounced" },
-  ];
+  // const chequeStatusOptions = [
+  //   { value: "Pending", label: "Pending" },
+  //   { value: "Cleared", label: "Cleared" },
+  //   { value: "Bounced", label: "Bounced" },
+  // ];
 
-  const chequeTypeOptions = [
-    { value: "personal check", label: "Personal check" },
-    { value: "business check", label: "Business check" },
-    { value: "cashier's check", label: "Cashier's check" },
-  ];
+  // const chequeTypeOptions = [
+  //   { value: "personal check", label: "Personal check" },
+  //   { value: "business check", label: "Business check" },
+  //   { value: "cashier's check", label: "Cashier's check" },
+  // ];
 
   const { data, reFetch } = GetAPI(`api/v1/admin/order-details/${orderID}`);
   console.log("🚀 ~ OrderDetail ~ data:", data?.data?.order);
@@ -103,12 +103,13 @@ export default function OrderDetail() {
   };
 
   const handleAssignSupplier = (statusId) => {
-    if (statusId === 1) {
-      setModal({
-        type: "assignSupplier",
-        status: true,
-      });
-    } else if (statusId === 2) {
+    // if (statusId === 1) {
+    //   setModal({
+    //     type: "assignSupplier",
+    //     status: true,
+    //   });
+    // } else
+     if (statusId === 2) {
       handleSupplierAcknowledgement();
     } else if (statusId === 3) {
       setModal({
@@ -128,141 +129,139 @@ export default function OrderDetail() {
   };
 
   const handleSubmit = async () => {
-    if (modal?.type === "addCheque" && modal.status) {
-      setLoader("addCheque");
-      try {
-        const res = await PatchAPI("api/v1/admin/add-cheque", {
-          orderId: orderID,
-          orderData: {
-            paymentMethod: "cheque",
-          },
-          cheque: {
-            chequeNumber: addCheque?.chequeNumber,
-            chequeDate: addCheque?.chequeDate,
-            chequeStatus: addCheque?.chequeStatus?.value, // Pending, Cleared, Bounced
-            bankName: addCheque?.bankName,
-            bankBranch: addCheque?.bankBranch,
-            chequeType: addCheque?.chequeType?.value, // personal check, business check, or cashier's check
-            chequeReceiptDate: addCheque?.chequeReceiptDate,
-          },
+    // if (modal?.type === "addCheque" && modal.status) {
+    //   setLoader("addCheque");
+    //   try {
+    //     const res = await PatchAPI("api/v1/admin/add-cheque", {
+    //       orderId: orderID,
+    //       orderData: {
+    //         paymentMethod: "cheque",
+    //       },
+    //       cheque: {
+    //         chequeNumber: addCheque?.chequeNumber,
+    //         chequeDate: addCheque?.chequeDate,
+    //         chequeStatus: addCheque?.chequeStatus?.value, // Pending, Cleared, Bounced
+    //         bankName: addCheque?.bankName,
+    //         bankBranch: addCheque?.bankBranch,
+    //         chequeType: addCheque?.chequeType?.value, // personal check, business check, or cashier's check
+    //         chequeReceiptDate: addCheque?.chequeReceiptDate,
+    //       },
+    //     });
+    //     if (res?.data?.status === "success") {
+    //       success_toaster("Cheque Added successfully");
+    //       reFetch();
+    //       setModal({
+    //         type: "",
+    //         status: false,
+    //       });
+    //       setLoader("");
+    //     } else {
+    //       setLoader("");
+    //       throw new Error(
+    //         res?.data?.message || "An unexpected error occurred."
+    //       );
+    //     }
+    //   } catch (error) {
+    //     setLoader("");
+    //     ErrorHandler(error);
+    //   }
+    // } else if (modal?.type === "editCheque" && modal.status) {
+    //   setLoader("editCheque");
+    //   try {
+    //     const res = await PatchAPI("api/v1/admin/edit-cheque", {
+    //       chequeId: chequeId,
+    //       cheque: {
+    //         chequeNumber: addCheque?.chequeNumber,
+    //         chequeDate: addCheque?.chequeDate,
+    //         chequeStatus: addCheque?.chequeStatus?.value, // Pending, Cleared, Bounced
+    //         bankName: addCheque?.bankName,
+    //         bankBranch: addCheque?.bankBranch,
+    //         chequeType: addCheque?.chequeType?.value, // personal check, business check, or cashier's check
+    //         chequeReceiptDate: addCheque?.chequeReceiptDate,
+    //       },
+    //     });
+    //     if (res?.data?.status === "success") {
+    //       success_toaster("Cheque Updated successfully");
+    //       reFetch();
+    //       setChequeId("");
+    //       setModal({
+    //         type: "",
+    //         status: false,
+    //       });
+    //       setLoader("");
+    //     } else {
+    //       setLoader("");
+    //       throw new Error(
+    //         res?.data?.message || "An unexpected error occurred."
+    //       );
+    //     }
+    //   } catch (error) {
+    //     setLoader("");
+    //     ErrorHandler(error);
+    //   }
+    // } else {
+    setLoader("cancelOrder");
+    try {
+      const res = await PatchAPI("api/v1/admin/order-cancel", {
+        orderId: orderID,
+        orderData: {
+          statusId: 6,
+          paymentStaus: "pending",
+          totalBill: data?.data?.order?.totalBill,
+        },
+      });
+      if (res?.data?.status === "success") {
+        success_toaster("Order Cancelled successfully");
+        reFetch();
+        setModal({
+          type: "",
+          status: false,
         });
-        if (res?.data?.status === "success") {
-          success_toaster("Cheque Added successfully");
-          reFetch();
-          setModal({
-            type: "",
-            status: false,
-          });
-          setLoader("");
-        } else {
-          setLoader("");
-          throw new Error(
-            res?.data?.message || "An unexpected error occurred."
-          );
-        }
-      } catch (error) {
         setLoader("");
-        ErrorHandler(error);
-      }
-    } else if (modal?.type === "editCheque" && modal.status) {
-      setLoader("editCheque");
-      try {
-        const res = await PatchAPI("api/v1/admin/edit-cheque", {
-          chequeId: chequeId,
-          cheque: {
-            chequeNumber: addCheque?.chequeNumber,
-            chequeDate: addCheque?.chequeDate,
-            chequeStatus: addCheque?.chequeStatus?.value, // Pending, Cleared, Bounced
-            bankName: addCheque?.bankName,
-            bankBranch: addCheque?.bankBranch,
-            chequeType: addCheque?.chequeType?.value, // personal check, business check, or cashier's check
-            chequeReceiptDate: addCheque?.chequeReceiptDate,
-          },
-        });
-        if (res?.data?.status === "success") {
-          success_toaster("Cheque Updated successfully");
-          reFetch();
-          setChequeId("");
-          setModal({
-            type: "",
-            status: false,
-          });
-          setLoader("");
-        } else {
-          setLoader("");
-          throw new Error(
-            res?.data?.message || "An unexpected error occurred."
-          );
-        }
-      } catch (error) {
+      } else {
         setLoader("");
-        ErrorHandler(error);
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
       }
-    } else {
-      setLoader("cancelOrder");
-      try {
-        const res = await PatchAPI("api/v1/admin/order-cancel", {
-          orderId: orderID,
-          orderData: {
-            statusId: 6,
-            paymentStaus: "pending",
-            totalBill: data?.data?.order?.totalBill,
-          },
-        });
-        if (res?.data?.status === "success") {
-          success_toaster("Order Cancelled successfully");
-          reFetch();
-          setModal({
-            type: "",
-            status: false,
-          });
-          setLoader("");
-        } else {
-          setLoader("");
-          throw new Error(
-            res?.data?.message || "An unexpected error occurred."
-          );
-        }
-      } catch (error) {
-        setLoader("");
-        ErrorHandler(error);
-      }
+    } catch (error) {
+      setLoader("");
+      ErrorHandler(error);
     }
+    // }
   };
 
-  const handleAddChequeModel = () => {
-    if (data?.data?.order?.chequeDetail) {
-      setModal({
-        type: "editCheque",
-        status: true,
-      });
-      setChequeId(data?.data?.order?.chequeDetail?.id);
-      setAddCheque({
-        chequeNumber: data?.data?.order?.chequeDetail?.chequeNumber,
-        chequeDate: data?.data?.order?.chequeDetail?.chequeDate,
-        chequeStatus: {
-          value: data?.data?.order?.chequeDetail?.chequeStatus,
-          label: data?.data?.order?.chequeDetail?.chequeStatus,
-        },
-        bankName: data?.data?.order?.chequeDetail?.bankName,
-        bankBranch: data?.data?.order?.chequeDetail?.bankBranch,
-        chequeType: {
-          value: data?.data?.order?.chequeDetail?.chequeType,
-          label: data?.data?.order?.chequeDetail?.chequeType,
-        },
-        chequeReceiptDate: data?.data?.order?.chequeDetail?.chequeReceiptDate,
-      });
-    } else {
-      setModal({
-        type: "addCheque",
-        status: true,
-      });
-    }
-  };
+  // const handleAddChequeModel = () => {
+  //   if (data?.data?.order?.chequeDetail) {
+  //     setModal({
+  //       type: "editCheque",
+  //       status: true,
+  //     });
+  //     setChequeId(data?.data?.order?.chequeDetail?.id);
+  //     setAddCheque({
+  //       chequeNumber: data?.data?.order?.chequeDetail?.chequeNumber,
+  //       chequeDate: data?.data?.order?.chequeDetail?.chequeDate,
+  //       chequeStatus: {
+  //         value: data?.data?.order?.chequeDetail?.chequeStatus,
+  //         label: data?.data?.order?.chequeDetail?.chequeStatus,
+  //       },
+  //       bankName: data?.data?.order?.chequeDetail?.bankName,
+  //       bankBranch: data?.data?.order?.chequeDetail?.bankBranch,
+  //       chequeType: {
+  //         value: data?.data?.order?.chequeDetail?.chequeType,
+  //         label: data?.data?.order?.chequeDetail?.chequeType,
+  //       },
+  //       chequeReceiptDate: data?.data?.order?.chequeDetail?.chequeReceiptDate,
+  //     });
+  //   } else {
+  //     setModal({
+  //       type: "addCheque",
+  //       status: true,
+  //     });
+  //   }
+  // };
 
-  const handleChange = (e) => {
-    setAddCheque({ ...addCheque, [e.target.name]: e.target.value });
-  };
+  // const handleChange = (e) => {
+  //   setAddCheque({ ...addCheque, [e.target.name]: e.target.value });
+  // };
 
   return data?.length ? (
     <Loader />
@@ -277,12 +276,12 @@ export default function OrderDetail() {
         </div>
 
         <div className="flex items-center gap-x-2 sm:gap-x-4 [&>button]:py-2 sm:[&>button]:py-3 [&>button]:px-2 sm:[&>button]:px-5 [&>button]:rounded-lg [&>button]:font-nunito [&>button]:font-medium max-sm:[&>button]:text-sm">
-          <button
+          {/* <button
             onClick={handleAddChequeModel}
             className="bg-black text-white disabled:cursor-not-allowed"
           >
             {data?.data?.order?.chequeDetail ? "Edit Cheque" : "Add Cheque"}
-          </button>
+          </button> */}
           <button
             disabled={
               data?.data?.order?.statusId === 5 ||
@@ -326,7 +325,7 @@ export default function OrderDetail() {
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 xl:gap-x-12">
           {/* Left side */}
           <div className="space-y-6">
-            <CusSupInformationCard
+            {/* <CusSupInformationCard
               heading="Customer Information"
               image={data?.data?.order?.user?.image}
               name={data?.data?.order?.user?.name}
@@ -345,7 +344,7 @@ export default function OrderDetail() {
                 } - ${data?.data?.order?.address?.zipCode ?? ""}
                   ${data?.data?.order?.address?.country ?? ""}`,
               }}
-            />
+            /> */}
             {data?.data?.order?.statusId >= 2 && (
               <CusSupInformationCard
                 heading="Supplier Information"
@@ -388,9 +387,10 @@ export default function OrderDetail() {
 
       <Dialog
         visible={
-          (modal?.type === "cancelOrder" && modal?.status) ||
-          (modal?.type === "addCheque" && modal?.status) ||
-          (modal?.type === "editCheque" && modal?.status)
+          modal?.type === "cancelOrder" && modal?.status
+          // ||
+          // (modal?.type === "addCheque" && modal?.status) ||
+          // (modal?.type === "editCheque" && modal?.status)
         }
         style={{ width: "40vw" }}
         className="font-nunito"
@@ -402,11 +402,12 @@ export default function OrderDetail() {
         }
         header={
           <div className="font-nunito font-bold text-2xl text-center">
-            {modal?.type === "cancelOrder"
+            {/* {modal?.type === "cancelOrder"
               ? "Cancel Order"
               : modal?.type === "addCheque"
               ? "Add Cheque"
-              : "Edit Cheque"}
+              : "Edit Cheque"} */}
+            Cancel Order
           </div>
         }
       >
@@ -414,11 +415,12 @@ export default function OrderDetail() {
           onSubmit={handleSubmit}
           className="space-y-4 flex flex-col items-center"
         >
-          {loader === "cancelOrder" || loader === "addCheque" ? (
+          {/* {loader === "cancelOrder" || loader === "addCheque" ? ( */}
+          {loader === "cancelOrder" ? (
             <MiniLoader />
           ) : (
             <div className="w-full space-y-4">
-              {modal?.type === "cancelOrder" ? (
+              {/* {modal?.type === "cancelOrder" ? (
                 <p className="text-labelColor font-nunito font-medium text-lg text-center">
                   Are you sure you want to cancel this Order ?
                 </p>
@@ -454,14 +456,7 @@ export default function OrderDetail() {
                     <label className="text-labelColor font-medium font-satoshi">
                       Cheque Status
                     </label>
-                    {/* <input
-                      type="chequeStatus"
-                      name="desc"
-                      value={addCheque?.chequeStatus}
-                      onChange={handleChange}
-                      placeholder="Enter Description"
-                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    /> */}
+              
                     <Select
                       placeholder="Select Cheque Status"
                       className="w-full"
@@ -507,14 +502,7 @@ export default function OrderDetail() {
                     <label className="text-labelColor font-medium font-satoshi">
                       Cheque Type
                     </label>
-                    {/* <input
-                      type="chequeType"
-                      name="desc"
-                      value={addCheque?.chequeType}
-                      onChange={handleChange}
-                      placeholder="Enter Description"
-                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    /> */}
+                
                     <Select
                       placeholder="Select Cheque Type"
                       className="w-full"
@@ -544,7 +532,10 @@ export default function OrderDetail() {
                     />
                   </div>
                 </div>
-              )}
+              )} */}
+              <p className="text-labelColor font-nunito font-medium text-lg text-center">
+                Are you sure you want to cancel this Order ?
+              </p>
 
               <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
                 <button
@@ -563,11 +554,12 @@ export default function OrderDetail() {
                   type="submit"
                   className="rounded-lg border border-theme text-white px-10 bg-theme"
                 >
-                  {modal?.type === "cancelOrder"
+                  {/* {modal?.type === "cancelOrder"
                     ? "Cancel Order"
                     : modal?.type === "addCheque"
                     ? "Add Cheque"
-                    : "Update Cheque"}
+                    : "Update Cheque"} */}
+                  Cancel Order
                 </button>
               </div>
             </div>

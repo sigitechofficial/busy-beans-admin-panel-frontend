@@ -155,7 +155,7 @@ export default function Cities() {
         <div className="flex gap-x-2 justify-end">
           <button
             onClick={() => setModal("add")}
-            className="rounded-lg font-inter font-medium text-white px-6 sm:px-10 py-2.5 sm:py-4 bg-theme"
+            className="rounded-lg font-inter font-medium text-white px-6 sm:px-10 py-2.5 sm:py-4 bg-theme hover:bg-white hover:text-theme border border-theme duration-150"
           >
             + Add City
           </button>
@@ -166,7 +166,7 @@ export default function Cities() {
                 `/countries/${countryID}/state/${stateID}/add-territory`
               )
             }
-            className="rounded-lg font-inter font-medium text-white px-6 sm:px-10 py-2.5 sm:py-4 bg-theme"
+            className="text-theme bg-white border border-theme hover:text-white hover:bg-theme duration-150 rounded-lg font-inter font-medium px-6 sm:px-10 py-2.5 sm:py-4 "
           >
             + Add Territory
           </button>
@@ -247,13 +247,13 @@ export default function Cities() {
                     setCityID("");
                     setSelectedRows([]);
                   }}
-                  className="rounded-lg border border-black shadow-buttonShadow  px-6"
+                  className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow  px-6"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg border border-theme text-white px-10 bg-theme"
+                  className="hover:bg-white hover:text-theme duration-150 rounded-lg border border-theme text-white px-10 bg-theme"
                 >
                   {modal === "add" ? "Add" : "Delete"} City
                 </button>

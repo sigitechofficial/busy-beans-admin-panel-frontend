@@ -218,7 +218,7 @@ export default function SaleRepresentative() {
                 <button
                   type="button"
                   onClick={handleModalClose}
-                  className="rounded-lg border border-black shadow-buttonShadow  px-6"
+                  className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow  px-6"
                 >
                   Cancel
                 </button>

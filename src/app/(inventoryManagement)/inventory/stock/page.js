@@ -583,7 +583,7 @@ export default function Stock() {
                 <button
                   type="button"
                   onClick={handleCancel}
-                  className="rounded-lg border border-black shadow-buttonShadow  px-6"
+                  className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow  px-6"
                 >
                   Cancel
                 </button>

@@ -8,8 +8,6 @@ import { selectStyles2 } from "@/utilities/SelectStyle";
 import { Dialog } from "primereact/dialog";
 import GetAPI from "@/utilities/GetAPI";
 import { useParams } from "next/navigation";
-// import { CountryRegionData } from 'country-region-data';
-import { allCountries } from "country-region-data";
 import { MdDelete } from "react-icons/md";
 import { PostAPI } from "@/utilities/PostAPI";
 import { info_toaster, success_toaster } from "@/utilities/Toaster";
@@ -106,31 +104,32 @@ export default function States() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (modal === "add") {
-      if(!stateName?.value || !stateName?.label){
-        info_toaster("Select State first")
-      }
-      else{setLoading(true);
-      try {
-        const res = await PostAPI("api/v1/admin/address-management/state", {
-          name: stateName?.label,
-          isoCode: stateName?.value,
-          countryInSystemId: countryID,
-        });
-        if (res?.data?.status === "success") {
-          success_toaster("State Added Successfully");
-          reFetch();
-          setModal("");
-          setStateName({ value: "", label: "" });
-        } else {
-          throw new Error(
-            res?.data?.message || "An unexpected error occurred."
-          );
+      if (!stateName?.value || !stateName?.label) {
+        info_toaster("Select State first");
+      } else {
+        setLoading(true);
+        try {
+          const res = await PostAPI("api/v1/admin/address-management/state", {
+            name: stateName?.label,
+            isoCode: stateName?.value,
+            countryInSystemId: countryID,
+          });
+          if (res?.data?.status === "success") {
+            success_toaster("State Added Successfully");
+            reFetch();
+            setModal("");
+            setStateName({ value: "", label: "" });
+          } else {
+            throw new Error(
+              res?.data?.message || "An unexpected error occurred."
+            );
+          }
+        } catch (error) {
+          ErrorHandler(error);
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        ErrorHandler(error);
-      } finally {
-        setLoading(false);
-      }}
+      }
     } else {
       setLoading(true);
       try {
@@ -175,7 +174,7 @@ export default function States() {
         <div className="flex justify-end">
           <button
             onClick={() => setModal("add")}
-            className="rounded-lg font-inter font-medium text-white px-5 sm:px-8 py-2.5 sm:py-4 bg-theme"
+            className="hover:text-theme hover:bg-white duration-150 border border-theme rounded-lg font-inter font-medium text-white px-5 sm:px-8 py-2.5 sm:py-4 bg-theme"
           >
             + Add State
           </button>
@@ -266,13 +265,13 @@ export default function States() {
                 <button
                   type="button"
                   onClick={() => setModal("")}
-                  className="rounded-lg border border-black shadow-buttonShadow  px-6"
+                  className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow  px-6"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg border border-theme text-white px-10 bg-theme"
+                  className="rounded-lg border border-theme text-white px-10 bg-theme hover:bg-white hover:text-theme duration-150"
                 >
                   {modal === "add" ? "Add" : modal === "delete" ? "Delete" : ""}{" "}
                   State

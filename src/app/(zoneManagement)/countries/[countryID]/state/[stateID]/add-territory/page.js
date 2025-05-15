@@ -121,6 +121,8 @@ export default function AddTerritory() {
     } else if (modal === "territory") {
       if (selectedRows.length === 0) {
         info_toaster("No City is Selected");
+      } else if (!territotyName) {
+        info_toaster("Enter Territory Name");
       } else {
         const citiesID = [];
         selectedRows?.map((city, i) => citiesID.push(city?.id));
@@ -339,7 +341,7 @@ export default function AddTerritory() {
                   setID("");
                   setSelectedRows([]);
                 }}
-                className="rounded-lg border border-black shadow-buttonShadow  px-6"
+                className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow  px-6"
               >
                 Cancel
               </button>

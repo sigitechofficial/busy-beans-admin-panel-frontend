@@ -129,7 +129,7 @@ export default function Leftbar(props) {
           status: !status,
         },
       });
-    } else if (userType === "salesRepresentative") {
+    } else if (userType === "salesRepresentative" || userType === "supplier") {
       console.log("i am inside");
       setSalesRepresentativeActive({
         ...salesRepresentativeActive,
@@ -655,6 +655,62 @@ export default function Leftbar(props) {
       ) : userType === "supplier" ? (
         <ul className="flex flex-col space-y-1 overflow-auto h-[90%]">
           <ListHead title="Dashboard" to="/" Icon={MdDashboard} />
+
+          <ListHead
+            title="Order Management"
+            Icon={AiOutlineUnorderedList}
+            active={
+              pathname === "/supplier/assigned-orders" ||
+              pathname === "/supplier/acknowledge-orders" ||
+              pathname === "/supplier/dispatched-orders" ||
+              pathname === "/supplier/delivered-orders" ||
+              pathname === "/supplier/cancelled-orders" ||
+              pathname.includes("/supplier/order-detail")
+            }
+            Angle={
+              salesRepresentativeActive?.orderManagement?.tab ===
+                "orderManagement" &&
+              salesRepresentativeActive?.orderManagement?.status
+                ? FaAngleUp
+                : FaAngleDown
+            }
+            onClick={() =>
+              handleActive(
+                "orderManagement",
+                salesRepresentativeActive?.orderManagement?.status
+              )
+            }
+          />
+
+          {salesRepresentativeActive?.orderManagement?.tab ===
+            "orderManagement" &&
+            salesRepresentativeActive?.orderManagement?.status && (
+              <>
+                <div className="m-2 relative space-y-1">
+                  <ListItems
+                    title="Assigned Orders"
+                    to="/supplier/assigned-orders"
+                  />
+                  <ListItems
+                    title="Acknowledge Orders"
+                    to="/supplier/acknowledge-orders"
+                  />
+                  <ListItems
+                    title="Dispatched Orders"
+                    to="/supplier/dispatched-orders"
+                  />
+                  <ListItems
+                    title="Delivered Orders"
+                    to="/supplier/delivered-orders"
+                  />
+                  <ListItems
+                    title="Cancelled Orders"
+                    to="/supplier/cancelled-orders"
+                  />
+                </div>
+                <hr className="w-full" />
+              </>
+            )}
 
           <div className="mx-2 pb-7">
             <button

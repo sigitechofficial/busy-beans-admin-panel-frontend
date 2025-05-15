@@ -12,7 +12,6 @@ import { PostAPI } from "@/utilities/PostAPI";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import { DeleteAPI } from "@/utilities/DeleteAPI";
-import { allCountries } from "country-region-data";
 import { Country, State, City } from "country-state-city";
 import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
@@ -117,19 +116,20 @@ export default function Countries() {
             All Countries
           </h2>
 
-          <div className="flex items-center gap-x-4">
+          {/* <div className="flex items-center gap-x-4">
             <div>
               <button className="flex items-center gap-x-2 px-2 sm:px-5 md:px-8 py-2.5 md:py-3 rounded-lg shadow-buttonShadow border border-buttonBorderColor bg-white ">
                 <RiFileDownloadLine size={24} />
                 <span className="font-nunito text-black">Download CSV</span>
               </button>
             </div>
-          </div>
+          </div> */}
         </div>
         <div className="flex justify-end">
           <button
             onClick={() => setModal("add")}
-            className="rounded-lg font-inter font-medium text-white px-6 sm:px-10 py-2.5 sm:py-4 bg-theme"
+            className="rounded-lg font-inter font-medium text-white px-6 sm:px-10 py-2.5 sm:py-4 bg-theme hover:bg-white hover:text-theme border
+             border-theme duration-150"
           >
             + Add Country
           </button>
@@ -204,13 +204,13 @@ export default function Countries() {
                 <button
                   type="button"
                   onClick={() => setModal("")}
-                  className="rounded-lg border border-black shadow-buttonShadow  px-6"
+                  className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow  px-6"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg border border-theme text-white px-10 bg-theme"
+                  className="rounded-lg border border-theme text-white px-10 bg-theme hover:bg-white hover:text-theme duration-150"
                 >
                   {modal === "add" ? "Add" : modal === "delete" ? "Delete" : ""}{" "}
                   Country

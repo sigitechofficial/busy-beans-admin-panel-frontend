@@ -38,24 +38,24 @@ export default function OrderCard(props) {
     });
   };
 
-  const handlePaymentStatus = async (status) => {
-    try {
-      const res = await PatchAPI("api/v1/admin/edit-order", {
-        orderId: props?.orderData?.id,
-        orderData: {
-          paymentStatus: status?.value, //"pending" , 'done'
-        },
-      });
-      if (res?.data?.status === "success") {
-        success_toaster("Status Updated successfully");
-        props?.reFetch();
-      } else {
-        throw new Error(res?.data?.message || "An unexpected error occurred.");
-      }
-    } catch (error) {
-      ErrorHandler(error);
-    }
-  };
+  // const handlePaymentStatus = async (status) => {
+  //   try {
+  //     const res = await PatchAPI("api/v1/admin/edit-order", {
+  //       orderId: props?.orderData?.id,
+  //       orderData: {
+  //         paymentStatus: status?.value, //"pending" , 'done'
+  //       },
+  //     });
+  //     if (res?.data?.status === "success") {
+  //       success_toaster("Status Updated successfully");
+  //       props?.reFetch();
+  //     } else {
+  //       throw new Error(res?.data?.message || "An unexpected error occurred.");
+  //     }
+  //   } catch (error) {
+  //     ErrorHandler(error);
+  //   }
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -177,9 +177,9 @@ export default function OrderCard(props) {
           </div>
           <div className="space-y-1">
             <p className="text-sm">Order Status</p>
-            <button className="bg-themeGreen text-white rounded-lg py-2 px-4 font-medium">
+            <div className="bg-themeGreen text-white rounded-lg py-2 px-4 font-medium">
               {props?.orderData?.orderCurrentStatus}
-            </button>
+            </div>
           </div>
         </div>
 
@@ -195,10 +195,10 @@ export default function OrderCard(props) {
               </p>
               <p className="flex">
                 <span className="text-black/60 w-2/4">Payment Status:</span>
-                {/* <button className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none">
+                <div className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none">
                   {props?.orderData?.paymentStatus}
-                </button> */}
-                <span className="w-40">
+                </div>
+                {/* <span className="w-40">
                   <Select
                     placeholder="Select Payment Status"
                     className="w-full"
@@ -213,7 +213,7 @@ export default function OrderCard(props) {
                       handlePaymentStatus(e);
                     }}
                   />
-                </span>
+                </span> */}
               </p>
               {/* <p className="flex">
                 <span className="text-black/60 w-2/4">

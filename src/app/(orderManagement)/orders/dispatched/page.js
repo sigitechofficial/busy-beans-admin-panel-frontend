@@ -8,9 +8,9 @@ import Loader from "@/components/ui/Loader";
 import { FaEye } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 
-export default function CancelledOrders() {
+export default function DispatchedOrders() {
   const router = useRouter();
-  const { data } = GetAPI("api/v1/admin/orders?statusId=6");
+  const { data } = GetAPI("api/v1/admin/orders?statusId=4");
 
   const columns = [
     { field: "sl", header: "SL", sort: true },
@@ -64,7 +64,7 @@ export default function CancelledOrders() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-          Cancelled Orders
+          Dispatched Orders
         </h2>
         <Select placeholder="Filters" className="w-40" styles={selectStyles} />
       </div>

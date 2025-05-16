@@ -1,3 +1,4 @@
+
 "use client";
 import ManagementTab from "@/components/ui/ManagementTab";
 import MyDataTable from "@/components/ui/MyDataTable";
@@ -8,9 +9,9 @@ import Loader from "@/components/ui/Loader";
 import { FaEye } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 
-export default function DeliveredOrders() {
+export default function AcknowledgedOrders() {
   const router = useRouter()
-   const { data } = GetAPI("api/v1/admin/orders?statusId=5");
+   const { data } = GetAPI("api/v1/admin/orders?statusId=3");
   
    const columns = [
      { field: "sl", header: "SL", sort: true },
@@ -64,7 +65,7 @@ export default function DeliveredOrders() {
      <div className="space-y-8">
        <div className="flex items-center justify-between">
          <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-           Delivered Orders
+           Acknowledged Orders
          </h2>
          <Select placeholder="Filters" className="w-40" styles={selectStyles} />
        </div>
@@ -88,3 +89,4 @@ export default function DeliveredOrders() {
      </div>
    );
 } 
+

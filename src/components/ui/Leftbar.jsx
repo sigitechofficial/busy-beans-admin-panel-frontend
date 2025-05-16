@@ -33,13 +33,10 @@ import Link from "next/link";
 import { info_toaster, success_toaster } from "@/utilities/Toaster";
 
 export default function Leftbar(props) {
-  // const userType = localStorage.getItem("userType");
-  // const userType = "salesRepresentative";
-  // const userType = "admin";
   if (typeof window !== "undefined") {
     var userType = localStorage.getItem("userType");
   }
-
+ 
   const pathname = usePathname();
   const router = useRouter();
   const [active, setActive] = useState({
@@ -105,40 +102,14 @@ export default function Leftbar(props) {
     },
   });
 
-  const [salesRepresentativeActive, setSalesRepresentativeActive] = useState({
-    inventoryManagement: {
-      tab: "",
-      status: false,
-    },
-    clientManagement: {
-      tab: "",
-      status: false,
-    },
-    orderManagement: {
-      tab: "",
-      status: false,
-    },
-  });
-
   const handleActive = (name, status) => {
-    if (userType === "admin") {
-      setActive({
-        ...active,
-        [name]: {
-          tab: name,
-          status: !status,
-        },
-      });
-    } else if (userType === "salesRepresentative" || userType === "supplier") {
-      console.log("i am inside");
-      setSalesRepresentativeActive({
-        ...salesRepresentativeActive,
-        [name]: {
-          tab: name,
-          status: !status,
-        },
-      });
-    }
+    setActive({
+      ...active,
+      [name]: {
+        tab: name,
+        status: !status,
+      },
+    });
   };
 
   const logoutFunc = () => {
@@ -189,7 +160,7 @@ export default function Leftbar(props) {
           <ListHead
             title="Order Management"
             Icon={AiOutlineUnorderedList}
-            active={pathname === "/orders"}
+            active={pathname.includes("/orders")}
             Angle={
               active?.orderManagement?.tab === "orderManagement" &&
               active?.orderManagement?.status
@@ -207,9 +178,11 @@ export default function Leftbar(props) {
                 <div className="m-2 relative space-y-1">
                   <ListItems title="All Orders" to="/orders" />
                   <ListItems title="Upcoming Orders" to="/orders/upcoming" />
-                  <ListItems title="Pending Orders" to="/orders/cancelled" />
+                  <ListItems title="Assigned Orders" to="/orders/assigned" />
+                  <ListItems title="Acknowledged Orders" to="/orders/acknowledged" />
+                  <ListItems title="Dispatched Orders" to="/orders/dispatched" />
                   <ListItems title="Delivered Orders" to="/orders/delivered" />
-                  <ListItems title="Cancelled Orders" to="/orders/pending" />
+                  <ListItems title="Cancelled Orders" to="/orders/cancelled" />
                 </div>
                 <hr className="w-full" />
               </>
@@ -668,23 +641,18 @@ export default function Leftbar(props) {
               pathname.includes("/supplier/order-detail")
             }
             Angle={
-              salesRepresentativeActive?.orderManagement?.tab ===
-                "orderManagement" &&
-              salesRepresentativeActive?.orderManagement?.status
+              active?.orderManagement?.tab === "orderManagement" &&
+              active?.orderManagement?.status
                 ? FaAngleUp
                 : FaAngleDown
             }
             onClick={() =>
-              handleActive(
-                "orderManagement",
-                salesRepresentativeActive?.orderManagement?.status
-              )
+              handleActive("orderManagement", active?.orderManagement?.status)
             }
           />
 
-          {salesRepresentativeActive?.orderManagement?.tab ===
-            "orderManagement" &&
-            salesRepresentativeActive?.orderManagement?.status && (
+          {active?.orderManagement?.tab === "orderManagement" &&
+            active?.orderManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
                   <ListItems
@@ -732,23 +700,21 @@ export default function Leftbar(props) {
             active={pathname === "/sales-representative/inventory"}
             Icon={MdInventory}
             Angle={
-              salesRepresentativeActive?.inventoryManagement?.tab ===
-                "inventoryManagement" &&
-              salesRepresentativeActive?.inventoryManagement?.status
+              active?.inventoryManagement?.tab === "inventoryManagement" &&
+              active?.inventoryManagement?.status
                 ? FaAngleUp
                 : FaAngleDown
             }
             onClick={() =>
               handleActive(
                 "inventoryManagement",
-                salesRepresentativeActive?.inventoryManagement?.status
+                active?.inventoryManagement?.status
               )
             }
           />
 
-          {salesRepresentativeActive?.inventoryManagement?.tab ===
-            "inventoryManagement" &&
-            salesRepresentativeActive?.inventoryManagement?.status && (
+          {active?.inventoryManagement?.tab === "inventoryManagement" &&
+            active?.inventoryManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
                   <ListItems
@@ -765,23 +731,18 @@ export default function Leftbar(props) {
             Icon={GoPeople}
             active={pathname === "/sales-representative/customers"}
             Angle={
-              salesRepresentativeActive?.clientManagement?.tab ===
-                "clientManagement" &&
-              salesRepresentativeActive?.clientManagement?.status
+              active?.clientManagement?.tab === "clientManagement" &&
+              active?.clientManagement?.status
                 ? FaAngleUp
                 : FaAngleDown
             }
             onClick={() =>
-              handleActive(
-                "clientManagement",
-                salesRepresentativeActive?.clientManagement?.status
-              )
+              handleActive("clientManagement", active?.clientManagement?.status)
             }
           />
 
-          {salesRepresentativeActive?.clientManagement?.tab ===
-            "clientManagement" &&
-            salesRepresentativeActive?.clientManagement?.status && (
+          {active?.clientManagement?.tab === "clientManagement" &&
+            active?.clientManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
                   <ListItems
@@ -798,23 +759,18 @@ export default function Leftbar(props) {
             Icon={AiOutlineUnorderedList}
             active={pathname === "/sales-representative/upcoming-orders"}
             Angle={
-              salesRepresentativeActive?.orderManagement?.tab ===
-                "orderManagement" &&
-              salesRepresentativeActive?.orderManagement?.status
+              active?.orderManagement?.tab === "orderManagement" &&
+              active?.orderManagement?.status
                 ? FaAngleUp
                 : FaAngleDown
             }
             onClick={() =>
-              handleActive(
-                "orderManagement",
-                salesRepresentativeActive?.orderManagement?.status
-              )
+              handleActive("orderManagement", active?.orderManagement?.status)
             }
           />
 
-          {salesRepresentativeActive?.orderManagement?.tab ===
-            "orderManagement" &&
-            salesRepresentativeActive?.orderManagement?.status && (
+          {active?.orderManagement?.tab === "orderManagement" &&
+            active?.orderManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
                   <ListItems

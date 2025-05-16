@@ -15,7 +15,7 @@ export default function ManagementTab(props) {
         title="US"
       />
       <p>{title}</p>
-      {/* <p>{desc}</p> */}
+      <p>{desc}</p>
     </div>
   );
 }

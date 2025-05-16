@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 export default function Orders() {
   const router = useRouter()
   const { data } = GetAPI("api/v1/admin/orders");
-
+ 
   const columns = [
     { field: "sl", header: "SL", sort: true },
     { field: "customerName", header: "Customer Name" },
@@ -70,7 +70,7 @@ export default function Orders() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-        <ManagementTab title="Total Orders" desc={data?.data?.results} />
+        <ManagementTab title="Total Orders" desc={data?.data?.data?.length} />
         {/* <ManagementTab title="New Orders" desc="5%" />
         <ManagementTab title="Pending Orders" desc="5000" />
         <ManagementTab title="In progress Orders" desc="5,000" />

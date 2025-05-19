@@ -9,9 +9,9 @@ import { FaEye } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 
 export default function Orders() {
-  const router = useRouter()
+  const router = useRouter();
   const { data } = GetAPI("api/v1/admin/orders");
- 
+
   const columns = [
     { field: "sl", header: "SL", sort: true },
     { field: "customerName", header: "Customer Name" },
@@ -32,7 +32,7 @@ export default function Orders() {
   const datas = [];
   data?.data?.data?.map((detail, i) => {
     return datas.push({
-      sl: i + 1, 
+      sl: i + 1,
       customerName: detail?.customerName,
       totalBill: "$" + detail?.totalBill,
       subTotal: "$" + detail?.subTotal,

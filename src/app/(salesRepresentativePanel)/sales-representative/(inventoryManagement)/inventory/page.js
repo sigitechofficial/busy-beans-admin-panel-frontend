@@ -112,7 +112,7 @@ export default function SalesRepresentativeInventory() {
             Send Quote
             <div className="absolute -right-3 -top-3 bg-black size-7 rounded-full text-lg">{quotationData?.length}</div>
           </button>
-        </div>
+        </div> 
         <DrawerBeans
           drawerOpen={visibleRight}
           setDrawerOpen={setVisibleRight}

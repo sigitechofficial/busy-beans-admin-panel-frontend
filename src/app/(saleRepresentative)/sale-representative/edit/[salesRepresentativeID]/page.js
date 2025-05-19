@@ -61,7 +61,6 @@ export default function EditsSalesRepresentative() {
   };
 
   const handleSubmit = async (e) => {
-    console.log("i am in")
     e.preventDefault();
     if (!saleRepresentative?.image) {
       info_toaster("Select image");

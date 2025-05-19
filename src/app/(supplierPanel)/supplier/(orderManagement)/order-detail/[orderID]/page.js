@@ -128,7 +128,7 @@ export default function OrderDetail() {
     });
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
     // if (modal?.type === "addCheque" && modal.status) {
     //   setLoader("addCheque");
     //   try {
@@ -200,6 +200,7 @@ export default function OrderDetail() {
     //     ErrorHandler(error);
     //   }
     // } else {
+    e.preventDefault()
     setLoader("cancelOrder");
     try {
       const res = await PatchAPI("api/v1/admin/order-cancel", {

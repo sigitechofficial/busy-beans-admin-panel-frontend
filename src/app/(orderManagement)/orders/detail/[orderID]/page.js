@@ -127,7 +127,8 @@ export default function OrderDetail() {
     });
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+     e.preventDefault();
     if (modal?.type === "addCheque" && modal.status) {
       setLoader("addCheque");
       try {
@@ -278,12 +279,14 @@ export default function OrderDetail() {
 
         <div className="flex items-center gap-x-2 sm:gap-x-4 [&>button]:py-2 sm:[&>button]:py-3 [&>button]:px-2 sm:[&>button]:px-5 [&>button]:rounded-lg [&>button]:font-nunito [&>button]:font-medium max-sm:[&>button]:text-sm">
           <button
+          type="button"
             onClick={handleAddChequeModel}
             className="bg-black text-white disabled:cursor-not-allowed"
           >
             {data?.data?.order?.chequeDetail ? "Edit Cheque" : "Add Cheque"}
           </button>
           <button
+          type="button"
             disabled={
               data?.data?.order?.statusId === 5 ||
               data?.data?.order?.statusId === 6
@@ -309,12 +312,13 @@ export default function OrderDetail() {
                 ? true
                 : false
             }
+            type="button"
             onClick={handleCancelOrder}
             className="bg-theme text-white disabled:cursor-not-allowed"
           >
             Cancel Order
           </button>
-          <button className="border border-buttonBorderColor shadow-buttonShadow">
+          <button type="button" className="border border-buttonBorderColor shadow-buttonShadow">
             Print Invoice
           </button>
         </div>

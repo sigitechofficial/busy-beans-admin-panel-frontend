@@ -13,6 +13,9 @@ import MiniLoader from "./MiniLoader";
 import { useRouter } from "next/navigation";
 
 export default function OrderCard(props) {
+  if (typeof window !== "undefined") {
+    var userType = localStorage.getItem("userType");
+  }
   const router = useRouter();
   const [supplierID, setSupplierID] = useState("");
   const [loader, setLoader] = useState("");
@@ -38,24 +41,24 @@ export default function OrderCard(props) {
     });
   };
 
-  // const handlePaymentStatus = async (status) => {
-  //   try {
-  //     const res = await PatchAPI("api/v1/admin/edit-order", {
-  //       orderId: props?.orderData?.id,
-  //       orderData: {
-  //         paymentStatus: status?.value, //"pending" , 'done'
-  //       },
-  //     });
-  //     if (res?.data?.status === "success") {
-  //       success_toaster("Status Updated successfully");
-  //       props?.reFetch();
-  //     } else {
-  //       throw new Error(res?.data?.message || "An unexpected error occurred.");
-  //     }
-  //   } catch (error) {
-  //     ErrorHandler(error);
-  //   }
-  // };
+  const handlePaymentStatus = async (status) => {
+    try {
+      const res = await PatchAPI("api/v1/admin/edit-order", {
+        orderId: props?.orderData?.id,
+        orderData: {
+          paymentStatus: status?.value, //"pending" , 'done'
+        },
+      });
+      if (res?.data?.status === "success") {
+        success_toaster("Status Updated successfully");
+        props?.reFetch();
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -193,28 +196,34 @@ export default function OrderCard(props) {
                   {props?.orderData?.paymentMethod}
                 </span>
               </p>
-              <p className="flex">
+              <div className="flex">
                 <span className="text-black/60 w-2/4">Payment Status:</span>
-                <div className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none">
-                  {props?.orderData?.paymentStatus}
-                </div>
-                {/* <span className="w-40">
-                  <Select
-                    placeholder="Select Payment Status"
-                    className="w-full"
-                    value={
-                      props?.orderData?.paymentStatus === "pending"
-                        ? { value: "pending", label: "Pending" }
-                        : { value: "done", label: "Done" }
-                    }
-                    styles={selectStyles2}
-                    options={paymentStausOptions}
-                    onChange={(e) => {
-                      handlePaymentStatus(e);
-                    }}
-                  />
-                </span> */}
-              </p>
+
+                {userType === "supplier" ||
+                (userType === "admin" &&
+                  props?.orderData?.paymentMethod === "card") || (props?.orderData?.statusId === 6) ? (
+                  <div className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none">
+                    {props?.orderData?.paymentStatus}
+                  </div>
+                ) : (
+                  <span className="w-40">
+                    <Select
+                      placeholder="Select Payment Status"
+                      className="w-full"
+                      value={
+                        props?.orderData?.paymentStatus === "pending"
+                          ? { value: "pending", label: "Pending" }
+                          : { value: "done", label: "Done" }
+                      }
+                      styles={selectStyles2}
+                      options={paymentStausOptions}
+                      onChange={(e) => {
+                        handlePaymentStatus(e);
+                      }}
+                    />
+                  </span>
+                )}
+              </div>
               {/* <p className="flex">
                 <span className="text-black/60 w-2/4">
                   Expected Delivery Time:

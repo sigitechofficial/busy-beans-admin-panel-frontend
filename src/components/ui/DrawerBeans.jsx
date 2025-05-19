@@ -10,16 +10,28 @@ import { Sidebar } from "primereact/sidebar";
 import { Button } from "primereact/button";
 import { PostAPI } from "@/utilities/PostAPI";
 import ErrorHandler from "@/utilities/ErrorHandler";
-import { error_toaster, success_toaster } from "@/utilities/Toaster";
+import {
+  error_toaster,
+  info_toaster,
+  success_toaster,
+} from "@/utilities/Toaster";
+import GetAPI from "@/utilities/GetAPI";
+import Select from "react-select";
+import { drawerSelectStyles, selectStyles2 } from "@/utilities/SelectStyle";
+import { RxCross2 } from "react-icons/rx";
+import MiniLoader from "./MiniLoader";
 
 const DrawerBeans = ({
   drawerOpen: open,
   setDrawerOpen: setOpen,
   setQuotationData,
 }) => {
-  const router = useRouter();
+  const options = [];
   const [counter, setCounter] = useState(null);
   const [render, setRender] = useState(false);
+  const [email, setEmail] = useState("");
+  const [emailType, setEmailType] = useState(true);
+  const [loader, setLoader] = useState(false);
 
   if (typeof window !== "undefined") {
     var cartItems = JSON.parse(localStorage.getItem("quotationData")) || [];
@@ -31,7 +43,13 @@ const DrawerBeans = ({
   const totalWeight = cartItems?.reduce((a, b) => {
     return Number(a) + Number(b?.quantity) * Number(b?.qty);
   }, 0);
-  console.log("🚀 ~ totalWeight ~ totalWeight:", totalWeight);
+
+  const { data } = GetAPI("api/v1/admin/customer-management/customer-list/all");
+  console.log("🚀 ~ data:", data?.data?.data);
+
+  data?.data?.data?.map((user) =>
+    options.push({ value: user?.email, label: user?.email })
+  );
 
   const handleCounterClick = (index) => {
     setCounter(index);
@@ -74,26 +92,39 @@ const DrawerBeans = ({
   };
 
   const handleSendQuotation = async () => {
-    try {
-      const res = await PostAPI("api/v1/admin/send-quotation", {
-        email: ["sigidevelopers@gmail.com"],
-        order: {
-          totalBill: totalPrice,
-          subTotal: totalPrice,
-          itemsPrice: totalPrice,
-          vat: 0.0,
-          totalWeight: totalWeight,
-        },
-        items: cartItems,
-      });
-      if (res?.data?.status === "success") {
-        setOpen(false);
-        success_toaster("Quotation send Successfully");
-      } else {
-        throw new Error(res?.data?.message || "An unexpected error occurred.");
+    if (!email) {
+      info_toaster("Email cannot be empty");
+    } else {
+      setLoader(true);
+      try {
+        const res = await PostAPI("api/v1/admin/send-quotation", {
+          email: [email],
+          order: {
+            totalBill: totalPrice,
+            subTotal: totalPrice,
+            itemsPrice: totalPrice,
+            vat: 0.0,
+            totalWeight: totalWeight,
+          },
+          items: cartItems,
+        });
+        if (res?.data?.status === "success") {
+          setOpen(false);
+          success_toaster("Quotation send Successfully");
+          localStorage.setItem("quotationData", JSON.stringify([]));
+          setQuotationData([]);
+          setEmail("");
+          setEmailType(true);
+        } else {
+          throw new Error(
+            res?.data?.message || "An unexpected error occurred."
+          );
+        }
+      } catch (error) {
+        ErrorHandler(error);
+      } finally {
+        setLoader(false);
       }
-    } catch (error) {
-      ErrorHandler(error);
     }
   };
 
@@ -116,37 +147,79 @@ const DrawerBeans = ({
         onHide={() => setOpen(false)}
         className="rounded-tl-xl rounded-bl-xl bg-theme text-white w-[512px]"
       >
-        <div className="relative space-y-6 font-sf px-4 mb-28 bg-theme text-white">
+        <div className="px-4 space-y-6">
           <div>
             <div className="flex justify-between items-center">
               <h2 className="text-[32px] font-black font-nunito text-theme-black-2">
-                Send Quotation
+                {loader ? "Sending" : "Send"} Quotation
               </h2>
             </div>
           </div>
-          <p className="font-medium text-base">Order Details</p>
-
-          <div className="">
-            <div className="h-3/5 overflow-y-auto">
-              {cartItems?.map((cartI, index) => (
-                <div
-                  key={index}
-                  className="font-sf relative flex sm:flex-row items-start rounded-2xl h-full mb-3"
-                >
-                  <div className="flex justify-center sm:w-[150px] w-[72px] sm:h-[72px] h-[72px] rounded-2xl">
-                    <img
-                      src={BASE_URL + cartI?.image}
-                      alt="cutlery"
-                      className="w-full h-full rounded-md object-cover"
+          {loader ? (
+            <MiniLoader />
+          ) : (
+            <div className="relative space-y-6 font-sf mb-28 bg-theme text-white">
+              <div className="flex flex-col gap-y-2">
+                <label className="text-white font-medium font-satoshi">
+                  Email
+                </label>
+                <div className="flex items-center gap-x-2 min-h-full">
+                  {emailType ? (
+                    <Select
+                      placeholder="Select email"
+                      className="w-full"
+                      styles={drawerSelectStyles}
+                      options={options}
+                      onChange={(e) => {
+                        setEmail(e.value);
+                      }}
                     />
-                  </div>
-                  <div className="px-5 w-full font-sf">
-                    <h3 className="capitalize font-semibold text-base">
-                      {cartI?.name}
-                    </h3>
-                    <div className="capitalize text-sm font-light text-white">
-                      <ul>
-                        {/* {cartI?.addOnsCat &&
+                  ) : (
+                    <input
+                      type="email"
+                      name="email"
+                      autoComplete="off"
+                      value={email}
+                      placeholder="Enter Email"
+                      className="border w-full border-themeLight text-themeLight placeholder:text-themeLight rounded-[4px] outline-none px-2.5 py-3"
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setEmailType(!emailType)}
+                    className={`${
+                      emailType ? "w-40" : "w-auto"
+                    } h-12 bg-white text-black px-[7px] rounded-md`}
+                  >
+                    {emailType ? "Custom Email" : <RxCross2 size={32} />}
+                  </button>
+                </div>
+              </div>
+
+              <p className="font-medium text-base">Order Details</p>
+
+              <div className="">
+                <div className="h-3/5 overflow-y-auto">
+                  {cartItems?.map((cartI, index) => (
+                    <div
+                      key={index}
+                      className="font-sf relative flex sm:flex-row items-start rounded-2xl h-full mb-3"
+                    >
+                      <div className="flex justify-center sm:w-[150px] w-[72px] sm:h-[72px] h-[72px] rounded-2xl">
+                        <img
+                          src={BASE_URL + cartI?.image}
+                          alt="cutlery"
+                          className="w-full h-full rounded-md object-cover"
+                        />
+                      </div>
+                      <div className="px-5 w-full font-sf">
+                        <h3 className="capitalize font-semibold text-base">
+                          {cartI?.name}
+                        </h3>
+                        <div className="capitalize text-sm font-light text-white">
+                          <ul>
+                            {/* {cartI?.addOnsCat &&
                                 cartI?.addOnsCat?.length > 0
                                   ? cartI?.addOnsCat
                                       ?.filter(
@@ -191,74 +264,78 @@ const DrawerBeans = ({
                                         </div>
                                       </li>
                                     ))} */}
-                      </ul>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-x-3">
-                        <span className="font-semibold text-sm text-white mt-1">
-                          {parseFloat(Number(cartI?.price) * cartI?.qty)} {"$"}
-                        </span>
+                          </ul>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-x-3">
+                            <span className="font-semibold text-sm text-white mt-1">
+                              {parseFloat(Number(cartI?.price) * cartI?.qty)}{" "}
+                              {"$"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="cursor-pointer mt-2 mr-1 rounded-full flex items-center justify-around text-white p-1 absolute bg-black right-0">
+                        {counter === index ? (
+                          <div className="flex">
+                            <button
+                              onClick={() => {
+                                handleItemClick("minus", cartI?.id);
+                              }}
+                              className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-white hover:text-black duration-300"
+                            >
+                              <RiSubtractFill />
+                            </button>
+                            <span className="text-lg font-sf w-7 text-center">
+                              {cartI?.qty}
+                            </span>
+                            <button
+                              onClick={() => {
+                                handleItemClick("plus", cartI?.id);
+                              }}
+                              className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-white hover:text-black duration-300"
+                            >
+                              <BiPlus />
+                            </button>
+                            <button
+                              onClick={() => {
+                                handleItemClick("delete", cartI?.id);
+                              }}
+                              className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-red-600 hover:text-white duration-300"
+                            >
+                              <BiTrash />
+                            </button>
+                          </div>
+                        ) : (
+                          <span
+                            onClick={() => handleCounterClick(index)}
+                            className="text-lg font-sf w-7 text-center"
+                          >
+                            {cartI?.qty}
+                          </span>
+                        )}
                       </div>
                     </div>
-                  </div>
-                  <div className="cursor-pointer mt-2 mr-1 rounded-full flex items-center justify-around text-white p-1 absolute bg-black right-0">
-                    {counter === index ? (
-                      <div className="flex">
-                        <button
-                          onClick={() => {
-                            handleItemClick("minus", cartI?.id);
-                          }}
-                          className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-white hover:text-black duration-300"
-                        >
-                          <RiSubtractFill />
-                        </button>
-                        <span className="text-lg font-sf w-7 text-center">
-                          {cartI?.qty}
-                        </span>
-                        <button
-                          onClick={() => {
-                            handleItemClick("plus", cartI?.id);
-                          }}
-                          className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-white hover:text-black duration-300"
-                        >
-                          <BiPlus />
-                        </button>
-                        <button
-                          onClick={() => {
-                            handleItemClick("delete", cartI?.id);
-                          }}
-                          className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-red-600 hover:text-white duration-300"
-                        >
-                          <BiTrash />
-                        </button>
-                      </div>
-                    ) : (
-                      <span
-                        onClick={() => handleCounterClick(index)}
-                        className="text-lg font-sf w-7 text-center"
-                      >
-                        {cartI?.qty}
-                      </span>
-                    )}
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="absolute bottom-0 left-[30px] py-10 flex justify-center bg-theme w-[452px]">
-          <button
-            className="bg-themeLight font-bold text-white rounded-full px-5 min-h-14 w-full flex items-center justify-between"
-            onClick={handleSendQuotation}
-          >
-            <div className="flex space-x-4 items-center">
-              <div className="bg-white text-black text-sm py-[1px] px-[7px] rounded-full">
-                {String(cartItems?.length).padStart(2)}
               </div>
-              <p>Send Quotation</p>
             </div>
-            ${totalPrice.toFixed(2)} {"$"}
-          </button>
+          )}
+
+          <div className="absolute bottom-0 left-[30px] py-10 flex justify-center bg-theme w-[452px]">
+            <button
+              className="bg-themeLight font-bold text-white rounded-full px-5 min-h-14 w-full flex items-center justify-between"
+              onClick={handleSendQuotation}
+            >
+              <div className="flex space-x-4 items-center">
+                <div className="bg-white text-black text-sm py-[1px] px-[7px] rounded-full">
+                  {String(cartItems?.length).padStart(2)}
+                </div>
+                <p>{loader ? "Sending" : "Send"} Quotation</p>
+              </div>
+              ${totalPrice.toFixed(2)} {"$"}
+            </button>
+          </div>
         </div>
       </Sidebar>
     </div>

@@ -5,12 +5,15 @@ import Select from "react-select";
 import selectStyles from "@/utilities/SelectStyle";
 import ManagementTab from "@/components/ui/ManagementTab";
 import MyDataTable from "@/components/ui/MyDataTable";
+import { useRouter } from "next/navigation";
 
 export default function SalesRepresentativeCustomers() {
   if (typeof window !== "undefined") {
     var userID = localStorage.getItem("userID");
   }
 
+
+  const router  = useRouter()
   const { data } = GetAPI(
     `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID} `
   );
@@ -66,6 +69,15 @@ export default function SalesRepresentativeCustomers() {
         </h2>
 
         <Select placeholder="Filters" className="w-40" styles={selectStyles} />
+      </div>
+
+      <div className="flex justify-end">
+        <button
+          onClick={() => router.push("/sales-representative/customers/add")}
+          className="rounded-lg font-inter font-medium border border-theme text-white bg-theme hover:bg-white hover:text-theme duration-150 px-2 sm:px-3 py-2.5 sm:py-4"
+        >
+          + Add New Customer
+        </button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">

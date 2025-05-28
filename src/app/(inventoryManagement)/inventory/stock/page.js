@@ -27,10 +27,12 @@ import ErrorHandler from "@/utilities/ErrorHandler";
 
 export default function Stock() {
   const { data, reFetch } = GetAPI("api/v1/admin/product");
+  console.log("🚀 ~ Stock ~ data:", data?.data?.data);
 
   const { data: category, reFetch: categoryRefetch } = GetAPI(
     "api/v1/admin/category"
   );
+  console.log("🚀 ~ Stock ~ category:", category?.data?.data);
 
   const catOptions = [];
 
@@ -46,6 +48,7 @@ export default function Stock() {
     price: "",
     desc: "",
     category: "",
+    wholesalePrice: "",
   });
   const [productID, setProductID] = useState("");
   const [imagePreview, setImagePreview] = useState("");
@@ -85,6 +88,8 @@ export default function Stock() {
         info_toaster("Product unit cannot be empty");
       } else if (productDetail?.price.trim() === "") {
         info_toaster("Invalid Product price");
+      } else if (productDetail?.wholesalePrice.trim() === "") {
+        info_toaster("Invalid whole sale price");
       } else if (!/^\d*\.?\d*$/?.test(productDetail?.price)) {
         info_toaster("Invalid Price");
       } else if (productDetail?.desc.trim() === 0) {
@@ -95,6 +100,7 @@ export default function Stock() {
         formData.append("quantity", productDetail?.quantity);
         formData.append("unit", productDetail?.unit?.value);
         formData.append("price", productDetail?.price);
+        formData.append("wholesalePrice", productDetail?.wholesalePrice);
         formData.append("desc", productDetail?.desc);
         formData.append("image", productDetail?.image);
         formData.append("categoryId", productDetail?.category?.value);
@@ -137,6 +143,8 @@ export default function Stock() {
         info_toaster("Product unit cannot be empty");
       } else if (productDetail?.price.trim() === "") {
         info_toaster("Invalid Product price");
+      } else if (productDetail?.wholesalePrice.trim() === "") {
+        info_toaster("Invalid whole sale price");
       } else if (!/^\d*\.?\d*$/?.test(productDetail?.price)) {
         info_toaster("Invalid Price");
       } else if (productDetail?.desc.trim() === 0) {
@@ -146,10 +154,12 @@ export default function Stock() {
         const formData = new FormData();
         formData.append("name", productDetail?.name);
         formData.append("quantity", productDetail?.quantity);
-        formData.append("unit", productDetail?.unit);
+        formData.append("unit", productDetail?.unit?.value);
         formData.append("price", productDetail?.price);
+        formData.append("wholesalePrice", productDetail?.wholesalePrice);
         formData.append("desc", productDetail?.desc);
         formData.append("image", productDetail?.image);
+        formData.append("categoryId", productDetail?.category?.value);
         try {
           const res = await PatchAPI(
             `api/v1/admin/product/${productID}`,
@@ -227,11 +237,17 @@ export default function Stock() {
     }
   };
 
+  const handleCategory = (id) => {
+    const categoryData = category?.data?.data.find((cat, i) => cat?.id === id);
+    return { value: categoryData?.id ?? "", label: categoryData?.name ?? "" };
+  };
+
   const columns = [
     { field: "sl", header: "SL", sort: true },
     { field: "name", header: "Name" },
     { field: "quantity", header: "Quantity" },
     { field: "price", header: "Price ($)" },
+    { field: "wholesalePrice", header: "Whole Sale Price ($)" },
     { field: "image", header: "Image" },
     {
       field: "currentStatus",
@@ -251,6 +267,7 @@ export default function Stock() {
       name: prod?.name,
       quantity: prod?.quantity,
       price: "$" + prod?.price,
+      wholesalePrice: "$" + prod?.wholesalePrice ?? "",
       image: (
         <img
           src={BASE_URL + prod?.image}
@@ -294,10 +311,17 @@ export default function Stock() {
             onClick={() => {
               setProductDetail({
                 name: prod?.name,
+                category: handleCategory(prod?.categoryId),
                 quantity: prod?.quantity,
-                unit: prod?.unit,
+                unit:
+                  prod?.unit === "kg"
+                    ? { value: "kg", label: "Kilogram (kg)" }
+                    : prod?.unit === "g"
+                    ? { value: "g", label: "Gram (g)" }
+                    : { value: "pounds", label: "pounds" },
                 image: prod?.image,
                 price: prod?.price,
+                wholesalePrice: prod?.wholesalePrice,
                 desc: prod?.desc,
               });
               setProductID(prod?.id);
@@ -487,6 +511,7 @@ export default function Stock() {
                     <Select
                       placeholder="Category"
                       className="w-full"
+                      value={productDetail?.category}
                       styles={selectStyles2}
                       options={catOptions}
                       onChange={(e) => {
@@ -495,7 +520,62 @@ export default function Stock() {
                     />
                   </div>
 
-                  <div className="grid sm:grid-cols-3 gap-y-4 gap-x-6">
+                  <div className="grid sm:grid-cols-2 gap-y-4 gap-x-6">
+                    <div className="flex flex-col gap-y-2 w-full">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Price($)
+                      </label>
+                      <input
+                        type="text"
+                        name="price"
+                        min="0"
+                        value={productDetail?.price}
+                        onChange={handleChange}
+                        placeholder="Enter price"
+                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      />
+                      <div
+                        className={`text-red-600 space-y-1 pb-1 ${
+                          !/^\d*\.?\d*$/.test(productDetail?.price)
+                            ? "block"
+                            : "hidden"
+                        }`}
+                      >
+                        <hr className="border-none h-0.5 bg-white bg-opacity-20" />
+                        <p>Invalid Price</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-y-2 w-full">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Whole Sale Price($)
+                      </label>
+                      <input
+                        type="text"
+                        name="wholesalePrice"
+                        min="0"
+                        value={productDetail?.wholesalePrice}
+                        onChange={handleChange}
+                        placeholder="Enter whole sale price"
+                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      />
+                      <div
+                        className={`text-red-600 space-y-1 pb-1 ${
+                          !/^\d*\.?\d*$/.test(productDetail?.wholesalePrice)
+                            ? "block"
+                            : "hidden"
+                        }`}
+                      >
+                        <hr className="border-none h-0.5 bg-white bg-opacity-20" />
+                        <p>Invalid whole sale price</p>
+                      </div>
+                      {/* <Select
+                  placeholder="Kg"
+                  className="w-full"
+                  styles={selectStyles2}
+                /> */}
+                    </div>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-y-4 gap-x-6">
                     <div className="flex flex-col gap-y-2">
                       <label className="text-labelColor font-medium font-satoshi">
                         Available Stock
@@ -542,39 +622,11 @@ export default function Stock() {
                           { value: "g", label: "Gram (g)" },
                           { value: "pounds", label: "pounds" },
                         ]}
+                        value={productDetail?.unit}
                         onChange={(e) => {
                           setProductDetail({ ...productDetail, unit: e });
                         }}
                       />
-                    </div>
-                    <div className="flex flex-col gap-y-2 w-full">
-                      <label className="text-labelColor font-medium font-satoshi">
-                        Price($)
-                      </label>
-                      <input
-                        type="text"
-                        name="price"
-                        min="0"
-                        value={productDetail?.price}
-                        onChange={handleChange}
-                        placeholder="Enter price"
-                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      />
-                      <div
-                        className={`text-red-600 space-y-1 pb-1 ${
-                          !/^\d*\.?\d*$/.test(productDetail?.price)
-                            ? "block"
-                            : "hidden"
-                        }`}
-                      >
-                        <hr className="border-none h-0.5 bg-white bg-opacity-20" />
-                        <p>Invalid Price</p>
-                      </div>
-                      {/* <Select
-                  placeholder="Kg"
-                  className="w-full"
-                  styles={selectStyles2}
-                /> */}
                     </div>
                   </div>
                 </div>

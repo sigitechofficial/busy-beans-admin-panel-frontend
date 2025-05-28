@@ -24,11 +24,11 @@ export const PostAPI = async (url, postData) => {
         error.response.data?.message ||
         error.response.statusText ||
         "Server Error";
-      throw new Error(`HTTP Error: - ${errorMessage}`);
+      throw new Error(`${errorMessage}`);
     } else if (error.request) {
       throw new Error("Network Error: No response received from the server.");
     } else {
-      throw new Error(`Error: ${error.message}`);
+      throw new Error(`${error.message}`);
     }
   }
 };
@@ -48,11 +48,11 @@ export const SignupAPI = async (url, postData) => {
         error.response.data?.message ||
         error.response.statusText ||
         "Server Error";
-      throw new Error(`HTTP Error: - ${errorMessage}`);
+      throw new Error(`${errorMessage}`);
     } else if (error.request) {
       throw new Error("Network Error: No response received from the server.");
     } else {
-      throw new Error(`Error: ${error.message}`);
+      throw new Error(`${error.message}`);
     }
   }
 };
@@ -72,11 +72,11 @@ export const loginAPI = async (url, postData) => {
         error.response.data?.message ||
         error.response.statusText ||
         "Server Error";
-      throw new Error(`HTTP Error: - ${errorMessage}`);
+      throw new Error(`${errorMessage}`);
     } else if (error.request) {
       throw new Error("Network Error: No response received from the server.");
     } else {
-      throw new Error(`Error: ${error.message}`);
+      throw new Error(`${error.message}`);
     }
   }
 };

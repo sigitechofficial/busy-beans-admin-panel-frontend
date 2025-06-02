@@ -25,6 +25,7 @@ const DrawerBeans = ({
   drawerOpen: open,
   setDrawerOpen: setOpen,
   setQuotationData,
+  type,
 }) => {
   const options = [];
   const [counter, setCounter] = useState(null);
@@ -34,8 +35,12 @@ const DrawerBeans = ({
   const [loader, setLoader] = useState(false);
 
   if (typeof window !== "undefined") {
-    var cartItems = JSON.parse(localStorage.getItem("quotationData")) || [];
+    var cartItems =
+      type === "createOrder"
+        ? JSON.parse(localStorage.getItem("createOrderData")) || []
+        : JSON.parse(localStorage.getItem("quotationData")) || [];
   }
+  console.log("🚀 ~ cartItems:", cartItems);
   const totalPrice = cartItems?.reduce((a, b) => {
     return Number(a) + Number(b?.price) * Number(b?.qty);
   }, 0);
@@ -70,7 +75,9 @@ const DrawerBeans = ({
         }
         return item;
       });
-      localStorage.setItem("quotationData", JSON.stringify(updatedCart));
+      type === "createOrder"
+        ? localStorage.setItem("createOrderData", JSON.stringify(updatedCart))
+        : localStorage.setItem("quotationData", JSON.stringify(updatedCart));
       setQuotationData(updatedCart);
       setRender(!render);
     } else if (type === "minus") {
@@ -80,52 +87,58 @@ const DrawerBeans = ({
         }
         return item;
       });
-      localStorage.setItem("quotationData", JSON.stringify(updatedCart));
+      type === "createOrder"
+        ? localStorage.setItem("createOrderData", JSON.stringify(updatedCart))
+        : localStorage.setItem("quotationData", JSON.stringify(updatedCart));
       setQuotationData(updatedCart);
       setRender(!render);
     } else if (type === "delete") {
       let updatedCart = cartItems.filter((item) => Number(item.id) !== id);
-      localStorage.setItem("quotationData", JSON.stringify(updatedCart));
+      type === "createOrder"
+        ? localStorage.setItem("createOrderData", JSON.stringify(updatedCart))
+        : localStorage.setItem("quotationData", JSON.stringify(updatedCart));
       setQuotationData(updatedCart);
       setRender(!render);
     }
   };
 
   const handleSendQuotation = async () => {
-    if (!email) {
-      info_toaster("Email cannot be empty");
-    } else {
-      setLoader(true);
-      try {
-        const res = await PostAPI("api/v1/admin/send-quotation", {
-          email: [email],
-          order: {
-            totalBill: totalPrice,
-            subTotal: totalPrice,
-            itemsPrice: totalPrice,
-            vat: 0.0,
-            totalWeight: totalWeight,
-          },
-          items: cartItems,
-        });
-        if (res?.data?.status === "success") {
-          setOpen(false);
-          success_toaster("Quotation send Successfully");
-          localStorage.setItem("quotationData", JSON.stringify([]));
-          setQuotationData([]);
-          setEmail("");
-          setEmailType(true);
-        } else {
-          throw new Error(
-            res?.data?.message || "An unexpected error occurred."
-          );
-        }
-      } catch (error) {
-        ErrorHandler(error);
-      } finally {
-        setLoader(false);
-      }
-    }
+    // if (!email) {
+    //   info_toaster("Email cannot be empty");
+    // } else {
+    //   setLoader(true);
+    //   try {
+    //     const res = await PostAPI("api/v1/admin/send-quotation", {
+    //       email: [email],
+    //       order: {
+    //         totalBill: totalPrice,
+    //         subTotal: totalPrice,
+    //         itemsPrice: totalPrice,
+    //         vat: 0.0,
+    //         totalWeight: totalWeight,
+    //       },
+    //       items: cartItems,
+    //     });
+    //     if (res?.data?.status === "success") {
+    //       setOpen(false);
+    //       success_toaster("Quotation send Successfully");
+    //       type === "createOrder"
+    //         ? localStorage.setItem("createOrderData", JSON.stringify([]))
+    //         : localStorage.setItem("quotationData", JSON.stringify([]));
+    //       setQuotationData([]);
+    //       setEmail("");
+    //       setEmailType(true);
+    //     } else {
+    //       throw new Error(
+    //         res?.data?.message || "An unexpected error occurred."
+    //       );
+    //     }
+    //   } catch (error) {
+    //     ErrorHandler(error);
+    //   } finally {
+    //     setLoader(false);
+    //   }
+    // }
   };
 
   // useEffect(() => {
@@ -331,7 +344,9 @@ const DrawerBeans = ({
                 <div className="bg-white text-black text-sm py-[1px] px-[7px] rounded-full">
                   {String(cartItems?.length).padStart(2)}
                 </div>
-                <p>{loader ? "Sending" : "Send"} Quotation</p>
+                <p>
+                  {type === "createOrder" ? "Create Order" : "Send Quotation"}
+                </p>
               </div>
               ${totalPrice.toFixed(2)} {"$"}
             </button>

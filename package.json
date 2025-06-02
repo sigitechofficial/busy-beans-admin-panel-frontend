@@ -12,6 +12,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@next/font": "^14.2.15",
+    "@react-google-maps/api": "^2.20.6",
     "axios": "^1.8.4",
     "country-state-city": "^3.2.1",
     "formik": "^2.4.6",

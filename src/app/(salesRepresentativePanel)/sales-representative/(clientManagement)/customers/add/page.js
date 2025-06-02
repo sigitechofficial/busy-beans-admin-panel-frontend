@@ -2,46 +2,73 @@
 import MiniLoader from "@/components/ui/MiniLoader";
 import { passwordStrength } from "@/utilities/AuthValidation";
 import ErrorHandler from "@/utilities/ErrorHandler";
+import GetAPI from "@/utilities/GetAPI";
+import { PostAPI } from "@/utilities/PostAPI";
+import { drawerSelectStyles } from "@/utilities/SelectStyle";
 import { info_toaster, success_toaster } from "@/utilities/Toaster";
+import { BASE_URL, googleApiKey } from "@/utilities/URL";
 import { emailValidity } from "@/utilities/Validations";
+import { Autocomplete, LoadScript } from "@react-google-maps/api";
+import axios from "axios";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { FaLongArrowAltLeft } from "react-icons/fa";
+import Select from "react-select";
 
 export default function page() {
+  if (typeof window !== "undefined") {
+    var userID = localStorage.getItem("userID");
+  }
+  const allCountriesData = [];
+  const autocompleteRef = useRef();
+  const inputRef = useRef();
   const router = useRouter();
-  const [step, setStep] = useState(3);
+  const [step, setStep] = useState(1);
   const [loader, setLoader] = useState(false);
   const [visibility, setVisibility] = useState({
     pass: false,
     confirmPass: false,
+  });
+  const [selectedCountryCode, setSelectedCountryCode] = useState("PK");
+  const [selectedCountryCities, setSelectedCountryCities] = useState([]);
+  const [selectedCountry, setSelectedCountry] = useState({
+    value: "",
+    label: "",
   });
   const [userData, setUserData] = useState({
     info: {
       name: "",
       email: "",
       password: "",
-      confirmPassword: "",
       status: true,
       phoneNumber: "",
       saleTaxNumber: "",
       emailToSendInvoices: "",
-      companyName: "",
-      companyInfo: "",
+      registerBy: "email",
     },
     address: {
       companyaddress: "",
       addressLineOne: "",
       addressLineTwo: "",
       town: "",
-      zipCode: "",
       country: "",
       state: "",
+      zipCode: "",
       status: true,
     },
   });
-  // console.log("🚀 ~ SignUpStep1 ~ userData:", userData);
+
+  const { data: countriesData } = GetAPI(
+    "api/v1/admin/address-management/country"
+  );
+
+  countriesData?.data?.data?.map((country) =>
+    allCountriesData.push({
+      value: country?.isoCode,
+      label: country?.name,
+    })
+  );
 
   const handleAddress = (e) => {
     setUserData({
@@ -126,57 +153,198 @@ export default function page() {
     ) {
       info_toaster("Password and confirm password must be same");
     } else {
-      try {
-        setLoader(true);
-        const res = await SignupAPI("api/v1/users/signup", {
-          info: {
-            name: userData?.info?.name,
-            email: userData?.info?.email,
-            password: userData?.info?.password,
-            status: true,
-            phoneNumber: userData?.info?.phoneNumber,
-            saleTaxNumber: userData?.info?.saleTaxNumber,
-            emailToSendInvoices: userData?.info?.emailToSendInvoices,
-            companyName: userData?.info?.companyName,
-            companyInfo: userData?.info?.companyInfo,
-          },
-          address: {
-            companyaddress: userData?.address?.companyaddress,
-            addressLineOne: userData?.address?.addressLineOne,
-            addressLineTwo: userData?.address?.addressLineTwo,
-            town: userData?.address?.town,
-            zipCode: userData?.address?.zipCode,
-            country: userData?.address?.country,
-            state: userData?.address?.state,
-            status: true,
-          },
-        });
-        if (res?.data?.status === "success") {
-          router.push("/verify-email");
-          setLoader(false);
-          success_toaster(res?.data?.data?.message);
-          localStorage.setItem("userName", res?.data?.data?.data?.name);
-          localStorage.setItem("userID", res?.data?.data?.data?.id);
-          localStorage.setItem("userEmail", res?.data?.data?.data?.email);
-          localStorage.setItem("addressId", res?.data?.data?.data?.address?.id);
-          localStorage.setItem("otpStatus", "signUp");
-        } else {
-          throw new Error(
-            res?.data?.message || "An unexpected error occurred."
+      let cityStatus = selectedCountryCities.find(
+        (city) => city?.name === userData?.address?.town
+      );
+      if (cityStatus) {
+        try {
+          setLoader(true);
+          const res = await PostAPI(
+            `api/v1/admin/add-customer/sales-rep/${userID}`,
+            {
+              info: {
+                name: userData?.info?.name,
+                email: userData?.info?.email,
+                password: userData?.info?.password,
+                status: true,
+                phoneNumber: userData?.info?.phoneNumber,
+                saleTaxNumber: userData?.info?.saleTaxNumber,
+                emailToSendInvoices: userData?.info?.emailToSendInvoices,
+                companyName: userData?.info?.companyName,
+                companyInfo: userData?.info?.companyInfo,
+              },
+              address: {
+                companyaddress: userData?.address?.companyaddress,
+                addressLineOne: userData?.address?.addressLineOne,
+                addressLineTwo: userData?.address?.addressLineTwo,
+                town: userData?.address?.town,
+                country: userData?.address?.country,
+                state: userData?.address?.state,
+                zipCode: userData?.address?.zipCode,
+                status: true,
+              },
+            }
           );
+          if (res?.data?.status === "success") {
+            setStep(1);
+            setUserData({
+              info: {
+                name: "",
+                email: "",
+                password: "",
+                status: true,
+                phoneNumber: "",
+                saleTaxNumber: "",
+                emailToSendInvoices: "",
+                registerBy: "email",
+              },
+              address: {
+                companyaddress: "",
+                addressLineOne: "",
+                addressLineTwo: "",
+                town: "",
+                country: "",
+                state: "",
+                zipCode: "",
+                status: true,
+              },
+            });
+            setSelectedCountry({ label: "", value: "" });
+            router.push("/sales-representative/customers");
+            setLoader(false);
+            success_toaster(res?.data?.data?.message);
+          } else {
+            throw new Error(
+              res?.data?.message || "An unexpected error occurred."
+            );
+          }
+        } catch (error) {
+          ErrorHandler(error);
+          setLoader(false);
         }
-      } catch (error) {
-        ErrorHandler(error);
-        setLoader(false);
+      } else {
+        info_toaster("Service not operational here");
       }
+    }
+  };
+
+  const calculateRoute = () => {
+    const place = autocompleteRef.current.getPlace();
+    if (!autocompleteRef.current) {
+      console.warn("Autocomplete not loaded yet");
+      return;
+    }
+
+    if (!place) {
+      console.warn("No place returned from getPlace()");
+      return;
+    }
+
+    const formattedAddress = place.formatted_address;
+
+    const addressComponents = place.address_components || [];
+
+    const getAddressComponent = (type) =>
+      addressComponents.find((component) => component.types.includes(type))
+        ?.long_name || "";
+
+    const countryName = getAddressComponent("country");
+    const countryShortName =
+      addressComponents.find((c) => c.types.includes("country"))?.short_name ||
+      "";
+    const city =
+      getAddressComponent("locality") ||
+      getAddressComponent("administrative_area_level_2");
+    const state = getAddressComponent("administrative_area_level_1");
+    const postalCode = getAddressComponent("postal_code");
+
+    if (!place.geometry || !place.geometry.location) {
+      info_toaster("Please select an address");
+      return;
+    }
+
+    // setDeliveryAddress({
+    //   ...deliveryAddress,
+    //   country: countryName,
+    //   zipCode: postalCode,
+    //   state: state,
+    //   town: city,
+    //   companyaddress: formattedAddress,
+    //   lat: place.geometry.location.lat(),
+    //   lng: place.geometry.location.lng(),
+    // });
+    // setCenter({
+    //   lat: place.geometry.location.lat(),
+    //   lng: place.geometry.location.lng(),
+    // });
+    setUserData({
+      ...userData,
+      address: {
+        ...userData?.address,
+        companyaddress: formattedAddress,
+        town: city,
+        country: countryName,
+        state: state,
+        zipCode: postalCode,
+        lat: place.geometry.location.lat(),
+        lng: place.geometry.location.lng(),
+        status: true,
+      },
+    });
+  };
+
+  const handleCountryChange = (e) => {
+    setSelectedCountry(e);
+    setUserData({
+      ...userData,
+      address: {
+        ...userData?.address,
+        companyaddress: "",
+        town: "",
+        country: "",
+        state: "",
+        zipCode: "",
+        lat: "",
+        lng: "",
+        addressLineOne: "",
+        addressLineTwo: "",
+        status: true,
+      },
+    });
+  };
+
+  const handleSelectedCountryCities = async (countryName) => {
+    const selectedCountry = countriesData?.data?.data?.find(
+      (country) => country?.name === countryName
+    );
+    try {
+      const res = await axios.get(
+        BASE_URL +
+          `api/v1/admin/address-management/city?countryInSystemId=${selectedCountry?.id}`
+      );
+      if (res?.data?.status === "success") {
+        setSelectedCountryCities([...res?.data?.data?.data]);
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
     }
   };
 
   return (
     <div className="space-y-8">
-      <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-        Add New Customer
-      </h2>
+      <div className="flex items-center gap-x-2">
+        <button
+          onClick={() => router.push("/sales-representative/customers")}
+          className="size-8 text-theme rounded-full hover:bg-theme hover:text-white duration-200"
+        >
+          <FaLongArrowAltLeft size={30} />
+        </button>{" "}
+        <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+          Add New Customer
+        </h2>
+      </div>
 
       {/* main section start */}
       <div className="lg:gap-x-12 xl:gap-16 relative px-5 md:px-10 xl:px-14 py-5 md:py-8 xl:py-10 shadow-tableShadow border border-borderColor rounded-sm gap-y-4">
@@ -210,18 +378,47 @@ export default function page() {
                 </p>
                 <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
                   <div className="space-y-4">
+                    <Select
+                      placeholder="Select Country"
+                      className="w-full"
+                      styles={drawerSelectStyles}
+                      options={allCountriesData}
+                      value={selectedCountry}
+                      onChange={(e) => {
+                        handleCountryChange(e);
+                        setSelectedCountryCode(e.value);
+                        handleSelectedCountryCities(e.label);
+                      }}
+                    />
                     <div className="flex flex-col gap-y-2">
                       <label className="text-labelColor font-medium font-satoshi">
                         Company Address
                       </label>
-                      <input
-                        type="text"
-                        name="companyaddress"
-                        onChange={handleAddress}
-                        value={userData?.address?.companyaddress}
-                        placeholder="Enter company address"
-                        className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      />
+                      <div className="space-y-2 w-full">
+                        <LoadScript
+                          googleMapsApiKey={googleApiKey}
+                          libraries={["places"]}
+                        >
+                          <Autocomplete
+                            onLoad={(autocomplete) =>
+                              (autocompleteRef.current = autocomplete)
+                            }
+                            options={{
+                              componentRestrictions: {
+                                country: [selectedCountryCode],
+                              },
+                            }}
+                            onPlaceChanged={calculateRoute}
+                          >
+                            <input
+                              ref={inputRef}
+                              type="text"
+                              placeholder="Choose a delivery address"
+                              className="w-full border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                            />
+                          </Autocomplete>
+                        </LoadScript>
+                      </div>
                     </div>
                     <div className="flex flex-col gap-y-2">
                       <label className="text-labelColor font-medium font-satoshi">
@@ -256,40 +453,12 @@ export default function page() {
                       <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
                         <div className="flex flex-col gap-y-2">
                           <label className="text-labelColor font-medium font-satoshi">
-                            Town / City
-                          </label>
-                          <input
-                            type="text"
-                            name="town"
-                            onChange={handleAddress}
-                            value={userData?.address?.town}
-                            placeholder="Enter Town / City"
-                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                          />
-                        </div>
-                        <div className="flex flex-col gap-y-2">
-                          <label className="text-labelColor font-medium font-satoshi">
-                            Zip Code
-                          </label>
-                          <input
-                            type="text"
-                            name="zipCode"
-                            onChange={handleAddress}
-                            value={userData?.address?.zipCode}
-                            placeholder="Enter Zip Code"
-                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                          />
-                        </div>
-                      </div>
-                      <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
-                        <div className="flex flex-col gap-y-2">
-                          <label className="text-labelColor font-medium font-satoshi">
                             Country
                           </label>
                           <input
                             type="text"
                             name="country"
-                            onChange={handleAddress}
+                            // onChange={handleAddress}
                             value={userData?.address?.country}
                             placeholder="Enter Country"
                             className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
@@ -302,9 +471,37 @@ export default function page() {
                           <input
                             type="text"
                             name="state"
-                            onChange={handleAddress}
+                            // onChange={handleAddress}
                             value={userData?.address?.state}
                             placeholder="Enter State"
+                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                          />
+                        </div>
+                      </div>
+                      <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
+                        <div className="flex flex-col gap-y-2">
+                          <label className="text-labelColor font-medium font-satoshi">
+                            Town / City
+                          </label>
+                          <input
+                            type="text"
+                            name="town"
+                            // onChange={handleAddress}
+                            value={userData?.address?.town}
+                            placeholder="Enter Town / City"
+                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-y-2">
+                          <label className="text-labelColor font-medium font-satoshi">
+                            Zip Code
+                          </label>
+                          <input
+                            type="text"
+                            name="zipCode"
+                            // onChange={handleAddress}
+                            value={userData?.address?.zipCode}
+                            placeholder="Enter Zip Code"
                             className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                           />
                         </div>
@@ -485,12 +682,12 @@ export default function page() {
                             })
                           }
                           type="button"
-                          className="text-black absolute right-4 top-10"
+                          className="text-black absolute right-4 top-11"
                         >
                           {visibility?.pass ? (
-                            <AiOutlineEye size={24} color="#ffffff" />
+                            <AiOutlineEye size={24} color="#000000" />
                           ) : (
-                            <AiOutlineEyeInvisible size={24} color="#ffffff" />
+                            <AiOutlineEyeInvisible size={24} color="#000000" />
                           )}
                         </button>
                       </div>
@@ -514,14 +711,12 @@ export default function page() {
                             })
                           }
                           type="button"
-                          className="text-black absolute right-4 top-10"
+                          className="text-black absolute right-4 top-11"
                         >
                           {visibility?.confirmPass ? (
-                            // <AiOutlineEye size={24} color="#ffffff" />
-                            <h1>hamza </h1>
+                            <AiOutlineEye size={24} color="#000000" />
                           ) : (
-                            <h1>hamza </h1>
-                            // <AiOutlineEyeInvisible size={24} color="#ffffff" />
+                            <AiOutlineEyeInvisible size={24} color="#000000" />
                           )}
                         </button>
                       </div>

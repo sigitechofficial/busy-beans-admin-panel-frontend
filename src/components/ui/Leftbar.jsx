@@ -773,9 +773,14 @@ export default function Leftbar(props) {
             active?.orderManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
+                   <ListItems title="All Orders" to="/sales-representative/orders" />
                   <ListItems
                     title="Upcoming Orders"
                     to="/sales-representative/upcoming-orders"
+                  />
+                  <ListItems
+                    title="Upcoming Orders"
+                    to="/sales-representative/create-order"
                   />
                 </div>
                 <hr className="w-full" />

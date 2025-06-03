@@ -3,11 +3,13 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function StripeAccountConnected() {
-  const pathName = usePathname();
+  if (typeof window !== "undefined") {
+    var url = window.location.href;
+  }
   const router = useRouter();
 
   const handleDashboard = () => {
-    const path = pathName.split("/");
+    const path = url.split("/");
     router.push(`https://${path[2].trim()}/`);
   };
 

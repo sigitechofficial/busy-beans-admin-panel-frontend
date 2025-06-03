@@ -92,7 +92,7 @@ export default function CreateOrder() {
           if (res?.data?.data?.data?.connectAccount) {
             const link = document.createElement("a");
             link.href = res?.data?.data?.data?.connectAccount;
-            link.target = "_blank";
+            link.target = "_self";
             link.click();
           }
         } else {
@@ -127,7 +127,7 @@ export default function CreateOrder() {
           if (res?.data?.data?.data?.accountLink?.url) {
             const link = document.createElement("a");
             link.href = res?.data?.data?.data?.accountLink?.url;
-            link.target = "_blank";
+            link.target = "_self";
             link.click();
           }
         } else {

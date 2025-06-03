@@ -63,15 +63,11 @@ const DrawerBeans = ({
         : JSON.parse(localStorage.getItem("quotationData")) || [];
   }
   const totalPrice = cartItems?.reduce((a, b) => {
-    return type === "createOrder"
-      ? Number(a) + Number(b?.price) * Number(b?.quantity)
-      : Number(a) + Number(b?.price) * Number(b?.qty);
+    return Number(a) + Number(b?.price) * Number(b?.qty);
   }, 0);
 
   const totalWeight = cartItems?.reduce((a, b) => {
-    return type === "createOrder"
-      ? Number(a) + Number(b?.quantity) * Number(b?.quantity)
-      : Number(a) + Number(b?.quantity) * Number(b?.qty);
+    return Number(a) + Number(b?.quantity) * Number(b?.qty);
   }, 0);
 
   const { data } = GetAPI("api/v1/admin/customer-management/customer-list/all");

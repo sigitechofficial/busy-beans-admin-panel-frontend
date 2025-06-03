@@ -12,7 +12,6 @@ export default function CreateOrder() {
   if (typeof window !== "undefined") {
     var createOrderDataList =
       JSON.parse(localStorage.getItem("createOrderData")) || [];
-    var userID = localStorage.getItem("userID");
   }
 
   const [createOrderData, setCreateOrderData] = useState(createOrderDataList);
@@ -20,17 +19,19 @@ export default function CreateOrder() {
   const [visibleRight, setVisibleRight] = useState(false);
 
   const { data, reFetch } = GetAPI("api/v1/admin/product");
+  console.log("🚀 ~ CreateOrder ~ data:", data?.data)
 
   const handlePlus = (id, itemQuantity) => {
+    console.log("🚀 ~ handlePlus ~ itemQuantity:", itemQuantity)
     const findItemIndex = createOrderData?.findIndex((item) => item?.id === id);
     if (findItemIndex === -1) {
       const item = data?.data?.data.find((item) => item?.id === id);
-      createOrderData.push({ ...item, quantity: itemQuantity });
+      createOrderData.push({ ...item, qty: itemQuantity });
       setCreateOrderData([...createOrderData]);
       localStorage.setItem("createOrderData", JSON.stringify(createOrderData));
       success_toaster("Item Added Successfully");
     } else {
-      createOrderData[findItemIndex]["quantity"] = itemQuantity;
+      createOrderData[findItemIndex]["qty"] = itemQuantity;
       setCreateOrderData(createOrderData);
       localStorage.setItem("createOrderData", JSON.stringify(createOrderData));
       success_toaster("Item Updated Successfully");
@@ -51,7 +52,7 @@ export default function CreateOrder() {
         );
         success_toaster("Item Removed Successfully");
       } else {
-        createOrderData[findItemIndex]["quantity"] = itemQuantity;
+        createOrderData[findItemIndex]["qty"] = itemQuantity;
         setCreateOrderData(createOrderData);
         localStorage.setItem(
           "createOrderData",
@@ -66,10 +67,7 @@ export default function CreateOrder() {
     const createOrderData =
       JSON.parse(localStorage.getItem("createOrderData")) || [];
     const InventoryItem = createOrderData.find((item) => item?.id === id);
-    
-    console.log("InventoryItem?.qty:- ", InventoryItem?.quantity);
-    
-    return InventoryItem ? Number(InventoryItem?.quantity) : 0;
+    return InventoryItem ? Number(InventoryItem?.qty) : 0;
   };
 
   return (

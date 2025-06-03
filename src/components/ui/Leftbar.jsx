@@ -36,7 +36,7 @@ export default function Leftbar(props) {
   if (typeof window !== "undefined") {
     var userType = localStorage.getItem("userType");
   }
- 
+
   const pathname = usePathname();
   const router = useRouter();
   const [active, setActive] = useState({
@@ -179,8 +179,14 @@ export default function Leftbar(props) {
                   <ListItems title="All Orders" to="/orders" />
                   <ListItems title="Upcoming Orders" to="/orders/upcoming" />
                   <ListItems title="Assigned Orders" to="/orders/assigned" />
-                  <ListItems title="Acknowledged Orders" to="/orders/acknowledged" />
-                  <ListItems title="Dispatched Orders" to="/orders/dispatched" />
+                  <ListItems
+                    title="Acknowledged Orders"
+                    to="/orders/acknowledged"
+                  />
+                  <ListItems
+                    title="Dispatched Orders"
+                    to="/orders/dispatched"
+                  />
                   <ListItems title="Delivered Orders" to="/orders/delivered" />
                   <ListItems title="Cancelled Orders" to="/orders/cancelled" />
                 </div>
@@ -773,19 +779,38 @@ export default function Leftbar(props) {
             active?.orderManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                   <ListItems title="All Orders" to="/sales-representative/orders" />
+                  <ListItems
+                    title="All Orders"
+                    to="/sales-representative/orders"
+                  />
                   <ListItems
                     title="Upcoming Orders"
                     to="/sales-representative/upcoming-orders"
                   />
                   <ListItems
-                    title="Upcoming Orders"
+                    title="Create Orders"
                     to="/sales-representative/create-order"
                   />
                 </div>
                 <hr className="w-full" />
               </>
             )}
+
+          <ListHead
+            title="Wallet Management"
+            Icon={AiOutlineUnorderedList}
+            to={"/sales-representative/wallet"}
+            active={pathname === "/sales-representative/wallet"}
+            // Angle={
+            //   active?.orderManagement?.tab === "walletManagement" &&
+            //   active?.orderManagement?.status
+            //     ? FaAngleUp
+            //     : FaAngleDown
+            // }
+            // onClick={() =>
+            //   handleActive("walletManagement", active?.orderManagement?.status)
+            // }
+          />
 
           <div className="mx-2 pb-7">
             <button

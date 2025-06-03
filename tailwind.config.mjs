@@ -44,7 +44,7 @@ export default {
         dottedLine: "#22151866",
         themeYellowLight: "#FDE24F",
         themeYellowDark: "#E9C607",
-        themeSilver:"#F5F5F5",
+        themeSilver: "#F5F5F5",
       },
       colors: {
         theme: "#86644C",
@@ -65,7 +65,9 @@ export default {
         buttonBorderColor: "#D0D5DD",
         themeYellowLight: "#FDE24F",
         themeYellowDark: "#E9C607",
-        themeSilver:"#F5F5F5",
+        themeSilver: "#F5F5F5",
+        goldenLight: "#F8E4BE",
+        goldenDark: "#F9C06A38",
       },
       boxShadow: {
         textShadow:

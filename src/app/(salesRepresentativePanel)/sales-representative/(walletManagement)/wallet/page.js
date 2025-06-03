@@ -1,0 +1,50 @@
+"use client";
+import Loader from "@/components/ui/Loader";
+import ManagementTab from "@/components/ui/ManagementTab";
+import GetAPI from "@/utilities/GetAPI";
+import selectStyles from "@/utilities/SelectStyle";
+import Select from "react-select";
+
+export default function page() {
+  if (typeof window !== "undefined") {
+    var userID = localStorage.getItem("userID");
+  }
+  const { data } = GetAPI(`api/v1/admin/sales-rep/sales/${userID}`);
+
+  console.log("🚀 ~ page ~ data:", data?.data);
+
+  return data?.length === 0 ? (
+    <Loader />
+  ) : (
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+          Wallet Management
+        </h2>
+
+        <Select placeholder="Filters" className="w-40" styles={selectStyles} />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+        <ManagementTab title="Total Sales" desc={data?.data?.totalSales ?? 0} />
+        <ManagementTab
+          title="Saler Commission"
+          desc={data?.data?.salerCommission ?? 0}
+        />
+        <ManagementTab
+          title="Whole Sale Price"
+          desc={data?.data?.wholesalePrice ?? 0}
+        />
+        <ManagementTab
+          title="Number of Sold Products"
+          desc={data?.data?.numberOfSoldProducts ?? 0}
+        />
+        <ManagementTab title="To be Paid" desc={data?.data?.toBePaid ?? 0} />
+        <ManagementTab
+          title="Paid to Admin"
+          desc={data?.data?.paidToAdmin ?? 0}
+        />
+      </div>
+    </div>
+  );
+}

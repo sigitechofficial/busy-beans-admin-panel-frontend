@@ -20,6 +20,7 @@ import Select from "react-select";
 import { drawerSelectStyles, selectStyles2 } from "@/utilities/SelectStyle";
 import { RxCross2 } from "react-icons/rx";
 import MiniLoader from "./MiniLoader";
+import { MdInsertComment } from "react-icons/md";
 
 const DrawerBeans = ({
   drawerOpen: open,
@@ -27,26 +28,51 @@ const DrawerBeans = ({
   setQuotationData,
   type,
 }) => {
+  if (typeof window !== "undefined") {
+    var userID = localStorage.getItem("userID");
+  }
   const options = [];
+  const paymentMethodOptions = [
+    { label: "COD", value: "cod" },
+    { label: "Cheque", value: "cheque" },
+    { label: "Card", value: "card" },
+  ];
+  const orderFrequencyOptions = [
+    { label: "Just Onces", value: "just-onces" },
+    { label: "Weekly", value: "weekly" },
+    { label: "Every Two Weeks", value: "every-two-weeks" },
+    { label: "Every Four Weeks", value: "every-four-weeks" },
+  ];
+  const [addressOptions, setAddressOptions] = useState([]);
   const [counter, setCounter] = useState(null);
   const [render, setRender] = useState(false);
   const [email, setEmail] = useState("");
   const [emailType, setEmailType] = useState(true);
   const [loader, setLoader] = useState(false);
-
+  const [order, setOrder] = useState({
+    note: "",
+    paymentMethod: "",
+    poNumber: "",
+    orderFrequency: "",
+    addressId: "",
+  });
+  console.log("🚀 ~ order:", order);
   if (typeof window !== "undefined") {
     var cartItems =
       type === "createOrder"
         ? JSON.parse(localStorage.getItem("createOrderData")) || []
         : JSON.parse(localStorage.getItem("quotationData")) || [];
   }
-  console.log("🚀 ~ cartItems:", cartItems);
   const totalPrice = cartItems?.reduce((a, b) => {
-    return Number(a) + Number(b?.price) * Number(b?.qty);
+    return type === "createOrder"
+      ? Number(a) + Number(b?.price) * Number(b?.quantity)
+      : Number(a) + Number(b?.price) * Number(b?.qty);
   }, 0);
 
   const totalWeight = cartItems?.reduce((a, b) => {
-    return Number(a) + Number(b?.quantity) * Number(b?.qty);
+    return type === "createOrder"
+      ? Number(a) + Number(b?.quantity) * Number(b?.quantity)
+      : Number(a) + Number(b?.quantity) * Number(b?.qty);
   }, 0);
 
   const { data } = GetAPI("api/v1/admin/customer-management/customer-list/all");
@@ -67,11 +93,13 @@ const DrawerBeans = ({
     setDrawerScroll(scrollTop);
   };
 
-  const handleItemClick = (type, id) => {
-    if (type === "plus") {
+  const handleItemClick = (actionType, id) => {
+    if (actionType === "plus") {
       let updatedCart = cartItems.map((item) => {
         if (Number(item.id) === id) {
-          return { ...item, qty: item.qty + 1 };
+          return type === "createOrder"
+            ? { ...item, quantity: item.quantity + 1 }
+            : { ...item, qty: item.qty + 1 };
         }
         return item;
       });
@@ -80,10 +108,16 @@ const DrawerBeans = ({
         : localStorage.setItem("quotationData", JSON.stringify(updatedCart));
       setQuotationData(updatedCart);
       setRender(!render);
-    } else if (type === "minus") {
+    } else if (actionType === "minus") {
       let updatedCart = cartItems.map((item) => {
-        if (Number(item.id) === id && item.qty > 1) {
-          return { ...item, qty: item.qty - 1 };
+        if (type === "createOrder") {
+          if (Number(item.id) === id && item.quantity > 1) {
+            return { ...item, quantity: item.quantity - 1 };
+          }
+        } else {
+          if (Number(item.id) === id && item.qty > 1) {
+            return { ...item, qty: item.qty - 1 };
+          }
         }
         return item;
       });
@@ -92,7 +126,7 @@ const DrawerBeans = ({
         : localStorage.setItem("quotationData", JSON.stringify(updatedCart));
       setQuotationData(updatedCart);
       setRender(!render);
-    } else if (type === "delete") {
+    } else if (actionType === "delete") {
       let updatedCart = cartItems.filter((item) => Number(item.id) !== id);
       type === "createOrder"
         ? localStorage.setItem("createOrderData", JSON.stringify(updatedCart))
@@ -102,43 +136,146 @@ const DrawerBeans = ({
     }
   };
 
+  const handleCreateOrderData = (createOrderData) => {
+    const updatedCart = [];
+    createOrderData?.map((item) =>
+      updatedCart.push({
+        categoryId: item?.categoryId,
+        createdAt: item?.createdAt,
+        deleted: false,
+        desc: item?.desc,
+        productId: item?.id,
+        image: item?.image,
+        name: item?.name,
+        price: item?.price,
+        qty: item?.qty,
+        quantity: item?.quantity,
+        status: true,
+        unit: item?.unit,
+        updatedAt: item?.updatedAt,
+        weight: item?.weight,
+        wholesalePrice: item?.wholesalePrice,
+      })
+    );
+    return updatedCart;
+  };
+
   const handleSendQuotation = async () => {
-    // if (!email) {
-    //   info_toaster("Email cannot be empty");
-    // } else {
-    //   setLoader(true);
-    //   try {
-    //     const res = await PostAPI("api/v1/admin/send-quotation", {
-    //       email: [email],
-    //       order: {
-    //         totalBill: totalPrice,
-    //         subTotal: totalPrice,
-    //         itemsPrice: totalPrice,
-    //         vat: 0.0,
-    //         totalWeight: totalWeight,
-    //       },
-    //       items: cartItems,
-    //     });
-    //     if (res?.data?.status === "success") {
-    //       setOpen(false);
-    //       success_toaster("Quotation send Successfully");
-    //       type === "createOrder"
-    //         ? localStorage.setItem("createOrderData", JSON.stringify([]))
-    //         : localStorage.setItem("quotationData", JSON.stringify([]));
-    //       setQuotationData([]);
-    //       setEmail("");
-    //       setEmailType(true);
-    //     } else {
-    //       throw new Error(
-    //         res?.data?.message || "An unexpected error occurred."
-    //       );
-    //     }
-    //   } catch (error) {
-    //     ErrorHandler(error);
-    //   } finally {
-    //     setLoader(false);
-    //   }
-    // }
+    if (type === "createOrder") {
+      const createOrderData = JSON.parse(
+        localStorage.getItem("createOrderData")
+      );
+      if (!email) {
+        info_toaster("Email cannot be empty");
+      } else if (!order?.addressId) {
+        info_toaster("Address cannot be empty");
+      } else if (!order?.paymentMethod) {
+        info_toaster("select payment method");
+      } else if (!order?.orderFrequency) {
+        info_toaster("Selectorder frequency");
+      } else if (!order?.note) {
+        info_toaster("Note cannot be empty");
+      } else if (createOrderData.length === 0) {
+        info_toaster("No Product is selected");
+      } else {
+        setLoader(true);
+        try {
+          const res = await PostAPI(
+            `/api/v1/admin/sales-rep/book-new-order/${userID}`,
+            {
+              //sales rep id in route
+              order: {
+                totalBill: totalPrice,
+                subTotal: totalPrice,
+                discountPrice: 0,
+                discountPercentage: 0,
+                itemsPrice: totalPrice,
+                vat: 0.0,
+                totalWeight: totalWeight,
+                note: order?.note,
+                paymentMethod: order?.paymentMethod,
+                poNumber: order?.poNumber,
+                orderFrequency: order?.orderFrequency, //  'just-onces','weekly','every-two-weeks','every-four-weeks',
+                addressId: order?.addressId,
+                userId: userID,
+              },
+              items: handleCreateOrderData(createOrderData),
+            }
+          );
+          if (res?.data?.status === "success") {
+            success_toaster("order Created successfully");
+            setLoader(false);
+            localStorage.setItem("createOrderData", JSON.stringify([]));
+            setQuotationData([]);
+            setOpen(false);
+          } else {
+            throw new Error(
+              res?.data?.message || "An unexpected error occurred."
+            );
+          }
+        } catch (error) {
+          ErrorHandler(error);
+          setLoader(false);
+        }
+      }
+    } else {
+      if (!email) {
+        info_toaster("Email cannot be empty");
+      } else {
+        setLoader(true);
+        try {
+          const res = await PostAPI("api/v1/admin/send-quotation", {
+            email: [email],
+            order: {
+              totalBill: totalPrice,
+              subTotal: totalPrice,
+              itemsPrice: totalPrice,
+              vat: 0.0,
+              totalWeight: totalWeight,
+            },
+            items: cartItems,
+          });
+          if (res?.data?.status === "success") {
+            setOpen(false);
+            success_toaster("Quotation send Successfully");
+            type === "createOrder"
+              ? localStorage.setItem("createOrderData", JSON.stringify([]))
+              : localStorage.setItem("quotationData", JSON.stringify([]));
+            setQuotationData([]);
+            setEmail("");
+            setEmailType(true);
+          } else {
+            throw new Error(
+              res?.data?.message || "An unexpected error occurred."
+            );
+          }
+        } catch (error) {
+          ErrorHandler(error);
+        } finally {
+          setLoader(false);
+        }
+      }
+    }
+  };
+
+  const handleEmail = (email) => {
+    const addressList = [];
+    setEmail(email);
+    const selectedEmail = data?.data?.data?.find(
+      (customer) => customer?.email === email
+    );
+    setOrder({
+      ...order,
+      poNumber: selectedEmail?.saleTaxNumber,
+    });
+    console.log("🚀 ~ handleEmail ~ selectedEmail:", selectedEmail?.addresses);
+    selectedEmail?.addresses?.map((address) =>
+      addressList.push({
+        value: address?.id,
+        label: address?.companyaddress,
+      })
+    );
+    setAddressOptions([...addressList]);
   };
 
   // useEffect(() => {
@@ -164,51 +301,134 @@ const DrawerBeans = ({
           <div>
             <div className="flex justify-between items-center">
               <h2 className="text-[32px] font-black font-nunito text-theme-black-2">
-                {loader ? "Sending" : "Send"} Quotation
+                {type === "createOrder" ? "Create Order" : "Send Quotation"}
               </h2>
             </div>
           </div>
           {loader ? (
             <MiniLoader />
           ) : (
-            <div className="relative space-y-6 font-sf mb-28 bg-theme text-white">
-              <div className="flex flex-col gap-y-2">
-                <label className="text-white font-medium font-satoshi">
-                  Email
-                </label>
-                <div className="flex items-center gap-x-2 min-h-full">
-                  {emailType ? (
+            <div className="relative space-y-6 font-sf pb-20 bg-theme text-white">
+              {type === "createOrder" ? (
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-y-2">
+                    <label className="text-white font-medium font-satoshi">
+                      Email
+                    </label>
+                    <div className="flex items-center gap-x-2 min-h-full">
+                      <Select
+                        placeholder="Select email"
+                        className="w-full"
+                        styles={drawerSelectStyles}
+                        options={options}
+                        onChange={(e) => {
+                          // setEmail(e.value);
+                          handleEmail(e.value);
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-x-2 min-h-full">
                     <Select
-                      placeholder="Select email"
+                      placeholder="Select Address"
                       className="w-full"
                       styles={drawerSelectStyles}
-                      options={options}
+                      options={addressOptions}
                       onChange={(e) => {
-                        setEmail(e.value);
+                        setOrder({ ...order, addressId: e.value });
                       }}
                     />
-                  ) : (
-                    <input
-                      type="email"
-                      name="email"
-                      autoComplete="off"
-                      value={email}
-                      placeholder="Enter Email"
-                      className="border w-full border-themeLight text-themeLight placeholder:text-themeLight rounded-[4px] outline-none px-2.5 py-3"
-                      onChange={(e) => setEmail(e.target.value)}
+                  </div>
+                  <div>
+                    <Select
+                      placeholder="Select Payment Method"
+                      className="w-full"
+                      styles={drawerSelectStyles}
+                      options={paymentMethodOptions}
+                      onChange={(e) => {
+                        setOrder({ ...order, paymentMethod: e.value });
+                      }}
                     />
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setEmailType(!emailType)}
-                    className={`${
-                      emailType ? "w-40" : "w-auto"
-                    } h-12 bg-white text-black px-[7px] rounded-md`}
-                  >
-                    {emailType ? "Custom Email" : <RxCross2 size={32} />}
-                  </button>
+                  </div>
+                  <div>
+                    <Select
+                      placeholder="Select Order Frequency"
+                      className="w-full"
+                      styles={drawerSelectStyles}
+                      options={orderFrequencyOptions}
+                      onChange={(e) => {
+                        setOrder({ ...order, orderFrequency: e.value });
+                      }}
+                    />
+                  </div>
+                  <div className="w-full font-sf font-normal text-base text-theme-black-2 flex items-center gap-3 px-5 py-[5px] duration-300 border-2 border-white hover:border-goldenLight focus-within:border-goldenLight rounded">
+                    <MdInsertComment size={24} />
+                    <div className="relative w-full">
+                      <input
+                        type="text"
+                        id="courier-note"
+                        className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${
+                          order?.note ? "placeholder-transparent" : ""
+                        }`}
+                        value={order?.note}
+                        onChange={(e) =>
+                          setOrder({ ...order, note: e.target.value })
+                        }
+                      />
+                      <label
+                        htmlFor="courier-note"
+                        className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${
+                          order?.note
+                            ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
+                            : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
+                        }`}
+                      >
+                        {order?.note
+                          ? "Note for the supplier"
+                          : "Add note for the supplier"}
+                      </label>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex flex-col gap-y-2">
+                  <label className="text-white font-medium font-satoshi">
+                    Email
+                  </label>
+                  <div className="flex items-center gap-x-2 min-h-full">
+                    {emailType ? (
+                      <Select
+                        placeholder="Select email"
+                        className="w-full"
+                        styles={drawerSelectStyles}
+                        options={options}
+                        onChange={(e) => {
+                          setEmail(e.value);
+                        }}
+                      />
+                    ) : (
+                      <input
+                        type="email"
+                        name="email"
+                        autoComplete="off"
+                        value={email}
+                        placeholder="Enter Email"
+                        className="border w-full border-themeLight text-themeLight placeholder:text-themeLight rounded-[4px] outline-none px-2.5 py-3"
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setEmailType(!emailType)}
+                      className={`${
+                        emailType ? "w-40" : "w-auto"
+                      } h-12 bg-white text-black px-[7px] rounded-md`}
+                    >
+                      {emailType ? "Custom Email" : <RxCross2 size={32} />}
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <p className="font-medium text-base">Order Details</p>
 
@@ -282,7 +502,12 @@ const DrawerBeans = ({
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-x-3">
                             <span className="font-semibold text-sm text-white mt-1">
-                              {parseFloat(Number(cartI?.price) * cartI?.qty)}{" "}
+                              {parseFloat(
+                                Number(cartI?.price) *
+                                  (type === "createOrder"
+                                    ? cartI?.quantity
+                                    : cartI?.qty)
+                              )}{" "}
                               {"$"}
                             </span>
                           </div>
@@ -300,7 +525,9 @@ const DrawerBeans = ({
                               <RiSubtractFill />
                             </button>
                             <span className="text-lg font-sf w-7 text-center">
-                              {cartI?.qty}
+                              {type === "createOrder"
+                                ? cartI?.quantity
+                                : cartI?.qty}
                             </span>
                             <button
                               onClick={() => {
@@ -324,7 +551,9 @@ const DrawerBeans = ({
                             onClick={() => handleCounterClick(index)}
                             className="text-lg font-sf w-7 text-center"
                           >
-                            {cartI?.qty}
+                            {type === "createOrder"
+                              ? cartI?.quantity
+                              : cartI?.qty}
                           </span>
                         )}
                       </div>
@@ -335,9 +564,9 @@ const DrawerBeans = ({
             </div>
           )}
 
-          <div className="absolute bottom-0 left-[30px] py-10 flex justify-center bg-theme w-[452px]">
+          <div className="absolute bottom-0 left-[30px] py-5 flex justify-center bg-theme w-[452px]">
             <button
-              className="bg-themeLight font-bold text-white rounded-full px-5 min-h-14 w-full flex items-center justify-between"
+              className="bg-themeLight font-bold text-white rounded-[4px] px-5 min-h-14 w-full flex items-center justify-between"
               onClick={handleSendQuotation}
             >
               <div className="flex space-x-4 items-center">

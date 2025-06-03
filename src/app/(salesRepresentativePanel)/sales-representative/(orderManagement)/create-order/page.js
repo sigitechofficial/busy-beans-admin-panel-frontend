@@ -22,6 +22,7 @@ export default function CreateOrder() {
   }
 
   const pathName = usePathname();
+  console.log("🚀 ~ CreateOrder ~ pathName:", pathName)
   const [createOrderData, setCreateOrderData] = useState(createOrderDataList);
   const [visibleRight, setVisibleRight] = useState(false);
 
@@ -77,6 +78,8 @@ export default function CreateOrder() {
 
   const handleConnectAccount = async () => {
     const path = pathName.split("/");
+    console.log("🚀 ~ handleConnectAccount ~ 2:", path[2].trim())
+    console.log("🚀 ~ handleConnectAccount ~ path:", path)
     if (isAccountConnected === "false" && connectAccountId !== "null") {
       try {
         const res = await axios.post(

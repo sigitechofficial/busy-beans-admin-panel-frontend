@@ -76,7 +76,6 @@ export default function OrderCard(props) {
               statusId: 2,
             },
           });
-          console.log("🚀 ~ handleSubmit ~ res:", res);
           if (res?.data?.status === "success") {
             success_toaster("Supplier assign successfully");
             props?.reFetch();
@@ -112,7 +111,6 @@ export default function OrderCard(props) {
               shippingCompany: dispatchOrderData?.shippingCompany,
             },
           });
-          console.log("🚀 ~ handleSubmit ~ res:", res);
           if (res?.data?.status === "success") {
             success_toaster("Order Dispatched successfully");
             props?.reFetch();
@@ -395,7 +393,6 @@ export default function OrderCard(props) {
             <div className="text-end">
               <button
                 type="submit"
-                // onClick={() => console.log("supplierID:- ", supplierID)}
                 className="rounded-lg border border-theme text-white px-10 bg-theme font-nunito py-3 font-medium"
               >
                 {props?.orderData?.statusId === 1 &&

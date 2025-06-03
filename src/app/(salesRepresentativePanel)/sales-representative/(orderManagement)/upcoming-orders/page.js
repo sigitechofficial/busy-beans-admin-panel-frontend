@@ -25,7 +25,6 @@ export default function UpcomingOrders() {
   const { data, reFetch } = GetAPI(
     `api/v1/admin/order-frequency/upcomming-orders/sale-rep/${userID}`
   );
-  console.log("🚀 ~ UpcomingOrders ~ data:", data?.data?.order);
 
   const handleCancel = () => {
     setModal("");

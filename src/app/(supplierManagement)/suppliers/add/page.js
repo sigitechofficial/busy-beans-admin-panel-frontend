@@ -32,7 +32,6 @@ export default function AddNewSupplier() {
     registerDate: "",
     bankAccount: "",
   });
-  console.log("🚀 ~ AddNewSupplier ~ supplier:", supplier);
   const [visible, setVisible] = useState(false);
   const [imagePreview, setImagePreview] = useState("");
   const [loader, setLoader] = useState(false);

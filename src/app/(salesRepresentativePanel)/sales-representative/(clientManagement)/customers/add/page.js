@@ -258,11 +258,10 @@ export default function page() {
     const state = getAddressComponent("administrative_area_level_1");
     const postalCode = getAddressComponent("postal_code");
 
-    if (!place.geometry || !place.geometry.location) {
+    if (!place?.geometry || !place?.geometry?.location) {
       info_toaster("Please select an address");
       return;
     }
-
     // setDeliveryAddress({
     //   ...deliveryAddress,
     //   country: countryName,
@@ -286,8 +285,8 @@ export default function page() {
         country: countryName,
         state: state,
         zipCode: postalCode,
-        lat: place.geometry.location.lat(),
-        lng: place.geometry.location.lng(),
+        lat: place?.geometry?.location.lat(),
+        lng: place?.geometry?.location.lng(),
         status: true,
       },
     });

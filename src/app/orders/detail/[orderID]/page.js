@@ -53,7 +53,6 @@ export default function OrderDetail() {
   ];
 
   const { data, reFetch } = GetAPI(`api/v1/admin/order-details/${orderID}`);
-  console.log("🚀 ~ OrderDetail ~ data:", data?.data?.order);
 
   const handleSupplierAcknowledgement = async () => {
     setLoader("acknowledgeSupplier");

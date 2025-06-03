@@ -20,7 +20,6 @@ export default function EditSupplier() {
   const [loader, setLoader] = useState(false);
 
   const { data } = GetAPI(`api/v1/admin/supplier/${supplierID}`);
-  console.log("🚀 ~ EditSupplier ~ data:", data?.data?.data);
 
   const [supplier, setSupplier] = useState({
     supplierName: "",

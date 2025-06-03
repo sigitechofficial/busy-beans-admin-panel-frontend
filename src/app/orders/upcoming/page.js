@@ -19,12 +19,10 @@ export default function UpcomingOrders() {
   const [modal, setModal] = useState("");
   const [items, setItems] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
-  console.log("🚀 ~ UpcomingOrders ~ selectedRows:", selectedRows);
 
   const { data, reFetch } = GetAPI(
     "api/v1/admin/order-frequency/upcomming-orders"
   );
-  // console.log("🚀 ~ UpcomingOrders ~ data:", data?.data);
 
   const handleCancel = () => {
     setModal("");

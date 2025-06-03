@@ -27,12 +27,10 @@ import ErrorHandler from "@/utilities/ErrorHandler";
 
 export default function Stock() {
   const { data, reFetch } = GetAPI("api/v1/admin/product");
-  console.log("🚀 ~ Stock ~ data:", data?.data?.data);
 
   const { data: category, reFetch: categoryRefetch } = GetAPI(
     "api/v1/admin/category"
   );
-  console.log("🚀 ~ Stock ~ category:", category?.data?.data);
 
   const catOptions = [];
 

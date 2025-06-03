@@ -3,7 +3,6 @@ import { MdDelete } from "react-icons/md";
 
 export default function ZoneEditTab(props) {
   const { name, id } = props;
-  console.log("🚀 ~ ZoneEditTab ~ name:", name);
   return (
     <div className="flex items-start justify-between p-4 bg-themeTab border border-tabBorderColor border-opacity-60 rounded-xl font-inter font-semibold text-xl">
       <p className="break-all">{name}</p>

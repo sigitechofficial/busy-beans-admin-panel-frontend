@@ -56,7 +56,6 @@ const DrawerBeans = ({
     orderFrequency: "",
     addressId: "",
   });
-  console.log("🚀 ~ order:", order);
   if (typeof window !== "undefined") {
     var cartItems =
       type === "createOrder"
@@ -76,7 +75,6 @@ const DrawerBeans = ({
   }, 0);
 
   const { data } = GetAPI("api/v1/admin/customer-management/customer-list/all");
-  console.log("🚀 ~ data:", data?.data?.data);
 
   data?.data?.data?.map((user) =>
     options.push({ value: user?.email, label: user?.email })
@@ -268,7 +266,6 @@ const DrawerBeans = ({
       ...order,
       poNumber: selectedEmail?.saleTaxNumber,
     });
-    console.log("🚀 ~ handleEmail ~ selectedEmail:", selectedEmail?.addresses);
     selectedEmail?.addresses?.map((address) =>
       addressList.push({
         value: address?.id,
@@ -577,7 +574,7 @@ const DrawerBeans = ({
                   {type === "createOrder" ? "Create Order" : "Send Quotation"}
                 </p>
               </div>
-              ${totalPrice.toFixed(2)} {"$"}
+              ${totalPrice?.toFixed(2)} {"$"}
             </button>
           </div>
         </div>

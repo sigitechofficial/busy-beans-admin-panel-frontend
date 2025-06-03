@@ -16,7 +16,6 @@ export default function SupplierOrders() {
   const { data } = GetAPI(
     `api/v1/admin/orders?statusId=4&supplierId=${supplierId}`
   );
-  console.log("🚀 ~ SupplierOrders ~ data:", data?.data?.data?.length)
 
   const columns = [
     { field: "sl", header: "SL", sort: true },

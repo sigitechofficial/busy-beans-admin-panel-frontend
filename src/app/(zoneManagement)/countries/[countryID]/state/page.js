@@ -37,7 +37,6 @@ export default function States() {
   const { data: countryStates, reFetch } = GetAPI(
     `api/v1/admin/address-management/state?countryInSystemId=${countryID}`
   );
-  console.log("🚀 ~ State ~ countryStates:", countryStates);
 
   const columns = [
     { field: "sl", header: "SL", sort: true },
@@ -89,7 +88,6 @@ export default function States() {
   // );
 
   const states = State.getStatesOfCountry(data?.data?.data?.isoCode);
-  console.log("🚀 ~ State ~ states:", states);
 
   // const stateList = allCountries?.filter(
   //   (country) => country[0] === data?.data?.data?.name

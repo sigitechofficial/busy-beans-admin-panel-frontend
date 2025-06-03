@@ -19,7 +19,6 @@ import MiniLoader from "@/components/ui/MiniLoader";
 export default function Countries() {
   const countries = Country.getAllCountries();
   // const states = State.getStatesOfCountry("PK");
-  // console.log("🚀 ~ Countries ~ states:", states);
 
   const [loading, setLoading] = useState(false);
   const [modal, setModal] = useState("");
@@ -48,7 +47,6 @@ export default function Countries() {
   );
 
   const { data, reFetch } = GetAPI("api/v1/admin/address-management/country");
-  console.log("🚀 ~ Countries ~ data:", data?.data?.data);
 
   const handleAddCountry = async (e) => {
     e.preventDefault();

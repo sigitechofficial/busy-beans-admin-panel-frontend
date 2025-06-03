@@ -34,7 +34,6 @@ export default function SignIn() {
               password: values.password,
             }
           );
-          console.log("🚀 ~ onSubmit: ~ res:", res?.data);
           if (res?.data?.status === "success") {
             setLoader(false);
             router.push("/");

@@ -40,7 +40,6 @@ export default function SalesRepresentativeInventory() {
 
   const handleMinus = (id, itemQuantity) => {
     const findItemIndex = quotationData?.findIndex((item) => item?.id === id);
-    console.log("🚀 ~ handleMinus ~ findItemIndex:", findItemIndex);
     if (findItemIndex !== -1) {
       if (itemQuantity === 0) {
         const filteredQuotationItem = quotationData?.filter(
@@ -65,7 +64,6 @@ export default function SalesRepresentativeInventory() {
     const quotationData =
       JSON.parse(localStorage.getItem("quotationData")) || [];
     const InventoryItem = quotationData.find((item) => item?.id === id);
-    console.log("InventoryItem?.qty:- ", InventoryItem?.qty)
     return InventoryItem ? InventoryItem?.qty : 0;
   };
 

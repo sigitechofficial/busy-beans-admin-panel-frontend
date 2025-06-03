@@ -11,7 +11,6 @@ export default function page() {
   }
   const { data } = GetAPI(`api/v1/admin/sales-rep/sales/${userID}`);
 
-  console.log("🚀 ~ page ~ data:", data?.data);
 
   return data?.length === 0 ? (
     <Loader />

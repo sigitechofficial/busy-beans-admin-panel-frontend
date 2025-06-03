@@ -19,10 +19,8 @@ export default function CreateOrder() {
   const [visibleRight, setVisibleRight] = useState(false);
 
   const { data, reFetch } = GetAPI("api/v1/admin/product");
-  console.log("🚀 ~ CreateOrder ~ data:", data?.data)
 
   const handlePlus = (id, itemQuantity) => {
-    console.log("🚀 ~ handlePlus ~ itemQuantity:", itemQuantity)
     const findItemIndex = createOrderData?.findIndex((item) => item?.id === id);
     if (findItemIndex === -1) {
       const item = data?.data?.data.find((item) => item?.id === id);

@@ -36,7 +36,6 @@ export default function AddTerritory() {
     `api/v1/admin/address-management/city?stateInSystemId=${stateID}`
   );
 
-  console.log("🚀 ~ AddTerritory ~ territoryCities:", territoryCities?.data);
 
   const { data: countryData } = GetAPI(
     `api/v1/admin/address-management/country/${countryID}`

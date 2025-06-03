@@ -95,9 +95,7 @@ const DrawerBeans = ({
     if (actionType === "plus") {
       let updatedCart = cartItems.map((item) => {
         if (Number(item.id) === id) {
-          return type === "createOrder"
-            ? { ...item, quantity: item.quantity + 1 }
-            : { ...item, qty: item.qty + 1 };
+          return { ...item, qty: item.qty + 1 };
         }
         return item;
       });
@@ -108,14 +106,8 @@ const DrawerBeans = ({
       setRender(!render);
     } else if (actionType === "minus") {
       let updatedCart = cartItems.map((item) => {
-        if (type === "createOrder") {
-          if (Number(item.id) === id && item.quantity > 1) {
-            return { ...item, quantity: item.quantity - 1 };
-          }
-        } else {
-          if (Number(item.id) === id && item.qty > 1) {
-            return { ...item, qty: item.qty - 1 };
-          }
+        if (Number(item.id) === id && item.qty > 1) {
+          return { ...item, qty: item.qty - 1 };
         }
         return item;
       });
@@ -500,10 +492,7 @@ const DrawerBeans = ({
                           <div className="flex items-center gap-x-3">
                             <span className="font-semibold text-sm text-white mt-1">
                               {parseFloat(
-                                Number(cartI?.price) *
-                                  (type === "createOrder"
-                                    ? cartI?.quantity
-                                    : cartI?.qty)
+                                Number(cartI?.price) * Number(cartI?.qty)
                               )}{" "}
                               {"$"}
                             </span>
@@ -522,9 +511,7 @@ const DrawerBeans = ({
                               <RiSubtractFill />
                             </button>
                             <span className="text-lg font-sf w-7 text-center">
-                              {type === "createOrder"
-                                ? cartI?.quantity
-                                : cartI?.qty}
+                              {cartI?.qty}
                             </span>
                             <button
                               onClick={() => {
@@ -548,9 +535,7 @@ const DrawerBeans = ({
                             onClick={() => handleCounterClick(index)}
                             className="text-lg font-sf w-7 text-center"
                           >
-                            {type === "createOrder"
-                              ? cartI?.quantity
-                              : cartI?.qty}
+                            {cartI?.qty}
                           </span>
                         )}
                       </div>

@@ -3,7 +3,13 @@ import MiniLoader from "@/components/ui/MiniLoader";
 import { loginSchema } from "@/schema";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import { loginAPI } from "@/utilities/PostAPI";
-import { error_toaster, success_toaster } from "@/utilities/Toaster";
+import {
+  error_toaster,
+  info_toaster,
+  success_toaster,
+} from "@/utilities/Toaster";
+import { BASE_URL } from "@/utilities/URL";
+import axios from "axios";
 import { useFormik } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -18,6 +24,23 @@ export default function SignIn() {
     email: "",
     password: "",
   };
+
+  // const handleConnectAccountID = (srId) => {
+  //   try {
+  //     const res = axios.get(
+  //       BASE_URL + `api/v1/admin/create-stripe-connect-account/${srId}`
+  //     );
+  //     console.log("🚀 ~ handleConnectAccountID ~ res:", res?.data?.data);
+  //     if (res?.data?.status === "success") {
+  //       success_toaster("API success");
+  //     } else {
+  //       throw new Error(res?.data?.message || "An unexpected error occurred.");
+  //     }
+  //   } catch (error) {
+  //     ErrorHandler(error);
+  //   }
+  // };
+
   const { values, errors, touched, handleBlur, handleChange, handleSubmit } =
     useFormik({
       initialValues,
@@ -54,6 +77,17 @@ export default function SignIn() {
               type === "sales-rep" ? "salesRepresentative" : type
             );
             success_toaster("Login Successfully");
+            if (type === "sales-rep") {
+              localStorage.setItem(
+                "connectAccountId",
+                res?.data?.data?.user?.connectAccountId
+              );
+              localStorage.setItem(
+                "isAccountConnected",
+                res?.data?.data?.user?.isAccountConnected
+              );
+              // handleConnectAccountID(res?.data?.data?.user?.id);
+            }
           } else {
             throw new Error(
               res?.data?.message || "An unexpected error occurred."

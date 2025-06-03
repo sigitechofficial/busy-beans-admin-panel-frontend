@@ -6,12 +6,28 @@ import GetAPI from "@/utilities/GetAPI";
 import DrawerBeans from "@/components/ui/DrawerBeans";
 import Select from "react-select";
 import selectStyles, { selectStyles2 } from "@/utilities/SelectStyle";
-import { success_toaster } from "@/utilities/Toaster";
+import { info_toaster, success_toaster } from "@/utilities/Toaster";
+import ErrorHandler from "@/utilities/ErrorHandler";
+import { BASE_URL } from "@/utilities/URL";
+import axios from "axios";
 
 export default function CreateOrder() {
   if (typeof window !== "undefined") {
     var createOrderDataList =
       JSON.parse(localStorage.getItem("createOrderData")) || [];
+    var userID = localStorage.getItem("userID");
+    var connectAccountId = localStorage.getItem("connectAccountId");
+    console.log(
+      "🚀 ~ CreateOrder ~ connectAccountId:",
+      connectAccountId,
+      typeof connectAccountId
+    );
+    var isAccountConnected = localStorage.getItem("isAccountConnected");
+    console.log(
+      "🚀 ~ CreateOrder ~ isAccountConnected:",
+      isAccountConnected,
+      typeof isAccountConnected
+    );
   }
 
   const [createOrderData, setCreateOrderData] = useState(createOrderDataList);
@@ -68,11 +84,46 @@ export default function CreateOrder() {
     return InventoryItem ? Number(InventoryItem?.qty) : 0;
   };
 
+  const handleConnectAccount = async () => {
+    if (isAccountConnected === "false" && connectAccountId !== "null") {
+      info_toaster("Complete the steps");
+    }
+    if (
+      (connectAccountId === "null" || !connectAccountId) &&
+      isAccountConnected === "false"
+    ) {
+      try {
+        const res = await axios.get(
+          BASE_URL + `api/v1/admin/create-stripe-connect-account/${userID}`
+        );
+        if (res?.data?.status === "success") {
+          success_toaster(res?.data?.data?.message);
+          localStorage.setItem(
+            "connectAccountId",
+            res?.data?.data?.data?.accountId
+          );
+          if (res?.data?.data?.data?.accountLink?.url) {
+            const link = document.createElement("a");
+            link.href = res?.data?.data?.data?.accountLink?.url;
+            link.target = "_blank";
+            link.click();
+          }
+        } else {
+          throw new Error(
+            res?.data?.message || "An unexpected error occurred."
+          );
+        }
+      } catch (error) {
+        ErrorHandler(error);
+      }
+    } 
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-          Add Quote
+          Create Order
         </h2>
 
         <Select placeholder="Filters" className="w-40" styles={selectStyles} />
@@ -84,6 +135,23 @@ export default function CreateOrder() {
         </button>
       </div>
     </div> */}
+      </div>
+      <div
+        className={`${
+          connectAccountId !== "null" && isAccountConnected === "true"
+            ? "hidden"
+            : "flex justify-end"
+        }`}
+      >
+        <button
+          onClick={handleConnectAccount}
+          className="rounded-lg font-inter font-medium text-white px-2 sm:px-3 py-2.5 sm:py-4 bg-theme"
+        >
+          {(connectAccountId === "null" || !connectAccountId) &&
+          isAccountConnected === "false"
+            ? "Connect Account"
+            : "Complete Account Registration"}
+        </button>
       </div>
       <div className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">

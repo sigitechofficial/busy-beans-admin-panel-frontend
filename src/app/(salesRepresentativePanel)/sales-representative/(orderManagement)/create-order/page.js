@@ -10,6 +10,7 @@ import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import { BASE_URL } from "@/utilities/URL";
 import axios from "axios";
+import { usePathname } from "next/navigation";
 
 export default function CreateOrder() {
   if (typeof window !== "undefined") {
@@ -17,21 +18,11 @@ export default function CreateOrder() {
       JSON.parse(localStorage.getItem("createOrderData")) || [];
     var userID = localStorage.getItem("userID");
     var connectAccountId = localStorage.getItem("connectAccountId");
-    console.log(
-      "🚀 ~ CreateOrder ~ connectAccountId:",
-      connectAccountId,
-      typeof connectAccountId
-    );
     var isAccountConnected = localStorage.getItem("isAccountConnected");
-    console.log(
-      "🚀 ~ CreateOrder ~ isAccountConnected:",
-      isAccountConnected,
-      typeof isAccountConnected
-    );
   }
 
+  const pathName = usePathname();
   const [createOrderData, setCreateOrderData] = useState(createOrderDataList);
-
   const [visibleRight, setVisibleRight] = useState(false);
 
   const { data, reFetch } = GetAPI("api/v1/admin/product");
@@ -85,16 +76,44 @@ export default function CreateOrder() {
   };
 
   const handleConnectAccount = async () => {
+    const path = pathName.split("/");
     if (isAccountConnected === "false" && connectAccountId !== "null") {
-      info_toaster("Complete the steps");
+      try {
+        const res = await axios.post(
+          BASE_URL + `api/v1/admin/stripe-connect-account-url/${userID}`,
+          {
+            returnUrl:
+              "https://" + path[2].trim() + "/stripe-account-connected",
+          }
+        );
+        if (res?.data?.status === "success") {
+          success_toaster(res?.data?.data?.message);
+          if (res?.data?.data?.data?.connectAccount) {
+            const link = document.createElement("a");
+            link.href = res?.data?.data?.data?.connectAccount;
+            link.target = "_blank";
+            link.click();
+          }
+        } else {
+          throw new Error(
+            res?.data?.message || "An unexpected error occurred."
+          );
+        }
+      } catch (error) {
+        ErrorHandler(error);
+      }
     }
     if (
       (connectAccountId === "null" || !connectAccountId) &&
       isAccountConnected === "false"
     ) {
       try {
-        const res = await axios.get(
-          BASE_URL + `api/v1/admin/create-stripe-connect-account/${userID}`
+        const res = await axios.post(
+          BASE_URL + `api/v1/admin/create-stripe-connect-account/${userID}`,
+          {
+            returnUrl:
+              "https://" + path[2].trim() + "/stripe-account-connected",
+          }
         );
         if (res?.data?.status === "success") {
           success_toaster(res?.data?.data?.message);
@@ -116,7 +135,7 @@ export default function CreateOrder() {
       } catch (error) {
         ErrorHandler(error);
       }
-    } 
+    }
   };
 
   return (

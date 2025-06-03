@@ -94,6 +94,13 @@ const geistMono = Geist_Mono({
 export default function RootLayout({ children }) {
   const pathname = usePathname();
   const isSignInPage = pathname.startsWith("/sign-in");
+  const isStripeAccountConnected = pathname.includes(
+    "/sales-representative/stripe-account-connected"
+  );
+  console.log(
+    "🚀 ~ RootLayout ~ isStripeAccountConnected:",
+    isStripeAccountConnected
+  );
   // const [navbarVis, setNavbarVis] = useState(
   //   window.innerWidth < 640 ? false : true
   // );
@@ -108,16 +115,17 @@ export default function RootLayout({ children }) {
         className={`${switzer.variable} ${satoshi.variable} ${inter.variable} ${nunito.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ToastContainer />
-        {!isSignInPage && (
+        {(!isSignInPage && !isStripeAccountConnected) && (
           <Header navbarVis={navbarVis} setNavbarVis={setNavbarVis} />
         )}
-        {!isSignInPage && (
+
+        {(!isSignInPage && !isStripeAccountConnected) && (
           <Leftbar navbarVis={navbarVis} setNavbarVis={setNavbarVis} />
         )}
 
         <section
           className={
-            isSignInPage
+            isSignInPage || isStripeAccountConnected
               ? ""
               : `w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] float-right clear-right relative top-[94px] bg-white min-h-[calc(100vh-94px)] space-y-6] ${
                   pathname !== "/" ? "py-6 px-6 2xl:px-12" : ""

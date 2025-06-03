@@ -10,7 +10,6 @@ import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import { BASE_URL } from "@/utilities/URL";
 import axios from "axios";
-import { usePathname } from "next/navigation";
 
 export default function CreateOrder() {
   if (typeof window !== "undefined") {
@@ -19,10 +18,9 @@ export default function CreateOrder() {
     var userID = localStorage.getItem("userID");
     var connectAccountId = localStorage.getItem("connectAccountId");
     var isAccountConnected = localStorage.getItem("isAccountConnected");
+    var url = window.location.href;
   }
 
-  const pathName = usePathname();
-  console.log("🚀 ~ CreateOrder ~ pathName:", pathName)
   const [createOrderData, setCreateOrderData] = useState(createOrderDataList);
   const [visibleRight, setVisibleRight] = useState(false);
 
@@ -77,16 +75,16 @@ export default function CreateOrder() {
   };
 
   const handleConnectAccount = async () => {
-    const path = pathName.split("/");
-    console.log("🚀 ~ handleConnectAccount ~ 2:", path[2].trim())
-    console.log("🚀 ~ handleConnectAccount ~ path:", path)
+    const path = url.split("/");
     if (isAccountConnected === "false" && connectAccountId !== "null") {
       try {
         const res = await axios.post(
           BASE_URL + `api/v1/admin/stripe-connect-account-url/${userID}`,
           {
             returnUrl:
-              "https://" + path[2].trim() + "/stripe-account-connected",
+              "https://" +
+              path[2].trim() +
+              "/sales-representative/stripe-account-connected",
           }
         );
         if (res?.data?.status === "success") {
@@ -115,7 +113,9 @@ export default function CreateOrder() {
           BASE_URL + `api/v1/admin/create-stripe-connect-account/${userID}`,
           {
             returnUrl:
-              "https://" + path[2].trim() + "/stripe-account-connected",
+              "https://" +
+              path[2].trim() +
+              "/sales-representative/stripe-account-connected",
           }
         );
         if (res?.data?.status === "success") {

@@ -55,7 +55,9 @@ const DrawerBeans = ({
     poNumber: "",
     orderFrequency: "",
     addressId: "",
+    userId:""
   });
+  console.log("🚀 ~ order:", order)
   if (typeof window !== "undefined") {
     var cartItems =
       type === "createOrder"
@@ -183,7 +185,7 @@ const DrawerBeans = ({
                 poNumber: order?.poNumber,
                 orderFrequency: order?.orderFrequency, //  'just-onces','weekly','every-two-weeks','every-four-weeks',
                 addressId: order?.addressId,
-                userId: userID,
+                userId: order?.userId,
               },
               items: handleCreateOrderData(createOrderData),
             }
@@ -253,6 +255,7 @@ const DrawerBeans = ({
     setOrder({
       ...order,
       poNumber: selectedEmail?.saleTaxNumber,
+      userId: selectedEmail?.id
     });
     selectedEmail?.addresses?.map((address) =>
       addressList.push({

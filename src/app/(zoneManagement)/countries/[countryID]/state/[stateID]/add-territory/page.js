@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = 'force-dynamic';
 import CityCard from "@/components/ui/CityCard";
 import { Dialog } from "primereact/dialog";
 import { useState } from "react";

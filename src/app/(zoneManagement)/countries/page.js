@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = 'force-dynamic';
 import CountryCard from "@/components/ui/CountryCard";
 import { Dialog } from "primereact/dialog";
 import { LuImageUp } from "react-icons/lu";

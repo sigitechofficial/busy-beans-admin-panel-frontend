@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = 'force-dynamic';
 import BackButton from "@/components/ui/BackButton";
 import CusSupInformationCard from "@/components/ui/CusSupInformationCard";
 import Loader from "@/components/ui/Loader";

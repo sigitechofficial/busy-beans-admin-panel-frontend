@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = 'force-dynamic';
 import BackButton from "@/components/ui/BackButton";
 import { LuImageUp } from "react-icons/lu";
 import Select from "react-select";
@@ -475,7 +476,7 @@ export default function EditSupplier() {
                   onChange={handleChange}
                 />
               </div>
-              <div className="flex flex-col gap-y-2">
+              {/* <div className="flex flex-col gap-y-2">
                 <label className="text-labelColor font-medium font-satoshi">
                   Password
                 </label>
@@ -487,7 +488,7 @@ export default function EditSupplier() {
                   className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
-              </div>
+              </div> */}
               <div>
                 <button
                   type="submit"

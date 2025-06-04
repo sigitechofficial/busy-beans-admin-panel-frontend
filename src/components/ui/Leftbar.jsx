@@ -763,7 +763,7 @@ export default function Leftbar(props) {
           <ListHead
             title="Order Management"
             Icon={AiOutlineUnorderedList}
-            active={pathname === "/sales-representative/upcoming-orders"}
+            active={pathname.includes("/orders") || pathname.includes("-order")}
             Angle={
               active?.orderManagement?.tab === "orderManagement" &&
               active?.orderManagement?.status
@@ -780,17 +780,25 @@ export default function Leftbar(props) {
               <>
                 <div className="m-2 relative space-y-1">
                   <ListItems
-                    title="All Orders"
-                    to="/sales-representative/orders"
+                    title="Create Orders"
+                    to="/sales-representative/create-order"
                   />
+                  <ListItems title="All Orders" to="/orders" />
                   <ListItems
                     title="Upcoming Orders"
                     to="/sales-representative/upcoming-orders"
                   />
+                  <ListItems title="Assigned Orders" to="/orders/assigned" />
                   <ListItems
-                    title="Create Orders"
-                    to="/sales-representative/create-order"
+                    title="Acknowledged Orders"
+                    to="/orders/acknowledged"
                   />
+                  <ListItems
+                    title="Dispatched Orders"
+                    to="/orders/dispatched"
+                  />
+                  <ListItems title="Delivered Orders" to="/orders/delivered" />
+                  <ListItems title="Cancelled Orders" to="/orders/cancelled" />
                 </div>
                 <hr className="w-full" />
               </>

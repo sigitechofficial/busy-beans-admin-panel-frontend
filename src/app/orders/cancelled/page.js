@@ -9,8 +9,16 @@ import { FaEye } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 
 export default function CancelledOrders() {
+  if (typeof window !== "undefined") {
+    var userID = localStorage.getItem("userID");
+    var userType = localStorage.getItem("userType");
+  }
   const router = useRouter();
-  const { data } = GetAPI("api/v1/admin/orders?statusId=6");
+  const { data } = GetAPI(
+    userType === "salesRepresentative"
+      ? `api/v1/admin/orders?salesRepId=${userID}&statusId=6`
+      : "api/v1/admin/orders?statusId=6"
+  );
 
   const columns = [
     { field: "sl", header: "SL", sort: true },

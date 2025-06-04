@@ -9,8 +9,16 @@ import { FaEye } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 
 export default function DispatchedOrders() {
+  if (typeof window !== "undefined") {
+    var userID = localStorage.getItem("userID");
+    var userType = localStorage.getItem("userType");
+  }
   const router = useRouter();
-  const { data } = GetAPI("api/v1/admin/orders?statusId=4");
+  const { data } = GetAPI(
+    userType === "salesRepresentative"
+      ? `api/v1/admin/orders?salesRepId=${userID}&statusId=4`
+      : "api/v1/admin/orders?statusId=4"
+  );
 
   const columns = [
     { field: "sl", header: "SL", sort: true },

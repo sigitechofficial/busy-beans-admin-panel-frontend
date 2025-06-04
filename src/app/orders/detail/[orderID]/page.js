@@ -52,7 +52,7 @@ export default function OrderDetail() {
     { value: "cashier's check", label: "Cashier's check" },
   ];
 
-  const { data, reFetch } = GetAPI(`api/v1/admin/order-details/${orderID}`);
+  const { data, reFetch } = GetAPI(`api/v1/admin/order-details/${orderID ?? 1}`);
 
   const handleSupplierAcknowledgement = async () => {
     setLoader("acknowledgeSupplier");

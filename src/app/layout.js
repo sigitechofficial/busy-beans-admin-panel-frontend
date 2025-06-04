@@ -97,10 +97,7 @@ export default function RootLayout({ children }) {
   const isStripeAccountConnected = pathname.includes(
     "/sales-representative/stripe-account-connected"
   );
-  console.log(
-    "🚀 ~ RootLayout ~ isStripeAccountConnected:",
-    isStripeAccountConnected
-  );
+
   // const [navbarVis, setNavbarVis] = useState(
   //   window.innerWidth < 640 ? false : true
   // );

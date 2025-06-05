@@ -272,10 +272,18 @@ export default function OrderDetail() {
       const res = await PostAPI(
         `api/v1/admin/order-management/send-invoice/${orderID}`,
         {
-          successUrl: "",
-          cancelUrl: "",
+          successUrl:
+            "https://main.d28wfx1ny3of09.amplifyapp.com/invoice-payment-success",
+          cancelUrl:
+            "https://main.d28wfx1ny3of09.amplifyapp.com/invoice-payment-failure",
         }
       );
+      if (res?.data?.status === "success") {
+        success_toaster("Invoice Send Successfully");
+        reFetch()
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
     } catch (error) {
       ErrorHandler(error);
     }

@@ -14,7 +14,6 @@ export default function page() {
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
           Report Management
         </h2>
-        <Select placeholder="Filters" className="w-40" styles={selectStyles} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5 xl:gap-10">

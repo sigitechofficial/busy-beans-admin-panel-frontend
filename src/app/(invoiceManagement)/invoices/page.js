@@ -1,0 +1,63 @@
+"use client";
+import Loader from "@/components/ui/Loader";
+import ManagementTab from "@/components/ui/ManagementTab";
+import MyDataTable from "@/components/ui/MyDataTable";
+import GetAPI from "@/utilities/GetAPI";
+import selectStyles from "@/utilities/SelectStyle";
+import Select from "react-select";
+
+export default function Invoices() {
+  const { data } = GetAPI(
+    "api/v1/admin/customer-management/invoice-customers-balance"
+  );
+
+  const columns = [
+    { field: "sl", header: "SL", sort: true },
+    { field: "name", header: "Name" },
+    { field: "email", header: "Email" },
+    { field: "phoneNumber", header: "Phone Number" },
+    { field: "saleTaxNumber", header: "Sale Tax Number" },
+    { field: "emailToSendInvoices", header: "Invoice Email" },
+    { field: "totalBalance", header: "Total Balance" },
+  ];
+
+  const datas = [];
+  data?.data?.data?.map((invoice, i) => {
+    return datas.push({
+      sl: i + 1,
+      name: invoice?.name,
+      email: invoice?.email,
+      image: invoice?.image,
+      phoneNumber: invoice?.phoneNumber,
+      saleTaxNumber: invoice?.saleTaxNumber,
+      emailToSendInvoices: invoice?.emailToSendInvoices,
+      totalBalance: invoice?.totalBalance ? `$${invoice?.totalBalance}`: `$${0}`,
+    });
+  });
+
+  return data?.length === 0 ? (
+    <Loader />
+  ) : (
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+          Invoices Management
+        </h2>
+        <Select placeholder="Filters" className="w-40" styles={selectStyles} />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+        <ManagementTab title="Total Invoices" desc={data?.data?.data?.length} />
+      </div>
+
+      <div>
+        <MyDataTable
+          columns={columns}
+          data={datas}
+          placeholder={"Search ..."}
+          pagination={true}
+        />
+      </div>
+    </div>
+  );
+}

@@ -30,7 +30,7 @@ export default function UpcomingOrders() {
   };
 
   const handleRebookOrder = async () => {
-    if(selectedRows.length > 0){
+    if (selectedRows.length > 0) {
       let orderIds = [];
       selectedRows.map((row) => orderIds.push(row?.id));
       try {
@@ -43,13 +43,15 @@ export default function UpcomingOrders() {
           setSelectedRows([]);
           reFetch();
         } else {
-          throw new Error(res?.data?.message || "An unexpected error occurred.");
+          throw new Error(
+            res?.data?.message || "An unexpected error occurred."
+          );
         }
       } catch (error) {
         ErrorHandler(error);
       }
-    }else{
-      info_toaster("No Order is selected")
+    } else {
+      info_toaster("No Order is selected");
     }
   };
 
@@ -60,6 +62,7 @@ export default function UpcomingOrders() {
     { field: "orderDate", header: "Order Date" },
     { field: "nextOrderDate", header: "Next Order Date" },
     { field: "orderFrequency", header: "Order Frequency" },
+    { field: "createdBy", header: "Created By" },
     { field: "action", header: "Action" },
   ];
 
@@ -81,6 +84,7 @@ export default function UpcomingOrders() {
       orderDate: detail?.orderDate,
       nextOrderDate: detail?.nextOrderDate,
       orderFrequency: detail?.frequency,
+      createdBy: detail?.createdBy,
       action: (
         <button
           className="border border-yellow-400 rounded-md p-2 text-yellow-400"

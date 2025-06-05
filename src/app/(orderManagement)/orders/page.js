@@ -19,6 +19,7 @@ export default function Orders() {
       ? `api/v1/admin/orders?salesRepId=${userID}`
       : "api/v1/admin/orders"
   );
+  console.log("🚀 ~ Orders ~ data:", data?.data?.data)
 
   const columns = [
     { field: "sl", header: "SL", sort: true },
@@ -34,6 +35,7 @@ export default function Orders() {
     { field: "paymentMethod", header: "Payment Method" },
     { field: "poNumber", header: "Po Number" },
     { field: "orderFrequency", header: "Order Frequency" },
+    { field: "createdBy", header: "Created By" },
     { field: "action", header: "Action" },
   ];
 
@@ -53,6 +55,7 @@ export default function Orders() {
       paymentMethod: detail?.paymentMethod,
       poNumber: detail?.poNumber,
       orderFrequency: detail?.frequency,
+      createdBy: detail?.createdBy,
       action: (
         <button
           className="border border-yellow-400 rounded-md p-2 text-yellow-400"

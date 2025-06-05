@@ -34,6 +34,7 @@ export default function DispatchedOrders() {
     { field: "paymentMethod", header: "Payment Method" },
     { field: "poNumber", header: "Po Number" },
     { field: "orderFrequency", header: "Order Frequency" },
+    { field: "createdBy", header: "Created By" },
     { field: "action", header: "Action" },
   ];
 
@@ -53,6 +54,7 @@ export default function DispatchedOrders() {
       paymentMethod: detail?.paymentMethod,
       poNumber: detail?.poNumber,
       orderFrequency: detail?.frequency,
+      createdBy: detail?.createdBy,
       action: (
         <button
           className="border border-yellow-400 rounded-md p-2 text-yellow-400"

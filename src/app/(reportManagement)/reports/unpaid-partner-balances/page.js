@@ -18,7 +18,7 @@ export default function UnpaidPartnerBalance() {
   });
   const [displayCustomFilters, setDisplayCustomFilters] = useState(false);
 
-  const { data } = GetAPI("api/v1/admin/admin-reports/partner-commission");
+  const { data } = GetAPI("api/v1/admin/admin-reports/unpaid-partner-balance");
   console.log("🚀 ~ PartnerCommissionReport ~ data:", data?.data);
 
   const options = [

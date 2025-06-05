@@ -61,6 +61,7 @@ export default function UpcomingOrders() {
     { field: "orderDate", header: "Order Date" },
     { field: "nextOrderDate", header: "Next Order Date" },
     { field: "orderFrequency", header: "Order Frequency" },
+    { field: "createdBy", header: "Created By" },
     { field: "action", header: "Action" },
   ];
 
@@ -82,6 +83,7 @@ export default function UpcomingOrders() {
       orderDate: detail?.orderDate,
       nextOrderDate: detail?.nextOrderDate,
       orderFrequency: detail?.frequency,
+      createdBy: detail?.createdBy,
       action: (
         <button
           className="border border-yellow-400 rounded-md p-2 text-yellow-400"

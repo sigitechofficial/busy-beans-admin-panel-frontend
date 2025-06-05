@@ -18,7 +18,7 @@ export default function PartnerCreditLimit() {
   });
   const [displayCustomFilters, setDisplayCustomFilters] = useState(false);
 
-  const { data } = GetAPI("api/v1/admin/admin-reports/partner-commission");
+  const { data } = GetAPI("api/v1/admin/admin-reports/partner-creadit-limit");
   console.log("🚀 ~ PartnerCommissionReport ~ data:", data?.data);
 
   const options = [
@@ -36,10 +36,9 @@ export default function PartnerCreditLimit() {
   const columns = [
     { field: "sl", header: "SL", sort: true },
     { field: "srName", header: "Supplier Name" },
-    { field: "ordersPlaced", header: "Orders Placed" },
-    { field: "totalSales", header: "Total Sales" },
-    { field: "wholesalePriceCost", header: "Whole Sale Price Cost" },
-    { field: "totalCommission", header: "Total Commission" },
+    { field: "creditLimit", header: "Credit Limit" },
+    { field: "creditUsed", header: "Credit Used" },
+    { field: "creditUsedPercentage", header: "Credit Utilization (%)" },
   ];
 
   const datas = [];
@@ -47,10 +46,11 @@ export default function PartnerCreditLimit() {
     datas.push({
       sl: i + 1,
       srName: report?.srName,
-      ordersPlaced: `$${report?.ordersPlaced ?? 0}`,
-      totalSales: `$${report?.totalSales ?? 0}`,
-      wholesalePriceCost: `$${report?.wholesalePriceCost ?? 0}`,
-      totalCommission: `$${report?.totalCommission ?? 0}`,
+      creditLimit: `$${report?.creditLimit ?? 0}`,
+      creditUsed: `$${report?.creditUsed ?? 0}`,
+      creditUsedPercentage: report?.creditLimit
+        ? `${((report.creditUsed / report.creditLimit) * 100).toFixed(2)}%`
+        : "0%",
     })
   );
 

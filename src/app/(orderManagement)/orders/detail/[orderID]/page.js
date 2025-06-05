@@ -1,5 +1,5 @@
 "use client";
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 import BackButton from "@/components/ui/BackButton";
 import CusSupInformationCard from "@/components/ui/CusSupInformationCard";
 import Loader from "@/components/ui/Loader";
@@ -9,6 +9,7 @@ import TrackOrder from "@/components/ui/TrackOrder";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import GetAPI from "@/utilities/GetAPI";
 import { PatchAPI } from "@/utilities/PatchAPI";
+import { PostAPI } from "@/utilities/PostAPI";
 import { selectStyles2 } from "@/utilities/SelectStyle";
 import { success_toaster } from "@/utilities/Toaster";
 import { useParams } from "next/navigation";
@@ -53,7 +54,8 @@ export default function OrderDetail() {
     { value: "cashier's check", label: "Cashier's check" },
   ];
 
-  const { data, reFetch } = GetAPI(`api/v1/admin/order-details/${orderID ?? 1}`);
+  const { data, reFetch } = GetAPI(`api/v1/admin/order-details/${orderID}`);
+  console.log("🚀 ~ OrderDetail ~ data:", data?.data?.order);
 
   const handleSupplierAcknowledgement = async () => {
     setLoader("acknowledgeSupplier");
@@ -128,7 +130,7 @@ export default function OrderDetail() {
   };
 
   const handleSubmit = async (e) => {
-     e.preventDefault();
+    e.preventDefault();
     if (modal?.type === "addCheque" && modal.status) {
       setLoader("addCheque");
       try {
@@ -265,6 +267,20 @@ export default function OrderDetail() {
     setAddCheque({ ...addCheque, [e.target.name]: e.target.value });
   };
 
+  const handleSendInvoice = async () => {
+    try {
+      const res = await PostAPI(
+        `api/v1/admin/order-management/send-invoice/${orderID}`,
+        {
+          successUrl: "",
+          cancelUrl: "",
+        }
+      );
+    } catch (error) {
+      ErrorHandler(error);
+    }
+  };
+
   return data?.length ? (
     <Loader />
   ) : (
@@ -279,14 +295,14 @@ export default function OrderDetail() {
 
         <div className="flex items-center gap-x-2 sm:gap-x-4 [&>button]:py-2 sm:[&>button]:py-3 [&>button]:px-2 sm:[&>button]:px-5 [&>button]:rounded-lg [&>button]:font-nunito [&>button]:font-medium max-sm:[&>button]:text-sm">
           <button
-          type="button"
+            type="button"
             onClick={handleAddChequeModel}
             className="bg-black text-white disabled:cursor-not-allowed"
           >
             {data?.data?.order?.chequeDetail ? "Edit Cheque" : "Add Cheque"}
           </button>
           <button
-          type="button"
+            type="button"
             disabled={
               data?.data?.order?.statusId === 5 ||
               data?.data?.order?.statusId === 6
@@ -304,6 +320,14 @@ export default function OrderDetail() {
               ? "Dispatch Order"
               : "Order Delivered"}
           </button>
+          <button
+            type="button"
+            disabled={data?.data?.order?.invoiceId ? true : false}
+            className="bg-black text-white disabled:cursor-not-allowed"
+            onClick={() => handleSendInvoice(data?.data?.order?.statusId)}
+          >
+            Send Invoice
+          </button>
 
           <button
             disabled={
@@ -318,7 +342,10 @@ export default function OrderDetail() {
           >
             Cancel Order
           </button>
-          <button type="button" className="border border-buttonBorderColor shadow-buttonShadow">
+          <button
+            type="button"
+            className="border border-buttonBorderColor shadow-buttonShadow"
+          >
             Print Invoice
           </button>
         </div>

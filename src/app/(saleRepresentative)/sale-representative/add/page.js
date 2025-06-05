@@ -24,6 +24,7 @@ export default function AddSaleRepresentative() {
     businessWeb: "",
     image: "",
     phoneNumber: "",
+    creditLimit: "",
     status: true,
   });
 
@@ -74,6 +75,8 @@ export default function AddSaleRepresentative() {
       info_toaster("Enter business webiste");
     } else if (!saleRepresentative?.territory?.trim()) {
       info_toaster("Enter Territory");
+    } else if (!saleRepresentative?.creditLimit?.trim()) {
+      info_toaster("Enter Credit Limit");
     } else if (saleRepresentative?.status === "") {
       info_toaster("Select Status");
     } else if (!saleRepresentative?.email?.trim()) {
@@ -331,6 +334,19 @@ export default function AddSaleRepresentative() {
                   }
                   className="w-full"
                   styles={selectStyles2}
+                />
+              </div>
+              <div className="flex flex-col gap-y-2">
+                <label className="text-labelColor font-medium font-satoshi">
+                  Credit Limit
+                </label>
+                <input
+                  type="number"
+                  name="creditLimit"
+                  value={saleRepresentative?.creditLimit}
+                  placeholder="Enter Credit Limit"
+                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  onChange={handleChange}
                 />
               </div>
               <div className="flex flex-col gap-y-2">

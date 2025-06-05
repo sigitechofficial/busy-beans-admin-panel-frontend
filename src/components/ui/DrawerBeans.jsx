@@ -57,7 +57,7 @@ const DrawerBeans = ({
     addressId: "",
     userId:""
   });
-  console.log("🚀 ~ order:", order)
+
   if (typeof window !== "undefined") {
     var cartItems =
       type === "createOrder"
@@ -72,7 +72,7 @@ const DrawerBeans = ({
     return Number(a) + Number(b?.quantity) * Number(b?.qty);
   }, 0);
 
-  const { data } = GetAPI("api/v1/admin/customer-management/customer-list/all");
+  const { data } = GetAPI("api/v1/admin/customer-management/customer-list/sale-rep-id/userID");
 
   data?.data?.data?.map((user) =>
     options.push({ value: user?.email, label: user?.email })

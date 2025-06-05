@@ -350,7 +350,7 @@ export default function page() {
         {(step === 2 || step === 3) && !loader && (
           <button
             onClick={() => setStep(step - 1)}
-            className="absolute left-5 top-2 flex justify-center items-center w-8 h-8 text-theme rounded-full hover:bg-theme hover:text-white hover:text-theme duration-200"
+            className="absolute left-5 top-2 flex justify-center items-center w-8 h-8 text-theme rounded-full hover:bg-theme hover:text-white  duration-200"
           >
             <FaLongArrowAltLeft size={30} />
           </button>

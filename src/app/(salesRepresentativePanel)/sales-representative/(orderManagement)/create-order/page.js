@@ -15,10 +15,10 @@ export default function CreateOrder() {
   if (typeof window !== "undefined") {
     var createOrderDataList =
       JSON.parse(localStorage.getItem("createOrderData")) || [];
-    var userID = localStorage.getItem("userID");
-    var connectAccountId = localStorage.getItem("connectAccountId");
-    var isAccountConnected = localStorage.getItem("isAccountConnected");
-    var url = window.location.href;
+    // var userID = localStorage.getItem("userID");
+    // var connectAccountId = localStorage.getItem("connectAccountId");
+    // var isAccountConnected = localStorage.getItem("isAccountConnected");
+    // var url = window.location.href;
   }
 
   const [createOrderData, setCreateOrderData] = useState(createOrderDataList);
@@ -74,72 +74,72 @@ export default function CreateOrder() {
     return InventoryItem ? Number(InventoryItem?.qty) : 0;
   };
 
-  const handleConnectAccount = async () => {
-    const path = url.split("/");
-    if (isAccountConnected === "false" && connectAccountId !== "null") {
-      try {
-        const res = await axios.post(
-          BASE_URL + `api/v1/admin/stripe-connect-account-url/${userID}`,
-          {
-            returnUrl:
-              "https://" +
-              path[2].trim() +
-              "/sales-representative/stripe-account-connected",
-          }
-        );
-        if (res?.data?.status === "success") {
-          success_toaster(res?.data?.data?.message);
-          if (res?.data?.data?.data?.connectAccount) {
-            const link = document.createElement("a");
-            link.href = res?.data?.data?.data?.connectAccount;
-            link.target = "_self";
-            link.click();
-          }
-        } else {
-          throw new Error(
-            res?.data?.message || "An unexpected error occurred."
-          );
-        }
-      } catch (error) {
-        ErrorHandler(error);
-      }
-    }
-    if (
-      (connectAccountId === "null" || !connectAccountId) &&
-      isAccountConnected === "false"
-    ) {
-      try {
-        const res = await axios.post(
-          BASE_URL + `api/v1/admin/create-stripe-connect-account/${userID}`,
-          {
-            returnUrl:
-              "https://" +
-              path[2].trim() +
-              "/sales-representative/stripe-account-connected",
-          }
-        );
-        if (res?.data?.status === "success") {
-          success_toaster(res?.data?.data?.message);
-          localStorage.setItem(
-            "connectAccountId",
-            res?.data?.data?.data?.accountId
-          );
-          if (res?.data?.data?.data?.accountLink?.url) {
-            const link = document.createElement("a");
-            link.href = res?.data?.data?.data?.accountLink?.url;
-            link.target = "_self";
-            link.click();
-          }
-        } else {
-          throw new Error(
-            res?.data?.message || "An unexpected error occurred."
-          );
-        }
-      } catch (error) {
-        ErrorHandler(error);
-      }
-    }
-  };
+  // const handleConnectAccount = async () => {
+  //   const path = url.split("/");
+  //   if (isAccountConnected === "false" && connectAccountId !== "null") {
+  //     try {
+  //       const res = await axios.post(
+  //         BASE_URL + `api/v1/admin/stripe-connect-account-url/${userID}`,
+  //         {
+  //           returnUrl:
+  //             "https://" +
+  //             path[2].trim() +
+  //             "/sales-representative/stripe-account-connected",
+  //         }
+  //       );
+  //       if (res?.data?.status === "success") {
+  //         success_toaster(res?.data?.data?.message);
+  //         if (res?.data?.data?.data?.connectAccount) {
+  //           const link = document.createElement("a");
+  //           link.href = res?.data?.data?.data?.connectAccount;
+  //           link.target = "_self";
+  //           link.click();
+  //         }
+  //       } else {
+  //         throw new Error(
+  //           res?.data?.message || "An unexpected error occurred."
+  //         );
+  //       }
+  //     } catch (error) {
+  //       ErrorHandler(error);
+  //     }
+  //   }
+  //   if (
+  //     (connectAccountId === "null" || !connectAccountId) &&
+  //     isAccountConnected === "false"
+  //   ) {
+  //     try {
+  //       const res = await axios.post(
+  //         BASE_URL + `api/v1/admin/create-stripe-connect-account/${userID}`,
+  //         {
+  //           returnUrl:
+  //             "https://" +
+  //             path[2].trim() +
+  //             "/sales-representative/stripe-account-connected",
+  //         }
+  //       );
+  //       if (res?.data?.status === "success") {
+  //         success_toaster(res?.data?.data?.message);
+  //         localStorage.setItem(
+  //           "connectAccountId",
+  //           res?.data?.data?.data?.accountId
+  //         );
+  //         if (res?.data?.data?.data?.accountLink?.url) {
+  //           const link = document.createElement("a");
+  //           link.href = res?.data?.data?.data?.accountLink?.url;
+  //           link.target = "_self";
+  //           link.click();
+  //         }
+  //       } else {
+  //         throw new Error(
+  //           res?.data?.message || "An unexpected error occurred."
+  //         );
+  //       }
+  //     } catch (error) {
+  //       ErrorHandler(error);
+  //     }
+  //   }
+  // };
 
   return (
     <div className="space-y-8">
@@ -158,7 +158,7 @@ export default function CreateOrder() {
       </div>
     </div> */}
       </div>
-      <div
+      {/* <div
         className={`${
           connectAccountId !== "null" && isAccountConnected === "true"
             ? "hidden"
@@ -174,7 +174,7 @@ export default function CreateOrder() {
             ? "Connect Account"
             : "Complete Account Registration"}
         </button>
-      </div>
+      </div> */}
       <div className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
           {data?.data?.data?.map((item, i) => (

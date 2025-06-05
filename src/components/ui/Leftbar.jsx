@@ -31,10 +31,17 @@ import ListHead from "./ListHead";
 import ListItems from "./ListItems";
 import Link from "next/link";
 import { info_toaster, success_toaster } from "@/utilities/Toaster";
+import axios from "axios";
+import { BASE_URL } from "@/utilities/URL";
+import ErrorHandler from "@/utilities/ErrorHandler";
 
 export default function Leftbar(props) {
   if (typeof window !== "undefined") {
     var userType = localStorage.getItem("userType");
+    var userID = localStorage.getItem("userID");
+    var connectAccountId = localStorage.getItem("connectAccountId");
+    var isAccountConnected = localStorage.getItem("isAccountConnected");
+    var url = window.location.href;
   }
 
   const pathname = usePathname();
@@ -120,6 +127,73 @@ export default function Leftbar(props) {
 
   const handleInvalidUser = () => {
     router.push("/sign-in");
+  };
+
+  const handleConnectAccount = async () => {
+    const path = url.split("/");
+    if (isAccountConnected === "false" && connectAccountId !== "null") {
+      try {
+        const res = await axios.post(
+          BASE_URL + `api/v1/admin/stripe-connect-account-url/${userID}`,
+          {
+            returnUrl:
+              "https://" +
+              path[2].trim() +
+              "/sales-representative/stripe-account-connected",
+          }
+        );
+        if (res?.data?.status === "success") {
+          success_toaster(res?.data?.data?.message);
+          if (res?.data?.data?.data?.connectAccount) {
+            const link = document.createElement("a");
+            link.href = res?.data?.data?.data?.connectAccount;
+            link.target = "_self";
+            link.click();
+          }
+        } else {
+          throw new Error(
+            res?.data?.message || "An unexpected error occurred."
+          );
+        }
+      } catch (error) {
+        ErrorHandler(error);
+      }
+    }
+    if (
+      (connectAccountId === "null" || !connectAccountId) &&
+      isAccountConnected === "false"
+    ) {
+      try {
+        const res = await axios.post(
+          BASE_URL + `api/v1/admin/create-stripe-connect-account/${userID}`,
+          {
+            returnUrl:
+              "https://" +
+              path[2].trim() +
+              "/sales-representative/stripe-account-connected",
+          }
+        );
+        if (res?.data?.status === "success") {
+          success_toaster(res?.data?.data?.message);
+          localStorage.setItem(
+            "connectAccountId",
+            res?.data?.data?.data?.accountId
+          );
+          if (res?.data?.data?.data?.accountLink?.url) {
+            const link = document.createElement("a");
+            link.href = res?.data?.data?.data?.accountLink?.url;
+            link.target = "_self";
+            link.click();
+          }
+        } else {
+          throw new Error(
+            res?.data?.message || "An unexpected error occurred."
+          );
+        }
+      } catch (error) {
+        ErrorHandler(error);
+      }
+    }
   };
 
   return (
@@ -806,6 +880,50 @@ export default function Leftbar(props) {
                   />
                   <ListItems title="Delivered Orders" to="/orders/delivered" />
                   <ListItems title="Cancelled Orders" to="/orders/cancelled" />
+                </div>
+                <hr className="w-full" />
+              </>
+            )}
+
+          {(connectAccountId === "null" || isAccountConnected === "false") && (
+            <ListHead
+              title="Account Management"
+              Icon={AiOutlineUnorderedList}
+              active={pathname.includes("/account")}
+              Angle={
+                active?.accountManagement?.tab === "accountManagement" &&
+                active?.accountManagement?.status
+                  ? FaAngleUp
+                  : FaAngleDown
+              }
+              onClick={() =>
+                handleActive(
+                  "accountManagement",
+                  active?.accountManagement?.status
+                )
+              }
+            />
+          )}
+
+          {active?.accountManagement?.tab === "accountManagement" &&
+            active?.accountManagement?.status && (
+              <>
+                <div
+                  className={`${
+                    connectAccountId !== "null" && isAccountConnected === "true"
+                      ? "hidden"
+                      : "block"
+                  } px-2`}
+                >
+                  <button
+                    onClick={handleConnectAccount}
+                    className="w-full flex gap-x-2 text-wrap items-center py-2 px-2 rounded-lg font-inter font-medium   duration-200 bg-theme text-white"
+                  >
+                    {(connectAccountId === "null" || !connectAccountId) &&
+                    isAccountConnected === "false"
+                      ? "Connect Account"
+                      : "Complete Account Registration"}
+                  </button>
                 </div>
                 <hr className="w-full" />
               </>

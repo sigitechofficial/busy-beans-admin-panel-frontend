@@ -188,7 +188,7 @@ export default function Suppliers() {
 
       <div className="space-y-4">
         <div className="grid  grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-          <ManagementTab title="Total Supplier" desc="5000" />
+          <ManagementTab title="Total Supplier" desc={data?.data?.data?.length} />
           <ManagementTab title="New Supplier" desc="5000" />
           <ManagementTab title="Pending Request" desc="500" />
           <ManagementTab title="Active Supplier" desc="55,000" />

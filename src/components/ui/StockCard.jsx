@@ -34,7 +34,7 @@ export default function StockCard(props) {
       <div className="h-full px-4 py-3 font-inter space-y-2 flex flex-col justify-between">
         <div className="[&>p]:flex [&>p]:justify-between [&>p]:gap-x-1 [&>p]:text-black">
           <p>
-            <span>Item Name</span> <span className="text-end">{itemName}</span>
+            <span>Item Name</span> <span className="text-end break-words break-all">{itemName}</span>
           </p>
           <p>
             <span>Quantity</span>{" "}

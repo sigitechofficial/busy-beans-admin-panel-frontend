@@ -55,7 +55,7 @@ const DrawerBeans = ({
     poNumber: "",
     orderFrequency: "",
     addressId: "",
-    userId:""
+    userId: "",
   });
 
   if (typeof window !== "undefined") {
@@ -72,7 +72,9 @@ const DrawerBeans = ({
     return Number(a) + Number(b?.quantity) * Number(b?.qty);
   }, 0);
 
-  const { data } = GetAPI(`api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}`);
+  const { data } = GetAPI(
+    `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}`
+  );
 
   data?.data?.data?.map((user) =>
     options.push({ value: user?.email, label: user?.email })
@@ -169,7 +171,7 @@ const DrawerBeans = ({
         setLoader(true);
         try {
           const res = await PostAPI(
-            `/api/v1/admin/sales-rep/book-new-order/${userID}`,
+            `api/v1/admin/sales-rep/book-new-order/${userID}`,
             {
               //sales rep id in route
               order: {
@@ -209,6 +211,8 @@ const DrawerBeans = ({
     } else {
       if (!email) {
         info_toaster("Email cannot be empty");
+      } else if (cartItems.length === 0) {
+        info_toaster("Product cannot be empty");
       } else {
         setLoader(true);
         try {
@@ -255,7 +259,7 @@ const DrawerBeans = ({
     setOrder({
       ...order,
       poNumber: selectedEmail?.saleTaxNumber,
-      userId: selectedEmail?.id
+      userId: selectedEmail?.id,
     });
     selectedEmail?.addresses?.map((address) =>
       addressList.push({
@@ -407,7 +411,10 @@ const DrawerBeans = ({
                     )}
                     <button
                       type="button"
-                      onClick={() => setEmailType(!emailType)}
+                      onClick={() => {
+                        setEmail("");
+                        setEmailType(!emailType);
+                      }}
                       className={`${
                         emailType ? "w-40" : "w-auto"
                       } h-12 bg-white text-black px-[7px] rounded-md`}
@@ -427,7 +434,7 @@ const DrawerBeans = ({
                       key={index}
                       className="font-sf relative flex sm:flex-row items-start rounded-2xl h-full mb-3"
                     >
-                      <div className="flex justify-center sm:w-[150px] w-[72px] sm:h-[72px] h-[72px] rounded-2xl">
+                      <div className="flex justify-center sm:min-w-[100px] min-w-[72px] sm:h-[72px] h-[72px] rounded-2xl">
                         <img
                           src={BASE_URL + cartI?.image}
                           alt="cutlery"
@@ -435,70 +442,21 @@ const DrawerBeans = ({
                         />
                       </div>
                       <div className="px-5 w-full font-sf">
-                        <h3 className="capitalize font-semibold text-base">
+                        <h3 className="capitalize font-semibold text-base break-all">
                           {cartI?.name}
                         </h3>
-                        <div className="capitalize text-sm font-light text-white">
-                          <ul>
-                            {/* {cartI?.addOnsCat &&
-                                cartI?.addOnsCat?.length > 0
-                                  ? cartI?.addOnsCat
-                                      ?.filter(
-                                        (ele) =>
-                                          ele?.id ===
-                                          cartI?.addOns?.find(
-                                            (fil) =>
-                                              fil?.collectionId === ele?.id
-                                          )?.collectionId
-                                      )
-                                      ?.map((cat, key) => (
-                                        <li key={key}>
-                                          <span>{cat?.name}: </span>
-                                          <br />
-                                          {cartI?.addOns
-                                            ?.filter(
-                                              (fil) =>
-                                                fil?.collectionId === cat?.id
-                                            )
-                                            ?.map((add, addKey) => (
-                                              <div
-                                                key={addKey}
-                                                className="ml-2 mt-1"
-                                              >
-                                                {`${add?.qty}x ${add?.name} ${
-                                                  add?.total > 0
-                                                    ? `(${add?.total}.00)`
-                                                    : ""
-                                                }`}
-                                              </div>
-                                            ))}
-                                        </li>
-                                      ))
-                                  : cartI?.addOns?.map((add, addKey) => (
-                                      <li key={addKey}>
-                                        <div className="ml-2 mt-1">
-                                          {`${add?.qty}x ${add?.name} ${
-                                            add?.total > 0
-                                              ? `(${add?.total}.00)`
-                                              : ""
-                                          }`}
-                                        </div>
-                                      </li>
-                                    ))} */}
-                          </ul>
-                        </div>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-x-3">
                             <span className="font-semibold text-sm text-white mt-1">
+                              {"$ "}
                               {parseFloat(
                                 Number(cartI?.price) * Number(cartI?.qty)
                               )}{" "}
-                              {"$"}
                             </span>
                           </div>
                         </div>
                       </div>
-                      <div className="cursor-pointer mt-2 mr-1 rounded-full flex items-center justify-around text-white p-1 absolute bg-black right-0">
+                      <div className="cursor-pointer mt-2 mr-1 rounded-full flex items-center justify-around text-white p-1 relative bg-black right-0">
                         {counter === index ? (
                           <div className="flex">
                             <button
@@ -558,7 +516,7 @@ const DrawerBeans = ({
                   {type === "createOrder" ? "Create Order" : "Send Quotation"}
                 </p>
               </div>
-              ${totalPrice?.toFixed(2)} {"$"}
+              ${totalPrice?.toFixed(2)}
             </button>
           </div>
         </div>

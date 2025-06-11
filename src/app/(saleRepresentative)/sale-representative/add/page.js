@@ -380,7 +380,7 @@ export default function AddSaleRepresentative() {
               <div>
                 <button
                   type="submit"
-                  className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
+                  className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme hover:bg-white hover:text-theme border border-theme duration-150 w-full py-3"
                 >
                   Add Sales Representative
                 </button>

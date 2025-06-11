@@ -177,7 +177,7 @@ export default function SaleRepresentative() {
             title="All Sales Represenatives"
             desc={data?.data?.data?.length ?? 0}
           />
-          <ManagementTab title="New Sales Represenatives" desc="5000" />
+          {/* <ManagementTab title="New Sales Represenatives" desc="5000" /> */}
         </div>
       </div>
 

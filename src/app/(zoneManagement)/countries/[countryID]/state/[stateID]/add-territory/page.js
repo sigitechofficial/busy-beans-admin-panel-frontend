@@ -1,5 +1,5 @@
 "use client";
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 import CityCard from "@/components/ui/CityCard";
 import { Dialog } from "primereact/dialog";
 import { useState } from "react";
@@ -36,7 +36,6 @@ export default function AddTerritory() {
   const { data: territoryCities, reFetch: refetchTerritoryCities } = GetAPI(
     `api/v1/admin/address-management/city?stateInSystemId=${stateID}`
   );
-
 
   const { data: countryData } = GetAPI(
     `api/v1/admin/address-management/country/${countryID}`
@@ -212,7 +211,7 @@ export default function AddTerritory() {
         <div className="flex justify-end">
           <button
             onClick={() => setModal("territory")}
-            className="rounded-lg font-inter font-medium text-white px-6 sm:px-10 py-2.5 sm:py-4 bg-theme"
+            className="rounded-lg font-inter font-medium text-white bg-theme hover:bg-white hover:text-theme border border-theme duration-150 px-6 sm:px-10 py-2.5 sm:py-4"
           >
             + Add Territory
           </button>
@@ -347,7 +346,7 @@ export default function AddTerritory() {
               </button>
               <button
                 type="submit"
-                className="rounded-lg border border-theme text-white px-10 bg-theme"
+                className="rounded-lg border border-theme text-white bg-theme hover:bg-white hover:text-theme duration-150 px-10"
               >
                 {modal === "territory"
                   ? "Add Territoty"

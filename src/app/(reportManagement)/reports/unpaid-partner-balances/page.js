@@ -36,10 +36,8 @@ export default function UnpaidPartnerBalance() {
   const columns = [
     { field: "sl", header: "SL", sort: true },
     { field: "srName", header: "Supplier Name" },
-    { field: "ordersPlaced", header: "Orders Placed" },
-    { field: "totalSales", header: "Total Sales" },
-    { field: "wholesalePriceCost", header: "Whole Sale Price Cost" },
-    { field: "totalCommission", header: "Total Commission" },
+    { field: "outstandingBalance", header: "Outstanding Balance" },
+    { field: "ordersOnCredit", header: "Orders on credit" },
   ];
 
   const datas = [];
@@ -47,10 +45,8 @@ export default function UnpaidPartnerBalance() {
     datas.push({
       sl: i + 1,
       srName: report?.srName,
-      ordersPlaced: `$${report?.ordersPlaced ?? 0}`,
-      totalSales: `$${report?.totalSales ?? 0}`,
-      wholesalePriceCost: `$${report?.wholesalePriceCost ?? 0}`,
-      totalCommission: `$${report?.totalCommission ?? 0}`,
+      outstandingBalance: `$${report?.outstandingBalance ?? 0}`,
+      ordersOnCredit: `${report?.ordersOnCredit ?? 0}`,
     })
   );
 

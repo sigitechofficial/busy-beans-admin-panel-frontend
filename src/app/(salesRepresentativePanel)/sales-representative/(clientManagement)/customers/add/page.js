@@ -616,7 +616,7 @@ export default function page() {
                   <div className="space-y-4">
                     <div className="flex flex-col gap-y-2">
                       <label className="text-labelColor font-medium font-satoshi">
-                        Your Name
+                        User Name
                       </label>
                       <input
                         type="text"

@@ -5,7 +5,7 @@ export default function ZoneEditTab(props) {
   const { name, id } = props;
   return (
     <div className="flex items-start justify-between p-4 bg-themeTab border border-tabBorderColor border-opacity-60 rounded-xl font-inter font-semibold text-xl">
-      <p className="break-all">{name}</p>
+      <p className="break-word">{name}</p>
       <div className="space-x-2 min-w-16 flex justify-end">
         <button onClick={() => props?.handleEditTerritory("edit")}>
           <FaEdit size={24} />

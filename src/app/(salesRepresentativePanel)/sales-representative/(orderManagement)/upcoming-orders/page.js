@@ -121,7 +121,7 @@ export default function UpcomingOrders() {
       <div className="flex justify-end">
         <button
           onClick={handleRebookOrder}
-          className="rounded-lg font-inter font-medium text-white px-5 py-3 sm:h-full bg-theme"
+          className="rounded-lg font-inter font-medium text-white bg-theme hover:text-theme hover:bg-white border border-theme duration-150 px-5 py-3 sm:h-full"
         >
           Rebook Order
         </button>

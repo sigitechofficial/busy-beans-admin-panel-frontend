@@ -8,6 +8,7 @@ import { selectStyles2 } from "@/utilities/SelectStyle";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import { PostAPI } from "@/utilities/PostAPI";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
 export default function AddSaleRepresentative() {
   const [loader, setLoader] = useState("");
@@ -29,6 +30,7 @@ export default function AddSaleRepresentative() {
   });
 
   const [imagePreview, setImagePreview] = useState("");
+  const [visible, setVisible] = useState(false);
 
   const handleChange = (e) => {
     setSaleRepresentative({
@@ -349,7 +351,7 @@ export default function AddSaleRepresentative() {
                   onChange={handleChange}
                 />
               </div>
-              <div className="flex flex-col gap-y-2">
+              <div className="flex flex-col gap-y-2 relative">
                 <label className="text-labelColor font-medium font-satoshi">
                   Email
                 </label>
@@ -363,12 +365,12 @@ export default function AddSaleRepresentative() {
                   onChange={handleChange}
                 />
               </div>
-              <div className="flex flex-col gap-y-2">
+              <div className="flex flex-col gap-y-2 relative">
                 <label className="text-labelColor font-medium font-satoshi">
                   Password
                 </label>
                 <input
-                  type="password"
+                  type={visible ? "text" : "password"}
                   name="password"
                   autoComplete="off"
                   value={saleRepresentative?.password}
@@ -376,6 +378,17 @@ export default function AddSaleRepresentative() {
                   className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
+                <button
+                  onClick={() => setVisible(!visible)}
+                  type="button"
+                  className="text-labelColor absolute right-4 top-[46px]"
+                >
+                  {visible ? (
+                    <AiOutlineEye size={24} color="#000000" />
+                  ) : (
+                    <AiOutlineEyeInvisible size={24} color="#000000" />
+                  )}
+                </button>
               </div>
               <div>
                 <button

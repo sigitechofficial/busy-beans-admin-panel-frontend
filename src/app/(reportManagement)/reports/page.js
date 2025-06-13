@@ -34,6 +34,18 @@ export default function page() {
           title="Unpaid Partner Balances Report"
           to="/reports/unpaid-partner-balances"
         />
+
+        <ReportCard
+          Icon={BsCardList}
+          title="Products Sale Report"
+          to="/reports/products-sale"
+        />
+
+        <ReportCard
+          Icon={TbReportAnalytics}
+          title="Customers Report"
+          to="/reports/customers"
+        />
       </div>
     </div>
   );

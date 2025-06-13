@@ -34,6 +34,7 @@ export default function Customers() {
   const { data: dashboardCards } = GetAPI(
     "api/v1/admin/customer-management/dahboard-cards"
   );
+  console.log("🚀 ~ Customers ~ dashboardCards:",dashboardCards?.data?.data)
 
   const { data: salesRepresentativeData } = GetAPI("api/v1/admin/sales-rep");
 

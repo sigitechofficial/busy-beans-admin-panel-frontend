@@ -136,14 +136,12 @@ export default function Leftbar(props) {
         const res = await axios.post(
           BASE_URL + `api/v1/admin/stripe-connect-account-url/${userID}`,
           {
-            returnUrl:
-              "https://" +
-              path[2].trim() +
-              "/sales-representative/stripe-account-connected",
+            returnUrl: "https://" + path[2].trim(),
           }
         );
         if (res?.data?.status === "success") {
           success_toaster(res?.data?.data?.message);
+          localStorage.setItem("isAccountConnected", true);
           if (res?.data?.data?.data?.connectAccount) {
             const link = document.createElement("a");
             link.href = res?.data?.data?.data?.connectAccount;
@@ -158,8 +156,7 @@ export default function Leftbar(props) {
       } catch (error) {
         ErrorHandler(error);
       }
-    }
-    if (
+    } else if (
       (connectAccountId === "null" || !connectAccountId) &&
       isAccountConnected === "false"
     ) {
@@ -167,10 +164,7 @@ export default function Leftbar(props) {
         const res = await axios.post(
           BASE_URL + `api/v1/admin/create-stripe-connect-account/${userID}`,
           {
-            returnUrl:
-              "https://" +
-              path[2].trim() +
-              "/sales-representative/stripe-account-connected",
+            returnUrl: "https://" + path[2].trim(),
           }
         );
         if (res?.data?.status === "success") {
@@ -183,6 +177,30 @@ export default function Leftbar(props) {
             const link = document.createElement("a");
             link.href = res?.data?.data?.data?.accountLink?.url;
             link.target = "_self";
+            link.click();
+          }
+        } else {
+          throw new Error(
+            res?.data?.message || "An unexpected error occurred."
+          );
+        }
+      } catch (error) {
+        ErrorHandler(error);
+      }
+    } else if (
+      (connectAccountId !== "null" || !connectAccountId) &&
+      isAccountConnected === "true"
+    ) {
+      try {
+        const res = await axios.get(
+          BASE_URL + `api/v1/admin/stripe-connect-account-dashboard/${userID}`
+        );
+        if (res?.data?.status === "success") {
+          success_toaster(res?.data?.data?.message);
+          if (res?.data?.data?.data?.connectAccount) {
+            const link = document.createElement("a");
+            link.href = res?.data?.data?.data?.connectAccount;
+            link.target = "_blank";
             link.click();
           }
         } else {
@@ -767,6 +785,13 @@ export default function Leftbar(props) {
               </>
             )}
 
+          <ListHead
+            title="Report Management"
+            Icon={PiChartBar}
+            to={"/supplier/reports"}
+            active={pathname.includes("/reports")}
+          />
+
           <div className="mx-2 pb-7">
             <button
               className="w-full font-inter font-medium text-lg sm:text-sm lg:text-base flex items-center gap-x-2 px-2 py-3 rounded-lg text-black hover:bg-black hover:text-white 
@@ -885,42 +910,37 @@ export default function Leftbar(props) {
               </>
             )}
 
-          {(connectAccountId === "null" || isAccountConnected === "false") && (
-            <ListHead
-              title="Account Management"
-              Icon={AiOutlineUnorderedList}
-              active={pathname.includes("/account")}
-              Angle={
-                active?.accountManagement?.tab === "accountManagement" &&
+          <ListHead
+            title="Account Management"
+            Icon={AiOutlineUnorderedList}
+            active={pathname.includes("/account")}
+            Angle={
+              active?.accountManagement?.tab === "accountManagement" &&
+              active?.accountManagement?.status
+                ? FaAngleUp
+                : FaAngleDown
+            }
+            onClick={() =>
+              handleActive(
+                "accountManagement",
                 active?.accountManagement?.status
-                  ? FaAngleUp
-                  : FaAngleDown
-              }
-              onClick={() =>
-                handleActive(
-                  "accountManagement",
-                  active?.accountManagement?.status
-                )
-              }
-            />
-          )}
+              )
+            }
+          />
 
           {active?.accountManagement?.tab === "accountManagement" &&
             active?.accountManagement?.status && (
               <>
-                <div
-                  className={`${
-                    connectAccountId !== "null" && isAccountConnected === "true"
-                      ? "hidden"
-                      : "block"
-                  } px-2`}
-                >
+                <div className={`px-2`}>
                   <button
                     onClick={handleConnectAccount}
                     className="w-full flex gap-x-2 text-wrap items-center py-2 px-2 rounded-lg font-inter font-medium   duration-200 bg-theme text-white"
                   >
-                    {(connectAccountId === "null" || !connectAccountId) &&
-                    isAccountConnected === "false"
+                    {(connectAccountId !== "null" || !connectAccountId) &&
+                    isAccountConnected === "true"
+                      ? "Stripe Dashboard"
+                      : (connectAccountId === "null" || !connectAccountId) &&
+                        isAccountConnected === "false"
                       ? "Connect Account"
                       : "Complete Account Registration"}
                   </button>

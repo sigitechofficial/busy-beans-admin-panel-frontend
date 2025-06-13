@@ -457,7 +457,7 @@ export default function AddNewSupplier() {
                     <AiOutlineEye size={24} color="#000000" />
                   ) : (
                     <AiOutlineEyeInvisible size={24} color="#64748b" />
-                  )}
+                  )} 
                 </button>
               </div>
               <div>

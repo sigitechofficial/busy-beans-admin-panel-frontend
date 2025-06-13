@@ -5,6 +5,7 @@ import MyDataTable from "@/components/ui/MyDataTable";
 import GetAPI from "@/utilities/GetAPI";
 import selectStyles, { drawerSelectStyles } from "@/utilities/SelectStyle";
 import { useState } from "react";
+import { ImCross } from "react-icons/im";
 import Select from "react-select";
 
 export default function UnpaidPartnerBalance() {

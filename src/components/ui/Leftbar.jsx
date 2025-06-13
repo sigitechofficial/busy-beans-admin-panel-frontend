@@ -965,6 +965,13 @@ export default function Leftbar(props) {
             // }
           />
 
+          <ListHead
+            title="Report Management"
+            Icon={PiChartBar}
+            to={"/sales-representative/reports"}
+            active={pathname.includes("/reports")}
+          />
+
           <div className="mx-2 pb-7">
             <button
               className="w-full font-inter font-medium text-lg sm:text-sm lg:text-base flex items-center gap-x-2 px-2 py-3 rounded-lg text-black hover:bg-black hover:text-white 

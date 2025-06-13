@@ -8,11 +8,10 @@ import { useState } from "react";
 import { ImCross } from "react-icons/im";
 import Select from "react-select";
 
-export default function AssignedOrders() {
+export default function UnpaidPartnerBalance() {
   if (typeof window !== "undefined") {
     var userID = localStorage.getItem("userID");
   }
-
   const [customDates, setCustomDates] = useState({
     startDate: "",
     endDate: "",
@@ -21,11 +20,13 @@ export default function AssignedOrders() {
     value: "allTime",
     label: "All Time",
   });
+
   const [displayCustomFilters, setDisplayCustomFilters] = useState(false);
 
   const { data } = GetAPI(
-    `api/v1/admin/supplier-reports/assigned-orders-report/${userID}`
+    `api/v1/admin/sales-rep-reports/orders-placed-report/${userID}`
   );
+  console.log("🚀 ~ UnpaidPartnerBalance ~ data:", data?.data);
 
   const options = [
     { value: "allTime", label: "All Time" },
@@ -42,10 +43,12 @@ export default function AssignedOrders() {
   const columns = [
     { field: "sl", header: "SL", sort: true },
     { field: "customerName", header: "Customer Name" },
-    { field: "productNames", header: "Product Names" },
-    { field: "totalQuantity", header: "Total Quantity" },
-    { field: "assignedAt", header: "Assigned At" },
-    { field: "note", header: "Note" },
+    { field: "productNames", header: "Customer Name" },
+    { field: "productsSellingPrice", header: "Customer Name" },
+    { field: "productsWholesalePrice", header: "Customer Name" },
+    { field: "commission", header: "Commission" },
+    { field: "orderDate", header: "Order Date" },
+    { field: "orderCurrentStatus", header: "Order Status" },
   ];
 
   const datas = [];
@@ -54,9 +57,13 @@ export default function AssignedOrders() {
       sl: i + 1,
       customerName: report?.customerName,
       productNames: report?.productNames,
-      totalQuantity: report?.totalQuantity ?? 0,
-      assignedAt: report?.assignedAt ?? "-",
-      note: report?.note ?? "-",
+      productsSellingPrice: `$${report?.productsSellingPrice ?? 0}`,
+      productsWholesalePrice: `$${report?.productsWholesalePrice}`,
+      commission: `$${
+        report?.productsSellingPrice - report?.productsWholesalePrice
+      }`,
+      orderDate: report?.orderDate,
+      orderCurrentStatus: report?.orderCurrentStatus,
     })
   );
 
@@ -92,7 +99,7 @@ export default function AssignedOrders() {
         <div className="flex items-center gap-x-2">
           <BackButton />
           <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-            Assigned Orders Report
+            Orders Placed Report
           </h2>
         </div>
         <div className="min-w-40">

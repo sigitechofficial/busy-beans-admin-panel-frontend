@@ -16,9 +16,14 @@ export default function OrderCard(props) {
   if (typeof window !== "undefined") {
     var userType = localStorage.getItem("userType");
   }
+  console.log("🚀 ~ OrderCard ~ props:", props?.orderData)
   const router = useRouter();
   const [supplierID, setSupplierID] = useState("");
   const [loader, setLoader] = useState("");
+
+  const wholeSalePrice = props?.orderData?.items?.reduce((a, b) => {
+    return a + Number(b?.wholesalePrice);
+  }, 0)
 
   const paymentStausOptions = [
     { value: "done", label: "Done" },
@@ -145,6 +150,13 @@ export default function OrderCard(props) {
     { field: "discount", header: "Discount", minWidth: "6rem" },
     { field: "total", header: "Total", minWidth: "6rem" },
   ];
+  const supplierColumns = [
+    { field: "#", header: "#", sort: true, minWidth: "1rem" },
+    { field: "product", header: "Product", minWidth: "12rem" },
+    { field: "qty", header: "Quantity", minWidth: "6rem" },
+  ];
+
+
 
   const datas = [];
   props?.orderData?.items?.map((item, i) => {
@@ -199,7 +211,8 @@ export default function OrderCard(props) {
 
                 {userType === "supplier" ||
                 (userType === "admin" &&
-                  props?.orderData?.paymentMethod === "card") || (props?.orderData?.statusId === 6) ? (
+                  props?.orderData?.paymentMethod === "card") ||
+                props?.orderData?.statusId === 6 ? (
                   <div className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none">
                     {props?.orderData?.paymentStatus}
                   </div>
@@ -228,7 +241,7 @@ export default function OrderCard(props) {
                 </span>
                 <span className="font-medium">17-02-2025</span>
               </p> */}
-              <p className="flex">
+              <p className={`${props?.userType === "supplier" ? "hidden":"flex"}`}>
                 <span className="text-black/60 w-2/4">Total Amount:</span>
                 <span className="font-medium">
                   $ {props?.orderData?.totalBill}
@@ -248,16 +261,22 @@ export default function OrderCard(props) {
       <div>
         <MyDataTable
           data={datas}
-          columns={columns}
+          columns={props?.userType === "supplier" ? supplierColumns:columns}
           hide="hidden"
           search={false}
           pagination={true}
         />
-        <div className="font-inter flex flex-col sm:items-end sm:[&>p]:w-2/4 [&>p]:flex [&>p]:justify-between pt-4 space-y-0.5">
+        <div className={`${props?.userType === "supplier" ? "hidden":"flex"} font-inter  flex-col sm:items-end sm:[&>p]:w-2/4 [&>p]:flex [&>p]:justify-between pt-4 space-y-0.5`}>
           <p>
             <span className="font-bold">Items Price:</span>{" "}
             <span className="font-semibold">
               ${props?.orderData?.itemsPrice}
+            </span>
+          </p>
+          <p>
+            <span className="font-bold">Whole Sale Price:</span>{" "}
+            <span className="font-semibold">
+              ${wholeSalePrice}
             </span>
           </p>
           <p>
@@ -272,12 +291,12 @@ export default function OrderCard(props) {
             <span className="font-bold">Vat/Tax:</span>{" "}
             <span className="font-semibold">${props?.orderData?.vat}</span>
           </p>
-          <p>
+          {/* <p>
             <span className="font-bold">Total Weight:</span>{" "}
             <span className="font-semibold">
-              ${props?.orderData?.totalWeight}
+              {props?.orderData?.totalWeight} kg
             </span>
-          </p>
+          </p> */}
           <p>
             <span className="font-bold">Sub Total:</span>{" "}
             <span className="font-semibold">${props?.orderData?.subTotal}</span>
@@ -365,7 +384,7 @@ export default function OrderCard(props) {
                 </div>
                 <div className="flex flex-col gap-y-2">
                   <label className="text-labelColor font-medium font-satoshi">
-                    Description
+                    Company Name
                   </label>
                   {/* <input
                   type="text"

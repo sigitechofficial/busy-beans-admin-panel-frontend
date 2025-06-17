@@ -13,13 +13,27 @@ export default function page() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5 xl:gap-10">
+
         <ReportCard
           Icon={TbReportAnalytics}
           title="Orders Placed Report"
           to="/sales-representative/reports/orders-placed"
         />
 
-        
+        <ReportCard
+          Icon={TbReportAnalytics}
+          title="Customer Acquisition Report"
+          to="/sales-representative/reports/customer-acquisition"
+        />
+
+        <ReportCard
+          Icon={TbReportAnalytics}
+          title="Credit Limit Status Report"
+          to="/sales-representative/reports/credit-limit-status"
+        />
+
+
+
       </div>
     </div>
   );

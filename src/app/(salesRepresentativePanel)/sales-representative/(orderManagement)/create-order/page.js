@@ -33,12 +33,12 @@ export default function CreateOrder() {
       createOrderData.push({ ...item, qty: itemQuantity });
       setCreateOrderData([...createOrderData]);
       localStorage.setItem("createOrderData", JSON.stringify(createOrderData));
-      success_toaster("Item Added Successfully");
+      // success_toaster("Item Added Successfully");
     } else {
       createOrderData[findItemIndex]["qty"] = itemQuantity;
       setCreateOrderData(createOrderData);
       localStorage.setItem("createOrderData", JSON.stringify(createOrderData));
-      success_toaster("Item Updated Successfully");
+      // success_toaster("Item Updated Successfully");
     }
   };
 
@@ -54,7 +54,7 @@ export default function CreateOrder() {
           "createOrderData",
           JSON.stringify(filteredQuotationItem)
         );
-        success_toaster("Item Removed Successfully");
+        // success_toaster("Item Removed Successfully");
       } else {
         createOrderData[findItemIndex]["qty"] = itemQuantity;
         setCreateOrderData(createOrderData);
@@ -62,7 +62,7 @@ export default function CreateOrder() {
           "createOrderData",
           JSON.stringify(createOrderData)
         );
-        success_toaster("Item Updated Successfully");
+        // success_toaster("Item Updated Successfully");
       }
     }
   };
@@ -175,7 +175,7 @@ export default function CreateOrder() {
             : "Complete Account Registration"}
         </button>
       </div> */}
-      <div className="space-y-4">
+      <div className="space-y-4 relative">
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
           {data?.data?.data?.map((item, i) => (
             <StockCard
@@ -191,7 +191,7 @@ export default function CreateOrder() {
             />
           ))}
         </div>
-        <div className="flex justify-end relative">
+        <div className="flex justify-end fixed right-10 bottom-10">
           <button
             onClick={() => setVisibleRight(true)}
             className="rounded-lg font-inter font-medium text-white px-2 sm:px-3 py-2.5 sm:py-4 bg-theme"

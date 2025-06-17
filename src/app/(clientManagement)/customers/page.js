@@ -34,9 +34,10 @@ export default function Customers() {
   const { data: dashboardCards } = GetAPI(
     "api/v1/admin/customer-management/dahboard-cards"
   );
-  console.log("🚀 ~ Customers ~ dashboardCards:",dashboardCards?.data?.data)
+  // console.log("🚀 ~ Customers ~ dashboardCards:",dashboardCards?.data?.data)
 
   const { data: salesRepresentativeData } = GetAPI("api/v1/admin/sales-rep");
+  console.log("🚀 ~ Customers ~ data:", data?.data);
 
   const handleCancel = () => {
     setModal("");
@@ -71,7 +72,7 @@ export default function Customers() {
   };
 
   const columns = [
-    { field: "sl", header: "SL", sort: true },
+    { field: "sl", header: "SL", sort: true, },
     { field: "name", header: "Name", sort: true },
     { field: "email", header: "Email", sort: true },
     { field: "phoneNumber", header: "Phone Number", sort: true },
@@ -79,7 +80,8 @@ export default function Customers() {
     { field: "saleTaxNumber", header: "Sale Tax Number", sort: true },
     { field: "totalOrderAmount", header: "Total Orders", sort: true },
     { field: "totalOrderPlaced", header: "Total Orders Placed", sort: true },
-    { field: "salesRepName", header: "salesRepName", sort: true,  minWidth: "14rem" },
+    { field: "salesRepName", header: "salesRepName", minWidth: "14rem" },
+    { field: "salesRepState", header: "salesRepState", minWidth: "14rem" },
     { field: "status", header: "status", sort: true },
   ];
 
@@ -99,7 +101,7 @@ export default function Customers() {
 
   const datas = [];
   const salesRepresentativeDatas = [];
-  data?.data?.data?.map((customer, i) => {
+  data?.data?.data?.reverse()?.map((customer, i) => {
     datas.push({
       id: customer?.id,
       sl: i + 1,
@@ -115,6 +117,8 @@ export default function Customers() {
           Not Assigned Yet
         </di>
       ),
+      salesRepState: customer?.salesRepState ?? "-",
+
       status: (
         <div>
           {customer?.status ? (

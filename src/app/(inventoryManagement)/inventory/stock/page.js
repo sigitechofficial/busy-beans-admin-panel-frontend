@@ -86,6 +86,8 @@ export default function Stock() {
         info_toaster("Product unit cannot be empty");
       } else if (productDetail?.price.trim() === "") {
         info_toaster("Invalid Product price");
+      } else if (productDetail?.weight.trim() === "") {
+        info_toaster("Invalid Product weight");
       } else if (productDetail?.wholesalePrice.trim() === "") {
         info_toaster("Invalid whole sale price");
       } else if (!/^\d*\.?\d*$/?.test(productDetail?.price)) {
@@ -98,6 +100,7 @@ export default function Stock() {
         formData.append("quantity", productDetail?.quantity);
         formData.append("unit", productDetail?.unit?.value);
         formData.append("price", productDetail?.price);
+        formData.append("weight", productDetail?.weight);
         formData.append("wholesalePrice", productDetail?.wholesalePrice);
         formData.append("desc", productDetail?.desc);
         formData.append("image", productDetail?.image);
@@ -113,6 +116,7 @@ export default function Stock() {
               unit: "",
               image: "",
               category: "",
+              weight: "",
             });
             setModal("");
             setLoader("");
@@ -141,6 +145,8 @@ export default function Stock() {
         info_toaster("Product unit cannot be empty");
       } else if (productDetail?.price.trim() === "") {
         info_toaster("Invalid Product price");
+      } else if (productDetail?.weight.trim() === "") {
+        info_toaster("Invalid Product weight");
       } else if (productDetail?.wholesalePrice.trim() === "") {
         info_toaster("Invalid whole sale price");
       } else if (!/^\d*\.?\d*$/?.test(productDetail?.price)) {
@@ -154,6 +160,7 @@ export default function Stock() {
         formData.append("quantity", productDetail?.quantity);
         formData.append("unit", productDetail?.unit?.value);
         formData.append("price", productDetail?.price);
+        formData.append("weight", productDetail?.weight);
         formData.append("wholesalePrice", productDetail?.wholesalePrice);
         formData.append("desc", productDetail?.desc);
         formData.append("image", productDetail?.image);
@@ -170,6 +177,7 @@ export default function Stock() {
               quantity: "",
               unit: "",
               image: "",
+              weight: "",
             });
             setModal("");
             setLoader("");
@@ -210,6 +218,7 @@ export default function Stock() {
     setProductDetail({
       name: "",
       quantity: "",
+      weight: "",
       unit: "",
       image: "",
       price: "",
@@ -244,6 +253,7 @@ export default function Stock() {
     { field: "sl", header: "SL", sort: true },
     { field: "name", header: "Name" },
     { field: "quantity", header: "Quantity" },
+    { field: "weight", header: "Weight" },
     { field: "price", header: "Price ($)" },
     { field: "wholesalePrice", header: "Whole Sale Price ($)" },
     { field: "image", header: "Image" },
@@ -265,6 +275,7 @@ export default function Stock() {
       name: prod?.name,
       quantity: prod?.quantity,
       price: "$" + prod?.price,
+      weight: "$" + prod?.weight,
       wholesalePrice: "$" + prod?.wholesalePrice ?? "",
       image: (
         <img
@@ -319,6 +330,7 @@ export default function Stock() {
                     : { value: "pounds", label: "pounds" },
                 image: prod?.image,
                 price: prod?.price,
+                weight: prod?.weight,
                 wholesalePrice: prod?.wholesalePrice,
                 desc: prod?.desc,
               });
@@ -350,7 +362,7 @@ export default function Stock() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-            Available Stock
+            Inventory Managment
           </h2>
 
           <Select
@@ -493,6 +505,7 @@ export default function Stock() {
                       className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     />
                   </div>
+
                   <div className="flex flex-col gap-y-2 w-full">
                     <label className="text-labelColor font-medium font-satoshi">
                       Category
@@ -573,10 +586,11 @@ export default function Stock() {
                 /> */}
                     </div>
                   </div>
-                  <div className="grid sm:grid-cols-2 gap-y-4 gap-x-6">
+
+                  <div className="grid sm:grid-cols-3 gap-y-4 gap-x-6">
                     <div className="flex flex-col gap-y-2">
                       <label className="text-labelColor font-medium font-satoshi">
-                        Available Stock
+                        Quanity
                       </label>
                       <input
                         type="text"
@@ -598,6 +612,31 @@ export default function Stock() {
                         <p>Invalid Quantity</p>
                       </div>
                     </div>
+                    <div className="flex flex-col gap-y-2">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Weight
+                      </label>
+                      <input
+                        type="text"
+                        name="weight"
+                        min="0"
+                        value={productDetail?.weight}
+                        onChange={handleChange}
+                        placeholder="Enter Weight"
+                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      />
+                      <div
+                        className={`text-red-600 space-y-1 pb-1 ${
+                          !/^\d*\.?\d*$/?.test(productDetail?.quantity)
+                            ? "block"
+                            : "hidden"
+                        }`}
+                      >
+                        <hr className="border-none h-0.5 bg-white bg-opacity-20" />
+                        <p>Invalid Quantity</p>
+                      </div>
+                    </div>
+
                     <div className="flex flex-col gap-y-2 w-full">
                       <label className="text-labelColor font-medium font-satoshi">
                         Units

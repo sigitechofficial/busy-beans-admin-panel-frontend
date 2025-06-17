@@ -1,13 +1,18 @@
 "use client";
 import BackButton from "@/components/ui/BackButton";
 import Loader from "@/components/ui/Loader";
+import ManagementTab from "@/components/ui/ManagementTab";
 import MyDataTable from "@/components/ui/MyDataTable";
 import GetAPI from "@/utilities/GetAPI";
 import selectStyles, { drawerSelectStyles } from "@/utilities/SelectStyle";
 import { useState } from "react";
+import { ImCross } from "react-icons/im";
 import Select from "react-select";
 
-export default function CustomerReport() {
+export default function CreditLimitStatusReport() {
+  if (typeof window !== "undefined") {
+    var userID = localStorage.getItem("userID");
+  }
   const [customDates, setCustomDates] = useState({
     startDate: "",
     endDate: "",
@@ -16,10 +21,12 @@ export default function CustomerReport() {
     value: "allTime",
     label: "All Time",
   });
+
   const [displayCustomFilters, setDisplayCustomFilters] = useState(false);
 
-  const { data } = GetAPI("api/v1/admin/admin-reports/customer-report");
-  console.log("🚀 ~ PartnerCommissionReport ~ data:", data?.data);
+  const { data } = GetAPI(
+    `api/v1/admin/sales-rep-reports/partner-creadit-limit/${userID}`
+  );
 
   const options = [
     { value: "allTime", label: "All Time" },
@@ -33,28 +40,22 @@ export default function CustomerReport() {
     { value: "custom", label: "Custom" },
   ];
 
-  const columns = [
-    { field: "sl", header: "SL", sort: true },
-    { field: "name", header: "Customer Name" },
-    { field: "numberOfOrders", header: "No of Orders" },
-    { field: "lastOrderDate", header: "Last Order Date" },
-    { field: "outstandingBalance", header: "Outstanding Balance" },
-    { field: "avgSpent", header: "Avg. Spent" },
-    { field: "totatSpent", header: "Total Spent" },
-  ];
+  //   const columns = [
+  //     { field: "sl", header: "SL", sort: true },
+  //     { field: "srName", header: "Customer Name" },
+  //     { field: "creditLimit", header: "No. of Orders" },
+  //     { field: "creditUsed", header: "Total Spent" },
+  //   ];
 
-  const datas = [];
-  data?.data?.map((report, i) =>
-    datas.push({
-      sl: i + 1,
-      name: report?.name,
-      numberOfOrders: report?.numberOfOrders ?? 0,
-      lastOrderDate: report?.lastOrderDate ?? "-",
-      outstandingBalance: `$${report?.outstandingBalance ?? 0}`,
-      avgSpent: `$${report?.avgSpent ?? 0}`,
-      totatSpent: `$${report?.totatSpent ?? 0}`,
-    })
-  );
+  //   const datas = [];
+  //   data?.data?.data?.map((report, i) =>
+  //     datas.push({
+  //       sl: i + 1,
+  //       srName: report?.srName,
+  //       creditLimit: `$${report?.creditLimit ?? 0}`,
+  //       creditUsed: `$${report?.creditUsed ?? 0}`,
+  //     })
+  //   );
 
   const handleChange = (val) => {
     if (val?.value === "custom") {
@@ -88,7 +89,7 @@ export default function CustomerReport() {
         <div className="flex items-center gap-x-2">
           <BackButton />
           <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-            Customers Report
+            Credit Limit Status Report
           </h2>
         </div>
         <div className="min-w-40">
@@ -152,13 +153,33 @@ export default function CustomerReport() {
         </div>
       </div>
 
-      <div>
-        <MyDataTable
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+        <ManagementTab title="Supplier Name" desc={data?.data?.srName} />
+
+        <ManagementTab
+          title="Credit Limit"
+          desc={`$${data?.data?.creditLimit ?? 0}`}
+        />
+
+        <ManagementTab
+          title="Credit Used"
+          desc={`$${data?.data?.creditUsed ?? 0}`}
+        />
+
+        <ManagementTab
+          title="Remaining Credit"
+          desc={`$${
+            Number(data?.data?.creditLimit) - Number(data?.data?.creditUsed) ??
+            0
+          }`}
+        />
+
+        {/* <MyDataTable
           columns={columns}
           data={datas}
           placeholder={"Search ..."}
           pagination={true}
-        />
+        /> */}
       </div>
     </div>
   );

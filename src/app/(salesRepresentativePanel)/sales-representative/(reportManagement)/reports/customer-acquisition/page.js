@@ -5,9 +5,13 @@ import MyDataTable from "@/components/ui/MyDataTable";
 import GetAPI from "@/utilities/GetAPI";
 import selectStyles, { drawerSelectStyles } from "@/utilities/SelectStyle";
 import { useState } from "react";
+import { ImCross } from "react-icons/im";
 import Select from "react-select";
 
-export default function CustomerReport() {
+export default function CustomerAcquistionReport() {
+  if (typeof window !== "undefined") {
+    var userID = localStorage.getItem("userID");
+  }
   const [customDates, setCustomDates] = useState({
     startDate: "",
     endDate: "",
@@ -16,10 +20,13 @@ export default function CustomerReport() {
     value: "allTime",
     label: "All Time",
   });
+
   const [displayCustomFilters, setDisplayCustomFilters] = useState(false);
 
-  const { data } = GetAPI("api/v1/admin/admin-reports/customer-report");
-  console.log("🚀 ~ PartnerCommissionReport ~ data:", data?.data);
+  const { data } = GetAPI(
+    `api/v1/admin/sales-rep-reports/customer-report/${userID}`
+  );
+  console.log("🚀 ~ UnpaidPartnerBalance ~ data:", data?.data);
 
   const options = [
     { value: "allTime", label: "All Time" },
@@ -36,11 +43,11 @@ export default function CustomerReport() {
   const columns = [
     { field: "sl", header: "SL", sort: true },
     { field: "name", header: "Customer Name" },
-    { field: "numberOfOrders", header: "No of Orders" },
-    { field: "lastOrderDate", header: "Last Order Date" },
-    { field: "outstandingBalance", header: "Outstanding Balance" },
-    { field: "avgSpent", header: "Avg. Spent" },
+    { field: "numberOfOrders", header: "No. of Orders" },
     { field: "totatSpent", header: "Total Spent" },
+    { field: "avgSpent", header: "Avg. Spent" },
+    { field: "outstandingBalance", header: "Oustanding Balance" },
+    { field: "lastOrderDate", header: "Last Order Date" },
   ];
 
   const datas = [];
@@ -49,10 +56,10 @@ export default function CustomerReport() {
       sl: i + 1,
       name: report?.name,
       numberOfOrders: report?.numberOfOrders ?? 0,
-      lastOrderDate: report?.lastOrderDate ?? "-",
-      outstandingBalance: `$${report?.outstandingBalance ?? 0}`,
-      avgSpent: `$${report?.avgSpent ?? 0}`,
       totatSpent: `$${report?.totatSpent ?? 0}`,
+      avgSpent: `$${report?.avgSpent ?? 0}`,
+      outstandingBalance: `$${report?.outstandingBalance ?? 0}`,
+      lastOrderDate: report?.lastOrderDate,
     })
   );
 
@@ -88,7 +95,7 @@ export default function CustomerReport() {
         <div className="flex items-center gap-x-2">
           <BackButton />
           <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-            Customers Report
+            Customer Acquistion Report
           </h2>
         </div>
         <div className="min-w-40">

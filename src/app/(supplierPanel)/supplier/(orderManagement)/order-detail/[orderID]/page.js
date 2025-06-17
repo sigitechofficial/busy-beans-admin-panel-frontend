@@ -1,6 +1,5 @@
-
 "use client";
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 import BackButton from "@/components/ui/BackButton";
 import CusSupInformationCard from "@/components/ui/CusSupInformationCard";
 import Loader from "@/components/ui/Loader";
@@ -18,6 +17,9 @@ import React, { useState } from "react";
 import Select from "react-select";
 
 export default function OrderDetail() {
+  if (typeof window !== "undefined") {
+    var userType = localStorage.getItem("userType");
+  }
   const { orderID } = useParams();
   // const [chequeId, setChequeId] = useState("");
   const [modal, setModal] = useState({
@@ -110,7 +112,7 @@ export default function OrderDetail() {
     //     status: true,
     //   });
     // } else
-     if (statusId === 2) {
+    if (statusId === 2) {
       handleSupplierAcknowledgement();
     } else if (statusId === 3) {
       setModal({
@@ -201,7 +203,7 @@ export default function OrderDetail() {
     //     ErrorHandler(error);
     //   }
     // } else {
-    e.preventDefault()
+    e.preventDefault();
     setLoader("cancelOrder");
     try {
       const res = await PatchAPI("api/v1/admin/order-cancel", {
@@ -291,16 +293,12 @@ export default function OrderDetail() {
                 ? true
                 : false
             }
-            className="bg-black text-white disabled:cursor-not-allowed"
+            className={`bg-black text-white disabled:cursor-not-allowed ${
+              data?.data?.order?.statusId === 4 ? "block" : "hidden"
+            }`}
             onClick={() => handleAssignSupplier(data?.data?.order?.statusId)}
           >
-            {data?.data?.order?.statusId === 1
-              ? "Assign Supplier"
-              : data?.data?.order?.statusId === 2
-              ? "Acknowledge Supplier"
-              : data?.data?.order?.statusId === 3
-              ? "Dispatch Order"
-              : "Order Delivered"}
+            Order Delivered
           </button>
 
           <button
@@ -315,19 +313,19 @@ export default function OrderDetail() {
           >
             Cancel Order
           </button>
-          <button className="border border-buttonBorderColor shadow-buttonShadow">
+          {/* <button className="border border-buttonBorderColor shadow-buttonShadow">
             Print Invoice
-          </button>
+          </button> */}
         </div>
       </div>
 
       {loader === "acknowledgeSupplier" || loader === "orderDelivered" ? (
         <MiniLoader />
       ) : (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 xl:gap-x-12">
+        <div className="mx-auto w-2/4">
           {/* Left side */}
-          <div className="space-y-6">
-            {/* <CusSupInformationCard
+          {/* <div className="space-y-6">
+            <CusSupInformationCard
               heading="Customer Information"
               image={data?.data?.order?.user?.image}
               name={data?.data?.order?.user?.name}
@@ -346,7 +344,7 @@ export default function OrderDetail() {
                 } - ${data?.data?.order?.address?.zipCode ?? ""}
                   ${data?.data?.order?.address?.country ?? ""}`,
               }}
-            /> */}
+            />
             {data?.data?.order?.statusId >= 2 && (
               <CusSupInformationCard
                 heading="Supplier Information"
@@ -369,7 +367,7 @@ export default function OrderDetail() {
                 }}
               />
             )}
-          </div>
+          </div> */}
 
           {/* Right side */}
           <div className="space-y-8 -order-last xl:-order-first">
@@ -378,6 +376,7 @@ export default function OrderDetail() {
               statusId={data?.data?.order?.statusId}
             />
             <OrderCard
+              userType={userType}
               reFetch={reFetch}
               orderData={data?.data?.order}
               modal={modal}

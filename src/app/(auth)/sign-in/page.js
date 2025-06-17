@@ -211,7 +211,7 @@ export default function SignIn() {
                       onClick={() => setType("sales-rep")}
                     />
                     <label htmlFor="sales-rep" className="ml-2 font-inter">
-                      Sales Representative
+                      Local Partner
                     </label>
                   </div>
                 </div>

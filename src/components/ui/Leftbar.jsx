@@ -141,7 +141,7 @@ export default function Leftbar(props) {
         );
         if (res?.data?.status === "success") {
           success_toaster(res?.data?.data?.message);
-          localStorage.setItem("isAccountConnected", true);
+          // localStorage.setItem("isAccountConnected", true);
           if (res?.data?.data?.data?.connectAccount) {
             const link = document.createElement("a");
             link.href = res?.data?.data?.data?.connectAccount;
@@ -213,6 +213,29 @@ export default function Leftbar(props) {
       }
     }
   };
+
+  useEffect(() => {
+    const stripeAccountStatus = async () => {
+      try {
+        const res = await axios.get(
+          BASE_URL + `api/v1/admin/stripe-connect-account-retrieve/${userID}`
+        );
+        console.log("🚀 ~ stripeAccountStatus ~ res:", res?.data);
+        if (res?.data?.status === "success") {
+          localStorage.setItem("isAccountConnected", true);
+        } else {
+          throw new Error(
+            res?.data?.message || "An unexpected error occurred."
+          );
+        }
+      } catch (error) {
+        ErrorHandler(error);
+      }
+    };
+    if (userType === "salesRepresentative") {
+      stripeAccountStatus();
+    }
+  }, []);
 
   return (
     <section
@@ -347,7 +370,7 @@ export default function Leftbar(props) {
             )}
 
           <ListHead
-            title="Sales Representatives"
+            title="Local Partners"
             Icon={GoPeople}
             active={pathname === "/sale-representative"}
             Angle={
@@ -368,7 +391,7 @@ export default function Leftbar(props) {
               <>
                 <div className="m-2 relative space-y-1">
                   <ListItems
-                    title="All Sales Representatives"
+                    title="All Local Partners"
                     to="/sale-representative"
                   />
                 </div>
@@ -808,8 +831,8 @@ export default function Leftbar(props) {
           <ListHead title="Dashboard" to="/" Icon={MdDashboard} />
 
           <ListHead
-            title="Inventory Management"
-            active={pathname === "/sales-representative/inventory"}
+            title="Quotation Management"
+            active={pathname === "/sales-representative/quotation"}
             Icon={MdInventory}
             Angle={
               active?.inventoryManagement?.tab === "inventoryManagement" &&
@@ -830,8 +853,8 @@ export default function Leftbar(props) {
               <>
                 <div className="m-2 relative space-y-1">
                   <ListItems
-                    title="Inventory Stock"
-                    to="/sales-representative/inventory"
+                    title="Quotation"
+                    to="/sales-representative/quotation"
                   />
                 </div>
                 <hr className="w-full" />

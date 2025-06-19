@@ -232,6 +232,8 @@ export default function States() {
                     onChange={(e) =>
                       setStateName({ label: e.label, value: e.value })
                     }
+                    menuPortalTarget={document.body}
+                    menuPosition="fixed"
                   />
                 </div>
               ) : (

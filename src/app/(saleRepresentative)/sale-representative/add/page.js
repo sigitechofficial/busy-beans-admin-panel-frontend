@@ -4,11 +4,15 @@ import BackButton from "@/components/ui/BackButton";
 import MiniLoader from "@/components/ui/MiniLoader";
 import { LuImageUp } from "react-icons/lu";
 import Select from "react-select";
-import { selectStyles2 } from "@/utilities/SelectStyle";
+import { drawerSelectStyles, selectStyles2 } from "@/utilities/SelectStyle";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import { PostAPI } from "@/utilities/PostAPI";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import PhoneInput from "react-phone-input-2";
+import GetAPI from "@/utilities/GetAPI";
+import axios from "axios";
+import { BASE_URL } from "@/utilities/URL";
 
 export default function AddSaleRepresentative() {
   const [loader, setLoader] = useState("");
@@ -25,12 +29,28 @@ export default function AddSaleRepresentative() {
     businessWeb: "",
     image: "",
     phoneNumber: "",
+    countryCode: "+92",
     creditLimit: "",
     status: true,
   });
-
+  console.log(
+    "🚀 ~ AddSaleRepresentative ~ saleRepresentative:",
+    saleRepresentative
+  );
   const [imagePreview, setImagePreview] = useState("");
   const [visible, setVisible] = useState(false);
+  const [allStates, setAllStates] = useState([]);
+  const [allCities, setAllCities] = useState([]);
+
+  const { data } = GetAPI("api/v1/admin/address-management/country");
+
+  const allCountries = [];
+  data?.data?.data?.map((country) =>
+    allCountries.push({
+      value: country?.name,
+      label: country?.name,
+    })
+  );
 
   const handleChange = (e) => {
     setSaleRepresentative({
@@ -55,6 +75,63 @@ export default function AddSaleRepresentative() {
     }
   };
 
+  const handleSelectedCountryStates = async (countryName) => {
+    const selectedCountry = data?.data?.data?.find(
+      (country) => country?.name === countryName
+    );
+    try {
+      const res = await axios.get(
+        BASE_URL +
+          `api/v1/admin/address-management/state?countryInSystemId=${selectedCountry?.id}`
+      );
+      if (res?.data?.status === "success") {
+        const tempAllStates = [];
+        res?.data?.data?.data?.map((state) =>
+          tempAllStates.push({
+            value: state?.id,
+            label: state?.name,
+          })
+        );
+        setAllStates([...tempAllStates]);
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
+    }
+  };
+
+  const handleSelectedCountryStatesCities = async (stateID) => {
+    try {
+      const res = await axios.get(
+        BASE_URL +
+          `api/v1/admin/address-management/city?stateInSystemId=${stateID}`
+      );
+      if (res?.data?.status === "success") {
+        console.log(
+          "🚀 ~ handleSelectedCountryStates ~ res:",
+          res?.data?.data?.data
+        );
+        const tempAllCities = [];
+        res?.data?.data?.data?.map((state) =>
+          tempAllCities.push({
+            value: state?.name,
+            label: state?.name,
+          })
+        );
+        console.log(
+          "🚀 ~ handleSelectedCountryStatesCities ~ tempAllCities:",
+          tempAllCities
+        );
+        setAllCities([...tempAllCities]);
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!saleRepresentative?.image) {
@@ -69,6 +146,8 @@ export default function AddSaleRepresentative() {
       info_toaster("Enter State");
     } else if (!saleRepresentative?.zipCode?.trim()) {
       info_toaster("Enter ZipCode");
+    } else if (!saleRepresentative?.countryCode?.trim()) {
+      info_toaster("Select Country Code");
     } else if (!saleRepresentative?.phoneNumber?.trim()) {
       info_toaster("Enter Phone Number");
     } else if (!saleRepresentative?.address?.trim()) {
@@ -97,10 +176,11 @@ export default function AddSaleRepresentative() {
         formData.append("state", saleRepresentative?.state);
         formData.append("zipCode", saleRepresentative?.zipCode);
         formData.append("address", saleRepresentative?.address);
-        formData.append("territory", saleRepresentative?.territory);
+        formData.append("territoryName", saleRepresentative?.territory);
         formData.append("businessWeb", saleRepresentative?.businessWeb);
         formData.append("image", saleRepresentative?.image);
         formData.append("phoneNumber", saleRepresentative?.phoneNumber);
+        formData.append("countryCode", saleRepresentative?.countryCode);
         formData.append("status", saleRepresentative?.status);
 
         const res = await PostAPI("api/v1/admin/sales-rep", formData);
@@ -141,7 +221,7 @@ export default function AddSaleRepresentative() {
         <div className="flex items-center gap-x-2">
           <BackButton />
           <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-            Add New Sales Representative
+            Add New Local Partner
           </h2>
         </div>
       </div>
@@ -194,57 +274,92 @@ export default function AddSaleRepresentative() {
                   <label className="text-labelColor font-medium font-satoshi">
                     Country
                   </label>
-                  <input
+                  {/* <input
                     type="text"
                     name="country"
                     value={saleRepresentative?.country}
                     placeholder="Enter Country Name"
                     className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
-                  />
-                  {/* <Select
-                    placeholder="Choose country"
-                    className="w-full"
-                    styles={selectStyles2}
                   /> */}
+                  <Select
+                    placeholder="Select Country"
+                    className="w-full"
+                    styles={drawerSelectStyles}
+                    options={allCountries}
+                    onChange={(e) => {
+                      setSaleRepresentative({
+                        ...saleRepresentative,
+                        country: e.label,
+                        state: "",
+                        city:""
+                      });
+                      handleSelectedCountryStates(e.label);
+                    }}
+                  />
                 </div>
               </div>
               <div className="grid md:grid-cols-2 max-md:gap-y-4 gap-x-6">
                 <div className="flex flex-col gap-y-2 w-full">
                   <label className="text-labelColor font-medium font-satoshi">
-                    City
-                  </label>
-                  <input
-                    type="text"
-                    name="city"
-                    value={saleRepresentative?.city}
-                    placeholder="Enter City Name"
-                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    onChange={handleChange}
-                  />
-                  {/* <Select
-                    placeholder="Select City"
-                    className="w-full"
-                    styles={selectStyles2}
-                  /> */}
-                </div>
-                <div className="flex flex-col gap-y-2 w-full">
-                  <label className="text-labelColor font-medium font-satoshi">
                     State
                   </label>
-                  <input
+                  {/* <input
                     type="text"
                     name="state"
                     value={saleRepresentative?.state}
                     placeholder="Enter State Name"
                     className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
-                  />
-                  {/* <Select
+                  /> */}
+                  <Select
                     placeholder="Select State"
                     className="w-full"
-                    styles={selectStyles2}
+                    styles={drawerSelectStyles}
+                    value={{
+                      value: saleRepresentative?.state ?? null,
+                      label: saleRepresentative?.state ?? null,
+                    }}
+                    options={allStates}
+                    onChange={(e) => {
+                      console.log("🚀 ~ AddSaleRepresentative ~ e:", e)
+                      setSaleRepresentative({
+                        ...saleRepresentative,
+                        state: e?.label,
+                        city:""
+                      });
+                      handleSelectedCountryStatesCities(e.value);
+                    }}
+                  />
+                </div>
+                <div className="flex flex-col gap-y-2 w-full">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    City
+                  </label>
+                  {/* <input
+                    type="text"
+                    name="city"
+                    value={saleRepresentative?.city}
+                    placeholder="Enter City Name"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    onChange={handleChange}
                   /> */}
+                  <Select
+                    placeholder="Select City"
+                    className="w-full"
+                    styles={drawerSelectStyles}
+                    value={{
+                      value: saleRepresentative?.city ?? null,
+                      label: saleRepresentative?.city ?? null,
+                    }}
+                    options={allCities ?? null}
+                    onChange={(e) => {
+                      setSaleRepresentative({
+                        ...saleRepresentative,
+                        city: e.label,
+                      });
+                    }}
+                  />
                 </div>
               </div>
               <div className="grid md:grid-cols-2 max-md:gap-y-4 gap-x-6">
@@ -263,8 +378,22 @@ export default function AddSaleRepresentative() {
                 </div>
                 <div className="flex flex-col gap-y-2">
                   <label className="text-labelColor font-medium font-satoshi">
+                    Territory{" "}
+                  </label>
+                  <input
+                    type="text"
+                    name="territory"
+                    value={saleRepresentative?.territory}
+                    placeholder="Enter Territory name"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    onChange={handleChange}
+                  />
+                </div>
+                {/* <div className="flex flex-col gap-y-2">
+                  <label className="text-labelColor font-medium font-satoshi">
                     Phone number
                   </label>
+
                   <input
                     type="number"
                     name="phoneNumber"
@@ -273,7 +402,7 @@ export default function AddSaleRepresentative() {
                     className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
-                </div>
+                </div> */}
               </div>
               <div className="flex flex-col gap-y-2">
                 <label className="text-labelColor font-medium font-satoshi">
@@ -306,17 +435,55 @@ export default function AddSaleRepresentative() {
             {/* right side */}
             <div className="space-y-4">
               <div className="flex flex-col gap-y-2">
-                <label className="text-labelColor font-medium font-satoshi">
-                  Territory{" "}
+                <label
+                  htmlFor="phone"
+                  className="text-labelColor font-medium font-satoshi"
+                >
+                  Phone Number
                 </label>
-                <input
-                  type="text"
-                  name="territory"
-                  value={saleRepresentative?.territory}
-                  placeholder="Enter Territory name"
-                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                  onChange={handleChange}
-                />
+                <div className="grid grid-cols-10 gap-x-2">
+                  <PhoneInput
+                    focusBorderColor="none"
+                    borderWidth="none"
+                    className="chakra_input col-span-2"
+                    inputStyle={{
+                      width: "90px",
+                      height: "45px",
+                      borderRadius: "4px",
+                      border: "1px solid #00000033",
+                      backgroundColor: "#ffffff",
+                      color: "#6f4e37",
+                      opacity: "20",
+                    }}
+                    buttonStyle={{
+                      backgroundColor: "#ffffff",
+                      border: "1px solid #86644C",
+                    }}
+                    containerStyle={{
+                      borderRadius: "12px",
+                      backgroundColor: "#6f4e37",
+                    }}
+                    dropdownStyle={{
+                      backgroundColor: "#6f4e37",
+                      borderRadius: "8px",
+                    }}
+                    country={"pk"}
+                    onChange={(phone) =>
+                      setSaleRepresentative({
+                        ...saleRepresentative,
+                        countryCode: phone,
+                      })
+                    }
+                  />
+                  <input
+                    type="number"
+                    name="phoneNumber"
+                    value={saleRepresentative?.phoneNumber}
+                    placeholder="Enter Phone Number"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5  w-full col-span-8"
+                    onChange={handleChange}
+                  />
+                </div>
               </div>
               <div className="flex flex-col gap-y-2 w-full">
                 <label className="text-labelColor font-medium font-satoshi">

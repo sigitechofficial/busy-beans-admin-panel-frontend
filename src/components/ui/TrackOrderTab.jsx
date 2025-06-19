@@ -8,7 +8,7 @@ export default function TrackOrderTab(props) {
         className={`${
           status ? "bg-themeGreen" : "bg-themeGray3"
         } size-8 rounded-full flex items-center justify-center`}
-      >
+      > 
         <FaCheck color="#FFFFFF" size={20} />
       </div>
       <p className="text-center">{heading}</p>

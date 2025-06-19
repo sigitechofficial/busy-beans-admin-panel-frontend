@@ -73,7 +73,7 @@ export default function SalesRepresentativeInventory() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-          Add Quote
+           Quotation Management
         </h2>
 
         <Select placeholder="Filters" className="w-40" styles={selectStyles} />

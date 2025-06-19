@@ -23,6 +23,7 @@ export default function Orders() {
 
   const columns = [
     { field: "sl", header: "SL", sort: true },
+    { field: "id", header: "Order ID", sort: true },
     { field: "customerName", header: "Customer Name" },
     { field: "totalBill", header: "Total Bill" },
     { field: "subTotal", header: "Sub Total" },
@@ -35,6 +36,8 @@ export default function Orders() {
     { field: "paymentMethod", header: "Payment Method" },
     { field: "poNumber", header: "Po Number" },
     { field: "orderFrequency", header: "Order Frequency" },
+    { field: "orderCurrentStatus", header: "Order Current Status" },
+    { field: "paymentStatus", header: "Payment Status" },
     { field: "createdBy", header: "Created By" },
     { field: "action", header: "Action" },
   ];
@@ -43,6 +46,7 @@ export default function Orders() {
   data?.data?.data?.map((detail, i) => {
     return datas.push({
       sl: i + 1,
+      id: detail?.id,
       customerName: detail?.customerName,
       totalBill: "$" + detail?.totalBill,
       subTotal: "$" + detail?.subTotal,
@@ -55,6 +59,8 @@ export default function Orders() {
       paymentMethod: detail?.paymentMethod,
       poNumber: detail?.poNumber,
       orderFrequency: detail?.frequency,
+      orderCurrentStatus: detail?.orderCurrentStatus,
+      paymentStatus: detail?.paymentStatus,
       createdBy: detail?.createdBy,
       action: (
         <button

@@ -1,6 +1,7 @@
 @import "primereact/resources/themes/lara-light-blue/theme.css"; /* Choose a theme */
 @import "primereact/resources/primereact.min.css"; /* Core styles */
 @import "primeicons/primeicons.css"; /* Icons */
+@import "react-phone-input-2/lib/style.css";
 
 @tailwind base;
 @tailwind components;

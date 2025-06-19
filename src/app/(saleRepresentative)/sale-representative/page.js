@@ -91,7 +91,7 @@ export default function SaleRepresentative() {
       srName: sR?.srName,
       email: sR?.email,
       address: `${sR?.address}, ${sR?.city}, ${sR?.state}, ${sR?.territory}, ${sR?.country}`,
-      phoneNum: sR?.phoneNumber,
+      phoneNum: `${sR?.countryCode} ${sR?.phoneNumber}`,
       sRType: sR?.sRType,
       registerDate: sR?.registerDate ?? "No date found",
       registerBy: sR?.registerBy,
@@ -152,7 +152,7 @@ export default function SaleRepresentative() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-            Sales Representatives
+            Local Partners
           </h2>
 
           <Select
@@ -166,7 +166,7 @@ export default function SaleRepresentative() {
             onClick={() => router.push("/sale-representative/add")}
             className="rounded-lg font-inter font-medium border border-theme text-white bg-theme hover:bg-white hover:text-theme duration-150 px-2 sm:px-3 py-2.5 sm:py-4"
           >
-            + Add New Sales Representative
+            + Add New Local Partner
           </button>
         </div>
       </div>
@@ -174,7 +174,7 @@ export default function SaleRepresentative() {
       <div className="space-y-4">
         <div className="grid  grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
           <ManagementTab
-            title="All Sales Represenatives"
+            title="Total Local Partners"
             desc={data?.data?.data?.length ?? 0}
           />
           {/* <ManagementTab title="New Sales Represenatives" desc="5000" /> */}

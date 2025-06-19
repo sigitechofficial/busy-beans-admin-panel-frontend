@@ -33,7 +33,7 @@ export default function Cities() {
   });
 
   const { data, reFetch } = GetAPI(
-    `api/v1/admin/address-management/city?stateInSystemId=${stateID}`
+    `api/v1/admin/address-management/city?stateInSystemId=${stateID}` 
   );
 
   const { data: countryData } = GetAPI(
@@ -232,6 +232,8 @@ export default function Cities() {
                     onChange={(e) =>
                       setCityName({ label: e.label, value: e.value })
                     }
+                    menuPortalTarget={document.body}
+                    menuPosition="fixed"
                   />
                 </div>
               ) : (

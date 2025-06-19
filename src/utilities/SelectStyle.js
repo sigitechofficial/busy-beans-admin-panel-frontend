@@ -49,10 +49,14 @@ export const selectStyles2 = {
   }),
   dropdownIndicator: (provided, state) => ({
     ...provided,
-    color: state.isFocused ? "lightGray" : "lightGray",
+    color: "lightGray",
     "&:hover": {
       color: "lightGray",
     },
+  }),
+  menuPortal: (base) => ({
+    ...base,
+    zIndex: 9999, // Ensures it appears above Dialog
   }),
 };
 
@@ -61,9 +65,9 @@ export const drawerSelectStyles = {
     ...provided,
     background: "#ffffff",
     outline: "none",
-    boxShadow: state.isFocused ? `0 0 0 1px #3e342c` : "none",
+    boxShadow: state.isFocused ? `0 0 0 0px #3e342c` : "none",
     cursor: "pointer",
-    border: "1px solid #3e342c",
+    border: "1px solid #e2e8f0",
     borderRadius: "4px",
     paddingTop: "0.375rem",
     paddingBottom: "0.375rem",

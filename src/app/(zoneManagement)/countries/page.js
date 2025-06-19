@@ -1,5 +1,5 @@
 "use client";
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 import CountryCard from "@/components/ui/CountryCard";
 import { Dialog } from "primereact/dialog";
 import { LuImageUp } from "react-icons/lu";
@@ -180,7 +180,7 @@ export default function Countries() {
 
             <div className="w-full space-y-4">
               {modal === "add" ? (
-                <div className="flex flex-col gap-y-2 w-full">
+                <div className="flex flex-col gap-y-2 w-full relative">
                   <label className="text-labelColor font-medium font-satoshi">
                     Country
                   </label>
@@ -192,6 +192,8 @@ export default function Countries() {
                     onChange={(e) =>
                       setCountryName({ label: e.label, value: e.value })
                     }
+                    menuPortalTarget={document.body}
+                    menuPosition="fixed"
                   />
                 </div>
               ) : (

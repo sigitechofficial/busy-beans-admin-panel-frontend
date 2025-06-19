@@ -1,5 +1,5 @@
 "use client";
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 import { useEffect, useState } from "react";
 import BackButton from "@/components/ui/BackButton";
 import MiniLoader from "@/components/ui/MiniLoader";
@@ -14,6 +14,7 @@ import GetAPI from "@/utilities/GetAPI";
 import { BASE_URL } from "@/utilities/URL";
 import { string } from "yup";
 import { PatchAPI } from "@/utilities/PatchAPI";
+import PhoneInput from "react-phone-input-2";
 
 export default function EditsSalesRepresentative() {
   const { salesRepresentativeID } = useParams();
@@ -32,6 +33,7 @@ export default function EditsSalesRepresentative() {
     businessWeb: "",
     image: "",
     phoneNumber: "",
+    countryCode: "",
     status: true,
   });
   const [imagePreview, setImagePreview] = useState("");
@@ -79,7 +81,7 @@ export default function EditsSalesRepresentative() {
       info_toaster("Enter Phone Number");
     } else if (!saleRepresentative?.address?.trim()) {
       info_toaster("Enter Address");
-    }  else if (!saleRepresentative?.territory?.trim()) {
+    } else if (!saleRepresentative?.territory?.trim()) {
       info_toaster("Enter Territory");
     } else if (saleRepresentative?.status === "") {
       info_toaster("Select Status");
@@ -154,6 +156,7 @@ export default function EditsSalesRepresentative() {
       businessWeb: data?.data?.data?.businessWeb ?? "",
       image: data?.data?.data?.image ?? "",
       phoneNumber: data?.data?.data?.phoneNumber ?? "",
+      countryCode: data?.data?.data?.countryCode ?? "",
       status: data?.data?.data?.status ?? "",
     });
     setImagePreview(data?.data?.data?.image);
@@ -214,7 +217,7 @@ export default function EditsSalesRepresentative() {
                     name="srName"
                     value={saleRepresentative?.srName}
                     placeholder="Enter Name"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
                 </div>
@@ -227,7 +230,7 @@ export default function EditsSalesRepresentative() {
                     name="country"
                     value={saleRepresentative?.country}
                     placeholder="Enter Country Name"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
                   {/* <Select
@@ -247,7 +250,7 @@ export default function EditsSalesRepresentative() {
                     name="city"
                     value={saleRepresentative?.city}
                     placeholder="Enter City Name"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
                   {/* <Select
@@ -265,7 +268,7 @@ export default function EditsSalesRepresentative() {
                     name="state"
                     value={saleRepresentative?.state}
                     placeholder="Enter State Name"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
                   {/* <Select
@@ -285,20 +288,20 @@ export default function EditsSalesRepresentative() {
                     name="zipCode"
                     value={saleRepresentative?.zipCode}
                     placeholder="Enter Zip code"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
                 </div>
                 <div className="flex flex-col gap-y-2">
                   <label className="text-labelColor font-medium font-satoshi">
-                    Phone number
+                    Territory{" "}
                   </label>
                   <input
-                    type="number"
-                    name="phoneNumber"
-                    value={saleRepresentative?.phoneNumber}
-                    placeholder="Enter Phone Number"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    type="text"
+                    name="territory"
+                    value={saleRepresentative?.territory}
+                    placeholder="Enter Territory name"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
                 </div>
@@ -312,7 +315,7 @@ export default function EditsSalesRepresentative() {
                   name="address"
                   value={saleRepresentative?.address}
                   placeholder="Enter Address"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div>
@@ -325,7 +328,7 @@ export default function EditsSalesRepresentative() {
                   name="businessWeb"
                   value={saleRepresentative?.businessWeb}
                   placeholder="Enter Business name"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div> */}
@@ -335,16 +338,59 @@ export default function EditsSalesRepresentative() {
             <div className="space-y-4">
               <div className="flex flex-col gap-y-2">
                 <label className="text-labelColor font-medium font-satoshi">
-                  Territory{" "}
+                  Phone number
                 </label>
-                <input
-                  type="text"
-                  name="territory"
-                  value={saleRepresentative?.territory}
-                  placeholder="Enter Territory name"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                <div className="grid grid-cols-10 gap-x-2">
+                  <PhoneInput
+                    focusBorderColor="none"
+                    borderWidth="none"
+                    className="chakra_input col-span-2"
+                    inputStyle={{
+                      width: "90px",
+                      height: "45px",
+                      borderRadius: "4px",
+                      border: "1px solid #00000033",
+                      backgroundColor: "#ffffff",
+                      color: "#6f4e37",
+                      opacity: "20",
+                    }}
+                    buttonStyle={{
+                      backgroundColor: "#ffffff",
+                      border: "1px solid #86644C",
+                    }}
+                    containerStyle={{
+                      borderRadius: "12px",
+                      backgroundColor: "#6f4e37",
+                    }}
+                    dropdownStyle={{
+                      backgroundColor: "#6f4e37",
+                      borderRadius: "8px",
+                    }}
+                    country={"pk"}
+                    onChange={(phone) =>
+                      setSaleRepresentative({
+                        ...saleRepresentative,
+                        countryCode: phone,
+                      })
+                    }
+                  />
+                  <input
+                    type="number"
+                    name="phoneNumber"
+                    value={saleRepresentative?.phoneNumber}
+                    placeholder="Enter Phone Number"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5  w-full col-span-8"
+                    onChange={handleChange}
+                  />
+                </div>
+                {/* <input
+                  type="number"
+                  name="phoneNumber"
+                  value={saleRepresentative?.phoneNumber}
+                  placeholder="Enter Phone Number"
+                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
-                />
+                /> */}
               </div>
               <div className="flex flex-col gap-y-2 w-full">
                 <label className="text-labelColor font-medium font-satoshi">
@@ -380,7 +426,7 @@ export default function EditsSalesRepresentative() {
                   name="email"
                   value={saleRepresentative?.email}
                   placeholder="Enter Email"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div>
@@ -393,7 +439,7 @@ export default function EditsSalesRepresentative() {
                   name="password"
                   value={saleRepresentative?.password}
                   placeholder="Enter password"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div> */}

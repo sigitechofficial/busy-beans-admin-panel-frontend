@@ -9,7 +9,7 @@ import { useState } from "react";
 import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
 import { Dialog } from "primereact/dialog";
-import SalesRepresentativeInventory from "@/app/(salesRepresentativePanel)/sales-representative/(inventoryManagement)/inventory/page";
+import SalesRepresentativeInventory from "@/app/(salesRepresentativePanel)/sales-representative/(inventoryManagement)/quotation/page";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import { PostAPI } from "@/utilities/PostAPI";
@@ -101,7 +101,9 @@ export default function Customers() {
 
   const datas = [];
   const salesRepresentativeDatas = [];
-  data?.data?.data?.reverse()?.map((customer, i) => {
+
+  const customers = data?.data?.data?.slice()?.reverse();
+  customers?.map((customer, i) => {
     datas.push({
       id: customer?.id,
       sl: i + 1,

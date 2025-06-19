@@ -154,7 +154,7 @@ export default function CreditLimitStatusReport() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-        <ManagementTab title="Supplier Name" desc={data?.data?.srName} />
+        <ManagementTab title="Local Partner Name" desc={data?.data?.srName} />
 
         <ManagementTab
           title="Credit Limit"

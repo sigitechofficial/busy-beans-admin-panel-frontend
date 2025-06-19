@@ -56,11 +56,14 @@ export default function UpcomingOrders() {
 
   const columns = [
     { field: "sl", header: "SL", sort: true },
+    { field: "id", header: "Order ID", sort: true },
     { field: "customerName", header: "Customer Name" },
     { field: "email", header: "Email" },
     { field: "orderDate", header: "Order Date" },
     { field: "nextOrderDate", header: "Next Order Date" },
     { field: "orderFrequency", header: "Order Frequency" },
+    { field: "orderCurrentStatus", header: "Order Current Status" },
+    { field: "paymentStatus", header: "Payment Status" },
     { field: "createdBy", header: "Created By" },
     { field: "action", header: "Action" },
   ];
@@ -76,13 +79,15 @@ export default function UpcomingOrders() {
   const datasItems = [];
   data?.data?.order?.map((detail, i) => {
     return datas.push({
-      id: detail?.id,
       sl: i + 1,
+      id: detail?.id,
       customerName: detail?.customerName,
       email: detail?.email,
       orderDate: detail?.orderDate,
       nextOrderDate: detail?.nextOrderDate,
       orderFrequency: detail?.frequency,
+      orderCurrentStatus: detail?.orderCurrentStatus,
+      paymentStatus: detail?.paymentStatus,
       createdBy: detail?.createdBy,
       action: (
         <button

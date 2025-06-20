@@ -165,8 +165,8 @@ export default function OrderCard(props) {
       product: item?.product,
       qty: item?.qty,
       discount: item?.discount,
-      price: `$${item?.price}`,
-      total: "$" + item?.qty * item?.price,
+      price: `$${item?.price/item?.qty}`,
+      total: "$" + item?.price,
     });
   });
 

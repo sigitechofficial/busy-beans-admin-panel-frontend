@@ -279,7 +279,7 @@ export default function OrderDetail() {
       );
       if (res?.data?.status === "success") {
         success_toaster("Invoice Send Successfully");
-        reFetch()
+        reFetch();
       } else {
         throw new Error(res?.data?.message || "An unexpected error occurred.");
       }
@@ -329,11 +329,11 @@ export default function OrderDetail() {
           </button>
           <button
             type="button"
-            disabled={data?.data?.order?.invoiceId ? true : false}
+            // disabled={data?.data?.order?.invoiceId ? true : false}
             className="bg-black text-white disabled:cursor-not-allowed"
             onClick={() => handleSendInvoice(data?.data?.order?.statusId)}
           >
-            Send Invoice
+            {data?.data?.order?.invoiceId ? "Invoice reminder" : "Send Invoice"}
           </button>
 
           <button

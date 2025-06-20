@@ -185,7 +185,7 @@ export default function AddSaleRepresentative() {
 
         const res = await PostAPI("api/v1/admin/sales-rep", formData);
         if (res?.data?.status === "success") {
-          success_toaster("Sales Representative added successfully");
+          success_toaster("Local Partner added successfully");
           setLoader(false);
           setSaleRepresentative({
             srName: "",
@@ -256,6 +256,7 @@ export default function AddSaleRepresentative() {
           <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
             {/* Left Side */}
             <div className="space-y-4">
+              <p className="text-2xl font-semibold">1. Personal Information</p>
               <div className="grid md:grid-cols-2 max-md:gap-y-4 gap-x-6">
                 <div className="flex flex-col gap-y-2">
                   <label className="text-labelColor font-medium font-satoshi">
@@ -292,7 +293,7 @@ export default function AddSaleRepresentative() {
                         ...saleRepresentative,
                         country: e.label,
                         state: "",
-                        city:""
+                        city: "",
                       });
                       handleSelectedCountryStates(e.label);
                     }}
@@ -322,11 +323,11 @@ export default function AddSaleRepresentative() {
                     }}
                     options={allStates}
                     onChange={(e) => {
-                      console.log("🚀 ~ AddSaleRepresentative ~ e:", e)
+                      console.log("🚀 ~ AddSaleRepresentative ~ e:", e);
                       setSaleRepresentative({
                         ...saleRepresentative,
                         state: e?.label,
-                        city:""
+                        city: "",
                       });
                       handleSelectedCountryStatesCities(e.value);
                     }}
@@ -430,11 +431,7 @@ export default function AddSaleRepresentative() {
                   onChange={handleChange}
                 />
               </div>
-            </div>
-
-            {/* right side */}
-            <div className="space-y-4">
-              <div className="flex flex-col gap-y-2">
+                 <div className="flex flex-col gap-y-2">
                 <label
                   htmlFor="phone"
                   className="text-labelColor font-medium font-satoshi"
@@ -485,6 +482,12 @@ export default function AddSaleRepresentative() {
                   />
                 </div>
               </div>
+            </div>
+
+            {/* right side */}
+            <div className="space-y-4">
+           
+              <p className="text-2xl font-semibold">2. Account Details</p>
               <div className="flex flex-col gap-y-2 w-full">
                 <label className="text-labelColor font-medium font-satoshi">
                   Status
@@ -518,6 +521,7 @@ export default function AddSaleRepresentative() {
                   onChange={handleChange}
                 />
               </div>
+              <p className="text-2xl font-semibold">3. login information </p>
               <div className="flex flex-col gap-y-2 relative">
                 <label className="text-labelColor font-medium font-satoshi">
                   Email
@@ -562,7 +566,7 @@ export default function AddSaleRepresentative() {
                   type="submit"
                   className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme hover:bg-white hover:text-theme border border-theme duration-150 w-full py-3"
                 >
-                  Add Sales Representative
+                  Add Local Partner
                 </button>
               </div>
             </div>

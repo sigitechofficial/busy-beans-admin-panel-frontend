@@ -111,7 +111,7 @@ export default function EditsSalesRepresentative() {
           formData
         );
         if (res?.data?.status === "success") {
-          success_toaster("Sales Representative Updated successfully");
+          success_toaster("Local Partner Updated successfully");
           setLoader(false);
           setSaleRepresentative({
             srName: "",
@@ -168,7 +168,7 @@ export default function EditsSalesRepresentative() {
         <div className="flex items-center gap-x-2">
           <BackButton />
           <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-            Edit Sales Representative
+            Edit Local Partner
           </h2>
         </div>
       </div>
@@ -332,10 +332,7 @@ export default function EditsSalesRepresentative() {
                   onChange={handleChange}
                 />
               </div> */}
-            </div>
 
-            {/* right side */}
-            <div className="space-y-4">
               <div className="flex flex-col gap-y-2">
                 <label className="text-labelColor font-medium font-satoshi">
                   Phone number
@@ -392,6 +389,10 @@ export default function EditsSalesRepresentative() {
                   onChange={handleChange}
                 /> */}
               </div>
+            </div>
+
+            {/* right side */}
+            <div className="space-y-4">
               <div className="flex flex-col gap-y-2 w-full">
                 <label className="text-labelColor font-medium font-satoshi">
                   Status
@@ -448,7 +449,7 @@ export default function EditsSalesRepresentative() {
                   type="submit"
                   className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
                 >
-                  Update Sales Representative
+                  Update Local Partner
                 </button>
               </div>
             </div>

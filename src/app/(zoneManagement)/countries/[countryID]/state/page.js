@@ -1,5 +1,5 @@
 "use client";
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 import { useEffect, useState } from "react";
 import ManagementTab from "@/components/ui/ManagementTab";
 import MyDataTable from "@/components/ui/MyDataTable";
@@ -20,9 +20,10 @@ import { Country, State, City } from "country-state-city";
 import BackButton from "@/components/ui/BackButton";
 import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
+import { FaEye } from "react-icons/fa";
 
 export default function States() {
-  // const router = useRouter();
+  const router = useRouter();
   const { countryID } = useParams();
   let stateListOptions = [];
   const [loading, setLoading] = useState(false);
@@ -42,7 +43,7 @@ export default function States() {
   const columns = [
     { field: "sl", header: "SL", sort: true },
     { field: "name", header: "State Name" },
-    { field: "city", header: "City" },
+    // { field: "city", header: "City" },
     { field: "action", header: "Action" },
   ];
 
@@ -51,29 +52,39 @@ export default function States() {
     stateListDatas.push({
       sl: i + 1,
       name: state?.name,
-      city: (
-        <button
-          type="button"
-          // onClick={() =>
-          //   router.push(`/countries/${countryID}/state/${state?.id}/city`)
-          // }
-          className="w-24 bg-theme text-white hover:bg-white hover:text-theme border border-theme duration-150 font-semibold p-2 rounded-md flex justify-center "
-        >
-          <Link href={`/countries/${countryID}/state/${state?.id}/city`}>
-            Add City
-          </Link>
-        </button>
-      ),
+      // city: (
+      //   <button
+      //     type="button"
+      //     onClick={() =>
+      //       router.push(`/countries/${countryID}/state/${state?.id}/city`)
+      //     }
+      //     className="w-24 bg-theme text-white hover:bg-white hover:text-theme border border-theme duration-150 font-semibold p-2 rounded-md flex justify-center "
+      //   >
+      //     <Link href={`/countries/${countryID}/state/${state?.id}/city`}>
+      //       Add City
+      //     </Link>
+      //   </button>
+      // ),
       action: (
-        <button
-          className="border border-red-400 rounded-md p-2 text-red-400"
-          onClick={() => {
-            setModal("delete");
-            setStateID(state?.id);
-          }}
-        >
-          <MdDelete size={24} />
-        </button>
+        <div className="space-x-2">
+          <button
+            className="border border-yellow-400 rounded-md p-2 text-yellow-400"
+            onClick={() => {
+              router.push(`/countries/${countryID}/state/${state?.id}/city`);
+            }}
+          >
+            <FaEye size={24} />
+          </button>
+          <button
+            className="border border-red-400 rounded-md p-2 text-red-400"
+            onClick={() => {
+              setModal("delete");
+              setStateID(state?.id);
+            }}
+          >
+            <MdDelete size={24} />
+          </button>
+        </div>
       ),
     })
   );

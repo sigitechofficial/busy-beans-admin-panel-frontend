@@ -87,7 +87,7 @@ export default function UpcomingOrders() {
       nextOrderDate: detail?.nextOrderDate,
       orderFrequency: detail?.frequency,
       orderCurrentStatus: detail?.orderCurrentStatus,
-      paymentStatus: detail?.paymentStatus,
+      paymentStatus: detail?.paymentStatus === "done" ? "Paid" : "Unpaid",
       createdBy: detail?.createdBy,
       action: (
         <button

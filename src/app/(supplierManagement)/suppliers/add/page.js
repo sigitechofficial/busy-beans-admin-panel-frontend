@@ -10,6 +10,7 @@ import { PostAPI } from "@/utilities/PostAPI";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { emailValidity } from "@/utilities/Validations";
+import PhoneInput from "react-phone-input-2";
 
 export default function AddNewSupplier() {
   const [supplier, setSupplier] = useState({
@@ -21,6 +22,7 @@ export default function AddNewSupplier() {
     state: "",
     zipCode: "",
     phoneNum: "",
+    countryCode:"+92",
     addressOne: "",
     addressTwo: "",
     businessWeb: "",
@@ -106,6 +108,7 @@ export default function AddNewSupplier() {
         formData.append("state", supplier?.state);
         formData.append("zipCode", supplier?.zipCode);
         formData.append("phoneNum", supplier?.phoneNum);
+        formData.append("countryCode", supplier?.countryCode);
         formData.append("addressOne", supplier?.addressOne);
         formData.append("addressTwo", supplier?.addressTwo);
         formData.append("businessWeb", supplier?.businessWeb);
@@ -284,13 +287,13 @@ export default function AddNewSupplier() {
                 </div>
                 <div className="flex flex-col gap-y-2">
                   <label className="text-labelColor font-medium font-satoshi">
-                    Phone number
+                    Business Registration Number
                   </label>
                   <input
-                    type="number"
-                    name="phoneNum"
-                    value={supplier?.phoneNum}
-                    placeholder="Enter Phone Number"
+                    type="text"
+                    name="businessRegistrationNumber"
+                    value={supplier?.businessRegistrationNumber}
+                    placeholder="Enter Tax ID, VAT, GST"
                     className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
@@ -340,18 +343,72 @@ export default function AddNewSupplier() {
 
             {/* right side */}
             <div className="space-y-4">
-              <div className="flex flex-col gap-y-2">
+              {/* <div className="flex flex-col gap-y-2">
                 <label className="text-labelColor font-medium font-satoshi">
-                  Business Registration Number
+                  Phone number
                 </label>
                 <input
-                  type="text"
-                  name="businessRegistrationNumber"
-                  value={supplier?.businessRegistrationNumber}
-                  placeholder="Enter Tax ID, VAT, GST"
+                  type="number"
+                  name="phoneNum"
+                  value={supplier?.phoneNum}
+                  placeholder="Enter Phone Number"
                   className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
+              </div> */}
+               <div className="flex flex-col gap-y-2">
+                <label className="text-labelColor font-medium font-satoshi">
+                  Phone number
+                </label>
+                {/* <input
+                  type="text"
+                  name=""
+                  placeholder="Enter Phone Number"
+                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                /> */}
+                 <div className="grid grid-cols-10 gap-x-2">
+                  <PhoneInput
+                    focusBorderColor="none"
+                    borderWidth="none"
+                    className="chakra_input col-span-2"
+                    inputStyle={{
+                      width: "90px",
+                      height: "45px",
+                      borderRadius: "4px",
+                      border: "1px solid #00000033",
+                      backgroundColor: "#ffffff",
+                      color: "#6f4e37",
+                      opacity: "20",
+                    }}
+                    buttonStyle={{
+                      backgroundColor: "#ffffff",
+                      border: "1px solid #86644C",
+                    }}
+                    containerStyle={{
+                      borderRadius: "12px",
+                      backgroundColor: "#6f4e37",
+                    }}
+                    dropdownStyle={{
+                      backgroundColor: "#6f4e37",
+                      borderRadius: "8px",
+                    }}
+                    country={"pk"}
+                    onChange={(phone) =>
+                      setSupplier({
+                        ...supplier,
+                        countryCode: phone,
+                      })
+                    }
+                  />
+                  <input
+                    type="number"
+                    name="phoneNum"
+                    value={supplier?.phoneNum}
+                    placeholder="Enter Phone Number"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5  w-full col-span-8"
+                    onChange={handleChange}
+                  />
+                </div>
               </div>
               <div className="flex flex-col gap-y-2 w-full">
                 <label className="text-labelColor font-medium font-satoshi">
@@ -457,7 +514,7 @@ export default function AddNewSupplier() {
                     <AiOutlineEye size={24} color="#000000" />
                   ) : (
                     <AiOutlineEyeInvisible size={24} color="#64748b" />
-                  )} 
+                  )}
                 </button>
               </div>
               <div>

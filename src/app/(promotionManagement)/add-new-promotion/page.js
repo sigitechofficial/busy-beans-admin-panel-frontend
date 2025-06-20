@@ -134,7 +134,7 @@ export default function AddNewPromotion() {
                 <input
                   type="date"
                   name=""
-                  placeholder="Enter Phone Number"
+                  placeholder="Enter Date"
                   className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                 />
               </div>

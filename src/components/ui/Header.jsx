@@ -40,7 +40,7 @@ export default function Header(props) {
               {userType === "admin"
                 ? "Admin"
                 : userType === "salesRepresentative"
-                ? "Sales Representative"
+                ? "Local Partner"
                 : "Supplier"}
             </p>
           </div>

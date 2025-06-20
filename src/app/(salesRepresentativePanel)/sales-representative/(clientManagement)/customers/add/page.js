@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import React, { useRef, useState } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { FaLongArrowAltLeft } from "react-icons/fa";
+import PhoneInput from "react-phone-input-2";
 import Select from "react-select";
 
 export default function page() {
@@ -43,6 +44,7 @@ export default function page() {
       password: "",
       status: true,
       phoneNumber: "",
+      countryCode: "+92",
       saleTaxNumber: "",
       emailToSendInvoices: "",
       registerBy: "email",
@@ -168,6 +170,7 @@ export default function page() {
                 password: userData?.info?.password,
                 status: true,
                 phoneNumber: userData?.info?.phoneNumber,
+                countryCode: userData?.info?.countryCode,
                 saleTaxNumber: userData?.info?.saleTaxNumber,
                 emailToSendInvoices: userData?.info?.emailToSendInvoices,
                 companyName: userData?.info?.companyName,
@@ -551,7 +554,7 @@ export default function page() {
                         className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       />
                     </div>
-                    <div className="flex flex-col gap-y-2">
+                    {/* <div className="flex flex-col gap-y-2">
                       <label className="text-labelColor font-medium font-satoshi">
                         Phone Number
                       </label>
@@ -563,6 +566,64 @@ export default function page() {
                         placeholder="Enter Phone Number"
                         className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       />
+                    </div> */}
+                    <div className="flex flex-col gap-y-2">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Phone number
+                      </label>
+                      {/* <input
+                  type="text"
+                  name=""
+                  placeholder="Enter Phone Number"
+                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                /> */}
+                      <div className="grid grid-cols-10 gap-x-2">
+                        <PhoneInput
+                          focusBorderColor="none"
+                          borderWidth="none"
+                          className="chakra_input col-span-2"
+                          inputStyle={{
+                            width: "90px",
+                            height: "45px",
+                            borderRadius: "4px",
+                            border: "1px solid #00000033",
+                            backgroundColor: "#ffffff",
+                            color: "#6f4e37",
+                            opacity: "20",
+                          }}
+                          buttonStyle={{
+                            backgroundColor: "#ffffff",
+                            border: "1px solid #86644C",
+                          }}
+                          containerStyle={{
+                            borderRadius: "12px",
+                            backgroundColor: "#6f4e37",
+                          }}
+                          dropdownStyle={{
+                            backgroundColor: "#6f4e37",
+                            borderRadius: "8px",
+                          }}
+                          country={"pk"}
+                          onChange={(phone) =>
+                      
+                            setUserData({
+                              ...userData,
+                              info: {
+                                ...userData?.info,
+                                countryCode: phone,
+                              },
+                            })
+                          }
+                        />
+                        <input
+                          type="number"
+                          name="phoneNumber"
+                          value={userData?.info?.phoneNumber}
+                          placeholder="Enter Phone Number"
+                          className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5  w-full col-span-8"
+                          onChange={handleInfo}
+                        />
+                      </div>
                     </div>
                   </div>
 

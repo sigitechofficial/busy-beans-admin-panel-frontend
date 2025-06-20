@@ -11,7 +11,7 @@ export default function AddSaleRepresentative() {
         <div className="flex items-center gap-x-2">
           <BackButton />
           <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-            Add Sale Representative
+            Add Local Partner
           </h2>
         </div>
       </div>

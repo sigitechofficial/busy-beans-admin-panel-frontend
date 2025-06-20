@@ -211,7 +211,7 @@ export default function SaleRepresentative() {
             <div className="w-full space-y-4">
               {modal === "delete" && (
                 <p className="text-labelColor font-nunito font-medium text-lg text-center">
-                  Are you sure you want to delete this Sales Representative ?
+                  Are you sure you want to delete this Local Partner ?
                 </p>
               )}
               <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">

@@ -26,8 +26,8 @@ export default function OrderCard(props) {
   }, 0)
 
   const paymentStausOptions = [
-    { value: "done", label: "Done" },
-    { value: "pending", label: "Pending" },
+    { value: "done", label: "Paid" },
+    { value: "pending", label: "Unpaid" },
   ];
 
   const [dispatchOrderData, setDispatchOrderData] = useState({
@@ -202,7 +202,7 @@ export default function OrderCard(props) {
             <div className="space-y-4">
               <p className="flex">
                 <span className="text-black/60 w-2/4">Payment Method:</span>
-                <span className="font-medium ">
+                <span className="font-medium uppercase">
                   {props?.orderData?.paymentMethod}
                 </span>
               </p>
@@ -214,7 +214,7 @@ export default function OrderCard(props) {
                   props?.orderData?.paymentMethod === "card") ||
                 props?.orderData?.statusId === 6 ? (
                   <div className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none">
-                    {props?.orderData?.paymentStatus}
+                    {props?.orderData?.paymentStatus === "done" ? "Paid" : "Unpaid"}
                   </div>
                 ) : (
                   <span className="w-40">
@@ -223,8 +223,8 @@ export default function OrderCard(props) {
                       className="w-full"
                       value={
                         props?.orderData?.paymentStatus === "pending"
-                          ? { value: "pending", label: "Pending" }
-                          : { value: "done", label: "Done" }
+                          ? { value: "pending", label: "Unpaid" }
+                          : { value: "done", label: "Paid" }
                       }
                       styles={selectStyles2}
                       options={paymentStausOptions}

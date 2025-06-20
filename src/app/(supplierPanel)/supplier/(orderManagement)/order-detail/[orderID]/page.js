@@ -81,29 +81,6 @@ export default function OrderDetail() {
     }
   };
 
-  const handleOrderDelivered = async () => {
-    setLoader("orderDelivered");
-    try {
-      const res = await PatchAPI("api/v1/admin/order-deliver", {
-        orderId: data?.data?.order?.id,
-        orderData: {
-          statusId: 5,
-          paymentStaus: "done",
-        },
-      });
-      if (res?.data?.status === "success") {
-        success_toaster("Order Delivered successfully");
-        reFetch();
-        setLoader("");
-      } else {
-        setLoader("");
-        throw new Error(res?.data?.message || "An unexpected error occurred.");
-      }
-    } catch (error) {
-      ErrorHandler(error);
-      setLoader("");
-    }
-  };
 
   const handleAssignSupplier = (statusId) => {
     // if (statusId === 1) {
@@ -119,16 +96,7 @@ export default function OrderDetail() {
         type: "dispatchOrder",
         status: true,
       });
-    } else if (statusId === 4) {
-      handleOrderDelivered();
     }
-  };
-
-  const handleCancelOrder = () => {
-    setModal({
-      type: "cancelOrder",
-      status: true,
-    });
   };
 
   const handleSubmit = async (e) => {
@@ -286,7 +254,20 @@ export default function OrderDetail() {
           >
             {data?.data?.order?.chequeDetail ? "Edit Cheque" : "Add Cheque"}
           </button> */}
+
           <button
+            type="button"
+            className={`bg-black text-white disabled:cursor-not-allowed ${ data?.data?.order?.statusId === 2 ||  data?.data?.order?.statusId === 3 ? "block":"hidden"}`}
+            onClick={() => handleAssignSupplier(data?.data?.order?.statusId)}
+          >
+            {
+               data?.data?.order?.statusId === 2
+              ? "Acknowledge Supplier"
+              : data?.data?.order?.statusId === 3
+              ? "Dispatch Order"
+              : ""}
+          </button>
+          {/* <button
             disabled={
               data?.data?.order?.statusId === 5 ||
               data?.data?.order?.statusId === 6
@@ -299,9 +280,9 @@ export default function OrderDetail() {
             onClick={() => handleAssignSupplier(data?.data?.order?.statusId)}
           >
             Order Delivered
-          </button>
+          </button> */}
 
-          <button
+          {/* <button
             disabled={
               data?.data?.order?.statusId === 5 ||
               data?.data?.order?.statusId === 6
@@ -312,7 +293,7 @@ export default function OrderDetail() {
             className="bg-theme text-white disabled:cursor-not-allowed"
           >
             Cancel Order
-          </button>
+          </button> */}
           {/* <button className="border border-buttonBorderColor shadow-buttonShadow">
             Print Invoice
           </button> */}

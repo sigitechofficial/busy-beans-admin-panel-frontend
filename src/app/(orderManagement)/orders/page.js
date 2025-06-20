@@ -7,19 +7,26 @@ import GetAPI from "@/utilities/GetAPI";
 import Loader from "@/components/ui/Loader";
 import { FaEye } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function Orders() {
   if (typeof window !== "undefined") {
     var userID = localStorage.getItem("userID");
     var userType = localStorage.getItem("userType");
   }
+  
+  let slCounter = 1;
+
   const router = useRouter();
+  const [type, setType] = useState("all");
+ 
   const { data } = GetAPI(
     userType === "salesRepresentative"
       ? `api/v1/admin/orders?salesRepId=${userID}`
       : "api/v1/admin/orders"
   );
-  console.log("🚀 ~ Orders ~ data:", data?.data?.data)
+  console.log("🚀 ~ Orders ~ data:", data?.data?.data);
+
 
   const columns = [
     { field: "sl", header: "SL", sort: true },
@@ -43,36 +50,44 @@ export default function Orders() {
   ];
 
   const datas = [];
-  data?.data?.data?.map((detail, i) => {
-    return datas.push({
-      sl: i + 1,
-      id: detail?.id,
-      customerName: detail?.customerName,
-      totalBill: "$" + detail?.totalBill,
-      subTotal: "$" + detail?.subTotal,
-      discountPrice: "$" + detail?.discountPrice,
-      discountPercentage: detail?.discountPercentage + "%",
-      itemsPrice: "$" + detail?.itemsPrice,
-      vat: detail?.vat,
-      totalWeight: detail?.totalWeight + "kg",
-      note: detail?.note,
-      paymentMethod: detail?.paymentMethod,
-      poNumber: detail?.poNumber,
-      orderFrequency: detail?.frequency,
-      orderCurrentStatus: detail?.orderCurrentStatus,
-      paymentStatus: detail?.paymentStatus,
-      createdBy: detail?.createdBy,
-      action: (
-        <button
-          className="border border-yellow-400 rounded-md p-2 text-yellow-400"
-          onClick={() => {
-            router.push(`/orders/detail/${detail?.id}`);
-          }}
-        >
-          <FaEye size={24} />
-        </button>
-      ),
-    });
+  const resultedOrders = data?.data?.data?.filter((detail, i) => {
+    return (
+      (type === "paid"
+        ? detail?.paymentStatus === "done"
+        : type === "unpaid"
+        ? detail?.paymentStatus === "pending"
+        : detail?.paymentStatus === "pending" ||
+          detail?.paymentStatus === "done") &&
+      datas.push({
+        sl: slCounter++,
+        id: detail?.id,
+        customerName: detail?.customerName,
+        totalBill: "$" + detail?.totalBill,
+        subTotal: "$" + detail?.subTotal,
+        discountPrice: "$" + detail?.discountPrice,
+        discountPercentage: detail?.discountPercentage + "%",
+        itemsPrice: "$" + detail?.itemsPrice,
+        vat: detail?.vat,
+        totalWeight: detail?.totalWeight + "kg",
+        note: detail?.note,
+        paymentMethod: detail?.paymentMethod,
+        poNumber: detail?.poNumber,
+        orderFrequency: detail?.frequency,
+        orderCurrentStatus: detail?.orderCurrentStatus,
+        paymentStatus: detail?.paymentStatus === "done" ? "Paid" : "Unpaid",
+        createdBy: detail?.createdBy,
+        action: (
+          <button
+            className="border border-yellow-400 rounded-md p-2 text-yellow-400"
+            onClick={() => {
+              router.push(`/orders/detail/${detail?.id}`);
+            }}
+          >
+            <FaEye size={24} />
+          </button>
+        ),
+      })
+    );
   });
 
   return data?.length === 0 ? (
@@ -83,11 +98,40 @@ export default function Orders() {
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
           Order Management
         </h2>
-        <Select placeholder="Filters" className="w-40" styles={selectStyles} />
+      </div>
+
+      <div>
+        <button
+          onClick={() => setType("all")}
+          className={`${
+            type === "all" ? "bg-black text-white" : "bg-white text-black"
+          } font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
+                  duration-200 max-sm:w-60`}
+        >
+          All Orders
+        </button>
+        <button
+          onClick={() => setType("paid")}
+          className={`${
+            type === "paid" ? "bg-black text-white" : "bg-white text-black"
+          }  font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
+                  duration-200 max-sm:w-60`}
+        >
+          Paid Orders
+        </button>
+        <button
+          onClick={() => setType("unpaid")}
+          className={`${
+            type === "unpaid" ? "bg-black text-white" : "bg-white text-black"
+          }  font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
+                  duration-200 max-sm:w-60`}
+        >
+          Unpaid Orders
+        </button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-        <ManagementTab title="Total Orders" desc={data?.data?.data?.length} />
+        <ManagementTab title="Total Orders" desc={resultedOrders?.length} />
         {/* <ManagementTab title="New Orders" desc="5%" />
         <ManagementTab title="Pending Orders" desc="5000" />
         <ManagementTab title="In progress Orders" desc="5,000" />

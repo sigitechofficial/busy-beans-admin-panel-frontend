@@ -56,7 +56,7 @@ export default function Customers() {
         }
       );
       if (res?.data?.status === "success") {
-        success_toaster("Sales Representative Assigned successfully");
+        success_toaster("Local Partner Assigned successfully");
         setModal(false);
         CustomersIds = [];
         setSelectedRows([]);
@@ -72,7 +72,7 @@ export default function Customers() {
   };
 
   const columns = [
-    { field: "sl", header: "SL", sort: true, },
+    { field: "sl", header: "SL", sort: true },
     { field: "name", header: "Name", sort: true },
     { field: "email", header: "Email", sort: true },
     { field: "phoneNumber", header: "Phone Number", sort: true },
@@ -198,7 +198,7 @@ export default function Customers() {
             }  font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
             duration-200 max-sm:w-60`}
           >
-            Unassigned Sale Representative
+            Unassigned Local Partner
           </button>
           <button
             onClick={() => setType("assigned")}
@@ -209,7 +209,7 @@ export default function Customers() {
             }  font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
             duration-200 max-sm:w-60`}
           >
-            Assigned Sale Representative
+            Assigned Local Partner
           </button>
         </div>
         <div
@@ -229,7 +229,7 @@ export default function Customers() {
               // ?
               //  "Reassign Sale Representative"
               // :
-              "Assign Sale Representative"}
+              "Assign Local Partner"}
           </button>
         </div>
       </div>
@@ -279,7 +279,7 @@ export default function Customers() {
         onHide={handleCancel}
         header={
           <div className="font-nunito font-bold text-2xl text-center">
-            Assign Sales Representative
+            Assign Local Partner
           </div>
         }
       >

@@ -1,5 +1,5 @@
 "use client";
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 import BackButton from "@/components/ui/BackButton";
 import { LuImageUp } from "react-icons/lu";
 import Select from "react-select";
@@ -13,6 +13,7 @@ import { PostAPI } from "@/utilities/PostAPI";
 import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import { PatchAPI } from "@/utilities/PatchAPI";
 import { BASE_URL } from "@/utilities/URL";
+import PhoneInput from "react-phone-input-2";
 
 export default function EditSupplier() {
   const { supplierID } = useParams();
@@ -31,6 +32,7 @@ export default function EditSupplier() {
     state: "",
     zipCode: "",
     phoneNum: "",
+    countryCode: "+92",
     addressOne: "",
     addressTwo: "",
     businessWeb: "",
@@ -114,6 +116,7 @@ export default function EditSupplier() {
         formData.append("state", supplier?.state);
         formData.append("zipCode", supplier?.zipCode);
         formData.append("phoneNum", supplier?.phoneNum);
+        formData.append("countryCode", supplier?.countryCode);
         formData.append("addressOne", supplier?.addressOne);
         formData.append("addressTwo", supplier?.addressTwo);
         formData.append("businessWeb", supplier?.businessWeb);
@@ -183,6 +186,7 @@ export default function EditSupplier() {
       businessWeb: data?.data?.data?.businessWeb ?? "",
       image: data?.data?.data?.image ?? "",
       phoneNumber: data?.data?.data?.phoneNumber ?? "",
+      phoneNumber: data?.data?.data?.countryCode ?? "+92",
       businessRegistrationNumber:
         data?.data?.data?.businessRegistrationNumber ?? "",
       supplierType: data?.data?.data?.supplierType ?? "",
@@ -249,7 +253,7 @@ export default function EditSupplier() {
                     name="supplierName"
                     value={supplier?.supplierName}
                     placeholder="Enter Supplier Name"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
                 </div>
@@ -262,7 +266,7 @@ export default function EditSupplier() {
                     name="country"
                     value={supplier?.country}
                     placeholder="Enter Country Name"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
                   {/* <Select
@@ -282,7 +286,7 @@ export default function EditSupplier() {
                     name="city"
                     value={supplier?.city}
                     placeholder="Enter City Name"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
                   {/* <Select
@@ -300,7 +304,7 @@ export default function EditSupplier() {
                     name="state"
                     value={supplier?.state}
                     placeholder="Enter State Name"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
                   {/* <Select
@@ -320,11 +324,11 @@ export default function EditSupplier() {
                     name="zipCode"
                     value={supplier?.zipCode}
                     placeholder="Enter Zip code"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
                 </div>
-                <div className="flex flex-col gap-y-2">
+                {/* <div className="flex flex-col gap-y-2">
                   <label className="text-labelColor font-medium font-satoshi">
                     Phone number
                   </label>
@@ -333,10 +337,10 @@ export default function EditSupplier() {
                     name="phoneNum"
                     value={supplier?.phoneNum}
                     placeholder="Enter Phone Number"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
-                </div>
+                </div> */}
               </div>
 
               <div className="flex flex-col gap-y-2">
@@ -348,7 +352,7 @@ export default function EditSupplier() {
                   name="addressOne"
                   value={supplier?.addressOne}
                   placeholder="Enter Address 1"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div>
@@ -361,7 +365,7 @@ export default function EditSupplier() {
                   name="addressTwo"
                   value={supplier?.addressTwo}
                   placeholder="Enter Address 2"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div>
@@ -374,7 +378,7 @@ export default function EditSupplier() {
                   name="businessWeb"
                   value={supplier?.businessWeb}
                   placeholder="Enter Business name"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div>
@@ -391,10 +395,78 @@ export default function EditSupplier() {
                   name="businessRegistrationNumber"
                   value={supplier?.businessRegistrationNumber}
                   placeholder="Enter Tax ID, VAT, GST"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div> */}
+              {/* <div className="flex flex-col gap-y-2">
+                <label className="text-labelColor font-medium font-satoshi">
+                  Phone number
+                </label>
+                <input
+                  type="text"
+                  name="phoneNum"
+                  value={supplier?.phoneNum}
+                  placeholder="Enter Phone Number"
+                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  onChange={handleChange}
+                />
+              </div> */}
+              <div className="flex flex-col gap-y-2">
+                <label className="text-labelColor font-medium font-satoshi">
+                  Phone number
+                </label>
+                {/* <input
+                  type="text"
+                  name=""
+                  placeholder="Enter Phone Number"
+                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                /> */}
+                <div className="grid grid-cols-10 gap-x-2">
+                  <PhoneInput
+                    focusBorderColor="none"
+                    borderWidth="none"
+                    className="chakra_input col-span-2"
+                    inputStyle={{
+                      width: "90px",
+                      height: "45px",
+                      borderRadius: "4px",
+                      border: "1px solid #00000033",
+                      backgroundColor: "#ffffff",
+                      color: "#6f4e37",
+                      opacity: "20",
+                    }}
+                    buttonStyle={{
+                      backgroundColor: "#ffffff",
+                      border: "1px solid #86644C",
+                    }}
+                    containerStyle={{
+                      borderRadius: "12px",
+                      backgroundColor: "#6f4e37",
+                    }}
+                    dropdownStyle={{
+                      backgroundColor: "#6f4e37",
+                      borderRadius: "8px",
+                    }}
+                    country={"pk"}
+                    onChange={(phone) =>
+                      setSupplier({
+                        ...supplier,
+                        countryCode: phone,
+                      })
+                    }
+                  />
+                  <input
+                    type="number"
+                    name="phoneNum"
+                    value={supplier?.phoneNum}
+                    placeholder="Enter Phone Number"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5  w-full col-span-8"
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+
               <div className="flex flex-col gap-y-2 w-full">
                 <label className="text-labelColor font-medium font-satoshi">
                   Supplier type
@@ -445,7 +517,7 @@ export default function EditSupplier() {
                   name="registerDate"
                   value={supplier?.registerDate}
                   placeholder="Select registration date"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div>
@@ -458,7 +530,7 @@ export default function EditSupplier() {
                   name="bankAccount"
                   value={supplier?.bankAccount}
                   placeholder="000322655655654454"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div>
@@ -472,7 +544,7 @@ export default function EditSupplier() {
                   autoComplete="off"
                   value={supplier?.email}
                   placeholder="Enter Email"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div>
@@ -485,7 +557,7 @@ export default function EditSupplier() {
                   name="password"
                   value={supplier?.password}
                   placeholder="Enter password"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div> */}

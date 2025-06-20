@@ -8,7 +8,7 @@ export default function page() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-          Sales Representative Report Management
+          Local Partner Report Management
         </h2>
       </div>
 

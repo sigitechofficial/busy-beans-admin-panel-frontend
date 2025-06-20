@@ -16,14 +16,14 @@ export default function OrderCard(props) {
   if (typeof window !== "undefined") {
     var userType = localStorage.getItem("userType");
   }
-  console.log("🚀 ~ OrderCard ~ props:", props?.orderData)
+  console.log("🚀 ~ OrderCard ~ props:", props?.orderData);
   const router = useRouter();
   const [supplierID, setSupplierID] = useState("");
   const [loader, setLoader] = useState("");
 
   const wholeSalePrice = props?.orderData?.items?.reduce((a, b) => {
     return a + Number(b?.wholesalePrice);
-  }, 0)
+  }, 0);
 
   const paymentStausOptions = [
     { value: "done", label: "Paid" },
@@ -156,8 +156,6 @@ export default function OrderCard(props) {
     { field: "qty", header: "Quantity", minWidth: "6rem" },
   ];
 
-
-
   const datas = [];
   props?.orderData?.items?.map((item, i) => {
     datas.push({
@@ -165,7 +163,7 @@ export default function OrderCard(props) {
       product: item?.product,
       qty: item?.qty,
       discount: item?.discount,
-      price: `$${item?.price/item?.qty}`,
+      price: `$${item?.price / item?.qty}`,
       total: "$" + item?.price,
     });
   });
@@ -214,7 +212,9 @@ export default function OrderCard(props) {
                   props?.orderData?.paymentMethod === "card") ||
                 props?.orderData?.statusId === 6 ? (
                   <div className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none">
-                    {props?.orderData?.paymentStatus === "done" ? "Paid" : "Unpaid"}
+                    {props?.orderData?.paymentStatus === "done"
+                      ? "Paid"
+                      : "Unpaid"}
                   </div>
                 ) : (
                   <span className="w-40">
@@ -241,7 +241,11 @@ export default function OrderCard(props) {
                 </span>
                 <span className="font-medium">17-02-2025</span>
               </p> */}
-              <p className={`${props?.userType === "supplier" ? "hidden":"flex"}`}>
+              <p
+                className={`${
+                  props?.userType === "supplier" ? "hidden" : "flex"
+                }`}
+              >
                 <span className="text-black/60 w-2/4">Total Amount:</span>
                 <span className="font-medium">
                   $ {props?.orderData?.totalBill}
@@ -261,12 +265,16 @@ export default function OrderCard(props) {
       <div>
         <MyDataTable
           data={datas}
-          columns={props?.userType === "supplier" ? supplierColumns:columns}
+          columns={props?.userType === "supplier" ? supplierColumns : columns}
           hide="hidden"
           search={false}
           pagination={true}
         />
-        <div className={`${props?.userType === "supplier" ? "hidden":"flex"} font-inter  flex-col sm:items-end sm:[&>p]:w-2/4 [&>p]:flex [&>p]:justify-between pt-4 space-y-0.5`}>
+        <div
+          className={`${
+            props?.userType === "supplier" ? "hidden" : "flex"
+          } font-inter  flex-col sm:items-end sm:[&>p]:w-2/4 [&>p]:flex [&>p]:justify-between pt-4 space-y-0.5`}
+        >
           <p>
             <span className="font-bold">Items Price:</span>{" "}
             <span className="font-semibold">
@@ -275,9 +283,7 @@ export default function OrderCard(props) {
           </p>
           <p>
             <span className="font-bold">Whole Sale Price:</span>{" "}
-            <span className="font-semibold">
-              ${wholeSalePrice}
-            </span>
+            <span className="font-semibold">${wholeSalePrice}</span>
           </p>
           <p>
             <span className="font-bold">

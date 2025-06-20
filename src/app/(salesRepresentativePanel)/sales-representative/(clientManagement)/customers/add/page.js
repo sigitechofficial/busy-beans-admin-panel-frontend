@@ -95,11 +95,13 @@ export default function page() {
   const handleStep1 = () => {
     if (userData?.address?.companyaddress.trim() === "") {
       info_toaster("Company address cannot be empty");
-    } else if (userData?.address?.addressLineOne.trim() === "") {
-      info_toaster("address Line 1 cannot be empty");
-    } else if (userData?.address?.addressLineTwo.trim() === "") {
-      info_toaster("address Line 2 cannot be empty");
-    } else if (userData?.address?.town.trim() === "") {
+    } 
+    // else if (userData?.address?.addressLineOne.trim() === "") {
+    //   info_toaster("address Line 1 cannot be empty");
+    // } else if (userData?.address?.addressLineTwo.trim() === "") {
+    //   info_toaster("address Line 2 cannot be empty");
+    // }
+     else if (userData?.address?.town.trim() === "") {
       info_toaster("Town cannot be empty");
     } else if (userData?.address?.zipCode.trim() === "") {
       info_toaster("Zip code cannot be empty");
@@ -460,7 +462,7 @@ export default function page() {
                           <input
                             type="text"
                             name="country"
-                            // onChange={handleAddress}
+                            onChange={handleAddress}
                             value={userData?.address?.country}
                             placeholder="Enter Country"
                             className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
@@ -473,7 +475,7 @@ export default function page() {
                           <input
                             type="text"
                             name="state"
-                            // onChange={handleAddress}
+                            onChange={handleAddress}
                             value={userData?.address?.state}
                             placeholder="Enter State"
                             className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
@@ -488,7 +490,7 @@ export default function page() {
                           <input
                             type="text"
                             name="town"
-                            // onChange={handleAddress}
+                            onChange={handleAddress}
                             value={userData?.address?.town}
                             placeholder="Enter Town / City"
                             className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
@@ -501,7 +503,7 @@ export default function page() {
                           <input
                             type="text"
                             name="zipCode"
-                            // onChange={handleAddress}
+                            onChange={handleAddress}
                             value={userData?.address?.zipCode}
                             placeholder="Enter Zip Code"
                             className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"

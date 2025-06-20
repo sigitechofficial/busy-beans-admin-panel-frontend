@@ -7,11 +7,14 @@ export default function StockCard(props) {
   const {
     id,
     itemName,
-    quantity,
+    // stock,
     unit,
     imageURL,
     handlePlus,
     handleMinus,
+    price,
+    weight,
+    wholesalePrice,
     qty,
   } = props;
   const [itemQuantity, setItemQuantity] = useState(qty);
@@ -37,11 +40,20 @@ export default function StockCard(props) {
             <span>Item Name</span> <span className="text-end break-words break-all">{itemName}</span>
           </p>
           <p>
+            <span>Price</span> <span className="text-end break-words break-all">${price}</span>
+          </p>
+          <p>
+            <span>Whole Sale Price</span> <span className="text-end break-words break-all">${wholesalePrice}</span>
+          </p>
+          <p>
+            <span>Weight</span> <span className="text-end break-words break-all">{weight} {unit}</span>
+          </p>
+          {/* <p>
             <span>Quantity</span>{" "}
             <span>
-              {quantity} {unit}
+              {stock} {unit}
             </span>
-          </p>
+          </p> */}
         </div>
         {/* <div className="flex justify-end">
           <button className="rounded-lg bg-[#83F5B4] py-3 px-2">

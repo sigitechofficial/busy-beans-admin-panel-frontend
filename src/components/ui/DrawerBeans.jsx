@@ -163,9 +163,11 @@ const DrawerBeans = ({
         info_toaster("select payment method");
       } else if (!order?.orderFrequency) {
         info_toaster("Selectorder frequency");
-      } else if (!order?.note) {
-        info_toaster("Note cannot be empty");
-      } else if (createOrderData.length === 0) {
+      }
+      // else if (!order?.note) {
+      //   info_toaster("Note cannot be empty");
+      // }
+      else if (createOrderData.length === 0) {
         info_toaster("No Product is selected");
       } else {
         setLoader(true);
@@ -197,6 +199,7 @@ const DrawerBeans = ({
             setLoader(false);
             localStorage.setItem("createOrderData", JSON.stringify([]));
             setQuotationData([]);
+            setOrder({ ...order, note: "" });
             setOpen(false);
           } else {
             throw new Error(
@@ -376,8 +379,8 @@ const DrawerBeans = ({
                         }`}
                       >
                         {order?.note
-                          ? "Note for the supplier"
-                          : "Add note for the supplier"}
+                          ? "Note for the supplier (optional)"
+                          : "Add note for the supplier (optional)"}
                       </label>
                     </div>
                   </div>

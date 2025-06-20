@@ -14,12 +14,12 @@ export default function Orders() {
     var userID = localStorage.getItem("userID");
     var userType = localStorage.getItem("userType");
   }
-  
+
   let slCounter = 1;
 
   const router = useRouter();
   const [type, setType] = useState("all");
- 
+
   const { data } = GetAPI(
     userType === "salesRepresentative"
       ? `api/v1/admin/orders?salesRepId=${userID}`
@@ -27,11 +27,11 @@ export default function Orders() {
   );
   console.log("🚀 ~ Orders ~ data:", data?.data?.data);
 
-
   const columns = [
     { field: "sl", header: "SL", sort: true },
     { field: "id", header: "Order ID", sort: true },
     { field: "customerName", header: "Customer Name" },
+    { field: "salesRepName", header: "Local Partner Name" },
     { field: "totalBill", header: "Total Bill" },
     { field: "subTotal", header: "Sub Total" },
     { field: "discountPrice", header: "Discount Price" },
@@ -62,6 +62,7 @@ export default function Orders() {
         sl: slCounter++,
         id: detail?.id,
         customerName: detail?.customerName,
+        salesRepName: detail?.salesRepName,
         totalBill: "$" + detail?.totalBill,
         subTotal: "$" + detail?.subTotal,
         discountPrice: "$" + detail?.discountPrice,

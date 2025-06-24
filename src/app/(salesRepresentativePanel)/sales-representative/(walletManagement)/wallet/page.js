@@ -44,16 +44,15 @@ export default function page() {
           title="Credit Used"
           desc={`$${data?.data?.credit?.creditUsed}` ?? 0}
         />
-        {/* <ManagementTab
+        <ManagementTab
           title="Credit remaining"
-          desc={
-            `$${
-              Number(data?.data?.credit?.creditLimit) - Number(data?.data?.credit?.creditUsed)
-            }` ?? 0
-          }
-        /> */}
+          desc={`$${
+            Number(data?.data?.credit?.creditLimit ?? 0) -
+            Number(data?.data?.credit?.creditUsed ?? 0)
+          }`}
+        />
       </div>
-       <p className="font-inter font-medium text-lg text-black">
+      <p className="font-inter font-medium text-lg text-black">
         Sales and Earnings
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">

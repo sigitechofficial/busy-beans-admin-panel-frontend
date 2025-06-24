@@ -31,6 +31,7 @@ export default function SupplierOrders() {
     { field: "paymentMethod", header: "Payment Method" },
     { field: "poNumber", header: "Po Number" },
     { field: "orderFrequency", header: "Order Frequency" },
+    { field: "orderCurrentStatus", header: "Order Status" },
     { field: "action", header: "Action" },
   ];
 
@@ -50,6 +51,7 @@ export default function SupplierOrders() {
       paymentMethod: detail?.paymentMethod,
       poNumber: detail?.poNumber,
       orderFrequency: detail?.frequency,
+      orderCurrentStatus: detail?.orderCurrentStatus,
       action: (
         <button
           className="border border-yellow-400 rounded-md p-2 text-yellow-400"

@@ -377,19 +377,6 @@ export default function OrderCard(props) {
               <div className="space-y-2">
                 <div className="flex flex-col gap-y-2">
                   <label className="text-labelColor font-medium font-satoshi">
-                    Tracking Number
-                  </label>
-                  <input
-                    type="text"
-                    name="trackingNumber"
-                    value={dispatchOrderData?.trackingNumber}
-                    onChange={handleChange}
-                    placeholder="Enter Tracking number"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                  />
-                </div>
-                <div className="flex flex-col gap-y-2">
-                  <label className="text-labelColor font-medium font-satoshi">
                     Company Name
                   </label>
                   {/* <input
@@ -411,6 +398,19 @@ export default function OrderCard(props) {
                         shippingCompany: e.value,
                       });
                     }}
+                  />
+                </div>
+                <div className="flex flex-col gap-y-2">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Tracking Number
+                  </label>
+                  <input
+                    type="text"
+                    name="trackingNumber"
+                    value={dispatchOrderData?.trackingNumber}
+                    onChange={handleChange}
+                    placeholder="Enter Tracking number"
+                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   />
                 </div>
               </div>

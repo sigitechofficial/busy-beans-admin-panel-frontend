@@ -13,8 +13,10 @@ import PhoneInput from "react-phone-input-2";
 import GetAPI from "@/utilities/GetAPI";
 import axios from "axios";
 import { BASE_URL } from "@/utilities/URL";
+import { useRouter } from "next/navigation";
 
 export default function AddSaleRepresentative() {
+  const router = useRouter()
   const [loader, setLoader] = useState("");
   const [saleRepresentative, setSaleRepresentative] = useState({
     srName: "",
@@ -203,6 +205,7 @@ export default function AddSaleRepresentative() {
             status: true,
           });
           setImagePreview("");
+          router.push("/sale-representative")
         } else {
           throw new Error(
             res?.data?.message || "An unexpected error occurred."

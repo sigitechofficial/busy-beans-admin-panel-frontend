@@ -8,19 +8,18 @@ import Select from "react-select";
 import selectStyles, { selectStyles2 } from "@/utilities/SelectStyle";
 import { success_toaster } from "@/utilities/Toaster";
 
-
 export default function SalesRepresentativeInventory() {
-  if(typeof window !== 'undefined'){
-    var quotationDataList = JSON.parse(localStorage.getItem("quotationData")) || []
+  if (typeof window !== "undefined") {
+    var quotationDataList =
+      JSON.parse(localStorage.getItem("quotationData")) || [];
   }
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [quotationData, setQuotationData] = useState(
-    quotationDataList
-  );
+  const [quotationData, setQuotationData] = useState(quotationDataList);
 
   const [visibleRight, setVisibleRight] = useState(false);
 
   const { data, reFetch } = GetAPI("api/v1/admin/product");
+  console.log("🚀 ~ SalesRepresentativeInventory ~ data:", data?.data?.data);
 
   const handlePlus = (id, itemQuantity) => {
     const findItemIndex = quotationData?.findIndex((item) => item?.id === id);
@@ -73,7 +72,7 @@ export default function SalesRepresentativeInventory() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-           Quotation Management
+          Quotation Management
         </h2>
 
         <Select placeholder="Filters" className="w-40" styles={selectStyles} />
@@ -94,6 +93,9 @@ export default function SalesRepresentativeInventory() {
               id={item?.id}
               itemName={item?.name}
               quantity={item?.quantity}
+              price={item?.price}
+              wholesalePrice={item?.wholesalePrice}
+              weight={item?.weight}
               unit={item?.unit}
               imageURL={item?.image}
               qty={handleQty(item?.id)}
@@ -108,9 +110,11 @@ export default function SalesRepresentativeInventory() {
             className="rounded-lg font-inter font-medium text-white px-2 sm:px-3 py-2.5 sm:py-4 bg-theme"
           >
             Send Quote
-            <div className="absolute -right-3 -top-3 bg-black size-7 rounded-full text-lg">{quotationData?.length}</div>
+            <div className="absolute -right-3 -top-3 bg-black size-7 rounded-full text-lg">
+              {quotationData?.length}
+            </div>
           </button>
-        </div> 
+        </div>
         <DrawerBeans
           drawerOpen={visibleRight}
           setDrawerOpen={setVisibleRight}

@@ -2,17 +2,20 @@
 import Charts from "@/components/ui/Charts";
 import HomeCards from "@/components/ui/HomeCards";
 import HomeMiniCards from "@/components/ui/HomeMiniCards";
+import GetAPI from "@/utilities/GetAPI";
 import { BsCardList } from "react-icons/bs";
 import { FaChartLine } from "react-icons/fa";
 import { PiHandbagFill, PiUsersThreeBold } from "react-icons/pi";
 
- // ✅ Required since PrimeReact requires Client Components
+// ✅ Required since PrimeReact requires Client Components
 
 export default function Home() {
+  const { data } = GetAPI("api/v1/admin/dashboard");
+  console.log("🚀 ~ Home ~ data:", data?.data);
+
   return (
     <div className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain">
       <div className="relative z-30 py-5 px-6 2xl:px-12">
-        
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-white text-xl lg:text-3xl font-inter font-semibold">
@@ -88,32 +91,48 @@ export default function Home() {
           <HomeCards
             title="Total Countries"
             // description="Upcoming bookings + completed bookings + Cancelled bookings"
-            total={"25"}
+            total={data?.data?.totalCountries}
             Icon={BsCardList}
             bgColor="bg-homeCards"
             iconBg="bg-white"
           />
           <HomeCards
             currecncyunit={"$"}
-            title="Total Cities"
+            title="Total States"
             // description="Total of all the completed bookings only"
-            total={"180"}
+            total={data?.data?.totalStates}
             Icon={FaChartLine}
             bgColor="bg-homeCards"
             iconBg="bg-white"
           />
           <HomeCards
-            title="Total Suppliers"
+            title="Total Cities"
             // description="All active and inactive Customers"
-            total={"1348"}
+            total={data?.data?.totalCities}
             Icon={PiUsersThreeBold}
+            bgColor="bg-homeCards"
+            iconBg="bg-white"
+          />
+          <HomeCards
+            title="Total Local Partners"
+            // description="Salons that have completed at least one registration step. Specifically Add your business address and team size"
+            total={data?.data?.totalPatners}
+            Icon={PiHandbagFill}
+            bgColor="bg-homeCards"
+            iconBg="bg-white"
+          />
+          <HomeCards
+            title="Total Suppliers"
+            // description="Salons that have completed at least one registration step. Specifically Add your business address and team size"
+            total={data?.data?.totalSupplier}
+            Icon={PiHandbagFill}
             bgColor="bg-homeCards"
             iconBg="bg-white"
           />
           <HomeCards
             title="Total Clients"
             // description="Salons that have completed at least one registration step. Specifically Add your business address and team size"
-            total={"3500"}
+            total={data?.data?.totalUser}
             Icon={PiHandbagFill}
             bgColor="bg-homeCards"
             iconBg="bg-white"
@@ -124,55 +143,80 @@ export default function Home() {
           <HomeMiniCards
             title="Total Sale"
             // description="The bookings that are booked and an employee has been assigned to them."
-            total={"$2000"}
+            total={`$${data?.data?.salesSummary?.sales}`}
             // Icon={FiBox}
           />
           <HomeMiniCards
-            title="Admin Earnings"
-            total={"$2000"}
+            title="Whole Sale"
+            total={`$${data?.data?.salesSummary?.wholesalePriceTotal}`}
             // Icon={LuPackageCheck}
           />
           <HomeMiniCards
             title="Suppliers Earning"
-            total={"$2000"}
+            total={`$${data?.data?.revenueSummary?.revenueCollected}`}
             // Icon={LuPackageX}
           />
-          <HomeMiniCards
+          {/* <HomeMiniCards
             title="Pending Payments"
-            // description="The bookings in which minimum 1 service is not assigned to any employee"
+            description="The bookings in which minimum 1 service is not assigned to any employee"
             total={"$2000"}
-            // Icon={FiBox}
-          />
+            Icon={FiBox}
+          /> */}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mt-6">
           <HomeMiniCards
             title="Total Orders"
             // description="The bookings in which minimum 1 service is not assigned to any employee"
-            total={"2000"}
+            total={data?.data?.ordersSummary?.orderPlaced}
             // Icon={FiBox}
           />
           <HomeMiniCards
-            title="Pending Orders"
+            title="Assigned Orders"
             // description="The bookings in which minimum 1 service is not assigned to any employee"
-            total={"2000"}
+            total={data?.data?.ordersSummary?.assignedToSupplier}
             // Icon={FiBox}
           />
           <HomeMiniCards
-            title="Cancelled Orders"
+            title="Acknowledged Orders"
             // description="The bookings in which minimum 1 service is not assigned to any employee"
-            total={"2000"}
+            total={data?.data?.ordersSummary?.supplierAcknowledged}
+            // Icon={FiBox}
+          />
+          <HomeMiniCards
+            title="Dispatched Orders"
+            // description="The bookings in which minimum 1 service is not assigned to any employee"
+            total={data?.data?.ordersSummary?.dispatchedOrders}
             // Icon={FiBox}
           />
           <HomeMiniCards
             title="Delivered Orders"
             // description="The bookings in which minimum 1 service is not assigned to any employee"
-            total={"2000"}
+            total={data?.data?.ordersSummary?.deliveredOrders}
+            // Icon={FiBox}
+          />
+          <HomeMiniCards
+            title="Cancelled Orders"
+            // description="The bookings in which minimum 1 service is not assigned to any employee"
+            total={data?.data?.ordersSummary?.CanceledOrders}
+            // Icon={FiBox}
+          />
+          <HomeMiniCards
+            title="Unpaid Orders"
+            // description="The bookings in which minimum 1 service is not assigned to any employee"
+            total={data?.data?.ordersSummary?.paymentPending}
+            // Icon={FiBox}
+          />
+          <HomeMiniCards
+            title="Paid Orders"
+            // description="The bookings in which minimum 1 service is not assigned to any employee"
+            total={data?.data?.ordersSummary?.paymentDone}
             // Icon={FiBox}
           />
         </div>
 
-
         <div className="mt-12">
           {/* <Charts today={today} /> */}
-          <Charts  />
+          {/* <Charts  /> */}
         </div>
       </div>
     </div>

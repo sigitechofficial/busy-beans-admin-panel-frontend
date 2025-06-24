@@ -22,8 +22,8 @@ export default function page() {
     var userID = localStorage.getItem("userID");
   }
   const allCountriesData = [];
-  const autocompleteRef = useRef();
-  const inputRef = useRef();
+  // const autocompleteRef = useRef();
+  // const inputRef = useRef();
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loader, setLoader] = useState(false);
@@ -60,14 +60,16 @@ export default function page() {
       status: true,
     },
   });
+  console.log("🚀 ~ page ~ userData:", userData);
+  const [allStates, setAllStates] = useState([]);
+  const [allCities, setAllCities] = useState([]);
 
-  const { data: countriesData } = GetAPI(
-    "api/v1/admin/address-management/country"
-  );
+  const { data } = GetAPI("api/v1/admin/address-management/country");
 
-  countriesData?.data?.data?.map((country) =>
-    allCountriesData.push({
-      value: country?.isoCode,
+  const allCountries = [];
+  data?.data?.data?.map((country) =>
+    allCountries.push({
+      value: country?.name,
       label: country?.name,
     })
   );
@@ -95,13 +97,13 @@ export default function page() {
   const handleStep1 = () => {
     if (userData?.address?.companyaddress.trim() === "") {
       info_toaster("Company address cannot be empty");
-    } 
+    }
     // else if (userData?.address?.addressLineOne.trim() === "") {
     //   info_toaster("address Line 1 cannot be empty");
     // } else if (userData?.address?.addressLineTwo.trim() === "") {
     //   info_toaster("address Line 2 cannot be empty");
     // }
-     else if (userData?.address?.town.trim() === "") {
+    else if (userData?.address?.town.trim() === "") {
       info_toaster("Town cannot be empty");
     } else if (userData?.address?.zipCode.trim() === "") {
       info_toaster("Zip code cannot be empty");
@@ -233,101 +235,140 @@ export default function page() {
     }
   };
 
-  const calculateRoute = () => {
-    const place = autocompleteRef.current.getPlace();
-    if (!autocompleteRef.current) {
-      console.warn("Autocomplete not loaded yet");
-      return;
-    }
+  // const calculateRoute = () => {
+  //   const place = autocompleteRef.current.getPlace();
+  //   if (!autocompleteRef.current) {
+  //     console.warn("Autocomplete not loaded yet");
+  //     return;
+  //   }
 
-    if (!place) {
-      console.warn("No place returned from getPlace()");
-      return;
-    }
+  //   if (!place) {
+  //     console.warn("No place returned from getPlace()");
+  //     return;
+  //   }
 
-    const formattedAddress = place.formatted_address;
+  //   const formattedAddress = place.formatted_address;
 
-    const addressComponents = place.address_components || [];
+  //   const addressComponents = place.address_components || [];
 
-    const getAddressComponent = (type) =>
-      addressComponents.find((component) => component.types.includes(type))
-        ?.long_name || "";
+  //   const getAddressComponent = (type) =>
+  //     addressComponents.find((component) => component.types.includes(type))
+  //       ?.long_name || "";
 
-    const countryName = getAddressComponent("country");
-    const countryShortName =
-      addressComponents.find((c) => c.types.includes("country"))?.short_name ||
-      "";
-    const city =
-      getAddressComponent("locality") ||
-      getAddressComponent("administrative_area_level_2");
-    const state = getAddressComponent("administrative_area_level_1");
-    const postalCode = getAddressComponent("postal_code");
+  //   const countryName = getAddressComponent("country");
+  //   const countryShortName =
+  //     addressComponents.find((c) => c.types.includes("country"))?.short_name ||
+  //     "";
+  //   const city =
+  //     getAddressComponent("locality") ||
+  //     getAddressComponent("administrative_area_level_2");
+  //   const state = getAddressComponent("administrative_area_level_1");
+  //   const postalCode = getAddressComponent("postal_code");
 
-    if (!place?.geometry || !place?.geometry?.location) {
-      info_toaster("Please select an address");
-      return;
-    }
-    // setDeliveryAddress({
-    //   ...deliveryAddress,
-    //   country: countryName,
-    //   zipCode: postalCode,
-    //   state: state,
-    //   town: city,
-    //   companyaddress: formattedAddress,
-    //   lat: place.geometry.location.lat(),
-    //   lng: place.geometry.location.lng(),
-    // });
-    // setCenter({
-    //   lat: place.geometry.location.lat(),
-    //   lng: place.geometry.location.lng(),
-    // });
-    setUserData({
-      ...userData,
-      address: {
-        ...userData?.address,
-        companyaddress: formattedAddress,
-        town: city,
-        country: countryName,
-        state: state,
-        zipCode: postalCode,
-        lat: place?.geometry?.location.lat(),
-        lng: place?.geometry?.location.lng(),
-        status: true,
-      },
-    });
-  };
+  //   if (!place?.geometry || !place?.geometry?.location) {
+  //     info_toaster("Please select an address");
+  //     return;
+  //   }
+  //   setUserData({
+  //     ...userData,
+  //     address: {
+  //       ...userData?.address,
+  //       companyaddress: formattedAddress,
+  //       town: city,
+  //       country: countryName,
+  //       state: state,
+  //       zipCode: postalCode,
+  //       lat: place?.geometry?.location.lat(),
+  //       lng: place?.geometry?.location.lng(),
+  //       status: true,
+  //     },
+  //   });
+  // };
 
-  const handleCountryChange = (e) => {
-    setSelectedCountry(e);
-    setUserData({
-      ...userData,
-      address: {
-        ...userData?.address,
-        companyaddress: "",
-        town: "",
-        country: "",
-        state: "",
-        zipCode: "",
-        lat: "",
-        lng: "",
-        addressLineOne: "",
-        addressLineTwo: "",
-        status: true,
-      },
-    });
-  };
+  // const handleCountryChange = (e) => {
+  //   setSelectedCountry(e);
+  //   setUserData({
+  //     ...userData,
+  //     address: {
+  //       ...userData?.address,
+  //       companyaddress: "",
+  //       town: "",
+  //       country: "",
+  //       state: "",
+  //       zipCode: "",
+  //       lat: "",
+  //       lng: "",
+  //       addressLineOne: "",
+  //       addressLineTwo: "",
+  //       status: true,
+  //     },
+  //   });
+  // };
 
-  const handleSelectedCountryCities = async (countryName) => {
-    const selectedCountry = countriesData?.data?.data?.find(
+  // const handleSelectedCountryCities = async (countryName) => {
+  //   const selectedCountry = countriesData?.data?.data?.find(
+  //     (country) => country?.name === countryName
+  //   );
+  //   try {
+  //     const res = await axios.get(
+  //       BASE_URL +
+  //         `api/v1/admin/address-management/city?countryInSystemId=${selectedCountry?.id}`
+  //     );
+  //     if (res?.data?.status === "success") {
+  //       setSelectedCountryCities([...res?.data?.data?.data]);
+  //     } else {
+  //       throw new Error(res?.data?.message || "An unexpected error occurred.");
+  //     }
+  //   } catch (error) {
+  //     ErrorHandler(error);
+  //   }
+  // };
+
+  const handleSelectedCountryStates = async (countryName) => {
+    const selectedCountry = data?.data?.data?.find(
       (country) => country?.name === countryName
     );
     try {
       const res = await axios.get(
         BASE_URL +
-          `api/v1/admin/address-management/city?countryInSystemId=${selectedCountry?.id}`
+          `api/v1/admin/address-management/state?countryInSystemId=${selectedCountry?.id}`
       );
       if (res?.data?.status === "success") {
-        setSelectedCountryCities([...res?.data?.data?.data]);
+        const tempAllStates = [];
+        res?.data?.data?.data?.map((state) =>
+          tempAllStates.push({
+            value: state?.id,
+            label: state?.name,
+          })
+        );
+        setAllStates([...tempAllStates]);
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
+    }
+  };
+
+  const handleSelectedCountryStatesCities = async (stateID) => {
+    try {
+      const res = await axios.get(
+        BASE_URL +
+          `api/v1/admin/address-management/city?stateInSystemId=${stateID}`
+      );
+      if (res?.data?.status === "success") {
+        console.log(
+          "🚀 ~ handleSelectedCountryStates ~ res:",
+          res?.data?.data?.data
+        );
+        const tempAllCities = [];
+        res?.data?.data?.data?.map((state) =>
+          tempAllCities.push({
+            value: state?.name,
+            label: state?.name,
+          })
+        );
+        setAllCities([...tempAllCities]);
       } else {
         throw new Error(res?.data?.message || "An unexpected error occurred.");
       }
@@ -382,7 +423,7 @@ export default function page() {
                 </p>
                 <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
                   <div className="space-y-4">
-                    <Select
+                    {/* <Select
                       placeholder="Select Country"
                       className="w-full"
                       styles={drawerSelectStyles}
@@ -393,8 +434,8 @@ export default function page() {
                         setSelectedCountryCode(e.value);
                         handleSelectedCountryCities(e.label);
                       }}
-                    />
-                    <div className="flex flex-col gap-y-2">
+                    /> */}
+                    {/* <div className="flex flex-col gap-y-2">
                       <label className="text-labelColor font-medium font-satoshi">
                         Company Address
                       </label>
@@ -423,6 +464,19 @@ export default function page() {
                           </Autocomplete>
                         </LoadScript>
                       </div>
+                    </div> */}
+                    <div className="flex flex-col gap-y-2">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Company Address{" "}
+                      </label>
+                      <input
+                        type="text"
+                        name="companyaddress"
+                        value={userData?.address?.companyaddress}
+                        placeholder="Enter Address"
+                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        onChange={handleAddress}
+                      />
                     </div>
                     <div className="flex flex-col gap-y-2">
                       <label className="text-labelColor font-medium font-satoshi">
@@ -459,27 +513,77 @@ export default function page() {
                           <label className="text-labelColor font-medium font-satoshi">
                             Country
                           </label>
-                          <input
+                          {/* <input
                             type="text"
                             name="country"
                             onChange={handleAddress}
                             value={userData?.address?.country}
                             placeholder="Enter Country"
                             className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                          /> */}
+                          <Select
+                            placeholder="Select Country"
+                            className="w-full"
+                            styles={drawerSelectStyles}
+                            options={allCountries}
+                            onChange={(e) => {
+                              // setSaleRepresentative({
+                              //   ...saleRepresentative,
+                              //   country: e.label,
+                              //   state: "",
+                              //   city: "",
+                              // });
+                              setUserData({
+                                ...userData,
+                                address: {
+                                  ...userData?.address,
+                                  country: e.label,
+                                  state: "",
+                                  town: "",
+                                },
+                              });
+                              handleSelectedCountryStates(e.label);
+                            }}
                           />
                         </div>
                         <div className="flex flex-col gap-y-2">
                           <label className="text-labelColor font-medium font-satoshi">
                             State
                           </label>
-                          <input
+                          <Select
+                            placeholder="Select State"
+                            className="w-full"
+                            styles={drawerSelectStyles}
+                            value={{
+                              value: userData?.address?.state ?? null,
+                              label: userData?.address?.state ?? null,
+                            }}
+                            options={allStates}
+                            onChange={(e) => {
+                              // setSaleRepresentative({
+                              //   ...saleRepresentative,
+                              //   state: e?.label,
+                              //   city: "",
+                              // });
+                              setUserData({
+                                ...userData,
+                                address: {
+                                  ...userData?.address,
+                                  state: e.label,
+                                  town: "",
+                                },
+                              });
+                              handleSelectedCountryStatesCities(e.value);
+                            }}
+                          />
+                          {/* <input
                             type="text"
                             name="state"
                             onChange={handleAddress}
                             value={userData?.address?.state}
                             placeholder="Enter State"
                             className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                          />
+                          /> */}
                         </div>
                       </div>
                       <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
@@ -487,14 +591,33 @@ export default function page() {
                           <label className="text-labelColor font-medium font-satoshi">
                             Town / City
                           </label>
-                          <input
+                          <Select
+                            placeholder="Select City"
+                            className="w-full"
+                            styles={drawerSelectStyles}
+                            value={{
+                              value: userData?.address?.town ?? null,
+                              label: userData?.address?.town ?? null,
+                            }}
+                            options={allCities ?? null}
+                            onChange={(e) => {
+                              setUserData({
+                                ...userData,
+                                address: {
+                                  ...userData?.address,
+                                  town: e.label,
+                                },
+                              });
+                            }}
+                          />
+                          {/* <input
                             type="text"
                             name="town"
                             onChange={handleAddress}
                             value={userData?.address?.town}
                             placeholder="Enter Town / City"
                             className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                          />
+                          /> */}
                         </div>
                         <div className="flex flex-col gap-y-2">
                           <label className="text-labelColor font-medium font-satoshi">
@@ -607,7 +730,6 @@ export default function page() {
                           }}
                           country={"pk"}
                           onChange={(phone) =>
-                      
                             setUserData({
                               ...userData,
                               info: {

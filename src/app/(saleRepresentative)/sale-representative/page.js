@@ -18,10 +18,10 @@ import { DeleteAPI } from "@/utilities/DeleteAPI";
 import { useRouter } from "next/navigation";
 
 export default function SaleRepresentative() {
-  const router = useRouter()
+  const router = useRouter();
   const [modal, setModal] = useState("");
   const [saleRepresentativeID, setSaleRepresentativeID] = useState("");
-  const [loader, setLoader] = useState("")
+  const [loader, setLoader] = useState("");
 
   const { data, reFetch } = GetAPI("api/v1/admin/sales-rep");
 
@@ -50,7 +50,9 @@ export default function SaleRepresentative() {
     e.preventDefault();
     setLoader("delete");
     try {
-      const res = await DeleteAPI(`api/v1/admin/sales-rep/${saleRepresentativeID}`);
+      const res = await DeleteAPI(
+        `api/v1/admin/sales-rep/${saleRepresentativeID}`
+      );
       if (res?.data?.status === "success") {
         success_toaster("Supplier Deleted Successfully");
         reFetch();
@@ -90,7 +92,7 @@ export default function SaleRepresentative() {
       sl: i + 1,
       srName: sR?.srName,
       email: sR?.email,
-      address: `${sR?.address}, ${sR?.city}, ${sR?.state}, ${sR?.territory}, ${sR?.country}`,
+      address: `${sR?.address}, ${sR?.city}, ${sR?.state}, ${sR?.country}`,
       phoneNum: `${sR?.countryCode} ${sR?.phoneNumber}`,
       sRType: sR?.sRType,
       registerDate: sR?.registerDate ?? "No date found",
@@ -226,7 +228,7 @@ export default function SaleRepresentative() {
                   type="submit"
                   className="rounded-lg border border-theme text-white px-10 bg-theme"
                 >
-                  Delete 
+                  Delete
                 </button>
               </div>
             </div>

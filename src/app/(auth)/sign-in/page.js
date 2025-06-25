@@ -173,9 +173,9 @@ export default function SignIn() {
                       </div>
                     )}
                   </div>
-                  {/* <p className="text-white text-sm text-end font-normal">
-                    Forgot Password?
-                  </p> */}
+                  <p className="text-white text-sm text-end font-normal">
+                    <Link href={"/forgot-password"}>Forgot Password?</Link>
+                  </p>
                 </div>
                 <div className="flex flex-col  gap-2 text-white font-inter font-normal">
                   <div className="flex align-items-center">

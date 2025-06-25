@@ -95,7 +95,10 @@ export default function RootLayout({ children }) {
   const pathname = usePathname();
   const isLayoutDisplay =
     pathname.startsWith("/sign-in") ||
-    pathname.includes("/sales-representative/stripe-account-connected");
+    pathname.includes("/sales-representative/stripe-account-connected") ||
+    pathname.includes("/forgot") ||
+    pathname.includes("/verify") ||
+    pathname.includes("/reset") 
 
   // const [navbarVis, setNavbarVis] = useState(
   //   window.innerWidth < 640 ? false : true

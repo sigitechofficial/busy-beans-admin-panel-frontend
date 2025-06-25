@@ -172,6 +172,7 @@ export default function AddSaleRepresentative() {
         const formData = new FormData();
         formData.append("srName", saleRepresentative?.srName);
         formData.append("email", saleRepresentative?.email);
+        formData.append("creditLimit", saleRepresentative?.creditLimit);
         formData.append("password", saleRepresentative?.password);
         formData.append("country", saleRepresentative?.country);
         formData.append("city", saleRepresentative?.city);

@@ -75,6 +75,7 @@ export default function SaleRepresentative() {
     { field: "registerDate", header: "registerDate" },
 
     { field: "registerBy", header: "registerBy" },
+    { field: "creditLimit", header: "Credit Limit" },
     {
       field: "currentStatus",
       header: "Current Status",
@@ -97,6 +98,7 @@ export default function SaleRepresentative() {
       sRType: sR?.sRType,
       registerDate: sR?.registerDate ?? "No date found",
       registerBy: sR?.registerBy,
+      creditLimit: `$${sR?.creditLimit}`,
       currentStatus: (
         <div>
           {sR?.status ? (

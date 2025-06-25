@@ -223,13 +223,14 @@ export default function Leftbar(props) {
         console.log("🚀 ~ stripeAccountStatus ~ res:", res?.data);
         if (res?.data?.status === "success") {
           localStorage.setItem("isAccountConnected", true);
-        } else {
-          throw new Error(
-            res?.data?.message || "An unexpected error occurred."
-          );
         }
+        // else {
+        //   throw new Error(
+        //     res?.data?.message || "An unexpected error occurred."
+        //   );
+        // }
       } catch (error) {
-        ErrorHandler(error);
+        // ErrorHandler(error);
       }
     };
     if (userType === "salesRepresentative") {

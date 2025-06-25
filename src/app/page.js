@@ -2,7 +2,11 @@
 import Charts from "@/components/ui/Charts";
 import HomeCards from "@/components/ui/HomeCards";
 import HomeMiniCards from "@/components/ui/HomeMiniCards";
+import ErrorHandler from "@/utilities/ErrorHandler";
 import GetAPI from "@/utilities/GetAPI";
+import { success_toaster } from "@/utilities/Toaster";
+import { BASE_URL } from "@/utilities/URL";
+import axios from "axios";
 import { useEffect } from "react";
 import { BsCardList } from "react-icons/bs";
 import { FaChartLine } from "react-icons/fa";
@@ -21,15 +25,25 @@ export default function Home() {
 
   const { data } = GetAPI("api/v1/admin/dashboard");
 
-  useEffect(() => {
-    const stripeAccountStatus = async () => {
+  const handleConnectAccount = async () => {
+    const path = url.split("/");
+    if (isAccountConnected === "false" && connectAccountId !== "null") {
       try {
-        const res = await axios.get(
-          BASE_URL + `api/v1/admin/stripe-connect-account-retrieve/${userID}`
+        const res = await axios.post(
+          BASE_URL + `api/v1/admin/stripe-connect-account-url/${userID}`,
+          {
+            returnUrl: "https://" + path[2].trim(),
+          }
         );
-        console.log("🚀 ~ stripeAccountStatus ~ res:", res?.data);
         if (res?.data?.status === "success") {
-          localStorage.setItem("isAccountConnected", true);
+          success_toaster(res?.data?.data?.message);
+          // localStorage.setItem("isAccountConnected", true);
+          if (res?.data?.data?.data?.connectAccount) {
+            const link = document.createElement("a");
+            link.href = res?.data?.data?.data?.connectAccount;
+            link.target = "_self";
+            link.click();
+          }
         } else {
           throw new Error(
             res?.data?.message || "An unexpected error occurred."
@@ -37,6 +51,81 @@ export default function Home() {
         }
       } catch (error) {
         ErrorHandler(error);
+      }
+    } else if (
+      (connectAccountId === "null" || !connectAccountId) &&
+      isAccountConnected === "false"
+    ) {
+      try {
+        const res = await axios.post(
+          BASE_URL + `api/v1/admin/create-stripe-connect-account/${userID}`,
+          {
+            returnUrl: "https://" + path[2].trim(),
+          }
+        );
+        if (res?.data?.status === "success") {
+          success_toaster(res?.data?.data?.message);
+          localStorage.setItem(
+            "connectAccountId",
+            res?.data?.data?.data?.accountId
+          );
+          if (res?.data?.data?.data?.accountLink?.url) {
+            const link = document.createElement("a");
+            link.href = res?.data?.data?.data?.accountLink?.url;
+            link.target = "_self";
+            link.click();
+          }
+        } else {
+          throw new Error(
+            res?.data?.message || "An unexpected error occurred."
+          );
+        }
+      } catch (error) {
+        ErrorHandler(error);
+      }
+    } else if (
+      (connectAccountId !== "null" || !connectAccountId) &&
+      isAccountConnected === "true"
+    ) {
+      try {
+        const res = await axios.get(
+          BASE_URL + `api/v1/admin/stripe-connect-account-dashboard/${userID}`
+        );
+        if (res?.data?.status === "success") {
+          success_toaster(res?.data?.data?.message);
+          if (res?.data?.data?.data?.connectAccount) {
+            const link = document.createElement("a");
+            link.href = res?.data?.data?.data?.connectAccount;
+            link.target = "_blank";
+            link.click();
+          }
+        } else {
+          throw new Error(
+            res?.data?.message || "An unexpected error occurred."
+          );
+        }
+      } catch (error) {
+        ErrorHandler(error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const stripeAccountStatus = async () => {
+      try {
+        const res = await axios.get(
+          BASE_URL + `api/v1/admin/stripe-connect-account-retrieve/${userID}`
+        );
+        if (res?.data?.status === "success") {
+          localStorage.setItem("isAccountConnected", true);
+        }
+        //  else {
+        //   throw new Error(
+        //     "Connect Stripe Acocunt in order to create order" 
+        //   );
+        // }
+      } catch (error) {
+        ErrorHandler("Connect Stripe Account");
       }
     };
     if (userType === "salesRepresentative") {
@@ -46,7 +135,28 @@ export default function Home() {
 
   return (
     <>
-      <div className="bg-red-500 z-10">hamza</div>
+      <div
+        className={`bg-red-500 z-10 text-center text-white py-2 ${
+          userType === "salesRepresentative" &&
+          (isAccountConnected === "false" || connectAccountId === "null")
+            ? "flex items-center justify-center gap-x-2"
+            : "hidden"
+        }`}
+      >
+        Your Stripe Account is not Connected {"? click here "}
+        <button
+          onClick={handleConnectAccount}
+          className="flex gap-x-2 text-wrap items-center px-2 rounded-lg font-inter font-medium   duration-200 bg-theme text-white"
+        >
+          {(connectAccountId !== "null" || !connectAccountId) &&
+          isAccountConnected === "true"
+            ? "Stripe Dashboard"
+            : (connectAccountId === "null" || !connectAccountId) &&
+              isAccountConnected === "false"
+            ? "Connect Account"
+            : "Complete Account Registration"}
+        </button>
+      </div>
       <div className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain">
         <div className="relative z-30 py-5 px-6 2xl:px-12">
           <div className="flex justify-between items-center">

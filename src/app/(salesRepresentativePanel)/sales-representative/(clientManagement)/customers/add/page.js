@@ -159,10 +159,10 @@ export default function page() {
     ) {
       info_toaster("Password and confirm password must be same");
     } else {
-      let cityStatus = selectedCountryCities.find(
-        (city) => city?.name === userData?.address?.town
-      );
-      if (cityStatus) {
+      // let cityStatus = selectedCountryCities.find(
+      //   (city) => city?.name === userData?.address?.town
+      // );
+      // if (cityStatus) {
         try {
           setLoader(true);
           const res = await PostAPI(
@@ -229,10 +229,11 @@ export default function page() {
           ErrorHandler(error);
           setLoader(false);
         }
-      } else {
-        info_toaster("Service not operational here");
       }
-    }
+      //  else {
+      //   info_toaster("Service not operational here");
+      // }
+    // }
   };
 
   // const calculateRoute = () => {

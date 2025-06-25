@@ -17,6 +17,7 @@ export default function SalesRepresentativeCustomers() {
   const { data } = GetAPI(
     `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID} `
   );
+  console.log("🚀 ~ SalesRepresentativeCustomers ~ data:", data?.data?.data)
 
   const columns = [
     { field: "sl", header: "SL", sort: true },

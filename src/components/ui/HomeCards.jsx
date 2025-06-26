@@ -13,9 +13,10 @@ export default function HomeCards(props) {
         </div>
         <h2 className="text-secondary font-inter">{props.title}</h2>
         <p className="text-dark text-xl 2xl:text-3xl font-inter font-semibold">
-          {props?.title?.toLowerCase()?.includes("revenue")
+          {/* {props?.title?.toLowerCase()?.includes("revenue")
             ? `${props?.currecncyunit ? props?.currecncyunit:'£'}${(parseFloat(props?.total))?.toFixed(2)}`
-            : props?.total}
+            : props?.total} */}
+            {props?.total}
         </p>
       </div>
     </div>

@@ -98,7 +98,7 @@ export default function RootLayout({ children }) {
     pathname.includes("/sales-representative/stripe-account-connected") ||
     pathname.includes("/forgot") ||
     pathname.includes("/verify") ||
-    pathname.includes("/reset") 
+    pathname.includes("/reset");
 
   // const [navbarVis, setNavbarVis] = useState(
   //   window.innerWidth < 640 ? false : true
@@ -109,7 +109,10 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <title>Busy Beans Coffee</title>
       <link rel="icon" type="image/x-icon" href="/images/logocoffee.png" />
-
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, minimum-scale=1"
+      />
       <body
         className={`${switzer.variable} ${satoshi.variable} ${inter.variable} ${nunito.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >

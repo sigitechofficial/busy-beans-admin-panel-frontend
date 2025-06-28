@@ -4,14 +4,14 @@ import HomeCards from "@/components/ui/HomeCards";
 import HomeMiniCards from "@/components/ui/HomeMiniCards";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import GetAPI from "@/utilities/GetAPI";
-import { success_toaster } from "@/utilities/Toaster";
+import { error_toaster, success_toaster } from "@/utilities/Toaster";
 import { BASE_URL } from "@/utilities/URL";
 import axios from "axios";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { BsCardList } from "react-icons/bs";
 import { FaChartLine } from "react-icons/fa";
 import { PiHandbagFill, PiUsersThreeBold } from "react-icons/pi";
-
+import { loadStripe } from "@stripe/stripe-js";
 // ✅ Required since PrimeReact requires Client Components
 
 export default function Home() {
@@ -22,7 +22,10 @@ export default function Home() {
     var connectAccountId = localStorage.getItem("connectAccountId");
     var isAccountConnected = localStorage.getItem("isAccountConnected");
     var url = window.location.href;
+    var windowClose = window;
   }
+  const [showBankRetry, setShowBankRetry] = useState(false);
+  console.log("🚀 ~ Home ~ showBankRetry:", showBankRetry);
 
   const { data } = GetAPI(
     userType === "admin"
@@ -31,7 +34,6 @@ export default function Home() {
       ? `api/v1/admin/sales-rep-dashboard/${userID}`
       : ""
   );
-  console.log("🚀 ~ Home ~ data:", data?.data);
 
   const handleConnectAccount = async () => {
     const path = url.split("/");
@@ -118,6 +120,234 @@ export default function Home() {
     }
   };
 
+  // const handleFinancialConnection = async () => {
+  //   try {
+  //     // Step 1: Create Stripe Financial Connections Session
+  //     const res = await axios.post(
+  //       BASE_URL +
+  //         `api/v1/admin/create-financial-connection-session/sales-rep/${userID}`
+  //     );
+  //     const clientSecret = res?.data?.data?.clientSecret;
+
+  //     if (!clientSecret) {
+  //       success_toaster("Your bank account is already connected");
+  //       return;
+  //     }
+
+  //     // Step 2: Load Stripe
+  //     const stripe = await loadStripe(
+  //       "pk_test_51RPXZNCxTuXimvwHkvKO6MrVTckQ45X3JC2AkCVyV9fxLCK442YPbG8yM2NOexEqnD3wNAXdKfrOyEH2dTSzYKpt00WTyK7kzl"
+  //     );
+
+  //     if (!stripe) {
+  //       error_toaster("Stripe failed to load");
+  //       return;
+  //     }
+
+  //     // Step 3: Open the bank linking popup
+  //     // const { error, session } =
+  //     //   await stripe.collectFinancialConnectionsAccounts({ clientSecret });
+  //     const session = await stripe.collectFinancialConnectionsAccounts({
+  //       clientSecret,
+  //     });
+  //     console.log(
+  //       "🚀 ~ handleFinancialConnection ~ session:",
+  //       session?.financialConnectionsSession?.id
+  //     );
+  //     console.log("🚀 ~ handleFinancialConnection ~ session:", session);
+  //     // console.log("resSees:----- ", resSees)
+
+  //     // Step 4: If user closed or something went wrong
+  //     if (!session?.financialConnectionsSession?.id) {
+  //       console.warn("User did not complete linking");
+  //       setShowBankRetry(true); // <-- trigger retry modal
+  //       return;
+  //     }
+
+  //     // Step 5: Send session.id to your backend for verification/attachment
+  //     const attachRes = await axios.post(
+  //       BASE_URL + `api/v1/admin/attach-bank-account/sales-rep/${userID}`,
+  //       {
+  //         sessionId: session?.financialConnectionsSession?.id,
+  //       }
+  //     );
+  //     console.log("🚀 ~ handleFinancialConnection ~ attachRes:", attachRes);
+  //     console.log("🚀 ~ handleFinancialConnection ~ attachRes:", attachRes);
+  //     // Step 6: Handle response
+  //     if (attachRes?.data?.status === "success") {
+  //       setShowBankRetry(false);
+  //       success_toaster("Bank account linked successfully!");
+  //     } else {
+  //       error_toaster("Failed to attach bank account. Please try again.");
+  //     }
+  //   } catch (err) {
+  //     console.error("handleFinancialConnection error:", err);
+  //     error_toaster("An error occurred while linking your bank account.");
+  //   }
+  // };
+
+  // const handleFinancialConnection = async () => {
+  //   try {
+  //     // Step 1: Call your API to get the SetupIntent client_secret
+  //     const res = await axios.post(
+  //       BASE_URL +
+  //         `api/v1/admin/create-financial-connection-session/sales-rep/${userID}`
+  //     );
+  //     console.log("🚀 ~ handleFinancialConnection ~ res:", res)
+
+  //     const clientSecret = res?.data?.data?.clientSecret;
+  //     console.log("🚀 ~ handleFinancialConnection ~ clientSecret:", clientSecret)
+
+  //     if (!clientSecret) {
+  //       success_toaster("Your bank account is already connected");
+  //       return;
+  //     }
+
+  //     // Step 2: Load Stripe.js
+  //     const stripe = await loadStripe(
+  //       "pk_test_51RPXZNCxTuXimvwHkvKO6MrVTckQ45X3JC2AkCVyV9fxLCK442YPbG8yM2NOexEqnD3wNAXdKfrOyEH2dTSzYKpt00WTyK7kzl"
+  //     );
+  //     console.log("🚀 ~ handleFinancialConnection ~ stripe:", stripe)
+
+  //     if (!stripe) {
+  //       error_toaster("Stripe failed to load");
+  //       return;
+  //     }
+
+  //     // Step 3: Open Stripe's Financial Connections popup
+  //     const result = await stripe.collectBankAccountForSetup({
+  //       clientSecret,
+  //       params: {
+  //         payment_method_type: "us_bank_account",
+  //       },
+  //     });
+
+  //     console.log("Stripe SetupIntent result:", result);
+
+  //     // Step 4: Extract SetupIntent details
+  //     // const setupIntentId = result?.setupIntent?.id;
+  //     // const setupIntentStatus = result?.setupIntent?.status;
+
+  //     // If user closed the popup or linking failed
+  //     // if (!setupIntentId || setupIntentStatus !== "succeeded") {
+  //     //   console.warn("Bank linking was not completed.");
+  //     //   setShowBankRetry(true);
+  //     //   return;
+  //     // }
+
+  //     // Step 5: Send the setupIntentId to your existing backend endpoint
+  //     // const attachRes = await axios.post(
+  //     //   BASE_URL + `api/v1/admin/attach-bank-account/sales-rep/${userID}`,
+  //     //   {
+  //     //     sessionId: setupIntentId, // ✅ using "sessionId" name for compatibility
+  //     //   }
+  //     // );
+
+  //     // console.log("Attach response:", attachRes?.data);
+
+  //     // if (attachRes?.data?.status === "success") {
+  //     //   setShowBankRetry(false);
+  //     //   success_toaster("Bank account linked successfully!");
+  //     // } else {
+  //     //   error_toaster("Failed to attach bank account. Please try again.");
+  //     // }
+  //   } catch (err) {
+  //     console.error("handleFinancialConnection error:", err);
+  //     error_toaster("An error occurred while linking your bank account.");
+  //   }
+  // };
+
+  const handleFinancialConnection = async () => {
+    try {
+      // Step 1: Create SetupIntent via your backend
+      const res = await axios.post(
+        BASE_URL + `api/v1/admin/create-bank-setup-intent/sales-rep/${userID}`
+      );
+      console.log("🚀 ~ handleFinancialConnection ~ res:", res);
+      const clientSecret = res?.data?.data?.clientSecret;
+
+      if (!clientSecret) {
+        success_toaster("Your bank account is already connected");
+        return;
+      }
+
+      // Step 2: Load Stripe
+      const stripe = await loadStripe(
+        "pk_test_51RPXZNCxTuXimvwHkvKO6MrVTckQ45X3JC2AkCVyV9fxLCK442YPbG8yM2NOexEqnD3wNAXdKfrOyEH2dTSzYKpt00WTyK7kzl"
+      );
+
+      if (!stripe) {
+        error_toaster("Stripe failed to load");
+        return;
+      }
+
+      // Step 3: Open Stripe's Financial Connections popup
+      const result = await stripe.collectBankAccountForSetup({
+        clientSecret,
+        params: {
+          payment_method_type: "us_bank_account",
+          payment_method_data: {
+            billing_details: {
+              name: `${userName}`,
+            },
+          },
+        },
+      });
+
+      console.log("Stripe collect result:", result);
+
+      if (result.setupIntent.status === "requires_confirmation") {
+        const confirmedIntent = await stripe.confirmSetup({
+          clientSecret,
+          confirmParams: {
+            return_url: window.location.href, // or your own custom URL
+          },
+          redirect: "if_required", // ensures no redirect if it's not necessary
+        });
+        if (confirmedIntent.error) {
+          throw new Error(confirmedIntent.error.message);
+        }
+        if (confirmedIntent.setupIntent.status !== "succeeded") {
+          throw new Error("SetupIntent not confirmed successfully.");
+        }
+      }
+      // Only handle errors or incomplete status
+      if (
+        !result || // nothing returned
+        result?.error || // Stripe reported error
+        !result?.setupIntent?.id || // no setupIntent returned
+        !result?.setupIntent?.payment_method // missing critical info
+      ) {
+        error_toaster("User cancelled or did not complete linking.");
+        setShowBankRetry(true);
+        return;
+      }
+
+      // Now handle attachment with backend
+      const attachRes = await axios.post(
+        BASE_URL + `api/v1/admin/attach-bank-account-setup/sales-rep/${userID}`,
+        {
+          setupIntentId: result?.setupIntent?.id,
+          paymentMethodId: result?.setupIntent?.payment_method,
+        }
+      );
+      console.log("🚀 attachRes:", attachRes?.data);
+
+      // ✅ Only show retry modal if the attach failed
+      if (attachRes?.data?.status === "success") {
+        setShowBankRetry(false); // success, no retry needed
+        success_toaster("Bank account linked successfully via SetupIntent!");
+        windowClose.location.reload();
+      } else {
+        error_toaster("Failed to attach bank account. Please try again.");
+      }
+    } catch (err) {
+      ErrorHandler(err);
+      // console.error("handleFinancialConnection error:", err);
+      // error_toaster("An error occurred while linking your bank account.");
+    }
+  };
+
   useEffect(() => {
     const stripeAccountStatus = async () => {
       try {
@@ -136,8 +366,65 @@ export default function Home() {
         ErrorHandler("Connect Stripe Account");
       }
     };
+
+    // const createFinancialConnectionSection = async () => {
+    //   try {
+    //     const res = await axios.post(
+    //       BASE_URL +
+    //         `api/v1/admin/create-financial-connection-session/sales-rep/${userID}`
+    //     );
+    //     const clientSecret = res?.data?.data?.clientSecret;
+
+    //     // If no clientSecret, assume bank is already connected
+    //     if (!clientSecret) {
+    //       success_toaster("Your bank account is connected. You're all set");
+    //       return;
+    //     }
+
+    //     const stripe = await loadStripe(
+    //       "pk_test_51RPXZNCxTuXimvwHkvKO6MrVTckQ45X3JC2AkCVyV9fxLCK442YPbG8yM2NOexEqnD3wNAXdKfrOyEH2dTSzYKpt00WTyK7kzl"
+    //     );
+
+    //     if (!stripe) {
+    //       throw new Error("Stripe failed to load");
+    //     }
+
+    //     const { error, session } =
+    //       await stripe.collectFinancialConnectionsAccounts({
+    //         clientSecret,
+    //       });
+
+    //     // 🛑 Stop if user aborted or error occurred
+    //     if (error || !session?.id) {
+    //       error_toaster(
+    //         "Bank account linking not completed: Compulsory Step",
+    //         error?.message || "Session missing"
+    //       );
+    //       return;
+    //     }
+
+    //     // ✅ Proceed to attach only if session is valid and no error
+    //     const attachRes = await axios.post(
+    //       BASE_URL + `api/v1/admin/attach-bank-account`,
+    //       {
+    //         sessionId: session.id,
+    //         customerId: userID,
+    //       }
+    //     );
+
+    //     if (attachRes?.data?.status === "success") {
+    //       success_toaster("Bank account linked successfully!");
+    //     } else {
+    //       throw new Error("Bank attach failed");
+    //     }
+    //   } catch (error) {
+    //     ErrorHandler(error);
+    //   }
+    // };
+
     if (userType === "salesRepresentative") {
       stripeAccountStatus();
+      handleFinancialConnection();
     }
   }, []);
 
@@ -396,6 +683,22 @@ export default function Home() {
             : "Complete Account Registration"}
         </button>
       </div>
+
+      {showBankRetry && (
+        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-60 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-md">
+            <p className="text-red-600 mb-4 font-semibold">
+              Bank account linking is required and Compulsory.
+            </p>
+            <button
+              onClick={handleFinancialConnection}
+              className="bg-black text-white hover:text-black hover:bg-white border border-black duration-150 px-4 py-2 rounded-md"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      )}
       <div className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain">
         <div className="relative z-30 py-5 px-6 2xl:px-12">
           <div className="flex justify-between items-center">
@@ -473,7 +776,7 @@ export default function Home() {
             <HomeCards
               title="Total Sale"
               // description="Upcoming bookings + completed bookings + Cancelled bookings"
-              total={`$${data?.data?.salesSummary?.sales}`}
+              total={`$${data?.data?.salesSummary?.sales ?? 0}`}
               Icon={BsCardList}
               bgColor="bg-homeCards"
               iconBg="bg-white"
@@ -482,7 +785,7 @@ export default function Home() {
               currecncyunit={"$"}
               title="Total Whole Sale"
               // description="Total of all the completed bookings only"
-              total={`$${data?.data?.salesSummary?.wholesalePriceTotal}`}
+              total={`$${data?.data?.salesSummary?.wholesalePriceTotal ?? 0}`}
               Icon={FaChartLine}
               bgColor="bg-homeCards"
               iconBg="bg-white"
@@ -491,12 +794,11 @@ export default function Home() {
               currecncyunit={"$"}
               title="Revenue Collected"
               // description="Total of all the completed bookings only"
-              total={`$${data?.data?.revenueSummary?.revenueCollected}`}
+              total={`$${data?.data?.revenueSummary?.revenueCollected ?? "0"}`}
               Icon={FaChartLine}
               bgColor="bg-homeCards"
               iconBg="bg-white"
             />
-            
           </div>
 
           {/* <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mt-12">

@@ -464,7 +464,7 @@ export default function OrderDetail() {
                 <div className="w-full space-y-4">
                   <div className="flex flex-col gap-y-2">
                     <label className="text-labelColor font-medium font-satoshi">
-                      Cheque Number
+                      Bank Cheque Number
                     </label>
                     <input
                       type="text"
@@ -477,7 +477,7 @@ export default function OrderDetail() {
                   </div>
                   <div className="flex flex-col gap-y-2">
                     <label className="text-labelColor font-medium font-satoshi">
-                      Cheque Date
+                      Bank Cheque Date
                     </label>
                     <input
                       type="date"
@@ -490,7 +490,7 @@ export default function OrderDetail() {
                   </div>
                   <div className="flex flex-col gap-y-2">
                     <label className="text-labelColor font-medium font-satoshi">
-                      Cheque Status
+                      Bank Cheque Status
                     </label>
                     {/* <input
                       type="chequeStatus"
@@ -530,7 +530,7 @@ export default function OrderDetail() {
                   </div>
                   <div className="flex flex-col gap-y-2">
                     <label className="text-labelColor font-medium font-satoshi">
-                      Bank Branch
+                      Bank Cheque Branch
                     </label>
                     <input
                       type="text"
@@ -543,7 +543,7 @@ export default function OrderDetail() {
                   </div>
                   <div className="flex flex-col gap-y-2">
                     <label className="text-labelColor font-medium font-satoshi">
-                      Cheque Type
+                      Bank Cheque Type
                     </label>
                     {/* <input
                       type="chequeType"
@@ -570,7 +570,7 @@ export default function OrderDetail() {
                   </div>
                   <div className="flex flex-col gap-y-2">
                     <label className="text-labelColor font-medium font-satoshi">
-                      Cheque Receipt Date
+                      Bank Cheque Receipt Date
                     </label>
                     <input
                       type="date"
@@ -604,8 +604,8 @@ export default function OrderDetail() {
                   {modal?.type === "cancelOrder"
                     ? "Cancel Order"
                     : modal?.type === "addCheque"
-                    ? "Add Cheque"
-                    : "Update Cheque"}
+                    ? "Add Bank Cheque"
+                    : "Update Bank Cheque"}
                 </button>
               </div>
             </div>

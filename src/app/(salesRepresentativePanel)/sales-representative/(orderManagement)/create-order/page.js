@@ -25,7 +25,7 @@ export default function CreateOrder() {
   const [visibleRight, setVisibleRight] = useState(false);
 
   const { data, reFetch } = GetAPI("api/v1/admin/product");
-  console.log("🚀 ~ CreateOrder ~ data:", data?.data?.data)
+  console.log("🚀 ~ CreateOrder ~ data:", data?.data?.data);
 
   const handlePlus = (id, itemQuantity) => {
     const findItemIndex = createOrderData?.findIndex((item) => item?.id === id);
@@ -197,7 +197,7 @@ export default function CreateOrder() {
         </div>
         <div className="flex justify-end fixed right-10 bottom-10">
           <button
-            onClick={() => setVisibleRight(true)}
+            onClick={() => createOrderData?.length > 0 ? setVisibleRight(true):info_toaster("No Item is Selected")}
             className="rounded-lg font-inter font-medium text-white px-2 sm:px-3 py-2.5 sm:py-4 bg-theme"
           >
             Create Order

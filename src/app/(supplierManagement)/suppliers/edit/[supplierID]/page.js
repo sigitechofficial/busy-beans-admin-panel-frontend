@@ -22,6 +22,7 @@ export default function EditSupplier() {
   const [loader, setLoader] = useState(false);
 
   const { data } = GetAPI(`api/v1/admin/supplier/${supplierID}`);
+  console.log("🚀 ~ EditSupplier ~ data:", data?.data?.data?.countryCode);
 
   const [supplier, setSupplier] = useState({
     supplierName: "",
@@ -37,7 +38,6 @@ export default function EditSupplier() {
     addressTwo: "",
     businessWeb: "",
     image: "",
-    phoneNumber: "",
     businessRegistrationNumber: "",
     supplierType: "",
     status: "",
@@ -181,12 +181,11 @@ export default function EditSupplier() {
       state: data?.data?.data?.state ?? "",
       zipCode: data?.data?.data?.zipCode ?? "",
       phoneNum: data?.data?.data?.phoneNum ?? "",
+      countryCode: data?.data?.data?.countryCode ?? "+92",
       addressOne: data?.data?.data?.addressOne ?? "",
       addressTwo: data?.data?.data?.addressTwo ?? "",
       businessWeb: data?.data?.data?.businessWeb ?? "",
       image: data?.data?.data?.image ?? "",
-      phoneNumber: data?.data?.data?.phoneNumber ?? "",
-      phoneNumber: data?.data?.data?.countryCode ?? "+92",
       businessRegistrationNumber:
         data?.data?.data?.businessRegistrationNumber ?? "",
       supplierType: data?.data?.data?.supplierType ?? "",
@@ -328,6 +327,19 @@ export default function EditSupplier() {
                     onChange={handleChange}
                   />
                 </div>
+                <div className="flex flex-col gap-y-2">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Business website
+                  </label>
+                  <input
+                    type="text"
+                    name="businessWeb"
+                    value={supplier?.businessWeb}
+                    placeholder="Enter Business name"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    onChange={handleChange}
+                  />
+                </div>
                 {/* <div className="flex flex-col gap-y-2">
                   <label className="text-labelColor font-medium font-satoshi">
                     Phone number
@@ -371,16 +383,51 @@ export default function EditSupplier() {
               </div>
               <div className="flex flex-col gap-y-2">
                 <label className="text-labelColor font-medium font-satoshi">
-                  Business website
+                  Phone number
                 </label>
-                <input
-                  type="text"
-                  name="businessWeb"
-                  value={supplier?.businessWeb}
-                  placeholder="Enter Business name"
-                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                  onChange={handleChange}
-                />
+                <div className="grid grid-cols-10 gap-x-2">
+                  <PhoneInput
+                    focusBorderColor="none"
+                    borderWidth="none"
+                    className="chakra_input col-span-2"
+                    inputStyle={{
+                      width: "90px",
+                      height: "45px",
+                      borderRadius: "4px",
+                      border: "1px solid #00000033",
+                      backgroundColor: "#ffffff",
+                      color: "#6f4e37",
+                      opacity: "20",
+                    }}
+                    buttonStyle={{
+                      backgroundColor: "#ffffff",
+                      border: "1px solid #86644C",
+                    }}
+                    containerStyle={{
+                      borderRadius: "12px",
+                      // backgroundColor: "#6f4e37",
+                    }}
+                    dropdownStyle={{
+                      backgroundColor: "#6f4e37",
+                      borderRadius: "8px",
+                    }}
+                    country={"pk"}
+                    onChange={(phone) =>
+                      setSupplier({
+                        ...supplier,
+                        countryCode: phone,
+                      })
+                    }
+                  />
+                  <input
+                    type="tel"
+                    name="phoneNum"
+                    value={supplier?.phoneNum}
+                    placeholder="Enter Phone Number"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5  w-full col-span-8"
+                    onChange={handleChange}
+                  />
+                </div>
               </div>
             </div>
 
@@ -412,60 +459,6 @@ export default function EditSupplier() {
                   onChange={handleChange}
                 />
               </div> */}
-              <div className="flex flex-col gap-y-2">
-                <label className="text-labelColor font-medium font-satoshi">
-                  Phone number
-                </label>
-                {/* <input
-                  type="text"
-                  name=""
-                  placeholder="Enter Phone Number"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                /> */}
-                <div className="grid grid-cols-10 gap-x-2">
-                  <PhoneInput
-                    focusBorderColor="none"
-                    borderWidth="none"
-                    className="chakra_input col-span-2"
-                    inputStyle={{
-                      width: "90px",
-                      height: "45px",
-                      borderRadius: "4px",
-                      border: "1px solid #00000033",
-                      backgroundColor: "#ffffff",
-                      color: "#6f4e37",
-                      opacity: "20",
-                    }}
-                    buttonStyle={{
-                      backgroundColor: "#ffffff",
-                      border: "1px solid #86644C",
-                    }}
-                    containerStyle={{
-                      borderRadius: "12px",
-                      backgroundColor: "#6f4e37",
-                    }}
-                    dropdownStyle={{
-                      backgroundColor: "#6f4e37",
-                      borderRadius: "8px",
-                    }}
-                    country={"pk"}
-                    onChange={(phone) =>
-                      setSupplier({
-                        ...supplier,
-                        countryCode: phone,
-                      })
-                    }
-                  />
-                  <input
-                    type="number"
-                    name="phoneNum"
-                    value={supplier?.phoneNum}
-                    placeholder="Enter Phone Number"
-                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5  w-full col-span-8"
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
 
               <div className="flex flex-col gap-y-2 w-full">
                 <label className="text-labelColor font-medium font-satoshi">

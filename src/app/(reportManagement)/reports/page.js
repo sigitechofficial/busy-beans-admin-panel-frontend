@@ -19,7 +19,7 @@ export default function page() {
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5 xl:gap-10">
         <ReportCard
           Icon={TbReportAnalytics}
-          title="Partner Commission Report"
+          title="Partner Profits Report"
           to="/reports/partner-commission"
         />
 

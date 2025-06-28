@@ -46,7 +46,7 @@ export default function UnpaidPartnerBalance() {
     { field: "productNames", header: "Customer Name" },
     { field: "productsSellingPrice", header: "Customer Name" },
     { field: "productsWholesalePrice", header: "Customer Name" },
-    { field: "commission", header: "Commission" },
+    { field: "commission", header: "Partner Profits" },
     { field: "orderDate", header: "Order Date" },
     { field: "orderCurrentStatus", header: "Order Status" },
   ];

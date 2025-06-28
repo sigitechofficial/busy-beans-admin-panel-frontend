@@ -40,7 +40,7 @@ export default function PartnerCommissionReport() {
     { field: "ordersPlaced", header: "Orders Placed" },
     { field: "totalSales", header: "Total Sales" },
     { field: "wholesalePriceCost", header: "Whole Sale Price Cost" },
-    { field: "totalCommission", header: "Total Commission" },
+    { field: "totalCommission", header: "Total Partner Profits" },
   ];
 
   const datas = [];
@@ -87,7 +87,7 @@ export default function PartnerCommissionReport() {
         <div className="flex items-center gap-x-2">
           <BackButton />
           <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-            Partner Commission Report
+             Partner Profits Report
           </h2>
         </div>
 

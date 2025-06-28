@@ -2,7 +2,7 @@
 import ManagementTab from "@/components/ui/ManagementTab";
 import MyDataTable from "@/components/ui/MyDataTable";
 import Select from "react-select";
-import selectStyles from "@/utilities/SelectStyle";
+import selectStyles, { drawerSelectStyles } from "@/utilities/SelectStyle";
 import HomeMiniCards from "@/components/ui/HomeMiniCards";
 import GetAPI from "@/utilities/GetAPI";
 import { useState } from "react";
@@ -14,12 +14,20 @@ import ErrorHandler from "@/utilities/ErrorHandler";
 import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import { PostAPI } from "@/utilities/PostAPI";
 import { PatchAPI } from "@/utilities/PatchAPI";
+import Switch from "react-switch";
+import { FaEdit } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 
 export default function Customers() {
+  const router = useRouter();
   const [type, setType] = useState("all");
   const [loader, setLoader] = useState("");
   const [modal, setModal] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedState, setselectedState] = useState({
+    value: "all",
+    label: "All",
+  });
 
   const { data, reFetch } = GetAPI(
     `api/v1/admin/customer-management/customer-list${
@@ -71,6 +79,22 @@ export default function Customers() {
     }
   };
 
+  const handleStatus = async (id, status) => {
+    try {
+      const res = await PatchAPI(`api/v1/admin/customer-update/${id}`, {
+        status: !status,
+      });
+      if (res?.data?.status === "success") {
+        success_toaster("Status updated successfully");
+        reFetch();
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
+    }
+  };
+
   const columns = [
     { field: "sl", header: "SL", sort: true },
     { field: "name", header: "Name", sort: true },
@@ -80,9 +104,22 @@ export default function Customers() {
     { field: "saleTaxNumber", header: "Sale Tax Number", sort: true },
     { field: "totalOrderAmount", header: "Total Orders", sort: true },
     { field: "totalOrderPlaced", header: "Total Orders Placed", sort: true },
-    { field: "salesRepName", header: "salesRepName", minWidth: "14rem" },
-    { field: "salesRepState", header: "salesRepState", minWidth: "14rem" },
-    { field: "status", header: "status", sort: true },
+    {
+      field: "salesRepName",
+      header: "Sales Representative Name",
+      minWidth: "14rem",
+    },
+    {
+      field: "salesRepState",
+      header: "Sales Representative State",
+      minWidth: "14rem",
+    },
+    { field: "status", header: "Status" },
+    {
+      field: "changeStatus",
+      header: "Change Status",
+    },
+    // { field: "action", header: "Action" },  // pending to be done
   ];
 
   const salesRepresentativeColumns = [
@@ -101,40 +138,121 @@ export default function Customers() {
 
   const datas = [];
   const salesRepresentativeDatas = [];
+  const StatesOptions = [{ value: "all", label: "All" }];
 
   const customers = data?.data?.data?.slice()?.reverse();
-  customers?.map((customer, i) => {
-    datas.push({
-      id: customer?.id,
-      sl: i + 1,
-      name: customer?.name,
-      email: customer?.email,
-      phoneNumber: customer?.phoneNumber,
-      emailToSendInvoices: customer?.emailToSendInvoices,
-      saleTaxNumber: customer?.saleTaxNumber,
-      totalOrderAmount: customer?.totalOrderAmount,
-      totalOrderPlaced: customer?.totalOrderPlaced,
-      salesRepName: customer?.salesRepName ?? (
-        <di className="w-44 bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
-          Not Assigned Yet
-        </di>
-      ),
-      salesRepState: customer?.salesRepState ?? "-",
 
-      status: (
-        <div>
-          {customer?.status ? (
-            <div className="w-24 bg-theme text-white font-semibold p-2 rounded-md flex justify-center">
-              Active
+  customers?.map((customer, i) => {
+    selectedState?.value === "all"
+      ? datas.push({
+          id: customer?.id,
+          sl: i + 1,
+          name: customer?.name,
+          email: customer?.email,
+          phoneNumber: customer?.phoneNumber,
+          emailToSendInvoices: customer?.emailToSendInvoices,
+          saleTaxNumber: customer?.saleTaxNumber,
+          totalOrderAmount: customer?.totalOrderAmount,
+          totalOrderPlaced: customer?.totalOrderPlaced,
+          salesRepName: customer?.salesRepName ?? (
+            <di className="w-44 bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+              Not Assigned Yet
+            </di>
+          ),
+          salesRepState: customer?.salesRepState ?? "-",
+          status: (
+            <div>
+              {customer?.status ? (
+                <div className="w-24 bg-theme text-white font-semibold p-2 rounded-md flex justify-center">
+                  Active
+                </div>
+              ) : (
+                <div className="w-24 bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+                  Inactive
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="w-24 bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
-              Inactive
+          ),
+          changeStatus: (
+            <label>
+              <Switch
+                onChange={() => {
+                  handleStatus(customer?.id, customer?.status);
+                }}
+                checked={customer?.status}
+                uncheckedIcon={false}
+                checkedIcon={false}
+                onColor="#86644c"
+                onHandleColor="#fff"
+                className="react-switch"
+                boxShadow="none"
+              />
+            </label>
+          ),
+          action: (
+            <button
+              className="border border-theme rounded-md p-2 text-theme"
+              onClick={() => router.push(`/customers/edit/${customer?.id}`)}
+            >
+              <FaEdit size={24} />
+            </button>
+          ),
+        })
+      : selectedState?.value === customer?.salesRepState &&
+        datas.push({
+          id: customer?.id,
+          sl: i + 1,
+          name: customer?.name,
+          email: customer?.email,
+          phoneNumber: customer?.phoneNumber,
+          emailToSendInvoices: customer?.emailToSendInvoices,
+          saleTaxNumber: customer?.saleTaxNumber,
+          totalOrderAmount: customer?.totalOrderAmount,
+          totalOrderPlaced: customer?.totalOrderPlaced,
+          salesRepName: customer?.salesRepName ?? (
+            <di className="w-44 bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+              Not Assigned Yet
+            </di>
+          ),
+          salesRepState: customer?.salesRepState ?? "-",
+          status: (
+            <div>
+              {customer?.status ? (
+                <div className="w-24 bg-theme text-white font-semibold p-2 rounded-md flex justify-center">
+                  Active
+                </div>
+              ) : (
+                <div className="w-24 bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+                  Inactive
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      ),
-    });
+          ),
+          changeStatus: (
+            <label>
+              <Switch
+                onChange={() => {
+                  handleStatus(customer?.id, customer?.status);
+                }}
+                checked={customer?.status}
+                uncheckedIcon={false}
+                checkedIcon={false}
+                onColor="#86644c"
+                onHandleColor="#fff"
+                className="react-switch"
+                boxShadow="none"
+              />
+            </label>
+          ),
+          action: (
+            <button
+              className="border border-theme rounded-md p-2 text-theme"
+              onClick={() => router.push(`/customers/edit/${customer?.id}`)}
+            >
+              <FaEdit size={24} />
+            </button>
+          ),
+        });
   });
 
   salesRepresentativeData?.data?.data?.map((sR, i) => {
@@ -166,6 +284,19 @@ export default function Customers() {
     });
   });
 
+  customers?.map((customer, i) => {
+    const checkState = StatesOptions?.find(
+      (stateName) => stateName?.value === customer?.salesRepState
+    );
+    if (!checkState) {
+      StatesOptions.push({
+        value: customer?.salesRepState,
+        label: customer?.salesRepState,
+      });
+    }
+  });
+  console.log("🚀 ~ Customers ~ StatesOptions:", StatesOptions);
+
   return data?.length === 0 ? (
     <Loader />
   ) : (
@@ -175,7 +306,15 @@ export default function Customers() {
           Customer Management
         </h2>
 
-        <Select placeholder="Filters" className="w-40" styles={selectStyles} />
+        <Select
+          // defaultInputValue={StatesOptions[0]}
+          options={StatesOptions}
+          value={selectedState?.value ? selectedState : null}
+          placeholder="Select State"
+          className="w-40"
+          styles={drawerSelectStyles}
+          onChange={(e) => setselectedState(e)}
+        />
       </div>
 
       <div className="flex justify-between">

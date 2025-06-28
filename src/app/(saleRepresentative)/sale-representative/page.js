@@ -4,7 +4,7 @@ import ManagementTab from "@/components/ui/ManagementTab";
 import MyDataTable from "@/components/ui/MyDataTable";
 import Select from "react-select";
 import selectStyles from "@/utilities/SelectStyle";
-import { FaEdit } from "react-icons/fa";
+import { FaEdit, FaEye } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import Switch from "react-switch";
 import GetAPI from "@/utilities/GetAPI";
@@ -128,10 +128,18 @@ export default function SaleRepresentative() {
           />
         </label>
       ),
+      // /orders/pending-pullouts
       action: (
         <div className="flex gap-x-2">
           <button
-            too
+            className="border border-yellow-400 rounded-md p-2 text-yellow-400"
+            onClick={() => {
+              router.push(`/orders/pending-pullouts/${sR?.id}`);
+            }}
+          >
+            <FaEye size={24} />
+          </button>
+          <button
             className="border border-theme rounded-md p-2 text-theme"
             onClick={() => router.push(`/sale-representative/edit/${sR?.id}`)}
           >

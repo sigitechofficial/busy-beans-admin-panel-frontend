@@ -357,7 +357,7 @@ export default function EditsSalesRepresentative() {
                     }}
                     containerStyle={{
                       borderRadius: "12px",
-                      backgroundColor: "#6f4e37",
+                      // backgroundColor: "#6f4e37",
                     }}
                     dropdownStyle={{
                       backgroundColor: "#6f4e37",

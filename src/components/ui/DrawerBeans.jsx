@@ -20,7 +20,7 @@ import Select from "react-select";
 import { drawerSelectStyles, selectStyles2 } from "@/utilities/SelectStyle";
 import { RxCross2 } from "react-icons/rx";
 import MiniLoader from "./MiniLoader";
-import { MdInsertComment } from "react-icons/md";
+import { MdInsertComment, MdOutlineConfirmationNumber } from "react-icons/md";
 
 const DrawerBeans = ({
   drawerOpen: open,
@@ -38,7 +38,7 @@ const DrawerBeans = ({
     { label: "Card", value: "card" },
   ];
   const orderFrequencyOptions = [
-    { label: "Just Onces", value: "just-onces" },
+    { label: "Once", value: "just-onces" },
     { label: "Weekly", value: "weekly" },
     { label: "Every Two Weeks", value: "every-two-weeks" },
     { label: "Every Four Weeks", value: "every-four-weeks" },
@@ -152,10 +152,17 @@ const DrawerBeans = ({
 
   const handleSendQuotation = async () => {
     if (type === "createOrder") {
+      console.log("i am inside this");
       const createOrderData = JSON.parse(
         localStorage.getItem("createOrderData")
       );
-      if (!email) {
+      console.log(
+        "🚀 ~ handleSendQuotation ~ createOrderData:",
+        createOrderData
+      );
+      if (createOrderData?.length === 0) {
+        info_toaster("No Product is selected");
+      } else if (!email?.trim()) {
         info_toaster("Email cannot be empty");
       } else if (!order?.addressId) {
         info_toaster("Address cannot be empty");
@@ -167,9 +174,7 @@ const DrawerBeans = ({
       // else if (!order?.note) {
       //   info_toaster("Note cannot be empty");
       // }
-      else if (createOrderData.length === 0) {
-        info_toaster("No Product is selected");
-      } else {
+      else {
         setLoader(true);
         try {
           const res = await PostAPI(
@@ -261,7 +266,6 @@ const DrawerBeans = ({
     );
     setOrder({
       ...order,
-      poNumber: selectedEmail?.saleTaxNumber,
       userId: selectedEmail?.id,
     });
     selectedEmail?.addresses?.map((address) =>
@@ -356,32 +360,63 @@ const DrawerBeans = ({
                       }}
                     />
                   </div>
-                  <div className="w-full font-sf font-normal text-base text-theme-black-2 flex items-center gap-3 px-5 py-[5px] duration-300 border-2 border-white hover:border-goldenLight focus-within:border-goldenLight rounded">
-                    <MdInsertComment size={24} />
-                    <div className="relative w-full">
-                      <input
-                        type="text"
-                        id="courier-note"
-                        className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${
-                          order?.note ? "placeholder-transparent" : ""
-                        }`}
-                        value={order?.note}
-                        onChange={(e) =>
-                          setOrder({ ...order, note: e.target.value })
-                        }
-                      />
-                      <label
-                        htmlFor="courier-note"
-                        className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${
-                          order?.note
-                            ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
-                            : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
-                        }`}
-                      >
-                        {order?.note
-                          ? "Note for the supplier (optional)"
-                          : "Add note for the supplier (optional)"}
-                      </label>
+
+                  <div>
+                    <div className="w-full font-sf font-normal text-base text-theme-black-2 flex items-center gap-3 px-5 py-[5px] duration-300 border-2 border-white hover:border-goldenLight focus-within:border-goldenLight rounded-t">
+                      <MdInsertComment size={24} />
+                      <div className="relative w-full">
+                        <input
+                          type="text"
+                          id="courier-note"
+                          className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${
+                            order?.note ? "placeholder-transparent" : ""
+                          }`}
+                          value={order?.note}
+                          onChange={(e) =>
+                            setOrder({ ...order, note: e.target.value })
+                          }
+                        />
+                        <label
+                          htmlFor="courier-note"
+                          className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${
+                            order?.note
+                              ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
+                              : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
+                          }`}
+                        >
+                          {order?.note
+                            ? "Note for the supplier (optional)"
+                            : "Add note for the supplier (optional)"}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="w-full font-sf font-normal text-base text-theme-black-2 flex items-center gap-3 px-5 py-[5px] duration-300 border-2 border-white hover:border-goldenLight focus-within:border-goldenLight rounded-b">
+                      <MdOutlineConfirmationNumber size={24} />
+                      <div className="relative w-full">
+                        <input
+                          type="text"
+                          id="poNumber"
+                          className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${
+                            order?.note ? "placeholder-transparent" : ""
+                          }`}
+                          value={order?.poNumber}
+                          onChange={(e) =>
+                            setOrder({ ...order, poNumber: e.target.value })
+                          }
+                        />
+                        <label
+                          htmlFor="poNumber"
+                          className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${
+                            order?.poNumber
+                              ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
+                              : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
+                          }`}
+                        >
+                          {order?.poNumber
+                            ? "Place Order Number"
+                            : "Add Place Order Number (optional)"}
+                        </label>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -431,77 +466,83 @@ const DrawerBeans = ({
               <p className="font-medium text-base">Order Details</p>
 
               <div className="">
-                <div className="h-3/5 overflow-y-auto">
-                  {cartItems?.map((cartI, index) => (
-                    <div
-                      key={index}
-                      className="font-sf relative flex sm:flex-row items-start rounded-2xl h-full mb-3"
-                    >
-                      <div className="flex justify-center sm:min-w-[100px] min-w-[72px] sm:h-[72px] h-[72px] rounded-2xl">
-                        <img
-                          src={BASE_URL + cartI?.image}
-                          alt="cutlery"
-                          className="w-full h-full rounded-md object-cover"
-                        />
-                      </div>
-                      <div className="px-5 w-full font-sf">
-                        <h3 className="capitalize font-semibold text-base break-all">
-                          {cartI?.name}
-                        </h3>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-x-3">
-                            <span className="font-semibold text-sm text-white mt-1">
-                              {"$ "}
-                              {parseFloat(
-                                Number(cartI?.price) * Number(cartI?.qty)
-                              )}{" "}
-                            </span>
+                {cartItems?.length > 0 ? (
+                  <div className="h-3/5 overflow-y-auto">
+                    {cartItems?.map((cartI, index) => (
+                      <div
+                        key={index}
+                        className="font-sf relative flex sm:flex-row items-start rounded-2xl h-full mb-3"
+                      >
+                        <div className="flex justify-center sm:min-w-[100px] min-w-[72px] sm:h-[72px] h-[72px] rounded-2xl">
+                          <img
+                            src={BASE_URL + cartI?.image}
+                            alt="cutlery"
+                            className="w-full h-full rounded-md object-cover"
+                          />
+                        </div>
+                        <div className="px-5 w-full font-sf">
+                          <h3 className="capitalize font-semibold text-base break-all">
+                            {cartI?.name}
+                          </h3>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-x-3">
+                              <span className="font-semibold text-sm text-white mt-1">
+                                {"$ "}
+                                {parseFloat(
+                                  Number(cartI?.price) * Number(cartI?.qty)
+                                )}{" "}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="cursor-pointer mt-2 mr-1 rounded-full flex items-center justify-around text-white p-1 relative bg-black right-0">
-                        {counter === index ? (
-                          <div className="flex">
-                            <button
-                              onClick={() => {
-                                handleItemClick("minus", cartI?.id);
-                              }}
-                              className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-white hover:text-black duration-300"
+                        <div className="cursor-pointer mt-2 mr-1 rounded-full flex items-center justify-around text-white p-1 relative bg-black right-0">
+                          {counter === index ? (
+                            <div className="flex">
+                              <button
+                                onClick={() => {
+                                  handleItemClick("minus", cartI?.id);
+                                }}
+                                className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-white hover:text-black duration-300"
+                              >
+                                <RiSubtractFill />
+                              </button>
+                              <span className="text-lg font-sf w-7 text-center">
+                                {cartI?.qty}
+                              </span>
+                              <button
+                                onClick={() => {
+                                  handleItemClick("plus", cartI?.id);
+                                }}
+                                className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-white hover:text-black duration-300"
+                              >
+                                <BiPlus />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  handleItemClick("delete", cartI?.id);
+                                }}
+                                className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-red-600 hover:text-white duration-300"
+                              >
+                                <BiTrash />
+                              </button>
+                            </div>
+                          ) : (
+                            <span
+                              onClick={() => handleCounterClick(index)}
+                              className="text-lg font-sf w-7 text-center"
                             >
-                              <RiSubtractFill />
-                            </button>
-                            <span className="text-lg font-sf w-7 text-center">
                               {cartI?.qty}
                             </span>
-                            <button
-                              onClick={() => {
-                                handleItemClick("plus", cartI?.id);
-                              }}
-                              className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-white hover:text-black duration-300"
-                            >
-                              <BiPlus />
-                            </button>
-                            <button
-                              onClick={() => {
-                                handleItemClick("delete", cartI?.id);
-                              }}
-                              className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-red-600 hover:text-white duration-300"
-                            >
-                              <BiTrash />
-                            </button>
-                          </div>
-                        ) : (
-                          <span
-                            onClick={() => handleCounterClick(index)}
-                            className="text-lg font-sf w-7 text-center"
-                          >
-                            {cartI?.qty}
-                          </span>
-                        )}
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-center text-red-500 ">
+                    No Item is Selected !
+                  </p>
+                )}
               </div>
             </div>
           )}

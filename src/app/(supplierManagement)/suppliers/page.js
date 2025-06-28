@@ -97,7 +97,7 @@ export default function Suppliers() {
       supplierName: supplier?.supplierName,
       email: supplier?.email,
       address: `${supplier?.addressOne}, ${supplier?.addressTwo}, ${supplier?.city}, ${supplier?.state}, ${supplier?.zipCode}, ${supplier?.country}`,
-      phoneNum: supplier?.phoneNum,
+      phoneNum: supplier?.countryCode +supplier?.phoneNum,
       // addressOne: supplier?.addressOne,
       // addressTwo: supplier?.addressTwo,
       businessRegistrationNumber: supplier?.businessRegistrationNumber,

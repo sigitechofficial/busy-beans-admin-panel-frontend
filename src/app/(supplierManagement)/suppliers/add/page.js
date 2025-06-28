@@ -22,7 +22,7 @@ export default function AddNewSupplier() {
     state: "",
     zipCode: "",
     phoneNum: "",
-    countryCode:"+92",
+    countryCode: "+92",
     addressOne: "",
     addressTwo: "",
     businessWeb: "",
@@ -287,6 +287,19 @@ export default function AddNewSupplier() {
                 </div>
                 <div className="flex flex-col gap-y-2">
                   <label className="text-labelColor font-medium font-satoshi">
+                    Business website
+                  </label>
+                  <input
+                    type="text"
+                    name="businessWeb"
+                    value={supplier?.businessWeb}
+                    placeholder="Enter Business name"
+                    className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    onChange={handleChange}
+                  />
+                </div>
+                {/* <div className="flex flex-col gap-y-2">
+                  <label className="text-labelColor font-medium font-satoshi">
                     Business Registration Number
                   </label>
                   <input
@@ -297,7 +310,7 @@ export default function AddNewSupplier() {
                     className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
-                </div>
+                </div> */}
               </div>
 
               <div className="flex flex-col gap-y-2">
@@ -326,36 +339,6 @@ export default function AddNewSupplier() {
                   onChange={handleChange}
                 />
               </div>
-              <div className="flex flex-col gap-y-2">
-                <label className="text-labelColor font-medium font-satoshi">
-                  Business website
-                </label>
-                <input
-                  type="text"
-                  name="businessWeb"
-                  value={supplier?.businessWeb}
-                  placeholder="Enter Business name"
-                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            {/* right side */}
-            <div className="space-y-4">
-              {/* <div className="flex flex-col gap-y-2">
-                <label className="text-labelColor font-medium font-satoshi">
-                  Phone number
-                </label>
-                <input
-                  type="number"
-                  name="phoneNum"
-                  value={supplier?.phoneNum}
-                  placeholder="Enter Phone Number"
-                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                  onChange={handleChange}
-                />
-              </div> */}
                <div className="flex flex-col gap-y-2">
                 <label className="text-labelColor font-medium font-satoshi">
                   Phone number
@@ -366,7 +349,7 @@ export default function AddNewSupplier() {
                   placeholder="Enter Phone Number"
                   className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                 /> */}
-                 <div className="grid grid-cols-10 gap-x-2">
+                <div className="grid grid-cols-10 gap-x-2">
                   <PhoneInput
                     focusBorderColor="none"
                     borderWidth="none"
@@ -386,7 +369,7 @@ export default function AddNewSupplier() {
                     }}
                     containerStyle={{
                       borderRadius: "12px",
-                      backgroundColor: "#6f4e37",
+                      // backgroundColor: "#6f4e37",
                     }}
                     dropdownStyle={{
                       backgroundColor: "#6f4e37",
@@ -410,6 +393,37 @@ export default function AddNewSupplier() {
                   />
                 </div>
               </div>
+              {/* <div className="flex flex-col gap-y-2">
+                <label className="text-labelColor font-medium font-satoshi">
+                  Business website
+                </label>
+                <input
+                  type="text"
+                  name="businessWeb"
+                  value={supplier?.businessWeb}
+                  placeholder="Enter Business name"
+                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  onChange={handleChange}
+                />
+              </div> */}
+            </div>
+
+            {/* right side */}
+            <div className="space-y-4">
+              {/* <div className="flex flex-col gap-y-2">
+                <label className="text-labelColor font-medium font-satoshi">
+                  Phone number
+                </label>
+                <input
+                  type="number"
+                  name="phoneNum"
+                  value={supplier?.phoneNum}
+                  placeholder="Enter Phone Number"
+                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  onChange={handleChange}
+                />
+              </div> */}
+             
               <div className="flex flex-col gap-y-2 w-full">
                 <label className="text-labelColor font-medium font-satoshi">
                   Supplier type

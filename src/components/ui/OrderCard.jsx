@@ -308,6 +308,10 @@ export default function OrderCard(props) {
             <span className="font-semibold">${props?.orderData?.subTotal}</span>
           </p>
           <p>
+            <span className="font-bold">Shipping Charges:</span>{" "}
+            <span className="font-semibold">${props?.orderData?.shippingCharges}</span>
+          </p>
+          <p>
             <span className="font-bold">Total:</span>{" "}
             <span className="font-semibold">
               ${props?.orderData?.totalBill}

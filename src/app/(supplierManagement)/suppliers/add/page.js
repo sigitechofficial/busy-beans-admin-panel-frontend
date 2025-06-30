@@ -74,11 +74,13 @@ export default function AddNewSupplier() {
       info_toaster("Enter zipcode");
     } else if (!supplier?.phoneNum.trim()) {
       info_toaster("Enter phone number");
-    } else if (!supplier?.addressOne.trim()) {
-      info_toaster("Enter address one");
-    } else if (!supplier?.addressTwo.trim()) {
-      info_toaster("Enter address two");
-    } else if (!supplier?.businessWeb.trim()) {
+    }
+    // else if (!supplier?.addressOne.trim()) {
+    //   info_toaster("Enter address one");
+    // } else if (!supplier?.addressTwo.trim()) {
+    //   info_toaster("Enter address two");
+    // }
+    else if (!supplier?.businessWeb.trim()) {
       info_toaster("Enter business webiste");
     } else if (!supplier?.businessRegistrationNumber.trim()) {
       info_toaster("Enter business registration number");
@@ -339,7 +341,7 @@ export default function AddNewSupplier() {
                   onChange={handleChange}
                 />
               </div>
-               <div className="flex flex-col gap-y-2">
+              <div className="flex flex-col gap-y-2">
                 <label className="text-labelColor font-medium font-satoshi">
                   Phone number
                 </label>
@@ -423,7 +425,7 @@ export default function AddNewSupplier() {
                   onChange={handleChange}
                 />
               </div> */}
-             
+
               <div className="flex flex-col gap-y-2 w-full">
                 <label className="text-labelColor font-medium font-satoshi">
                   Supplier type

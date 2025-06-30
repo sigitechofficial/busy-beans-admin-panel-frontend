@@ -48,6 +48,7 @@ export default function page() {
       saleTaxNumber: "",
       emailToSendInvoices: "",
       registerBy: "email",
+      billingAddress: "",
     },
     address: {
       companyaddress: "",
@@ -163,76 +164,77 @@ export default function page() {
       //   (city) => city?.name === userData?.address?.town
       // );
       // if (cityStatus) {
-        try {
-          setLoader(true);
-          const res = await PostAPI(
-            `api/v1/admin/add-customer/sales-rep/${userID}`,
-            {
-              info: {
-                name: userData?.info?.name,
-                email: userData?.info?.email,
-                password: userData?.info?.password,
-                status: true,
-                phoneNumber: userData?.info?.phoneNumber,
-                countryCode: userData?.info?.countryCode,
-                saleTaxNumber: userData?.info?.saleTaxNumber,
-                emailToSendInvoices: userData?.info?.emailToSendInvoices,
-                companyName: userData?.info?.companyName,
-                companyInfo: userData?.info?.companyInfo,
-              },
-              address: {
-                companyaddress: userData?.address?.companyaddress,
-                addressLineOne: userData?.address?.addressLineOne,
-                addressLineTwo: userData?.address?.addressLineTwo,
-                town: userData?.address?.town,
-                country: userData?.address?.country,
-                state: userData?.address?.state,
-                zipCode: userData?.address?.zipCode,
-                status: true,
-              },
-            }
-          );
-          if (res?.data?.status === "success") {
-            setStep(1);
-            setUserData({
-              info: {
-                name: "",
-                email: "",
-                password: "",
-                status: true,
-                phoneNumber: "",
-                saleTaxNumber: "",
-                emailToSendInvoices: "",
-                registerBy: "email",
-              },
-              address: {
-                companyaddress: "",
-                addressLineOne: "",
-                addressLineTwo: "",
-                town: "",
-                country: "",
-                state: "",
-                zipCode: "",
-                status: true,
-              },
-            });
-            setSelectedCountry({ label: "", value: "" });
-            router.push("/sales-representative/customers");
-            setLoader(false);
-            success_toaster(res?.data?.data?.message);
-          } else {
-            throw new Error(
-              res?.data?.message || "An unexpected error occurred."
-            );
+      try {
+        setLoader(true);
+        const res = await PostAPI(
+          `api/v1/admin/add-customer/sales-rep/${userID}`,
+          {
+            info: {
+              name: userData?.info?.name,
+              email: userData?.info?.email,
+              password: userData?.info?.password,
+              status: true,
+              phoneNumber: userData?.info?.phoneNumber,
+              countryCode: userData?.info?.countryCode,
+              saleTaxNumber: userData?.info?.saleTaxNumber,
+              emailToSendInvoices: userData?.info?.emailToSendInvoices,
+              companyName: userData?.info?.companyName,
+              companyInfo: userData?.info?.companyInfo,
+              billingAddress: userData?.info?.billingAddress,
+            },
+            address: {
+              companyaddress: userData?.address?.companyaddress,
+              addressLineOne: userData?.address?.addressLineOne,
+              addressLineTwo: userData?.address?.addressLineTwo,
+              town: userData?.address?.town,
+              country: userData?.address?.country,
+              state: userData?.address?.state,
+              zipCode: userData?.address?.zipCode,
+              status: true,
+            },
           }
-        } catch (error) {
-          ErrorHandler(error);
+        );
+        if (res?.data?.status === "success") {
+          setStep(1);
+          setUserData({
+            info: {
+              name: "",
+              email: "",
+              password: "",
+              status: true,
+              phoneNumber: "",
+              saleTaxNumber: "",
+              emailToSendInvoices: "",
+              registerBy: "email",
+            },
+            address: {
+              companyaddress: "",
+              addressLineOne: "",
+              addressLineTwo: "",
+              town: "",
+              country: "",
+              state: "",
+              zipCode: "",
+              status: true,
+            },
+          });
+          setSelectedCountry({ label: "", value: "" });
+          router.push("/sales-representative/customers");
           setLoader(false);
+          success_toaster(res?.data?.data?.message);
+        } else {
+          throw new Error(
+            res?.data?.message || "An unexpected error occurred."
+          );
         }
+      } catch (error) {
+        ErrorHandler(error);
+        setLoader(false);
       }
-      //  else {
-      //   info_toaster("Service not operational here");
-      // }
+    }
+    //  else {
+    //   info_toaster("Service not operational here");
+    // }
     // }
   };
 
@@ -633,6 +635,19 @@ export default function page() {
                             className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                           />
                         </div>
+                      </div>
+                      <div className="flex flex-col gap-y-2">
+                        <label className="text-labelColor font-medium font-satoshi">
+                          Billing Address
+                        </label>
+                        <input
+                          type="text"
+                          name="billingAddress"
+                          onChange={handleInfo}
+                          value={userData?.info?.billingAddress}
+                          placeholder="Enter Billing Address"
+                          className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        />
                       </div>
                     </div>
                     <div>

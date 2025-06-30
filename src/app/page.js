@@ -24,6 +24,7 @@ export default function Home() {
     var url = window.location.href;
     var windowClose = window;
   }
+  
   const [showBankRetry, setShowBankRetry] = useState(false);
   console.log("🚀 ~ Home ~ showBankRetry:", showBankRetry);
 
@@ -273,7 +274,7 @@ export default function Home() {
 
       // Step 2: Load Stripe
       const stripe = await loadStripe(
-        "pk_test_51RPXZNCxTuXimvwHkvKO6MrVTckQ45X3JC2AkCVyV9fxLCK442YPbG8yM2NOexEqnD3wNAXdKfrOyEH2dTSzYKpt00WTyK7kzl"
+        "pk_live_51HGqhQECVLSM4sc2wb1g4dx3lUe61VcK3BMjnUPk28Y5qaRC9sDQ6X6Ar5OZHmVoAIVe2rXncVOxHUax10qb4d8L00KCAdXpd5"
       );
 
       if (!stripe) {

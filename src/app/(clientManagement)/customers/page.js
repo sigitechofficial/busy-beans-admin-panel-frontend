@@ -38,6 +38,7 @@ export default function Customers() {
         : "/sale-rep/assign"
     } `
   );
+  console.log("🚀 ~ Customers ~ data:", data?.data);
 
   const { data: dashboardCards } = GetAPI(
     "api/v1/admin/customer-management/dahboard-cards"
@@ -45,7 +46,7 @@ export default function Customers() {
   // console.log("🚀 ~ Customers ~ dashboardCards:",dashboardCards?.data?.data)
 
   const { data: salesRepresentativeData } = GetAPI("api/v1/admin/sales-rep");
-  console.log("🚀 ~ Customers ~ data:", data?.data);
+  // console.log("🚀 ~ Customers ~ data:", data?.data);
 
   const handleCancel = () => {
     setModal("");
@@ -149,7 +150,9 @@ export default function Customers() {
           sl: i + 1,
           name: customer?.name,
           email: customer?.email,
-          phoneNumber: customer?.phoneNumber,
+          phoneNumber: `${customer?.countryCode ?? ""} ${
+            customer?.phoneNumber
+          }`,
           emailToSendInvoices: customer?.emailToSendInvoices,
           saleTaxNumber: customer?.saleTaxNumber,
           totalOrderAmount: customer?.totalOrderAmount,

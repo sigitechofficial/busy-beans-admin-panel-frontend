@@ -109,7 +109,7 @@ export default function PendingPulloutsOrders() {
           onClick={handlePulloutPayments}
           className="rounded-lg font-inter font-medium text-white bg-theme hover:text-theme hover:bg-white border border-theme duration-150 px-5 py-3 sm:h-full"
         >
-          Pullout payment
+          Pullout Payment
         </button>
       </div>
 

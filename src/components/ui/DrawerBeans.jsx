@@ -56,6 +56,7 @@ const DrawerBeans = ({
     orderFrequency: "",
     addressId: "",
     userId: "",
+    shippingCharges: "",
   });
 
   if (typeof window !== "undefined") {
@@ -195,6 +196,7 @@ const DrawerBeans = ({
                 frequency: order?.orderFrequency, //  'just-onces','weekly','every-two-weeks','every-four-weeks',
                 addressId: order?.addressId,
                 userId: order?.userId,
+                shippingCharges: order?.shippingCharges,
               },
               items: handleCreateOrderData(createOrderData),
             }
@@ -277,16 +279,29 @@ const DrawerBeans = ({
     setAddressOptions([...addressList]);
   };
 
-  // useEffect(() => {
-  //   if (drawerBodyRef.current) {
-  //     drawerBodyRef.current.addEventListener("scroll", handleDrawerScroll);
-  //   }
-  //   return () => {
-  //     if (drawerBodyRef.current) {
-  //       drawerBodyRef.current.removeEventListener("scroll", handleDrawerScroll);
-  //     }
-  //   };
-  // }, []);
+  useEffect(() => {
+    const fetchCharges = async () => {
+      try {
+        const res = await PostAPI("api/v1/admin/shipping-charges-on-weight", {
+          weight: totalWeight,
+        });
+        console.log("🚀 ~ fetchCharges ~ res:", res?.data?.data?.charges);
+        if (res?.data?.status === "success") {
+          success_toaster("Shipping Charges Added Successfully");
+          setOrder({ ...order, shippingCharges: res?.data?.data?.charges });
+        } else {
+          throw new Error(
+            res?.data?.message || "An unexpected error occurred."
+          );
+        }
+      } catch (error) {
+        ErrorHandler(error);
+      }
+    };
+    if (type === "createOrder") {
+      fetchCharges();
+    }
+  }, []);
 
   return (
     <div className="card relative">
@@ -413,8 +428,8 @@ const DrawerBeans = ({
                           }`}
                         >
                           {order?.poNumber
-                            ? "Place Order Number"
-                            : "Add Place Order Number (optional)"}
+                            ? "Purchase Order Number"
+                            : "Add Purchase Order Number (optional)"}
                         </label>
                       </div>
                     </div>
@@ -467,76 +482,90 @@ const DrawerBeans = ({
 
               <div className="">
                 {cartItems?.length > 0 ? (
-                  <div className="h-3/5 overflow-y-auto">
-                    {cartItems?.map((cartI, index) => (
-                      <div
-                        key={index}
-                        className="font-sf relative flex sm:flex-row items-start rounded-2xl h-full mb-3"
-                      >
-                        <div className="flex justify-center sm:min-w-[100px] min-w-[72px] sm:h-[72px] h-[72px] rounded-2xl">
-                          <img
-                            src={BASE_URL + cartI?.image}
-                            alt="cutlery"
-                            className="w-full h-full rounded-md object-cover"
-                          />
-                        </div>
-                        <div className="px-5 w-full font-sf">
-                          <h3 className="capitalize font-semibold text-base break-all">
-                            {cartI?.name}
-                          </h3>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-x-3">
-                              <span className="font-semibold text-sm text-white mt-1">
-                                {"$ "}
-                                {parseFloat(
-                                  Number(cartI?.price) * Number(cartI?.qty)
-                                )}{" "}
-                              </span>
+                  <div>
+                    <div className="h-3/5 overflow-y-auto">
+                      {cartItems?.map((cartI, index) => (
+                        <div
+                          key={index}
+                          className="font-sf relative flex sm:flex-row items-start rounded-2xl h-full mb-3"
+                        >
+                          <div className="flex justify-center sm:min-w-[100px] min-w-[72px] sm:h-[72px] h-[72px] rounded-2xl">
+                            <img
+                              src={BASE_URL + cartI?.image}
+                              alt="cutlery"
+                              className="w-full h-full rounded-md object-cover"
+                            />
+                          </div>
+                          <div className="px-5 w-full font-sf">
+                            <h3 className="capitalize font-semibold text-base break-all">
+                              {cartI?.name}
+                            </h3>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-x-3">
+                                <span className="font-semibold text-sm text-white mt-1">
+                                  {"$ "}
+                                  {parseFloat(
+                                    Number(cartI?.price) * Number(cartI?.qty)
+                                  )}{" "}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className="cursor-pointer mt-2 mr-1 rounded-full flex items-center justify-around text-white p-1 relative bg-black right-0">
-                          {counter === index ? (
-                            <div className="flex">
-                              <button
-                                onClick={() => {
-                                  handleItemClick("minus", cartI?.id);
-                                }}
-                                className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-white hover:text-black duration-300"
+                          <div className="cursor-pointer mt-2 mr-1 rounded-full flex items-center justify-around text-white p-1 relative bg-black right-0">
+                            {counter === index ? (
+                              <div className="flex">
+                                <button
+                                  onClick={() => {
+                                    handleItemClick("minus", cartI?.id);
+                                  }}
+                                  className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-white hover:text-black duration-300"
+                                >
+                                  <RiSubtractFill />
+                                </button>
+                                <span className="text-lg font-sf w-7 text-center">
+                                  {cartI?.qty}
+                                </span>
+                                <button
+                                  onClick={() => {
+                                    handleItemClick("plus", cartI?.id);
+                                  }}
+                                  className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-white hover:text-black duration-300"
+                                >
+                                  <BiPlus />
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    handleItemClick("delete", cartI?.id);
+                                  }}
+                                  className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-red-600 hover:text-white duration-300"
+                                >
+                                  <BiTrash />
+                                </button>
+                              </div>
+                            ) : (
+                              <span
+                                onClick={() => handleCounterClick(index)}
+                                className="text-lg font-sf w-7 text-center"
                               >
-                                <RiSubtractFill />
-                              </button>
-                              <span className="text-lg font-sf w-7 text-center">
                                 {cartI?.qty}
                               </span>
-                              <button
-                                onClick={() => {
-                                  handleItemClick("plus", cartI?.id);
-                                }}
-                                className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-white hover:text-black duration-300"
-                              >
-                                <BiPlus />
-                              </button>
-                              <button
-                                onClick={() => {
-                                  handleItemClick("delete", cartI?.id);
-                                }}
-                                className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-red-600 hover:text-white duration-300"
-                              >
-                                <BiTrash />
-                              </button>
-                            </div>
-                          ) : (
-                            <span
-                              onClick={() => handleCounterClick(index)}
-                              className="text-lg font-sf w-7 text-center"
-                            >
-                              {cartI?.qty}
-                            </span>
-                          )}
+                            )}
+                          </div>
                         </div>
+                      ))}
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between gap-x-2">
+                        <h5 className="text-base text-white">Subtotal</h5>
+                        <h6>$ {totalPrice?.toFixed(2)}</h6>
                       </div>
-                    ))}
+                      <div className="flex items-center justify-between gap-x-2">
+                        <h5 className="text-base text-white">
+                          Shipping Charges
+                        </h5>
+                        <h6>$ {order?.shippingCharges}</h6>
+                      </div>
+                    </div>
                   </div>
                 ) : (
                   <p className="text-center text-red-500 ">
@@ -560,7 +589,10 @@ const DrawerBeans = ({
                   {type === "createOrder" ? "Create Order" : "Send Quotation"}
                 </p>
               </div>
-              ${totalPrice?.toFixed(2)}
+              ${" "}
+              {(
+                Number(totalPrice) + Number(order?.shippingCharges ?? 0)
+              )?.toFixed(2)}
             </button>
           </div>
         </div>

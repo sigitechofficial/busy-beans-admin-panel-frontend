@@ -161,7 +161,7 @@ export default function Charts() {
       {/* Doughnut Chart Start */}
       <div className="lg:col-span-2 bg-white">
         <div className="border-b-[1px] h-16 px-3 flex flex-col justify-center">
-          <p className="font-bold font-inter text-2xl">Bank Cheque</p>
+          <p className="font-bold font-inter text-2xl">Bank Check</p>
           {/* <p className="text-sm text-gray-600">
             Customers that buy our Subscriptions
           </p> */}

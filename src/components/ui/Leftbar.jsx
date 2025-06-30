@@ -539,12 +539,12 @@ export default function Leftbar(props) {
             active?.collection?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  <ListItems title="Add Bank Cheque" to="/add-cheque" />
+                  <ListItems title="Add Bank Check" to="/add-cheque" />
                   <ListItems
                     title="Collection History"
                     to="/collection-history"
                   />
-                  <ListItems title="Bank Cheques Due Date" to="/cheques-due-date" />
+                  <ListItems title="Bank Checks Due Date" to="/cheques-due-date" />
                 </div>
                 <hr className="w-full" />
               </>

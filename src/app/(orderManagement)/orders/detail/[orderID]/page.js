@@ -149,7 +149,7 @@ export default function OrderDetail() {
           },
         });
         if (res?.data?.status === "success") {
-          success_toaster("Cheque Added successfully");
+          success_toaster("Bank Check Added successfully");
           reFetch();
           setModal({
             type: "",
@@ -182,7 +182,7 @@ export default function OrderDetail() {
           },
         });
         if (res?.data?.status === "success") {
-          success_toaster("Cheque Updated successfully");
+          success_toaster("Bank Check Updated successfully");
           reFetch();
           setChequeId("");
           setModal({
@@ -306,7 +306,7 @@ export default function OrderDetail() {
             onClick={handleAddChequeModel}
             className="bg-black text-white disabled:cursor-not-allowed"
           >
-            {data?.data?.order?.chequeDetail ? "Edit Cheque" : "Add Cheque"}
+            {data?.data?.order?.chequeDetail ? "Edit Bank Check" : "Add Bank Check"}
           </button>
           <button
             type="button"
@@ -443,8 +443,8 @@ export default function OrderDetail() {
             {modal?.type === "cancelOrder"
               ? "Cancel Order"
               : modal?.type === "addCheque"
-              ? "Add Cheque"
-              : "Edit Cheque"}
+              ? "Add Bank Check"
+              : "Edit Bank Check"}
           </div>
         }
       >
@@ -464,7 +464,7 @@ export default function OrderDetail() {
                 <div className="w-full space-y-4">
                   <div className="flex flex-col gap-y-2">
                     <label className="text-labelColor font-medium font-satoshi">
-                      Bank Cheque Number
+                      Bank Check Number
                     </label>
                     <input
                       type="text"
@@ -477,7 +477,7 @@ export default function OrderDetail() {
                   </div>
                   <div className="flex flex-col gap-y-2">
                     <label className="text-labelColor font-medium font-satoshi">
-                      Bank Cheque Date
+                      Bank Check Date
                     </label>
                     <input
                       type="date"
@@ -490,7 +490,7 @@ export default function OrderDetail() {
                   </div>
                   <div className="flex flex-col gap-y-2">
                     <label className="text-labelColor font-medium font-satoshi">
-                      Bank Cheque Status
+                      Bank Check Status
                     </label>
                     {/* <input
                       type="chequeStatus"
@@ -530,7 +530,7 @@ export default function OrderDetail() {
                   </div>
                   <div className="flex flex-col gap-y-2">
                     <label className="text-labelColor font-medium font-satoshi">
-                      Bank Cheque Branch
+                      Bank Check Branch
                     </label>
                     <input
                       type="text"
@@ -543,7 +543,7 @@ export default function OrderDetail() {
                   </div>
                   <div className="flex flex-col gap-y-2">
                     <label className="text-labelColor font-medium font-satoshi">
-                      Bank Cheque Type
+                      Bank Check Type
                     </label>
                     {/* <input
                       type="chequeType"
@@ -554,7 +554,7 @@ export default function OrderDetail() {
                       className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     /> */}
                     <Select
-                      placeholder="Select Cheque Type"
+                      placeholder="Select Bank Check Type"
                       className="w-full"
                       value={
                         addCheque?.chequeType?.value
@@ -570,7 +570,7 @@ export default function OrderDetail() {
                   </div>
                   <div className="flex flex-col gap-y-2">
                     <label className="text-labelColor font-medium font-satoshi">
-                      Bank Cheque Receipt Date
+                      Bank Check Receipt Date
                     </label>
                     <input
                       type="date"
@@ -604,8 +604,8 @@ export default function OrderDetail() {
                   {modal?.type === "cancelOrder"
                     ? "Cancel Order"
                     : modal?.type === "addCheque"
-                    ? "Add Bank Cheque"
-                    : "Update Bank Cheque"}
+                    ? "Add Bank Check"
+                    : "Update Bank Check"}
                 </button>
               </div>
             </div>

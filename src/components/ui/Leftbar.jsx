@@ -217,29 +217,30 @@ export default function Leftbar(props) {
     }
   };
 
-  useEffect(() => {
-    const stripeAccountStatus = async () => {
-      try {
-        const res = await axios.get(
-          BASE_URL + `api/v1/admin/stripe-connect-account-retrieve/${userID}`
-        );
-        console.log("🚀 ~ stripeAccountStatus ~ res:", res?.data);
-        if (res?.data?.status === "success") {
-          localStorage.setItem("isAccountConnected", true);
-        }
-        // else {
-        //   throw new Error(
-        //     res?.data?.message || "An unexpected error occurred."
-        //   );
-        // }
-      } catch (error) {
-        // ErrorHandler(error);
-      }
-    };
-    if (userType === "salesRepresentative") {
-      stripeAccountStatus();
-    }
-  }, []);
+  // useEffect(() => {
+  //   const stripeAccountStatus = async () => {
+  //     try {
+  //       const res = await axios.get(
+  //         BASE_URL + `api/v1/admin/stripe-connect-account-retrieve/${userID}`
+  //       );
+  //       console.log("🚀 ~ stripeAccountStatus ~ res:", res?.data);
+  //       if (res?.data?.status === "success") {
+  //         localStorage.setItem("isAccountConnected", true);
+  //       }
+  //       else {
+  //         throw new Error(
+  //           res?.data?.message || "An unexpected error occurred."
+  //         );
+  //       }
+  //     } catch (error) {
+  //       console.log("🚀 ~ stripeAccountStatus ~ error:", error)
+  //       ErrorHandler(error);
+  //     }
+  //   };
+  //   if (userType === "salesRepresentative") {
+  //     stripeAccountStatus();
+  //   }
+  // }, []);
 
   return (
     <section

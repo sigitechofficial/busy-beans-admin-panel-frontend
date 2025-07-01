@@ -273,9 +273,15 @@ export default function Home() {
       }
 
       // Step 2: Load Stripe
+      // Live key
       const stripe = await loadStripe(
         "pk_live_51HGqhQECVLSM4sc2wb1g4dx3lUe61VcK3BMjnUPk28Y5qaRC9sDQ6X6Ar5OZHmVoAIVe2rXncVOxHUax10qb4d8L00KCAdXpd5"
       );
+
+      // Test Key
+      // const stripe = await loadStripe(
+      //   "pk_test_51RPXZNCxTuXimvwHkvKO6MrVTckQ45X3JC2AkCVyV9fxLCK442YPbG8yM2NOexEqnD3wNAXdKfrOyEH2dTSzYKpt00WTyK7kzl"
+      // );
 
       if (!stripe) {
         error_toaster("Stripe failed to load");
@@ -283,22 +289,22 @@ export default function Home() {
       }
 
       // Step 3: Open Stripe's Financial Connections popup
-      let result;
-      try {
-        result = await stripe.collectBankAccountForSetup({
-          clientSecret,
-          params: {
-            payment_method_type: "us_bank_account",
-            payment_method_data: {
-              billing_details: {
-                name: `${userName}`,
-              },
+      // let result;
+      // try {
+      const result = await stripe.collectBankAccountForSetup({
+        clientSecret,
+        params: {
+          payment_method_type: "us_bank_account",
+          payment_method_data: {
+            billing_details: {
+              name: `${userName}`,
             },
           },
-        });
-      } catch (error) {
-        ErrorHandler(error);
-      }
+        },
+      });
+      // } catch (error) {
+      //   ErrorHandler(error);
+      // }
 
       console.log("Stripe collect result:", result);
 
@@ -369,7 +375,8 @@ export default function Home() {
         //   );
         // }
       } catch (error) {
-        ErrorHandler("Connect Stripe Account");
+        console.log("🚀 ~ stripeAccountStatus ~ error:", error)
+        // ErrorHandler("Connect Stripe Account");
       }
     };
 

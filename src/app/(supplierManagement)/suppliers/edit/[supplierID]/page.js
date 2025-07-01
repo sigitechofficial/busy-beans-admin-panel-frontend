@@ -68,9 +68,10 @@ export default function EditSupplier() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!supplier?.image) {
-      info_toaster("Select your image");
-    } else if (!supplier?.supplierName.trim()) {
+    // if (!supplier?.image) {
+    //   info_toaster("Select your image");
+    // } else 
+    if (!supplier?.supplierName.trim()) {
       info_toaster("Enter supplier name");
     } else if (!supplier?.country.trim()) {
       info_toaster("Enter country name");
@@ -82,13 +83,15 @@ export default function EditSupplier() {
       info_toaster("Enter zipcode");
     } else if (!supplier?.phoneNum.trim()) {
       info_toaster("Enter phone number");
-    } else if (!supplier?.addressOne.trim()) {
-      info_toaster("Enter address one");
-    } else if (!supplier?.addressTwo.trim()) {
-      info_toaster("Enter address two");
-    } else if (!supplier?.businessWeb.trim()) {
-      info_toaster("Enter business webiste");
-    }
+    } 
+    // else if (!supplier?.addressOne.trim()) {
+    //   info_toaster("Enter address one");
+    // } else if (!supplier?.addressTwo.trim()) {
+    //   info_toaster("Enter address two");
+    // }
+    //  else if (!supplier?.businessWeb.trim()) {
+    //   info_toaster("Enter business webiste");
+    // }
     // else if (!supplier?.businessRegistrationNumber.trim()) {
     //   info_toaster("Enter business registration number");
     // }
@@ -98,9 +101,11 @@ export default function EditSupplier() {
       info_toaster("Select supplier status");
     } else if (!supplier?.registerDate.trim()) {
       info_toaster("Select registration date");
-    } else if (!supplier?.bankAccount.trim()) {
-      info_toaster("Select bank account detail");
-    } else if (!supplier?.email.trim()) {
+    }
+    //  else if (!supplier?.bankAccount.trim()) {
+    //   info_toaster("Select bank account detail");
+    // } 
+    else if (!supplier?.email.trim()) {
       info_toaster("Enter email");
     } else if (!supplier?.password.trim()) {
       info_toaster("Enter password");

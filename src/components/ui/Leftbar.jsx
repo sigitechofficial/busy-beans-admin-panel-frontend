@@ -338,11 +338,11 @@ export default function Leftbar(props) {
               <>
                 <div className="m-2 relative space-y-1">
                   <ListItems title="All Supplier" to="/suppliers" />
-                  <ListItems title="Active Supplier" to="/active-supplier" />
+                  {/* <ListItems title="Active Supplier" to="/active-supplier" />
                   <ListItems
                     title="Inactive Supplier"
                     to="/inactive-supplier"
-                  />
+                  /> */}
                 </div>
                 <hr className="w-full" />
               </>

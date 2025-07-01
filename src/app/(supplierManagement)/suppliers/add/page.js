@@ -60,9 +60,10 @@ export default function AddNewSupplier() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!supplier?.image) {
-      info_toaster("Select your image");
-    } else if (!supplier?.supplierName.trim()) {
+    // if (!supplier?.image) {
+    //   info_toaster("Select your image");
+    // } else 
+    if (!supplier?.supplierName.trim()) {
       info_toaster("Enter supplier name");
     } else if (!supplier?.country.trim()) {
       info_toaster("Enter country name");
@@ -80,19 +81,23 @@ export default function AddNewSupplier() {
     // } else if (!supplier?.addressTwo.trim()) {
     //   info_toaster("Enter address two");
     // }
-    else if (!supplier?.businessWeb.trim()) {
-      info_toaster("Enter business webiste");
-    } else if (!supplier?.businessRegistrationNumber.trim()) {
-      info_toaster("Enter business registration number");
-    } else if (!supplier?.supplierType.trim()) {
+    // else if (!supplier?.businessWeb.trim()) {
+    //   info_toaster("Enter business webiste");
+    // }
+    //  else if (!supplier?.businessRegistrationNumber.trim()) {
+    //   info_toaster("Enter business registration number");
+    // } 
+    else if (!supplier?.supplierType.trim()) {
       info_toaster("Select supplier type ");
     } else if (supplier?.status === "") {
       info_toaster("Select supplier status");
     } else if (!supplier?.registerDate.trim()) {
       info_toaster("Select registration date");
-    } else if (!supplier?.bankAccount.trim()) {
-      info_toaster("Select bank account detail");
-    } else if (!supplier?.email.trim()) {
+    } 
+    // else if (!supplier?.bankAccount.trim()) {
+    //   info_toaster("Select bank account detail");
+    // } 
+    else if (!supplier?.email.trim()) {
       info_toaster("Enter email");
     } else if (!emailValidity.test(supplier?.email)) {
       info_toaster("Invalid Email Format");

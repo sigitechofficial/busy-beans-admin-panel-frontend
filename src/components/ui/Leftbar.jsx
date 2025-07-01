@@ -132,6 +132,7 @@ export default function Leftbar(props) {
   const handleConnectAccount = async () => {
     const path = url.split("/");
     if (isAccountConnected === "false" && connectAccountId !== "null") {
+      console.log("1");
       try {
         const res = await axios.post(
           BASE_URL + `api/v1/admin/stripe-connect-account-url/${userID}`,
@@ -160,6 +161,7 @@ export default function Leftbar(props) {
       (connectAccountId === "null" || !connectAccountId) &&
       isAccountConnected === "false"
     ) {
+      console.log("2");
       try {
         const res = await axios.post(
           BASE_URL + `api/v1/admin/create-stripe-connect-account/${userID}`,
@@ -191,6 +193,7 @@ export default function Leftbar(props) {
       (connectAccountId !== "null" || !connectAccountId) &&
       isAccountConnected === "true"
     ) {
+      console.log("3");
       try {
         const res = await axios.get(
           BASE_URL + `api/v1/admin/stripe-connect-account-dashboard/${userID}`
@@ -544,7 +547,10 @@ export default function Leftbar(props) {
                     title="Collection History"
                     to="/collection-history"
                   />
-                  <ListItems title="Bank Checks Due Date" to="/cheques-due-date" />
+                  <ListItems
+                    title="Bank Checks Due Date"
+                    to="/cheques-due-date"
+                  />
                 </div>
                 <hr className="w-full" />
               </>

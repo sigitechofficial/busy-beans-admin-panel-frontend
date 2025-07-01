@@ -24,7 +24,7 @@ export default function Home() {
     var url = window.location.href;
     var windowClose = window;
   }
-  
+
   const [showBankRetry, setShowBankRetry] = useState(false);
   console.log("🚀 ~ Home ~ showBankRetry:", showBankRetry);
 
@@ -283,17 +283,22 @@ export default function Home() {
       }
 
       // Step 3: Open Stripe's Financial Connections popup
-      const result = await stripe.collectBankAccountForSetup({
-        clientSecret,
-        params: {
-          payment_method_type: "us_bank_account",
-          payment_method_data: {
-            billing_details: {
-              name: `${userName}`,
+      let result;
+      try {
+        result = await stripe.collectBankAccountForSetup({
+          clientSecret,
+          params: {
+            payment_method_type: "us_bank_account",
+            payment_method_data: {
+              billing_details: {
+                name: `${userName}`,
+              },
             },
           },
-        },
-      });
+        });
+      } catch (error) {
+        ErrorHandler(error);
+      }
 
       console.log("Stripe collect result:", result);
 

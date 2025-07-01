@@ -1,5 +1,5 @@
 "use client";
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 import CityCard from "@/components/ui/CityCard";
 import { Dialog } from "primereact/dialog";
 import { useState } from "react";
@@ -33,7 +33,7 @@ export default function Cities() {
   });
 
   const { data, reFetch } = GetAPI(
-    `api/v1/admin/address-management/city?stateInSystemId=${stateID}` 
+    `api/v1/admin/address-management/city?stateInSystemId=${stateID}`
   );
 
   const { data: countryData } = GetAPI(
@@ -268,16 +268,6 @@ export default function Cities() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
 
 // "use client";
 // export const dynamic = "force-dynamic";

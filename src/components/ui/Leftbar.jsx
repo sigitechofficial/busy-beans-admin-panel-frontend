@@ -367,8 +367,8 @@ export default function Leftbar(props) {
               <>
                 <div className="m-2 relative space-y-1">
                   <ListItems title="All Clients" to="/customers" />
-                  <ListItems title="Active Clients" to="/active-clients" />
-                  <ListItems title="Inactive Clients" to="/inactive-clients" />
+                  {/* <ListItems title="Active Clients" to="/active-clients" /> */}
+                  {/* <ListItems title="Inactive Clients" to="/inactive-clients" /> */}
                 </div>
                 <hr className="w-full" />
               </>
@@ -461,7 +461,7 @@ export default function Leftbar(props) {
             </>
           )} */}
 
-          <ListHead
+          {/* <ListHead
             title="Roles & Employee Manag."
             Icon={MdManageAccounts}
             Angle={
@@ -478,7 +478,7 @@ export default function Leftbar(props) {
               )
             }
             disabled={true}
-          />
+          /> */}
           {active?.roleandEmployeeManagement?.tab ===
             "roleandEmployeeManagement" &&
             active?.roleandEmployeeManagement?.status && (
@@ -495,7 +495,7 @@ export default function Leftbar(props) {
               </>
             )}
 
-          <ListHead
+          {/* <ListHead
             title="Notification & Alerts"
             Icon={IoNotifications}
             Angle={
@@ -507,7 +507,7 @@ export default function Leftbar(props) {
             onClick={() =>
               handleActive("notandAlerts", active?.notandAlerts?.status)
             }
-          />
+          /> */}
           {active?.notandAlerts?.tab === "notandAlerts" &&
             active?.notandAlerts?.status && (
               <>
@@ -526,7 +526,7 @@ export default function Leftbar(props) {
               </>
             )}
 
-          <ListHead
+          {/* <ListHead
             title="Collection"
             Icon={BsFillCollectionFill}
             Angle={
@@ -538,7 +538,7 @@ export default function Leftbar(props) {
             onClick={() =>
               handleActive("collection", active?.collection?.status)
             }
-          />
+          /> */}
           {active?.collection?.tab === "collection" &&
             active?.collection?.status && (
               <>
@@ -557,7 +557,7 @@ export default function Leftbar(props) {
               </>
             )}
 
-          <ListHead
+          {/* <ListHead
             title="Disbursement"
             Icon={MdPayment}
             Angle={
@@ -569,7 +569,7 @@ export default function Leftbar(props) {
             onClick={() =>
               handleActive("disbursement", active?.disbursement?.status)
             }
-          />
+          /> */}
           {active?.disbursement?.tab === "disbursement" &&
             active?.disbursement?.status && (
               <>
@@ -643,7 +643,7 @@ export default function Leftbar(props) {
               </>
             )}
 
-          <ListHead
+          {/* <ListHead
             title="Employee Management"
             // to="/inventory/stock"
             Icon={RiAdminLine}
@@ -664,7 +664,7 @@ export default function Leftbar(props) {
                 active?.employeeManagement?.status
               )
             }
-          />
+          /> */}
 
           {active?.employeeManagement?.tab === "employeeManagement" &&
             active?.employeeManagement?.status && (
@@ -713,7 +713,7 @@ export default function Leftbar(props) {
               </>
             )}
 
-          <ListHead
+          {/* <ListHead
             title="Promotion Management"
             Icon={GiProgression}
             active={pathname === "/promotions"}
@@ -729,7 +729,7 @@ export default function Leftbar(props) {
                 active?.promotionManagement?.status
               )
             }
-          />
+          /> */}
 
           {active?.promotionManagement?.tab === "promotionManagement" &&
             active?.promotionManagement?.status && (

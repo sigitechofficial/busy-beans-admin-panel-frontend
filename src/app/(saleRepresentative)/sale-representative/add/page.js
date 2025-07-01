@@ -16,7 +16,7 @@ import { BASE_URL } from "@/utilities/URL";
 import { useRouter } from "next/navigation";
 
 export default function AddSaleRepresentative() {
-  const router = useRouter()
+  const router = useRouter();
   const [loader, setLoader] = useState("");
   const [saleRepresentative, setSaleRepresentative] = useState({
     srName: "",
@@ -43,6 +43,8 @@ export default function AddSaleRepresentative() {
   const [visible, setVisible] = useState(false);
   const [allStates, setAllStates] = useState([]);
   const [allCities, setAllCities] = useState([]);
+  const [customCityMode, setCustomCityMode] = useState(false);
+  // const [customCity, setCustomCity] = useState("");
 
   const { data } = GetAPI("api/v1/admin/address-management/country");
 
@@ -112,7 +114,7 @@ export default function AddSaleRepresentative() {
       if (res?.data?.status === "success") {
         console.log(
           "🚀 ~ handleSelectedCountryStates ~ res:",
-          res?.data?.data?.data
+          res?.data?.data?.data?.length
         );
         const tempAllCities = [];
         res?.data?.data?.data?.map((state) =>
@@ -136,9 +138,10 @@ export default function AddSaleRepresentative() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!saleRepresentative?.image) {
-      info_toaster("Select image");
-    } else if (!saleRepresentative?.srName.trim()) {
+    // if (!saleRepresentative?.image) {
+    //   info_toaster("Select image");
+    // } else
+    if (!saleRepresentative?.srName.trim()) {
       info_toaster("Enter Sale Representative name");
     } else if (!saleRepresentative?.country?.trim()) {
       info_toaster("Enter Country");
@@ -154,9 +157,11 @@ export default function AddSaleRepresentative() {
       info_toaster("Enter Phone Number");
     } else if (!saleRepresentative?.address?.trim()) {
       info_toaster("Enter Address");
-    } else if (!saleRepresentative?.businessWeb?.trim()) {
-      info_toaster("Enter business webiste");
-    } else if (!saleRepresentative?.territory?.trim()) {
+    }
+    //  else if (!saleRepresentative?.businessWeb?.trim()) {
+    //   info_toaster("Enter business webiste");
+    // }
+    else if (!saleRepresentative?.territory?.trim()) {
       info_toaster("Enter Territory");
     } else if (!saleRepresentative?.creditLimit?.trim()) {
       info_toaster("Enter Credit Limit");
@@ -206,7 +211,7 @@ export default function AddSaleRepresentative() {
             status: true,
           });
           setImagePreview("");
-          router.push("/sale-representative")
+          router.push("/sale-representative");
         } else {
           throw new Error(
             res?.data?.message || "An unexpected error occurred."
@@ -337,18 +342,66 @@ export default function AddSaleRepresentative() {
                     }}
                   />
                 </div>
+
                 <div className="flex flex-col gap-y-2 w-full">
                   <label className="text-labelColor font-medium font-satoshi">
                     City
                   </label>
-                  {/* <input
-                    type="text"
-                    name="city"
-                    value={saleRepresentative?.city}
-                    placeholder="Enter City Name"
-                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    onChange={handleChange}
-                  /> */}
+
+                  {!customCityMode ? (
+                    <>
+                      <Select
+                        placeholder="Select City"
+                        className="w-full"
+                        styles={drawerSelectStyles}
+                        value={{
+                          value: saleRepresentative?.city ?? null,
+                          label: saleRepresentative?.city ?? null,
+                        }}
+                        options={allCities ?? []}
+                        onChange={(e) => {
+                          setSaleRepresentative({
+                            ...saleRepresentative,
+                            city: e.label,
+                          });
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="text-sm bg-theme text-white hover:text-theme hover:bg-white duration-150 rounded-sm border border-theme mt-1 px-2 self-end"
+                        onClick={() => setCustomCityMode(true)}
+                      >
+                        Enter Custom City Name
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <input
+                        type="text"
+                        placeholder="Enter custom city"
+                        className="w-full px-3 py-3 border border-gray-300 rounded"
+                        value={saleRepresentative?.city}
+                        onChange={(e) =>
+                          setSaleRepresentative({
+                            ...saleRepresentative,
+                            city: e.target.value,
+                          })
+                        }
+                      />
+                      <button
+                        type="button"
+                        className="text-sm bg-theme text-white hover:text-theme hover:bg-white duration-150 rounded-sm border border-theme mt-1 px-2 self-end"
+                        onClick={() => setCustomCityMode(false)}
+                      >
+                        Back to Select
+                      </button>
+                    </>
+                  )}
+                </div>
+                {/* <div className="flex flex-col gap-y-2 w-full">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    City
+                  </label>
                   <Select
                     placeholder="Select City"
                     className="w-full"
@@ -365,7 +418,7 @@ export default function AddSaleRepresentative() {
                       });
                     }}
                   />
-                </div>
+                </div> */}
               </div>
               <div className="grid md:grid-cols-2 max-md:gap-y-4 gap-x-6">
                 <div className="flex flex-col gap-y-2">
@@ -435,7 +488,7 @@ export default function AddSaleRepresentative() {
                   onChange={handleChange}
                 />
               </div>
-                 <div className="flex flex-col gap-y-2">
+              <div className="flex flex-col gap-y-2">
                 <label
                   htmlFor="phone"
                   className="text-labelColor font-medium font-satoshi"
@@ -490,7 +543,6 @@ export default function AddSaleRepresentative() {
 
             {/* right side */}
             <div className="space-y-4">
-           
               <p className="text-2xl font-semibold">2. Account Details</p>
               <div className="flex flex-col gap-y-2 w-full">
                 <label className="text-labelColor font-medium font-satoshi">

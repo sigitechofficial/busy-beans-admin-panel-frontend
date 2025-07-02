@@ -18,12 +18,10 @@ export default function PendingPulloutsOrders() {
   const { supplierID } = useParams();
   const [selectedRows, setSelectedRows] = useState([]);
   const [loader, setLoader] = useState(false);
-  console.log("🚀 ~ PendingPulloutsOrders ~ selectedRows:", selectedRows);
 
   const { data, reFetch } = GetAPI(
     `api/v1/admin/orders-pending-pullouts/${supplierID}`
   );
-  console.log("🚀 ~ Orders ~ data:", data?.data?.order);
 
   const totalAdminReceivableAmount = data?.data?.order?.reduce(
     (total, order) => {
@@ -68,12 +66,22 @@ export default function PendingPulloutsOrders() {
         adminReceivableAmount: order?.adminReceivableAmount,
       })
     );
+    console.log("🚀 ~ handlePulloutPayments ~ selectedRows:", selectedRows);
+    const receivableAmount = selectedRows?.reduce((total, order) => {
+      const amount = parseFloat(
+        order?.adminReceivableAmount?.replace("$", "") || 0
+      );
+      return total + amount;
+    }, 0);
+    console.log("🚀 ~ receivableAmount ~ receivableAmount:", receivableAmount);
+    // console.log("🚀 ~ receivableAmount ~ receivableAmount:", receivableAmount);
+    // console.log("🚀 ~ receivableAmount ~ receivableAmount:", receivableAmount)
     setLoader(true);
     try {
       const res = await PostAPI(
         `api/v1/admin/pull-payments-from-patners-banka-account/${supplierID}`,
         {
-          amount: totalAdminReceivableAmount,
+          amount: receivableAmount,
           orderList: orderList,
         }
       );

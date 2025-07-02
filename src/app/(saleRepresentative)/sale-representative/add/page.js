@@ -155,6 +155,8 @@ export default function AddSaleRepresentative() {
       info_toaster("Select Country Code");
     } else if (!saleRepresentative?.phoneNumber?.trim()) {
       info_toaster("Enter Phone Number");
+    } else if (!/^\d*\.?\d*$/?.test(saleRepresentative?.phoneNumber)) {
+      info_toaster("Invalid Phone Number");
     } else if (!saleRepresentative?.address?.trim()) {
       info_toaster("Enter Address");
     }
@@ -296,7 +298,15 @@ export default function AddSaleRepresentative() {
                     placeholder="Select Country"
                     className="w-full"
                     styles={drawerSelectStyles}
-                    options={allCountries}
+                    value={
+                      saleRepresentative?.country
+                        ? {
+                            value: saleRepresentative.country,
+                            label: saleRepresentative.country,
+                          }
+                        : null
+                    }
+                    options={allCountries ?? []}
                     onChange={(e) => {
                       setSaleRepresentative({
                         ...saleRepresentative,
@@ -326,13 +336,16 @@ export default function AddSaleRepresentative() {
                     placeholder="Select State"
                     className="w-full"
                     styles={drawerSelectStyles}
-                    value={{
-                      value: saleRepresentative?.state ?? null,
-                      label: saleRepresentative?.state ?? null,
-                    }}
-                    options={allStates}
+                    value={
+                      saleRepresentative?.state
+                        ? {
+                            value: saleRepresentative.state,
+                            label: saleRepresentative.state,
+                          }
+                        : null
+                    }
+                    options={allStates ?? []}
                     onChange={(e) => {
-                      console.log("🚀 ~ AddSaleRepresentative ~ e:", e);
                       setSaleRepresentative({
                         ...saleRepresentative,
                         state: e?.label,
@@ -354,10 +367,14 @@ export default function AddSaleRepresentative() {
                         placeholder="Select City"
                         className="w-full"
                         styles={drawerSelectStyles}
-                        value={{
-                          value: saleRepresentative?.city ?? null,
-                          label: saleRepresentative?.city ?? null,
-                        }}
+                        value={
+                          saleRepresentative?.city
+                            ? {
+                                value: saleRepresentative.city,
+                                label: saleRepresentative.city,
+                              }
+                            : null
+                        }
                         options={allCities ?? []}
                         onChange={(e) => {
                           setSaleRepresentative({
@@ -532,11 +549,22 @@ export default function AddSaleRepresentative() {
                   <input
                     type="number"
                     name="phoneNumber"
+                    min="0"
                     value={saleRepresentative?.phoneNumber}
                     placeholder="Enter Phone Number"
                     className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5  w-full col-span-8"
                     onChange={handleChange}
                   />
+                </div>
+                <div
+                  className={`text-red-600 space-y-1 pb-1 ${
+                    !/^\d*\.?\d*$/?.test(saleRepresentative?.phoneNumber)
+                      ? "block"
+                      : "hidden"
+                  }`}
+                >
+                  <hr className="border-none h-0.5 bg-white bg-opacity-20" />
+                  <p>Invalid Phone Number</p>
                 </div>
               </div>
             </div>

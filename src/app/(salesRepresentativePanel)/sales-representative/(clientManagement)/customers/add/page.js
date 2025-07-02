@@ -11,6 +11,7 @@ import { emailValidity } from "@/utilities/Validations";
 import { Autocomplete, LoadScript } from "@react-google-maps/api";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { Checkbox } from "primereact/checkbox";
 import React, { useRef, useState } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { FaLongArrowAltLeft } from "react-icons/fa";
@@ -31,6 +32,7 @@ export default function page() {
     pass: false,
     confirmPass: false,
   });
+  const [billingAddressStatus, setBillingAddressStatus] = useState(false);
   const [selectedCountryCode, setSelectedCountryCode] = useState("PK");
   const [selectedCountryCities, setSelectedCountryCities] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState({
@@ -48,12 +50,19 @@ export default function page() {
       saleTaxNumber: "",
       emailToSendInvoices: "",
       registerBy: "email",
-      billingAddress: "",
     },
     address: {
       companyaddress: "",
       addressLineOne: "",
       addressLineTwo: "",
+      town: "",
+      country: "",
+      state: "",
+      zipCode: "",
+      status: true,
+    },
+    billingAddress: {
+      companyaddress: "",
       town: "",
       country: "",
       state: "",
@@ -95,6 +104,46 @@ export default function page() {
     });
   };
 
+  const handleBillingAddress = (e) => {
+    setUserData({
+      ...userData,
+      billingAddress: {
+        ...userData?.info,
+        [e.target.name]: e.target.value,
+      },
+    });
+  };
+
+  const handleBillingShippingAddress = (e) => {
+    const isChecked = e.target.checked;
+    console.log("Checkbox checked:", isChecked);
+    if (isChecked) {
+      setUserData({
+        ...userData,
+        billingAddress: {
+          ...userData?.info,
+          companyaddress: userData?.address?.companyaddress,
+          country: userData?.address?.country,
+          state: userData?.address?.state,
+          town: userData?.address?.town,
+          zipCode: userData?.address?.zipCode,
+        },
+      });
+    } else {
+      setUserData({
+        ...userData,
+        billingAddress: {
+          ...userData?.info,
+          companyaddress: "",
+          country: "",
+          state: "",
+          town: "",
+          zipCode: "",
+        },
+      });
+    }
+  };
+
   const handleStep1 = () => {
     if (userData?.address?.companyaddress.trim() === "") {
       info_toaster("Company address cannot be empty");
@@ -112,6 +161,16 @@ export default function page() {
       info_toaster("Country name cannot be empty");
     } else if (userData?.address?.state.trim() === "") {
       info_toaster("State name cannot be empty");
+    } else if (userData?.billingAddress?.companyaddress.trim() === "") {
+      info_toaster("Billing Address cannot be empty");
+    } else if (userData?.billingAddress?.town.trim() === "") {
+      info_toaster("Billing Address Town cannot be empty");
+    } else if (userData?.billingAddress?.zipCode.trim() === "") {
+      info_toaster("Billing Address Zip code cannot be empty");
+    } else if (userData?.billingAddress?.country.trim() === "") {
+      info_toaster("Billing Address Country name cannot be empty");
+    } else if (userData?.billingAddress?.state.trim() === "") {
+      info_toaster("Billing Address State name cannot be empty");
     } else {
       success_toaster("Step 1 completed successfully");
       setStep(2);
@@ -180,7 +239,6 @@ export default function page() {
               emailToSendInvoices: userData?.info?.emailToSendInvoices,
               companyName: userData?.info?.companyName,
               companyInfo: userData?.info?.companyInfo,
-              billingAddress: userData?.info?.billingAddress,
             },
             address: {
               companyaddress: userData?.address?.companyaddress,
@@ -190,6 +248,14 @@ export default function page() {
               country: userData?.address?.country,
               state: userData?.address?.state,
               zipCode: userData?.address?.zipCode,
+              status: true,
+            },
+            billingAddress: {
+              addressLineOne: userData?.billingAddress?.companyaddress,
+              town: userData?.billingAddress?.town,
+              country: userData?.billingAddress?.country,
+              state: userData?.billingAddress?.state,
+              zipCode: userData?.billingAddress?.zipCode,
               status: true,
             },
           }
@@ -211,6 +277,14 @@ export default function page() {
               companyaddress: "",
               addressLineOne: "",
               addressLineTwo: "",
+              town: "",
+              country: "",
+              state: "",
+              zipCode: "",
+              status: true,
+            },
+            billingAddress: {
+              companyaddress: "",
               town: "",
               country: "",
               state: "",
@@ -420,13 +494,14 @@ export default function page() {
                 Welcome to Busy Bean Coffee
               </p> */}
             {step === 1 && (
-              <div className="font-satoshi space-y-4">
-                <p className="font-black text-xl lg:text-2xl text-theme">
-                  1. Company Address
-                </p>
-                <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
-                  <div className="space-y-4">
-                    {/* <Select
+              <div className="space-y-6">
+                <div className="font-satoshi space-y-4">
+                  <p className="font-black text-xl lg:text-2xl text-theme">
+                    1. Company Address
+                  </p>
+                  <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
+                    <div className="space-y-4">
+                      {/* <Select
                       placeholder="Select Country"
                       className="w-full"
                       styles={drawerSelectStyles}
@@ -438,7 +513,7 @@ export default function page() {
                         handleSelectedCountryCities(e.label);
                       }}
                     /> */}
-                    {/* <div className="flex flex-col gap-y-2">
+                      {/* <div className="flex flex-col gap-y-2">
                       <label className="text-labelColor font-medium font-satoshi">
                         Company Address
                       </label>
@@ -468,55 +543,55 @@ export default function page() {
                         </LoadScript>
                       </div>
                     </div> */}
-                    <div className="flex flex-col gap-y-2">
-                      <label className="text-labelColor font-medium font-satoshi">
-                        Company Address{" "}
-                      </label>
-                      <input
-                        type="text"
-                        name="companyaddress"
-                        value={userData?.address?.companyaddress}
-                        placeholder="Enter Address"
-                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                        onChange={handleAddress}
-                      />
+                      <div className="flex flex-col gap-y-2">
+                        <label className="text-labelColor font-medium font-satoshi">
+                          Shipping Address{" "}
+                        </label>
+                        <input
+                          type="text"
+                          name="companyaddress"
+                          value={userData?.address?.companyaddress}
+                          placeholder="Enter Address"
+                          className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                          onChange={handleAddress}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-y-2">
+                        <label className="text-labelColor font-medium font-satoshi">
+                          Address Line 1
+                        </label>
+                        <input
+                          type="text"
+                          name="addressLineOne"
+                          onChange={handleAddress}
+                          value={userData?.address?.addressLineOne}
+                          placeholder="Enter address line 1"
+                          className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-y-2">
+                        <label className="text-labelColor font-medium font-satoshi">
+                          Address Line 2
+                        </label>
+                        <input
+                          type="text"
+                          name="addressLineTwo"
+                          onChange={handleAddress}
+                          value={userData?.address?.addressLineTwo}
+                          placeholder="Enter address line 2"
+                          className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        />
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-y-2">
-                      <label className="text-labelColor font-medium font-satoshi">
-                        Address Line 1
-                      </label>
-                      <input
-                        type="text"
-                        name="addressLineOne"
-                        onChange={handleAddress}
-                        value={userData?.address?.addressLineOne}
-                        placeholder="Enter address line 1"
-                        className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-y-2">
-                      <label className="text-labelColor font-medium font-satoshi">
-                        Address Line 2
-                      </label>
-                      <input
-                        type="text"
-                        name="addressLineTwo"
-                        onChange={handleAddress}
-                        value={userData?.address?.addressLineTwo}
-                        placeholder="Enter address line 2"
-                        className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      />
-                    </div>
-                  </div>
 
-                  <div className="flex flex-col justify-between gap-y-4">
-                    <div className="space-y-4">
-                      <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
-                        <div className="flex flex-col gap-y-2">
-                          <label className="text-labelColor font-medium font-satoshi">
-                            Country
-                          </label>
-                          {/* <input
+                    <div className="flex flex-col justify-between gap-y-4">
+                      <div className="space-y-4">
+                        <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
+                          <div className="flex flex-col gap-y-2">
+                            <label className="text-labelColor font-medium font-satoshi">
+                              Country
+                            </label>
+                            {/* <input
                             type="text"
                             name="country"
                             onChange={handleAddress}
@@ -524,62 +599,69 @@ export default function page() {
                             placeholder="Enter Country"
                             className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                           /> */}
-                          <Select
-                            placeholder="Select Country"
-                            className="w-full"
-                            styles={drawerSelectStyles}
-                            options={allCountries}
-                            onChange={(e) => {
-                              // setSaleRepresentative({
-                              //   ...saleRepresentative,
-                              //   country: e.label,
-                              //   state: "",
-                              //   city: "",
-                              // });
-                              setUserData({
-                                ...userData,
-                                address: {
-                                  ...userData?.address,
-                                  country: e.label,
-                                  state: "",
-                                  town: "",
-                                },
-                              });
-                              handleSelectedCountryStates(e.label);
-                            }}
-                          />
-                        </div>
-                        <div className="flex flex-col gap-y-2">
-                          <label className="text-labelColor font-medium font-satoshi">
-                            State
-                          </label>
-                          <Select
-                            placeholder="Select State"
-                            className="w-full"
-                            styles={drawerSelectStyles}
-                            value={{
-                              value: userData?.address?.state ?? null,
-                              label: userData?.address?.state ?? null,
-                            }}
-                            options={allStates}
-                            onChange={(e) => {
-                              // setSaleRepresentative({
-                              //   ...saleRepresentative,
-                              //   state: e?.label,
-                              //   city: "",
-                              // });
-                              setUserData({
-                                ...userData,
-                                address: {
-                                  ...userData?.address,
-                                  state: e.label,
-                                  town: "",
-                                },
-                              });
-                              handleSelectedCountryStatesCities(e.value);
-                            }}
-                          />
-                          {/* <input
+                            <Select
+                              placeholder="Select Country"
+                              className="w-full"
+                              styles={drawerSelectStyles}
+                              value={
+                                userData?.address?.country
+                                  ? {
+                                      value: userData.address.country,
+                                      label: userData.address.country,
+                                    }
+                                  : null
+                              }
+                              options={allCountries ?? []}
+                              onChange={(e) => {
+                                // setSaleRepresentative({
+                                //   ...saleRepresentative,
+                                //   country: e.label,
+                                //   state: "",
+                                //   city: "",
+                                // });
+                                setUserData({
+                                  ...userData,
+                                  address: {
+                                    ...userData?.address,
+                                    country: e.label,
+                                    state: "",
+                                    town: "",
+                                  },
+                                });
+                                handleSelectedCountryStates(e.label);
+                              }}
+                            />
+                          </div>
+                          <div className="flex flex-col gap-y-2">
+                            <label className="text-labelColor font-medium font-satoshi">
+                              State
+                            </label>
+                            <Select
+                              placeholder="Select State"
+                              className="w-full"
+                              styles={drawerSelectStyles}
+                              value={
+                                userData?.address?.state
+                                  ? {
+                                      value: userData.address.state,
+                                      label: userData.address.state,
+                                    }
+                                  : null
+                              }
+                              options={allStates ?? []}
+                              onChange={(e) => {
+                                setUserData({
+                                  ...userData,
+                                  address: {
+                                    ...userData?.address,
+                                    state: e.label,
+                                    town: "",
+                                  },
+                                });
+                                handleSelectedCountryStatesCities(e.value);
+                              }}
+                            />
+                            {/* <input
                             type="text"
                             name="state"
                             onChange={handleAddress}
@@ -587,33 +669,37 @@ export default function page() {
                             placeholder="Enter State"
                             className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                           /> */}
+                          </div>
                         </div>
-                      </div>
-                      <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
-                        <div className="flex flex-col gap-y-2">
-                          <label className="text-labelColor font-medium font-satoshi">
-                            Town / City
-                          </label>
-                          <Select
-                            placeholder="Select City"
-                            className="w-full"
-                            styles={drawerSelectStyles}
-                            value={{
-                              value: userData?.address?.town ?? null,
-                              label: userData?.address?.town ?? null,
-                            }}
-                            options={allCities ?? null}
-                            onChange={(e) => {
-                              setUserData({
-                                ...userData,
-                                address: {
-                                  ...userData?.address,
-                                  town: e.label,
-                                },
-                              });
-                            }}
-                          />
-                          {/* <input
+                        <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
+                          <div className="flex flex-col gap-y-2">
+                            <label className="text-labelColor font-medium font-satoshi">
+                              Town / City
+                            </label>
+                            <Select
+                              placeholder="Select City"
+                              className="w-full"
+                              styles={drawerSelectStyles}
+                              value={
+                                userData?.address?.town
+                                  ? {
+                                      value: userData.address.town,
+                                      label: userData.address.town,
+                                    }
+                                  : null
+                              }
+                              options={allCities ?? []}
+                              onChange={(e) => {
+                                setUserData({
+                                  ...userData,
+                                  address: {
+                                    ...userData?.address,
+                                    town: e.label,
+                                  },
+                                });
+                              }}
+                            />
+                            {/* <input
                             type="text"
                             name="town"
                             onChange={handleAddress}
@@ -621,42 +707,249 @@ export default function page() {
                             placeholder="Enter Town / City"
                             className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                           /> */}
+                          </div>
+                          <div className="flex flex-col gap-y-2">
+                            <label className="text-labelColor font-medium font-satoshi">
+                              Zip Code
+                            </label>
+                            <input
+                              type="text"
+                              name="zipCode"
+                              onChange={handleAddress}
+                              value={userData?.address?.zipCode}
+                              placeholder="Enter Zip Code"
+                              className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                            />
+                          </div>
                         </div>
-                        <div className="flex flex-col gap-y-2">
+                        {/* <div className="flex flex-col gap-y-2">
                           <label className="text-labelColor font-medium font-satoshi">
-                            Zip Code
+                            Billing Address
                           </label>
                           <input
                             type="text"
-                            name="zipCode"
-                            onChange={handleAddress}
-                            value={userData?.address?.zipCode}
-                            placeholder="Enter Zip Code"
+                            name="billingAddress"
+                            onChange={handleInfo}
+                            value={userData?.info?.billingAddress}
+                            placeholder="Enter Billing Address"
                             className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                           />
-                        </div>
+                          <div className="flex items-center justify-end gap-x-2">
+                            <label className="text-labelColor font-medium font-satoshi">
+                              Billing Address same as Shipping Address
+                            </label>
+                            <input
+                              type="checkbox"
+                              name="billingAddress"
+                              placeholder="Enter Billing Address"
+                              className="size-4 border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none"
+                            />
+                          </div>
+                        </div> */}
                       </div>
+                      {/* <div>
+                        <button
+                          onClick={handleStep1}
+                          className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
+                        >
+                          Next
+                        </button>
+                      </div> */}
+                    </div>
+                  </div>
+                </div>
+                <div className="font-satoshi space-y-4">
+                  <p className="font-black text-xl lg:text-2xl text-theme">
+                    Billing Address
+                  </p>
+                  <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
+                    <div className="space-y-4">
+                      {/* <Select
+                      placeholder="Select Country"
+                      className="w-full"
+                      styles={drawerSelectStyles}
+                      options={allCountriesData}
+                      value={selectedCountry}
+                      onChange={(e) => {
+                        handleCountryChange(e);
+                        setSelectedCountryCode(e.value);
+                        handleSelectedCountryCities(e.label);
+                      }}
+                    /> */}
+                      {/* <div className="flex flex-col gap-y-2">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Company Address
+                      </label>
+                      <div className="space-y-2 w-full">
+                        <LoadScript
+                          googleMapsApiKey={googleApiKey}
+                          libraries={["places"]}
+                        >
+                          <Autocomplete
+                            onLoad={(autocomplete) =>
+                              (autocompleteRef.current = autocomplete)
+                            }
+                            options={{
+                              componentRestrictions: {
+                                country: [selectedCountryCode],
+                              },
+                            }}
+                            onPlaceChanged={calculateRoute}
+                          >
+                            <input
+                              ref={inputRef}
+                              type="text"
+                              placeholder="Choose a delivery address"
+                              className="w-full border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                            />
+                          </Autocomplete>
+                        </LoadScript>
+                      </div>
+                    </div> */}
                       <div className="flex flex-col gap-y-2">
                         <label className="text-labelColor font-medium font-satoshi">
-                          Billing Address
+                          Billing Address{" "}
                         </label>
                         <input
                           type="text"
-                          name="billingAddress"
-                          onChange={handleInfo}
-                          value={userData?.info?.billingAddress}
-                          placeholder="Enter Billing Address"
-                          className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                          name="companyaddress"
+                          value={userData?.billingAddress?.companyaddress}
+                          placeholder="Enter Address"
+                          className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                          onChange={handleBillingAddress}
                         />
                       </div>
-                    </div>
-                    <div>
-                      <button
-                        onClick={handleStep1}
-                        className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
-                      >
-                        Next
-                      </button>
+                      <div className="space-y-4">
+                        <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
+                          <div className="flex flex-col gap-y-2">
+                            <label className="text-labelColor font-medium font-satoshi">
+                              Country
+                            </label>
+                            <Select
+                              placeholder="Select Country"
+                              className="w-full"
+                              styles={drawerSelectStyles}
+                              options={allCountries ?? []}
+                              value={
+                                userData?.billingAddress?.country
+                                  ? {
+                                      value: userData.billingAddress.country,
+                                      label: userData.billingAddress.country,
+                                    }
+                                  : null
+                              }
+                              onChange={(e) => {
+                                setUserData({
+                                  ...userData,
+                                  billingAddress: {
+                                    ...userData?.billingAddress,
+                                    country: e.label,
+                                    state: "",
+                                    town: "",
+                                  },
+                                });
+                                handleSelectedCountryStates(e.label);
+                              }}
+                            />
+                          </div>
+                          <div className="flex flex-col gap-y-2">
+                            <label className="text-labelColor font-medium font-satoshi">
+                              State
+                            </label>
+                            <Select
+                              placeholder="Select State"
+                              className="w-full"
+                              styles={drawerSelectStyles}
+                              value={{
+                                value: userData?.billingAddress?.state,
+                                label: userData?.billingAddress?.state,
+                              }}
+                              options={allStates ?? []}
+                              onChange={(e) => {
+                                setUserData({
+                                  ...userData,
+                                  billingAddress: {
+                                    ...userData?.billingAddress,
+                                    state: e.label,
+                                    town: "",
+                                  },
+                                });
+                                handleSelectedCountryStatesCities(e.value);
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
+                          <div className="flex flex-col gap-y-2">
+                            <label className="text-labelColor font-medium font-satoshi">
+                              Town / City
+                            </label>
+                            <Select
+                              placeholder="Select City"
+                              className="w-full"
+                              styles={drawerSelectStyles}
+                              value={
+                                userData?.billingAddress?.state
+                                  ? {
+                                      value: userData.billingAddress.state,
+                                      label: userData.billingAddress.state,
+                                    }
+                                  : null
+                              }
+                              options={allCities ?? []}
+                              onChange={(e) => {
+                                setUserData({
+                                  ...userData,
+                                  billingAddress: {
+                                    ...userData?.billingAddress,
+                                    town: e.label,
+                                  },
+                                });
+                              }}
+                            />
+                            {/* <input
+                            type="text"
+                            name="town"
+                            onChange={handleAddress}
+                            value={userData?.address?.town}
+                            placeholder="Enter Town / City"
+                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                          /> */}
+                          </div>
+                          <div className="flex flex-col gap-y-2">
+                            <label className="text-labelColor font-medium font-satoshi">
+                              Zip Code
+                            </label>
+                            <input
+                              type="text"
+                              name="zipCode"
+                              onChange={handleBillingAddress}
+                              value={userData?.billingAddress?.zipCode}
+                              placeholder="Enter Zip Code"
+                              className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-end gap-x-2">
+                          <label className="text-labelColor font-medium font-satoshi">
+                            Billing Address same as Shipping Address
+                          </label>
+                          <input
+                            type="checkbox"
+                            name="billingStatus"
+                            onChange={handleBillingShippingAddress}
+                            className="size-4 border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <button
+                          onClick={handleStep1}
+                          className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
+                        >
+                          Next
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -47,6 +47,9 @@ export default function Stock() {
     desc: "",
     category: "",
     wholesalePrice: "",
+    productCode: "",
+    sku: "",
+    grind: "",
   });
   const [productID, setProductID] = useState("");
   const [imagePreview, setImagePreview] = useState("");
@@ -79,9 +82,9 @@ export default function Stock() {
       } else if (productDetail?.name.trim() === "") {
         info_toaster("Product Name cannot be empty");
       } else if (productDetail?.quantity.trim() === "") {
-        info_toaster("Invalid Product quantity");
+        info_toaster("Invalid Product Price");
       } else if (!/^\d*\.?\d*$/?.test(productDetail?.quantity)) {
-        info_toaster("Invalid Product Quanity");
+        info_toaster("Invalid Product Price");
       } else if (productDetail?.unit === "") {
         info_toaster("Product unit cannot be empty");
       } else if (productDetail?.price.trim() === "") {
@@ -105,6 +108,9 @@ export default function Stock() {
         formData.append("desc", productDetail?.desc);
         formData.append("image", productDetail?.image);
         formData.append("categoryId", productDetail?.category?.value);
+        formData.append("productCode", productDetail?.productCode);
+        formData.append("sku", productDetail?.sku);
+        formData.append("grind", productDetail?.grind);
         setLoader("add");
         try {
           const res = await PostAPI("api/v1/admin/product", formData);
@@ -117,6 +123,9 @@ export default function Stock() {
               image: "",
               category: "",
               weight: "",
+              productCode: "",
+              sku: "",
+              grind: "",
             });
             setModal("");
             setLoader("");
@@ -165,6 +174,9 @@ export default function Stock() {
         formData.append("desc", productDetail?.desc);
         formData.append("image", productDetail?.image);
         formData.append("categoryId", productDetail?.category?.value);
+        formData.append("productCode", productDetail?.productCode);
+        formData.append("sku", productDetail?.sku);
+        formData.append("grind", productDetail?.grind);
         try {
           const res = await PatchAPI(
             `api/v1/admin/product/${productID}`,
@@ -178,6 +190,9 @@ export default function Stock() {
               unit: "",
               image: "",
               weight: "",
+              productCode: "",
+              sku: "",
+              grind: "",
             });
             setModal("");
             setLoader("");
@@ -223,6 +238,9 @@ export default function Stock() {
       image: "",
       price: "",
       desc: "",
+      productCode: "",
+      sku: "",
+      grind: "",
     });
     setModal("");
     setImagePreview("");
@@ -256,6 +274,9 @@ export default function Stock() {
     { field: "weight", header: "Weight" },
     { field: "price", header: "Price ($)" },
     { field: "wholesalePrice", header: "Whole Sale Price ($)" },
+    { field: "productCode", header: "Product Code" },
+    { field: "sku", header: "SKU" },
+    { field: "grind", header: "Grind" },
     { field: "image", header: "Image" },
     {
       field: "currentStatus",
@@ -277,6 +298,9 @@ export default function Stock() {
       price: "$" + prod?.price,
       weight: "$" + prod?.weight,
       wholesalePrice: "$" + prod?.wholesalePrice ?? "",
+      productCode: prod?.productCode ?? "",
+      sku: prod?.sku ?? "",
+      grind: prod?.grind ?? "",
       image: (
         <img
           src={BASE_URL + prod?.image}
@@ -323,7 +347,9 @@ export default function Stock() {
                 category: handleCategory(prod?.categoryId),
                 quantity: prod?.quantity,
                 unit:
-                  prod?.unit === "kg"
+                  prod?.unit === "lbs"
+                    ? { value: "lbs", label: "LBS" }
+                    : prod?.unit === "kg"
                     ? { value: "kg", label: "Kilogram (kg)" }
                     : prod?.unit === "g"
                     ? { value: "g", label: "Gram (g)" }
@@ -588,6 +614,51 @@ export default function Stock() {
                   </div>
 
                   <div className="grid sm:grid-cols-3 gap-y-4 gap-x-6">
+                    <div className="flex flex-col gap-y-2 w-full">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Product Code
+                      </label>
+                      <input
+                        type="text"
+                        name="productCode"
+                        min="0"
+                        value={productDetail?.productCode}
+                        onChange={handleChange}
+                        placeholder="Enter Product Code"
+                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-y-2 w-full">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        SKU
+                      </label>
+                      <input
+                        type="text"
+                        name="sku"
+                        min="0"
+                        value={productDetail?.sku}
+                        onChange={handleChange}
+                        placeholder="Enter SKU"
+                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-y-2 w-full">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Grind
+                      </label>
+                      <input
+                        type="text"
+                        name="grind"
+                        min="0"
+                        value={productDetail?.grind}
+                        onChange={handleChange}
+                        placeholder="Enter Grind"
+                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid sm:grid-cols-3 gap-y-4 gap-x-6">
                     <div className="flex flex-col gap-y-2">
                       <label className="text-labelColor font-medium font-satoshi">
                         Quanity
@@ -625,36 +696,28 @@ export default function Stock() {
                         placeholder="Enter Weight"
                         className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       />
-                      <div
+                      {/* <div
                         className={`text-red-600 space-y-1 pb-1 ${
-                          !/^\d*\.?\d*$/?.test(productDetail?.quantity)
+                          !/^\d*\.?\d*$/?.test(productDetail?.weight)
                             ? "block"
                             : "hidden"
                         }`}
                       >
                         <hr className="border-none h-0.5 bg-white bg-opacity-20" />
-                        <p>Invalid Quantity</p>
-                      </div>
+                        <p>Invalid Weight</p>
+                      </div> */}
                     </div>
 
                     <div className="flex flex-col gap-y-2 w-full">
                       <label className="text-labelColor font-medium font-satoshi">
                         Units
                       </label>
-                      {/* <input
-                        type="text"
-                        name="unit"
-                        value={productDetail?.unit}
-                        onChange={handleChange}
-                        placeholder="Enter unit"
-                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      /> */}
-
                       <Select
                         placeholder="Kg"
                         className="w-full"
                         styles={selectStyles2}
                         options={[
+                          { value: "lbs", label: "LBS" },
                           { value: "kg", label: "Kilogram (kg)" },
                           { value: "g", label: "Gram (g)" },
                           { value: "pounds", label: "pounds" },

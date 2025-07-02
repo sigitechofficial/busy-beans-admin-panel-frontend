@@ -90,7 +90,7 @@ export default function VerifyEmail() {
           otp: `${inputRefs.current[0].value}${inputRefs.current[1].value}${inputRefs.current[2].value}${inputRefs.current[3].value}`,
         }
       );
-      console.log("🚀 ~ handleVerifyOTP ~ res:", res)
+      console.log("🚀 ~ handleVerifyOTP ~ res:", res);
       if (res?.data?.status === "success") {
         router.push("/reset-password");
         localStorage.setItem("userID", res?.data?.data?.data?.id);
@@ -233,8 +233,23 @@ export default function VerifyEmail() {
                     <input
                       key={index}
                       type="number"
+                      inputMode="numeric"
+                      min="0"
                       onInput={(e) => handleInput(e, index)}
-                      onKeyDown={(e) => handleKeyDown(e, index)}
+                      onKeyDown={(e) => {
+                        // Disallow "-", "e", and anything that is not a number
+                        if (["e", "E", "+", "-"].includes(e.key)) {
+                          e.preventDefault();
+                        }
+                        handleKeyDown(e, index);
+                      }}
+                      onPaste={(e) => {
+                        // Allow only digits to be pasted
+                        const paste = e.clipboardData.getData("text");
+                        if (!/^\d+$/.test(paste)) {
+                          e.preventDefault();
+                        }
+                      }}
                       ref={(el) => (inputRefs.current[index] = el)}
                       className="input-code text-6xl text-center flex items-center justify-center pe-1.5"
                     />

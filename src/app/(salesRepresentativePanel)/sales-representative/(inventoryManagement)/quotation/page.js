@@ -14,12 +14,21 @@ export default function SalesRepresentativeInventory() {
       JSON.parse(localStorage.getItem("quotationData")) || [];
   }
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [filter, setFilter] = useState("");
   const [quotationData, setQuotationData] = useState(quotationDataList);
 
   const [visibleRight, setVisibleRight] = useState(false);
 
   const { data, reFetch } = GetAPI("api/v1/admin/product");
   console.log("🚀 ~ SalesRepresentativeInventory ~ data:", data?.data?.data);
+
+  const handleFilter = () => {
+    const filteredData = data?.data?.data?.filter((item) =>
+      item?.name?.toLowerCase().includes(filter.toLowerCase())
+    );
+
+    return filteredData;
+  };
 
   const handlePlus = (id, itemQuantity) => {
     const findItemIndex = quotationData?.findIndex((item) => item?.id === id);
@@ -28,12 +37,12 @@ export default function SalesRepresentativeInventory() {
       quotationData.push({ ...item, qty: itemQuantity });
       setQuotationData([...quotationData]);
       localStorage.setItem("quotationData", JSON.stringify(quotationData));
-      success_toaster("Item Added Successfully");
+      // success_toaster("Item Added Successfully");
     } else {
       quotationData[findItemIndex]["qty"] = itemQuantity;
       setQuotationData(quotationData);
       localStorage.setItem("quotationData", JSON.stringify(quotationData));
-      success_toaster("Item Updated Successfully");
+      // success_toaster("Item Updated Successfully");
     }
   };
 
@@ -49,12 +58,12 @@ export default function SalesRepresentativeInventory() {
           "quotationData",
           JSON.stringify(filteredQuotationItem)
         );
-        success_toaster("Item Removed Successfully");
+        // success_toaster("Item Removed Successfully");
       } else {
         quotationData[findItemIndex]["qty"] = itemQuantity;
         setQuotationData(quotationData);
         localStorage.setItem("quotationData", JSON.stringify(quotationData));
-        success_toaster("Item Updated Successfully");
+        // success_toaster("Item Updated Successfully");
       }
     }
   };
@@ -75,6 +84,17 @@ export default function SalesRepresentativeInventory() {
           Quotation Management
         </h2>
 
+        <input
+          type="text"
+          name="name"
+          value={filter}
+          onChange={(e) => {
+            setFilter(e.target.value);
+          }}
+          // value={userData?.info?.name}
+          placeholder="Search"
+          className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-2"
+        />
         <Select placeholder="Filters" className="w-40" styles={selectStyles} />
         {/* <div className="flex items-center gap-x-4">
       <div>
@@ -87,7 +107,7 @@ export default function SalesRepresentativeInventory() {
       </div>
       <div className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-          {data?.data?.data?.map((item, i) => (
+          {handleFilter()?.map((item, i) => (
             <StockCard
               key={i}
               id={item?.id}
@@ -104,7 +124,7 @@ export default function SalesRepresentativeInventory() {
             />
           ))}
         </div>
-        <div className="flex justify-end relative">
+        <div className="fixed bottom-4 right-3">
           <button
             onClick={() => setVisibleRight(true)}
             className="rounded-lg font-inter font-medium text-white px-2 sm:px-3 py-2.5 sm:py-4 bg-theme"

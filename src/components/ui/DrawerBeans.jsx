@@ -44,6 +44,7 @@ const DrawerBeans = ({
     { label: "Every Four Weeks", value: "every-four-weeks" },
   ];
   const [addressOptions, setAddressOptions] = useState([]);
+  console.log("🚀 ~ addressOptions:", addressOptions);
   const [counter, setCounter] = useState(null);
   const [render, setRender] = useState(false);
   const [email, setEmail] = useState("");
@@ -70,7 +71,7 @@ const DrawerBeans = ({
   }, 0);
 
   const totalWeight = cartItems?.reduce((a, b) => {
-    return Number(a) + Number(b?.quantity) * Number(b?.qty);
+    return Number(a) + Number(b?.weight) * Number(b?.qty);
   }, 0);
 
   const { data } = GetAPI(
@@ -266,6 +267,7 @@ const DrawerBeans = ({
     const selectedEmail = data?.data?.data?.find(
       (customer) => customer?.email === email
     );
+    console.log("🚀 ~ handleEmail ~ selectedEmail:", selectedEmail);
     setOrder({
       ...order,
       userId: selectedEmail?.id,
@@ -273,7 +275,14 @@ const DrawerBeans = ({
     selectedEmail?.addresses?.map((address) =>
       addressList.push({
         value: address?.id,
-        label: address?.companyaddress,
+        label:
+          address?.companyaddress + ", " +
+          address?.addressLineOne + ", " +
+          address?.addressLineTwo + ", " +
+          address?.town + ", " +
+          address?.state + ", " +
+          address?.zipCode + ", " +
+          address?.country,
       })
     );
     setAddressOptions([...addressList]);
@@ -298,10 +307,10 @@ const DrawerBeans = ({
         ErrorHandler(error);
       }
     };
-    if (type === "createOrder") {
+    if (type === "createOrder" && open) {
       fetchCharges();
     }
-  }, []);
+  }, [open]);
 
   return (
     <div className="card relative">

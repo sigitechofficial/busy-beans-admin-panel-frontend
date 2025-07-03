@@ -395,7 +395,7 @@ export default function OrderCard(props) {
                     placeholder="Select dispatch order company"
                     className="w-full"
                     styles={selectStyles2}
-                    options={[{ value: "DHL", label: "DHL" }]}
+                    options={[{ value: "fedex", label: "FedEX" }]}
                     onChange={(e) => {
                       setDispatchOrderData({
                         ...dispatchOrderData,

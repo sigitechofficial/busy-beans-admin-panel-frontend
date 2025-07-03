@@ -46,7 +46,7 @@ export default function page() {
       password: "",
       status: true,
       phoneNumber: "",
-      countryCode: "+92",
+      countryCode: "+1",
       saleTaxNumber: "",
       emailToSendInvoices: "",
       registerBy: "email",
@@ -497,7 +497,7 @@ export default function page() {
               <div className="space-y-6">
                 <div className="font-satoshi space-y-4">
                   <p className="font-black text-xl lg:text-2xl text-theme">
-                    1. Company Address
+                    1. Shipping Address
                   </p>
                   <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
                     <div className="space-y-4">
@@ -545,13 +545,13 @@ export default function page() {
                     </div> */}
                       <div className="flex flex-col gap-y-2">
                         <label className="text-labelColor font-medium font-satoshi">
-                          Shipping Address{" "}
+                          Company Address{" "}
                         </label>
                         <input
                           type="text"
                           name="companyaddress"
                           value={userData?.address?.companyaddress}
-                          placeholder="Enter Address"
+                          placeholder="XYZ Company"
                           className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                           onChange={handleAddress}
                         />
@@ -676,7 +676,24 @@ export default function page() {
                             <label className="text-labelColor font-medium font-satoshi">
                               Town / City
                             </label>
-                            <Select
+
+                            <input
+                              type="text"
+                              name="town"
+                              onChange={(e) => {
+                                setUserData({
+                                  ...userData,
+                                  address: {
+                                    ...userData?.address,
+                                    town: e.target.value,
+                                  },
+                                });
+                              }}
+                              value={userData?.town}
+                              placeholder="Enter town"
+                              className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                            />
+                            {/* <Select
                               placeholder="Select City"
                               className="w-full"
                               styles={drawerSelectStyles}
@@ -698,7 +715,7 @@ export default function page() {
                                   },
                                 });
                               }}
-                            />
+                            /> */}
                             {/* <input
                             type="text"
                             name="town"
@@ -758,6 +775,19 @@ export default function page() {
                     </div>
                   </div>
                 </div>
+
+                <div className="flex items-center gap-x-2">
+                  <input
+                    type="checkbox"
+                    name="billingStatus"
+                    onChange={handleBillingShippingAddress}
+                    className="size-4 border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none"
+                  />
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Billing Address same as Shipping Address
+                  </label>
+                </div>
+
                 <div className="font-satoshi space-y-4">
                   <p className="font-black text-xl lg:text-2xl text-theme">
                     Billing Address
@@ -884,7 +914,24 @@ export default function page() {
                             <label className="text-labelColor font-medium font-satoshi">
                               Town / City
                             </label>
-                            <Select
+                            <input
+                              type="text"
+                              name="billingAddress"
+                              onChange={(e) => {
+                                setUserData({
+                                  ...userData,
+                                  billingAddress: {
+                                    ...userData?.billingAddress,
+                                    town: e.target.value,
+                                  },
+                                });
+                              }}
+                              placeholder="Enter town"
+                              className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                              value={userData?.billingAddress?.town}
+                            />
+
+                            {/* <Select
                               placeholder="Select City"
                               className="w-full"
                               styles={drawerSelectStyles}
@@ -906,7 +953,7 @@ export default function page() {
                                   },
                                 });
                               }}
-                            />
+                            /> */}
                             {/* <input
                             type="text"
                             name="town"
@@ -923,23 +970,20 @@ export default function page() {
                             <input
                               type="text"
                               name="zipCode"
-                              onChange={handleBillingAddress}
+                              onChange={(e) => {
+                                setUserData({
+                                  ...userData,
+                                  billingAddress: {
+                                    ...userData.billingAddress,
+                                    zipCode: e.target.value,
+                                  },
+                                });
+                              }}
                               value={userData?.billingAddress?.zipCode}
                               placeholder="Enter Zip Code"
                               className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                             />
                           </div>
-                        </div>
-                        <div className="flex items-center justify-end gap-x-2">
-                          <label className="text-labelColor font-medium font-satoshi">
-                            Billing Address same as Shipping Address
-                          </label>
-                          <input
-                            type="checkbox"
-                            name="billingStatus"
-                            onChange={handleBillingShippingAddress}
-                            className="size-4 border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none"
-                          />
                         </div>
                       </div>
                       <div>
@@ -1037,7 +1081,8 @@ export default function page() {
                             backgroundColor: "#6f4e37",
                             borderRadius: "8px",
                           }}
-                          country={"pk"}
+                          country={"us"}
+                          value={userData?.info?.countryCode}
                           onChange={(phone) =>
                             setUserData({
                               ...userData,
@@ -1110,7 +1155,7 @@ export default function page() {
                   <div className="space-y-4">
                     <div className="flex flex-col gap-y-2">
                       <label className="text-labelColor font-medium font-satoshi">
-                        User Name
+                        Full Name
                       </label>
                       <input
                         type="text"
@@ -1123,7 +1168,7 @@ export default function page() {
                     </div>
                     <div className="flex flex-col gap-y-2">
                       <label className="text-labelColor font-medium font-satoshi">
-                        Email Address
+                        Login Email
                       </label>
                       <input
                         type="email"

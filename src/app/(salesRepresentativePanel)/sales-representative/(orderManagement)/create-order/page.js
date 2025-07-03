@@ -183,6 +183,9 @@ export default function CreateOrder() {
               key={i}
               id={item?.id}
               itemName={item?.name}
+              grind={item?.grind}
+              productCode={item?.productCode}
+              sku={item?.sku}
               // stock={item?.quantity}
               weight={item?.weight}
               unit={item?.unit}

@@ -7,6 +7,9 @@ export default function StockCard(props) {
   const {
     id,
     itemName,
+    productCode,
+    sku,
+    grind,
     // stock,
     unit,
     imageURL,
@@ -37,16 +40,38 @@ export default function StockCard(props) {
       <div className="h-full px-4 py-3 font-inter space-y-2 flex flex-col justify-between">
         <div className="[&>p]:flex [&>p]:justify-between [&>p]:gap-x-1 [&>p]:text-black">
           <p>
-            <span>Item Name</span> <span className="text-end break-words break-all">{itemName}</span>
+            <span className="text-start break-words break-all font-semibold">
+              {itemName}
+            </span>
+          </p>
+
+          <p>
+            <span>Grind</span>{" "}
+            <span className="text-end break-words break-all">{grind}</span>
           </p>
           <p>
-            <span>Price</span> <span className="text-end break-words break-all">${price}</span>
+            <span>Product Code</span>{" "}
+            <span className="text-end break-words break-all">{productCode}</span>
           </p>
           <p>
-            <span>Whole Sale Price</span> <span className="text-end break-words break-all">${wholesalePrice}</span>
+            <span>Sku</span>{" "}
+            <span className="text-end break-words break-all">{sku}</span>
           </p>
           <p>
-            <span>Weight</span> <span className="text-end break-words break-all">{weight} {unit}</span>
+            <span>Price</span>{" "}
+            <span className="text-end break-words break-all">${price}</span>
+          </p>
+          <p>
+            <span>Whole Sale Price</span>{" "}
+            <span className="text-end break-words break-all">
+              ${wholesalePrice}
+            </span>
+          </p>
+          <p>
+            <span>Weight</span>{" "}
+            <span className="text-end break-words break-all">
+              {weight} {unit}
+            </span>
           </p>
           {/* <p>
             <span>Quantity</span>{" "}

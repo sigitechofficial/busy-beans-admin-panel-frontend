@@ -33,7 +33,7 @@ export default function EditSupplier() {
     state: "",
     zipCode: "",
     phoneNum: "",
-    countryCode: "+92",
+    countryCode: "+1",
     addressOne: "",
     addressTwo: "",
     businessWeb: "",
@@ -186,7 +186,7 @@ export default function EditSupplier() {
       state: data?.data?.data?.state ?? "",
       zipCode: data?.data?.data?.zipCode ?? "",
       phoneNum: data?.data?.data?.phoneNum ?? "",
-      countryCode: data?.data?.data?.countryCode ?? "+92",
+      countryCode: data?.data?.data?.countryCode ?? "+1",
       addressOne: data?.data?.data?.addressOne ?? "",
       addressTwo: data?.data?.data?.addressTwo ?? "",
       businessWeb: data?.data?.data?.businessWeb ?? "",
@@ -416,7 +416,7 @@ export default function EditSupplier() {
                       backgroundColor: "#6f4e37",
                       borderRadius: "8px",
                     }}
-                    country={"pk"}
+                    country={"us"}
                     onChange={(phone) =>
                       setSupplier({
                         ...supplier,

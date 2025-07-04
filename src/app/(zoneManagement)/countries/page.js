@@ -19,7 +19,7 @@ import MiniLoader from "@/components/ui/MiniLoader";
 
 export default function Countries() {
   const countries = Country.getAllCountries();
-  // const states = State.getStatesOfCountry("PK");
+  // const states = State.getStatesOfCountry("us");
 
   const [loading, setLoading] = useState(false);
   const [modal, setModal] = useState("");

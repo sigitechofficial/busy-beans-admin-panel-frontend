@@ -140,7 +140,7 @@ export default function AddGeneralEmployee() {
                     backgroundColor: "#6f4e37",
                     borderRadius: "8px",
                   }}
-                  country={"pk"}
+                  country={"us"}
                   // onChange={(phone) =>
                   //   setSaleRepresentative({
                   //     ...saleRepresentative,

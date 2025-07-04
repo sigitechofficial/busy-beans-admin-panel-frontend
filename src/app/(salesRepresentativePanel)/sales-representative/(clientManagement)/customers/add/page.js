@@ -32,9 +32,9 @@ export default function page() {
     pass: false,
     confirmPass: false,
   });
-  const [billingAddressStatus, setBillingAddressStatus] = useState(false);
-  const [selectedCountryCode, setSelectedCountryCode] = useState("PK");
-  const [selectedCountryCities, setSelectedCountryCities] = useState([]);
+  // const [billingAddressStatus, setBillingAddressStatus] = useState(false);
+  // const [selectedCountryCode, setSelectedCountryCode] = useState("us");
+  // const [selectedCountryCities, setSelectedCountryCities] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState({
     value: "",
     label: "",
@@ -545,7 +545,7 @@ export default function page() {
                     </div> */}
                       <div className="flex flex-col gap-y-2">
                         <label className="text-labelColor font-medium font-satoshi">
-                          Company Address{" "}
+                          Company Name{" "}
                         </label>
                         <input
                           type="text"

@@ -2,7 +2,7 @@
 import BackButton from "@/components/ui/BackButton";
 import { LuImageUp } from "react-icons/lu";
 import Select from "react-select";
-import { selectStyles2 } from "@/utilities/SelectStyle";
+import { drawerSelectStyles, selectStyles2 } from "@/utilities/SelectStyle";
 import { useState } from "react";
 import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import MiniLoader from "@/components/ui/MiniLoader";
@@ -11,6 +11,9 @@ import ErrorHandler from "@/utilities/ErrorHandler";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { emailValidity } from "@/utilities/Validations";
 import PhoneInput from "react-phone-input-2";
+import GetAPI from "@/utilities/GetAPI";
+import axios from "axios";
+import { BASE_URL } from "@/utilities/URL";
 
 export default function AddNewSupplier() {
   const [supplier, setSupplier] = useState({
@@ -22,7 +25,7 @@ export default function AddNewSupplier() {
     state: "",
     zipCode: "",
     phoneNum: "",
-    countryCode: "+92",
+    countryCode: "+1",
     addressOne: "",
     addressTwo: "",
     businessWeb: "",
@@ -37,6 +40,19 @@ export default function AddNewSupplier() {
   const [visible, setVisible] = useState(false);
   const [imagePreview, setImagePreview] = useState("");
   const [loader, setLoader] = useState(false);
+  const [allStates, setAllStates] = useState([]);
+  const [allCities, setAllCities] = useState([]);
+  const [customCityMode, setCustomCityMode] = useState(false);
+
+  const { data } = GetAPI("api/v1/admin/address-management/country");
+
+  const allCountries = [];
+  data?.data?.data?.map((country) =>
+    allCountries.push({
+      value: country?.name,
+      label: country?.name,
+    })
+  );
 
   const handleChange = (e) => {
     setSupplier({ ...supplier, [e.target.name]: e.target.value });
@@ -58,11 +74,68 @@ export default function AddNewSupplier() {
     }
   };
 
+  const handleSelectedCountryStates = async (countryName) => {
+    const selectedCountry = data?.data?.data?.find(
+      (country) => country?.name === countryName
+    );
+    try {
+      const res = await axios.get(
+        BASE_URL +
+          `api/v1/admin/address-management/state?countryInSystemId=${selectedCountry?.id}`
+      );
+      if (res?.data?.status === "success") {
+        const tempAllStates = [];
+        res?.data?.data?.data?.map((state) =>
+          tempAllStates.push({
+            value: state?.id,
+            label: state?.name,
+          })
+        );
+        setAllStates([...tempAllStates]);
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
+    }
+  };
+
+  const handleSelectedCountryStatesCities = async (stateID) => {
+    try {
+      const res = await axios.get(
+        BASE_URL +
+          `api/v1/admin/address-management/city?stateInSystemId=${stateID}`
+      );
+      if (res?.data?.status === "success") {
+        console.log(
+          "🚀 ~ handleSelectedCountryStates ~ res:",
+          res?.data?.data?.data?.length
+        );
+        const tempAllCities = [];
+        res?.data?.data?.data?.map((state) =>
+          tempAllCities.push({
+            value: state?.name,
+            label: state?.name,
+          })
+        );
+        console.log(
+          "🚀 ~ handleSelectedCountryStatesCities ~ tempAllCities:",
+          tempAllCities
+        );
+        setAllCities([...tempAllCities]);
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     // if (!supplier?.image) {
     //   info_toaster("Select your image");
-    // } else 
+    // } else
     if (!supplier?.supplierName.trim()) {
       info_toaster("Enter supplier name");
     } else if (!supplier?.country.trim()) {
@@ -86,17 +159,17 @@ export default function AddNewSupplier() {
     // }
     //  else if (!supplier?.businessRegistrationNumber.trim()) {
     //   info_toaster("Enter business registration number");
-    // } 
+    // }
     else if (!supplier?.supplierType.trim()) {
       info_toaster("Select supplier type ");
     } else if (supplier?.status === "") {
       info_toaster("Select supplier status");
     } else if (!supplier?.registerDate.trim()) {
       info_toaster("Select registration date");
-    } 
+    }
     // else if (!supplier?.bankAccount.trim()) {
     //   info_toaster("Select bank account detail");
-    // } 
+    // }
     else if (!supplier?.email.trim()) {
       info_toaster("Enter email");
     } else if (!emailValidity.test(supplier?.email)) {
@@ -225,57 +298,152 @@ export default function AddNewSupplier() {
                   <label className="text-labelColor font-medium font-satoshi">
                     Country
                   </label>
-                  <input
+                  {/* <input
                     type="text"
                     name="country"
                     value={supplier?.country}
                     placeholder="Enter Country Name"
                     className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
+                  /> */}
+                  <Select
+                    placeholder="Select Country"
+                    className="w-full"
+                    styles={drawerSelectStyles}
+                    value={
+                      supplier?.country
+                        ? {
+                            value: supplier?.country,
+                            label: supplier?.country,
+                          }
+                        : null
+                    }
+                    options={allCountries ?? []}
+                    onChange={(e) => {
+                      setSupplier({
+                        ...supplier,
+                        country: e.label,
+                        state: "",
+                        city: "",
+                      });
+                      handleSelectedCountryStates(e.label);
+                    }}
                   />
-                  {/* <Select
-                  placeholder="Choose country"
-                  className="w-full"
-                  styles={selectStyles2}
-                /> */}
                 </div>
               </div>
               <div className="grid md:grid-cols-2 max-md:gap-y-4 gap-x-6">
                 <div className="flex flex-col gap-y-2 w-full">
                   <label className="text-labelColor font-medium font-satoshi">
-                    City
-                  </label>
-                  <input
-                    type="text"
-                    name="city"
-                    value={supplier?.city}
-                    placeholder="Enter City Name"
-                    className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    onChange={handleChange}
-                  />
-                  {/* <Select
-                  placeholder="Select City"
-                  className="w-full"
-                  styles={selectStyles2}
-                /> */}
-                </div>
-                <div className="flex flex-col gap-y-2 w-full">
-                  <label className="text-labelColor font-medium font-satoshi">
                     State
                   </label>
-                  <input
+                  {/* <input
                     type="text"
                     name="state"
                     value={supplier?.state}
                     placeholder="Enter State Name"
                     className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
+                  /> */}
+                  <Select
+                    placeholder="Select State"
+                    className="w-full"
+                    styles={drawerSelectStyles}
+                    value={
+                      supplier?.state
+                        ? {
+                            value: supplier?.state,
+                            label: supplier?.state,
+                          }
+                        : null
+                    }
+                    options={allStates ?? []}
+                    onChange={(e) => {
+                      setSupplier({
+                        ...supplier,
+                        state: e?.label,
+                        city: "",
+                      });
+                      handleSelectedCountryStatesCities(e.value);
+                    }}
                   />
-                  {/* <Select
-                  placeholder="Select State"
-                  className="w-full"
-                  styles={selectStyles2}
-                /> */}
+                </div>
+                <div className="flex flex-col gap-y-2 w-full">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    City
+                  </label>
+                  {/* <input
+                    type="text"
+                    name="city"
+                    value={supplier?.city}
+                    placeholder="Enter City Name"
+                    className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    onChange={handleChange}
+                  /> */}
+                  {!customCityMode ? (
+                    <>
+                      <Select
+                        placeholder="Select City"
+                        className="w-full"
+                        styles={drawerSelectStyles}
+                        value={
+                          supplier?.city
+                            ? {
+                                value: supplier?.city,
+                                label: supplier?.city,
+                              }
+                            : null
+                        }
+                        options={allCities ?? []}
+                        onChange={(e) => {
+                          setSupplier({
+                            ...supplier,
+                            city: e.label,
+                          });
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="text-sm bg-theme text-white hover:text-theme hover:bg-white duration-150 rounded-sm border border-theme mt-1 px-2 self-end"
+                        onClick={() => {
+                          setSupplier({
+                            ...supplier,
+                            city: "",
+                          });
+                          setCustomCityMode(true);
+                        }}
+                      >
+                        Enter Custom City Name
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <input
+                        type="text"
+                        placeholder="Enter custom city"
+                        className="w-full px-3 py-3 border border-gray-300 rounded"
+                        value={supplier?.city}
+                        onChange={(e) =>
+                          setSupplier({
+                            ...supplier,
+                            city: e.target.value,
+                          })
+                        }
+                      />
+                      <button
+                        type="button"
+                        className="text-sm bg-theme text-white hover:text-theme hover:bg-white duration-150 rounded-sm border border-theme mt-1 px-2 self-end"
+                        onClick={() => {
+                          setSupplier({
+                            ...supplier,
+                            city: "",
+                          });
+                          setCustomCityMode(false);
+                        }}
+                      >
+                        Back to Select
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
               <div className="grid md:grid-cols-2 max-md:gap-y-4 gap-x-6">
@@ -382,7 +550,7 @@ export default function AddNewSupplier() {
                       backgroundColor: "#6f4e37",
                       borderRadius: "8px",
                     }}
-                    country={"pk"}
+                    country={"us"}
                     onChange={(phone) =>
                       setSupplier({
                         ...supplier,
@@ -490,7 +658,7 @@ export default function AddNewSupplier() {
               </div>
               <div className="flex flex-col gap-y-2">
                 <label className="text-labelColor font-medium font-satoshi">
-                  Email
+                  Login Email
                 </label>
                 <input
                   type="email"

@@ -33,7 +33,7 @@ export default function EditsSalesRepresentative() {
     businessWeb: "",
     image: "",
     phoneNumber: "",
-    countryCode: "",
+    countryCode: "+1",
     status: true,
   });
   const [imagePreview, setImagePreview] = useState("");
@@ -363,7 +363,7 @@ export default function EditsSalesRepresentative() {
                       backgroundColor: "#6f4e37",
                       borderRadius: "8px",
                     }}
-                    country={"pk"}
+                    country={"us"}
                     onChange={(phone) =>
                       setSaleRepresentative({
                         ...saleRepresentative,

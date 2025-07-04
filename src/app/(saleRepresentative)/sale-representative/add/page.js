@@ -31,10 +31,10 @@ export default function AddSaleRepresentative() {
     businessWeb: "",
     image: "",
     phoneNumber: "",
-    countryCode: "+92",
+    countryCode: "+1",
     creditLimit: "",
     status: true,
-  });
+  }); 
   console.log(
     "🚀 ~ AddSaleRepresentative ~ saleRepresentative:",
     saleRepresentative
@@ -538,7 +538,7 @@ export default function AddSaleRepresentative() {
                       backgroundColor: "#6f4e37",
                       borderRadius: "8px",
                     }}
-                    country={"pk"}
+                    country={"us"}
                     onChange={(phone) =>
                       setSaleRepresentative({
                         ...saleRepresentative,

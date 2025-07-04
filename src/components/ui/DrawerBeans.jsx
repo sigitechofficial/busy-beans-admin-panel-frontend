@@ -30,11 +30,12 @@ const DrawerBeans = ({
 }) => {
   if (typeof window !== "undefined") {
     var userID = localStorage.getItem("userID");
+    var userType = localStorage.getItem("userType");
   }
   const options = [];
   const paymentMethodOptions = [
-    { label: "COD", value: "cod" },
-    { label: "Cheque", value: "cheque" },
+    // { label: "COD", value: "cod" },
+    { label: "Bank Check", value: "cheque" },
     { label: "Card", value: "card" },
   ];
   const orderFrequencyOptions = [
@@ -75,7 +76,9 @@ const DrawerBeans = ({
   }, 0);
 
   const { data } = GetAPI(
-    `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}`
+    userType === "admin"
+      ? `api/v1/admin/customer-management/customer-list/all`
+      : `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}`
   );
 
   data?.data?.data?.map((user) =>
@@ -180,7 +183,9 @@ const DrawerBeans = ({
         setLoader(true);
         try {
           const res = await PostAPI(
-            `api/v1/admin/sales-rep/book-new-order/${userID}`,
+            userType === "admin"
+              ? `api/v1/admin/sales-rep/book-new-order`
+              : `api/v1/admin/sales-rep/book-new-order/${userID}`,
             {
               //sales rep id in route
               order: {
@@ -262,7 +267,6 @@ const DrawerBeans = ({
   };
 
   const handleEmail = (email) => {
-    const addressList = [];
     setEmail(email);
     const selectedEmail = data?.data?.data?.find(
       (customer) => customer?.email === email
@@ -272,19 +276,21 @@ const DrawerBeans = ({
       ...order,
       userId: selectedEmail?.id,
     });
-    selectedEmail?.addresses?.map((address) =>
-      addressList.push({
-        value: address?.id,
-        label:
-          address?.companyaddress + ", " +
-          address?.addressLineOne + ", " +
-          address?.addressLineTwo + ", " +
-          address?.town + ", " +
-          address?.state + ", " +
-          address?.zipCode + ", " +
-          address?.country,
-      })
-    );
+    const addressList = (selectedEmail?.addresses ?? []).map((address) => {
+      const parts = [
+        address.companyaddress,
+        address.addressLineOne,
+        address.addressLineTwo,
+        address.town,
+        address.state,
+        address.zipCode,
+        address.country,
+      ].filter((part) => part && part.trim() !== "");
+      return {
+        value: address.id,
+        label: parts.length > 0 ? parts.join(", ") : "",
+      };
+    });
     setAddressOptions([...addressList]);
   };
 
@@ -506,7 +512,7 @@ const DrawerBeans = ({
                             />
                           </div>
                           <div className="px-5 w-full font-sf">
-                            <h3 className="capitalize font-semibold text-base break-all">
+                            <h3 className="capitalize font-semibold text-base break-words">
                               {cartI?.name}
                             </h3>
                             <div className="flex items-center justify-between">

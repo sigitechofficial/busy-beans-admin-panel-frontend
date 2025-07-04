@@ -42,7 +42,7 @@ export default function CreateOrder() {
       // success_toaster("Item Updated Successfully");
     }
   };
- 
+
   const handleMinus = (id, itemQuantity) => {
     const findItemIndex = createOrderData?.findIndex((item) => item?.id === id);
     if (findItemIndex !== -1) {
@@ -142,7 +142,9 @@ export default function CreateOrder() {
   //   }
   // };
 
-  return (
+  return data?.length === 0 ? (
+    <Loader />
+  ) : (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">

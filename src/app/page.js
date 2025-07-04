@@ -12,6 +12,7 @@ import { BsCardList } from "react-icons/bs";
 import { FaChartLine } from "react-icons/fa";
 import { PiHandbagFill, PiUsersThreeBold } from "react-icons/pi";
 import { loadStripe } from "@stripe/stripe-js";
+import Loader from "@/components/ui/Loader";
 // ✅ Required since PrimeReact requires Client Components
 
 export default function Home() {
@@ -375,7 +376,7 @@ export default function Home() {
         //   );
         // }
       } catch (error) {
-        console.log("🚀 ~ stripeAccountStatus ~ error:", error)
+        console.log("🚀 ~ stripeAccountStatus ~ error:", error);
         // ErrorHandler("Connect Stripe Account");
       }
     };
@@ -441,7 +442,9 @@ export default function Home() {
     }
   }, []);
 
-  return userType === "admin" ? (
+  return data?.length === 0 ? (
+    <Loader />
+  ) : userType === "admin" ? (
     <>
       <div
         className={`bg-red-500 z-10 text-center text-white py-2 ${

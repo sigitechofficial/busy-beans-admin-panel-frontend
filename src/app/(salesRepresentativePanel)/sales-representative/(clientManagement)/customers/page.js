@@ -26,8 +26,8 @@ export default function SalesRepresentativeCustomers() {
     { field: "phoneNumber", header: "Phone Number", sort: true },
     { field: "emailToSendInvoices", header: "Invoice Email", sort: true },
     { field: "saleTaxNumber", header: "Sale Tax Number", sort: true },
-    { field: "totalOrderAmount", header: "Total Orders", sort: true },
-    { field: "totalOrderPlaced", header: "Total Orders Placed", sort: true },
+    { field: "totalOrderAmount", header: "Total Orders Amount", sort: true },
+    { field: "totalOrderPlaced", header: "No. of Orders Placed", sort: true },
     { field: "status", header: "status", sort: true },
   ];
 
@@ -103,6 +103,7 @@ export default function SalesRepresentativeCustomers() {
           data={datas}
           placeholder={"Search ..."}
           pagination={true}
+          search={true}
         />
       </div>
     </div>

@@ -92,10 +92,10 @@ export default function SalesRepresentativeInventory() {
             setFilter(e.target.value);
           }}
           // value={userData?.info?.name}
-          placeholder="Search"
+          placeholder="Search Product by name"
           className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-2"
         />
-        <Select placeholder="Filters" className="w-40" styles={selectStyles} />
+        {/* <Select placeholder="Filters" className="w-40" styles={selectStyles} /> */}
         {/* <div className="flex items-center gap-x-4">
       <div>
         <button className="flex items-center gap-x-2 px-2 sm:px-5 md:px-8 py-2.5 md:py-3 rounded-lg shadow-buttonShadow border border-buttonBorderColor bg-white ">

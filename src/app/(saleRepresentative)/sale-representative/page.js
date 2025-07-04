@@ -16,6 +16,7 @@ import { Dialog } from "primereact/dialog";
 import MiniLoader from "@/components/ui/MiniLoader";
 import { DeleteAPI } from "@/utilities/DeleteAPI";
 import { useRouter } from "next/navigation";
+import Loader from "@/components/ui/Loader";
 
 export default function SaleRepresentative() {
   const router = useRouter();
@@ -159,7 +160,9 @@ export default function SaleRepresentative() {
     });
   });
 
-  return (
+  return data?.length === 0 ? (
+    <Loader />
+  ) : (
     <div className="space-y-8">
       <div className="space-y-4">
         <div className="flex items-center justify-between">

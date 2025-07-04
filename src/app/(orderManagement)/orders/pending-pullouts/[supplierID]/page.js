@@ -62,11 +62,11 @@ export default function PendingPulloutsOrders() {
     selectedRows?.map((order) =>
       orderList.push({
         id: order?.id,
-        localPatnerCommission: order?.localPatnerCommission,
-        adminReceivableAmount: order?.adminReceivableAmount,
+        localPatnerCommission: order?.localPatnerCommission?.replace("$", ""),
+        adminReceivableAmount: order?.adminReceivableAmount?.replace("$", ""),
       })
     );
-    console.log("🚀 ~ handlePulloutPayments ~ selectedRows:", selectedRows);
+    console.log("🚀 ~ handlePulloutPayments ~ orderList:", orderList)
     const receivableAmount = selectedRows?.reduce((total, order) => {
       const amount = parseFloat(
         order?.adminReceivableAmount?.replace("$", "") || 0
@@ -74,8 +74,6 @@ export default function PendingPulloutsOrders() {
       return total + amount;
     }, 0);
     console.log("🚀 ~ receivableAmount ~ receivableAmount:", receivableAmount);
-    // console.log("🚀 ~ receivableAmount ~ receivableAmount:", receivableAmount);
-    // console.log("🚀 ~ receivableAmount ~ receivableAmount:", receivableAmount)
     setLoader(true);
     try {
       const res = await PostAPI(

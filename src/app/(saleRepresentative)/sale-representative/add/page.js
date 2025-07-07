@@ -227,7 +227,7 @@ export default function AddSaleRepresentative() {
   };
 
   return (
-    <div className="space-y-8">
+    <form onSubmit={handleSubmit} className="space-y-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-x-2">
           <BackButton />
@@ -241,7 +241,7 @@ export default function AddSaleRepresentative() {
         <MiniLoader />
       ) : (
         <div className="space-y-6">
-          <form onSubmit={handleSubmit} className="grid xl:grid-cols-2 gap-6">
+          <div className="grid xl:grid-cols-2 gap-6">
             {/* Basic Information */}
             <div className="bg-white border border-borderColor rounded p-6 space-y-6 shadow-sm">
               <h3 className="text-lg font-medium">1. Basic Information</h3>
@@ -926,7 +926,7 @@ export default function AddSaleRepresentative() {
               </div>
             </div> */}
             {/* </div> */}
-          </form>
+          </div>
           <div>
             <button
               type="submit"
@@ -937,6 +937,6 @@ export default function AddSaleRepresentative() {
           </div>
         </div>
       )}
-    </div>
+    </form>
   );
 }

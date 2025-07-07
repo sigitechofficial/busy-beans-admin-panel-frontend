@@ -199,7 +199,7 @@ export default function AddNewSupplier() {
         formData.append("registerDate", supplier?.registerDate);
         formData.append("bankAccount", supplier?.bankAccount);
         const res = await PostAPI("api/v1/admin/supplier", formData);
-        console.log("🚀 ~ handleSubmit ~ res:", res)
+        console.log("🚀 ~ handleSubmit ~ res:", res);
         if (res?.data?.status === "success") {
           success_toaster("Supplier added successfully");
           setLoader(false);
@@ -237,7 +237,7 @@ export default function AddNewSupplier() {
   };
 
   return (
-    <div className="space-y-8">
+    <form onSubmit={handleSubmit} className="space-y-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-x-2">
           <BackButton />
@@ -251,10 +251,7 @@ export default function AddNewSupplier() {
         <MiniLoader />
       ) : (
         <div className="space-y-6">
-          <form
-            onSubmit={handleSubmit}
-            className="grid xl:grid-cols-2 gap-6"
-          >
+          <div className="grid xl:grid-cols-2 gap-6">
             {/* Basic Information */}
             <div className="bg-white border border-borderColor rounded p-6 space-y-6 shadow-sm">
               <h3 className="text-lg font-medium">1. Basic Information</h3>
@@ -642,10 +639,9 @@ export default function AddNewSupplier() {
                 </div>
               </div>
             </div>
-          </form>
+          </div>
           <div>
             <button
-            onSubmit={handleSubmit}
               type="submit"
               className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
             >
@@ -654,7 +650,7 @@ export default function AddNewSupplier() {
           </div>
         </div>
       )}
-    </div>
+    </form>
   );
 }
 

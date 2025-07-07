@@ -8,6 +8,7 @@ import Loader from "@/components/ui/Loader";
 import { FaEye } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import dayjs from "dayjs";
 
 export default function Orders() {
   if (typeof window !== "undefined") {
@@ -28,26 +29,29 @@ export default function Orders() {
   console.log("🚀 ~ Orders ~ data:", data?.data?.data);
 
   const columns = [
-    { field: "sl", header: "SL", sort: true },
-    { field: "id", header: "Order ID", sort: true },
-    { field: "customerName", header: "Customer Name" },
-    { field: "salesRepName", header: "Local Partner Name" },
-    { field: "totalBill", header: "Total Bill" },
-    { field: "subTotal", header: "Sub Total" },
-    { field: "discountPrice", header: "Discount Price" },
-    { field: "discountPercentage", header: "Discount Percentage" },
-    { field: "itemsPrice", header: "Items Price" },
-    { field: "vat", header: "Vat" },
-    { field: "totalWeight", header: "Total Weight" },
-    { field: "shippingCharges", header: "Shipping Charges" },
-    { field: "note", header: "Note" },
-    { field: "paymentMethod", header: "Payment Method" },
-    { field: "poNumber", header: "Po Number" },
-    { field: "orderFrequency", header: "Order Frequency" },
-    { field: "orderCurrentStatus", header: "Order Current Status" },
-    { field: "paymentStatus", header: "Payment Status" },
-    { field: "createdBy", header: "Created By" },
-    { field: "action", header: "Action" },
+    // { field: "sl", header: "SL", sort: true },
+    { field: "id", header: "#", sort: true },
+    { field: "customerName", header: "Customer" },
+    { field: "orderDate", header: "Order Date" },
+    { field: "deliveredOn", header: "Deliver On" },
+    // { field: "salesRepName", header: "Local Partner Name" },
+    // { field: "subTotal", header: "Sub Total" },
+    // { field: "discountPrice", header: "Discount Price" },
+    // { field: "discountPercentage", header: "Discount Percentage" },
+    // { field: "itemsPrice", header: "Items Price" },
+    // { field: "vat", header: "Vat" },
+    // { field: "totalWeight", header: "Total Weight" },
+    // { field: "shippingCharges", header: "Shipping Charges" },
+    // { field: "note", header: "Note" },
+    // { field: "paymentMethod", header: "Payment Method" },
+    // { field: "poNumber", header: "Po Number" },
+    // { field: "orderFrequency", header: "Order Frequency" },
+
+    { field: "totalBill", header: "Total" },
+    { field: "paymentStatus", header: "Invoice" },
+    // { field: "createdBy", header: "Created By" },
+    { field: "orderCurrentStatus", header: "Status" },
+    // { field: "action", header: "Action" },
   ];
 
   const datas = [];
@@ -71,7 +75,7 @@ export default function Orders() {
         itemsPrice: "$" + detail?.itemsPrice,
         vat: detail?.vat,
         totalWeight: detail?.totalWeight + "kg",
-        shippingCharges: '$' + detail?.shippingCharges,
+        shippingCharges: "$" + detail?.shippingCharges,
         note: detail?.note,
         paymentMethod: detail?.paymentMethod,
         poNumber: detail?.poNumber,
@@ -79,16 +83,17 @@ export default function Orders() {
         orderCurrentStatus: detail?.orderCurrentStatus,
         paymentStatus: detail?.paymentStatus === "done" ? "Paid" : "Unpaid",
         createdBy: detail?.createdBy,
-        action: (
-          <button
-            className="border border-yellow-400 rounded-md p-2 text-yellow-400"
-            onClick={() => {
-              router.push(`/orders/detail/${detail?.id}`);
-            }}
-          >
-            <FaEye size={24} />
-          </button>
-        ),
+        orderDate: dayjs(detail?.on).format("DD/MM/YYYY"),
+        // action: (
+        //   <button
+        //     className="border border-yellow-400 rounded-md p-2 text-yellow-400"
+        //     onClick={() => {
+        //       router.push(`/orders/detail/${detail?.id}`);
+        //     }}
+        //   >
+        //     <FaEye size={24} />
+        //   </button>
+        // ),
       })
     );
   });
@@ -147,6 +152,9 @@ export default function Orders() {
           data={datas}
           placeholder={"Search ..."}
           pagination={true}
+          onRowClick={(e) => {
+            Example: router.push(`/orders/detail/${e.data.id}`);
+          }}
         />
       </div>
     </div>

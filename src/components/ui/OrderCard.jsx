@@ -173,11 +173,11 @@ export default function OrderCard(props) {
       {/* Upper section */}
       <div className="space-y-4 font-inter">
         <div className="flex justify-between items-start">
-          <div className="space-y-0.5">
+          {/* <div className="space-y-0.5">
             <p className="font-semibold text-3xl">
               Order# {props?.orderData?.id}
             </p>
-            {/* <p className="text-black/40 text-sm">15-01-2025, 05:32</p> */}
+       
             <p
               className={`text-black ${
                 props?.orderData?.statusId === 4 ? "block" : "hidden"
@@ -185,26 +185,56 @@ export default function OrderCard(props) {
             >
               Tracking No: {props?.orderData?.trackingNumber}
             </p>
-          </div>
-          <div className="space-y-1">
+          </div> */}
+          {/* <div className="space-y-1">
             <p className="text-sm">Order Status</p>
             <div className="bg-themeGreen text-white rounded-lg py-2 px-4 font-medium">
               {props?.orderData?.orderCurrentStatus}
             </div>
+          </div> */}
+
+          <div className="flex">
+            {/* <span className="text-black/60 w-2/4">Payment Status:</span> */}
+
+            {userType === "supplier" ||
+            (userType === "admin" &&
+              props?.orderData?.paymentMethod === "card") ||
+            props?.orderData?.statusId === 6 ? (
+              <div className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none">
+                {props?.orderData?.paymentStatus === "done" ? "Paid" : "Unpaid"}
+              </div>
+            ) : (
+              <span className="w-40">
+                <Select
+                  placeholder="Select Payment Status"
+                  className="w-full"
+                  value={
+                    props?.orderData?.paymentStatus === "pending"
+                      ? { value: "pending", label: "Unpaid" }
+                      : { value: "done", label: "Paid" }
+                  }
+                  styles={selectStyles2}
+                  options={paymentStausOptions}
+                  onChange={(e) => {
+                    handlePaymentStatus(e);
+                  }}
+                />
+              </span>
+            )}
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <p className="font-semibold text-lg underline">Order Information</p>
-            <div className="space-y-4">
-              <p className="flex">
+        <div className="w-full space-y-4">
+          <div className="w-full space-y-2">
+            {/* <p className="font-semibold text-lg underline">Order Information</p> */}
+            <div className="space-y-4 w-full">
+              {/* <p className="flex">
                 <span className="text-black/60 w-2/4">Payment Method:</span>
                 <span className="font-medium uppercase">
                   {props?.orderData?.paymentMethod}
                 </span>
-              </p>
-              <div className="flex">
+              </p> */}
+              {/* <div className="flex">
                 <span className="text-black/60 w-2/4">Payment Status:</span>
 
                 {userType === "supplier" ||
@@ -234,14 +264,14 @@ export default function OrderCard(props) {
                     />
                   </span>
                 )}
-              </div>
+              </div> */}
               {/* <p className="flex">
                 <span className="text-black/60 w-2/4">
                   Expected Delivery Time:
                 </span>
                 <span className="font-medium">17-02-2025</span>
               </p> */}
-              <p
+              {/* <p
                 className={`${
                   props?.userType === "supplier" ? "hidden" : "flex"
                 }`}
@@ -250,7 +280,7 @@ export default function OrderCard(props) {
                 <span className="font-medium">
                   $ {props?.orderData?.totalBill}
                 </span>
-              </p>
+              </p> */}
             </div>
           </div>
           <div className="bg-themeYellowDark text-black font-medium py-2 px-4 rounded-md flex gap-x-4">
@@ -262,7 +292,7 @@ export default function OrderCard(props) {
         </div>
       </div>
       {/* Lower section */}
-      <div>
+      {/* <div>
         <MyDataTable
           data={datas}
           columns={props?.userType === "supplier" ? supplierColumns : columns}
@@ -297,12 +327,7 @@ export default function OrderCard(props) {
             <span className="font-bold">Vat/Tax:</span>{" "}
             <span className="font-semibold">${props?.orderData?.vat}</span>
           </p>
-          {/* <p>
-            <span className="font-bold">Total Weight:</span>{" "}
-            <span className="font-semibold">
-              {props?.orderData?.totalWeight} kg
-            </span>
-          </p> */}
+
           <p>
             <span className="font-bold">Sub Total:</span>{" "}
             <span className="font-semibold">${props?.orderData?.subTotal}</span>
@@ -318,8 +343,134 @@ export default function OrderCard(props) {
             </span>
           </p>
         </div>
-      </div>
+      </div> */}
 
+      <div className="w-full">
+        <table className="w-full border border-gray-200 text-sm border-collapse">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="py-2 px-2 text-left border border-gray-200">
+                Code
+              </th>
+              <th className="py-2 px-2 text-left border border-gray-200">
+                Name
+              </th>
+              <th className="py-2 px-2 text-center border border-gray-200">
+                Qty.
+              </th>
+              <th className="py-2 px-2 text-center border border-gray-200">
+                Invoiced
+              </th>
+              <th className="py-2 px-2 text-center border border-gray-200">
+                Paid
+              </th>
+              <th className="py-2 px-2 text-center border border-gray-200">
+                Dispatched
+              </th>
+              <th className="py-2 px-2 text-right border border-gray-200">
+                Unit $
+              </th>
+              <th className="py-2 px-2 text-right border border-gray-200">
+                Total $
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {/* Coffee Beans Group */}
+
+            {props?.orderData?.items?.map((item) => {
+              return (
+                <>
+                  {/* <tr>
+                    <td
+                      colSpan={8}
+                      className="font-semibold bg-gray-50 border border-gray-200"
+                    >
+                      category name
+                    </td>
+                  </tr> */}
+                  <tr>
+                    <td className="py-2 px-2 border border-gray-200">--</td>
+                    <td className="py-2 px-2 font-semibold border border-gray-200">
+                      {item?.product}
+                    </td>
+                    <td className="py-2 px-2 text-center border border-gray-200">
+                      {item?.qty}
+                    </td>
+                    <td className="py-2 px-2 text-center border border-gray-200">
+                      --
+                    </td>
+                    <td className="py-2 px-2 text-center border border-gray-200">
+                      --
+                    </td>
+                    <td className="py-2 px-2 text-center border border-gray-200">
+                      --
+                    </td>
+                    <td className="py-2 px-2 text-right border border-gray-200">
+                      {item?.price}
+                    </td>
+                    <td className="py-2 px-2 text-right border border-gray-200">
+                      {(item?.price * item?.qty).toFixed(2)}
+                    </td>
+                  </tr>
+                </>
+              );
+            })}
+
+            {/* Subtotal Row */}
+            <tr>
+              <td colSpan={6} className="border border-gray-200"></td>
+              <td className="py-2 px-2 text-right font-semibold border border-gray-200">
+                Sub-Total
+              </td>
+              <td className="py-2 px-2 text-right font-semibold border border-gray-200">
+                {props?.orderData?.subTotal}
+              </td>
+            </tr>
+            {/* Shipping Row */}
+            <tr>
+              <td colSpan={6} className="border border-gray-200"></td>
+              <td className="py-2 px-2 text-right border border-gray-200">
+                Fedex
+              </td>
+              <td className="py-2 px-2 text-right border border-gray-200">
+                --
+              </td>
+            </tr>
+            {/* Total Row */}
+            <tr>
+              <td colSpan={6} className="border border-gray-200"></td>
+              <td className="py-2 px-2 text-right font-bold border border-gray-200">
+                Total USD ({props?.orderData?.items?.length} items)
+              </td>
+              <td className="py-2 px-2 text-right font-bold border border-gray-200">
+                {props?.orderData?.totalBill}
+              </td>
+            </tr>
+            {/* Total Weight Row */}
+            <tr>
+              <td
+                colSpan={8}
+                className="py-2 px-2 text-left font-medium border border-gray-200"
+              >
+                Total weight: {props?.orderData?.totalWeight} lbs
+              </td>
+            </tr>
+            <tr>
+              <td
+                colSpan={8}
+                className="py-2 px-2 text-left font-medium border border-gray-200"
+              >
+                Payment Method:{" "}
+                <span className="uppercase">
+                  {" "}
+                  {props?.orderData?.paymentMethod}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       {/* Modal */}
       <Dialog
         visible={

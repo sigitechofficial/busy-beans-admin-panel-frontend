@@ -125,6 +125,7 @@ export default function MyDataTable(props) {
           dataKey="id"
           emptyMessage="No Data Found"
           rowClassName={rowClassName} // Apply custom row class
+          onRowClick={props.onRowClick}
         >
           {/* Header column with checkbox to select all rows */}
           {props?.checkbox && (

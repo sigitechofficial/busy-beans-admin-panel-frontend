@@ -55,7 +55,7 @@ export default function OrderDetail() {
   ];
 
   const { data, reFetch } = GetAPI(`api/v1/admin/order-details/${orderID}`);
-  console.log("🚀 ~ OrderDetail ~ data:", data?.data?.order)
+  console.log("🚀 ~ OrderDetail ~ data:", data?.data?.order);
 
   const handleSupplierAcknowledgement = async () => {
     setLoader("acknowledgeSupplier");
@@ -297,8 +297,12 @@ export default function OrderDetail() {
         <div className="flex items-center gap-x-2">
           <BackButton />
           <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-            Order Details
+            Order/{data?.data?.order?.id}
           </h2>
+
+          <div className="bg-themeGreen text-white rounded-lg py-2 px-4 font-medium text-sm">
+            {data?.data?.order?.orderCurrentStatus}
+          </div>
         </div>
 
         <div className="flex items-center gap-x-2 sm:gap-x-4 [&>button]:py-2 sm:[&>button]:py-3 [&>button]:px-2 sm:[&>button]:px-5 [&>button]:rounded-lg [&>button]:font-nunito [&>button]:font-medium max-sm:[&>button]:text-sm">
@@ -307,7 +311,9 @@ export default function OrderDetail() {
             onClick={handleAddChequeModel}
             className="bg-black text-white disabled:cursor-not-allowed"
           >
-            {data?.data?.order?.chequeDetail ? "Edit Bank Check" : "Add Bank Check"}
+            {data?.data?.order?.chequeDetail
+              ? "Edit Bank Check"
+              : "Add Bank Check"}
           </button>
           <button
             type="button"
@@ -362,10 +368,10 @@ export default function OrderDetail() {
       {loader === "acknowledgeSupplier" || loader === "orderDelivered" ? (
         <MiniLoader />
       ) : (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 xl:gap-x-12">
+        <div className="grid grid-cols-1 gap-6 lg:gap-8 xl:gap-x-12">
           {/* Left side */}
           <div className="space-y-6">
-            <CusSupInformationCard
+            {/* <CusSupInformationCard
               heading="Customer Information"
               image={data?.data?.order?.user?.image}
               name={data?.data?.order?.user?.name}
@@ -384,8 +390,114 @@ export default function OrderDetail() {
                 } - ${data?.data?.order?.address?.zipCode ?? ""}
                   ${data?.data?.order?.address?.country ?? ""}`,
               }}
-            />
-            {data?.data?.order?.statusId >= 2 && (
+            /> */}
+
+            <div className="w-full grid grid-cols-2 gap-20 py-4 px-8 space-y-4 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm">
+              <div className="w-full [&>div]:h-10 text-sm">
+                {data?.data?.order?.on && (
+                  <div className="flex items-center gap-5 border-b">
+                    <p className="w-28">Ordered On </p>
+                    <p>{data?.data?.order?.on}</p>
+                  </div>
+                )}
+                {data?.data?.order?.customerName && (
+                  <div className="flex items-center gap-5 border-b">
+                    <p className="w-28">Customer</p>
+                    <p>{data?.data?.order?.customerName}</p>
+                  </div>
+                )}
+                {data?.data?.order?.createdBy && (
+                  <div className="flex items-center gap-5 border-b">
+                    <p className="w-28">Created By</p>
+                    <p>{data?.data?.order?.createdBy}</p>
+                  </div>
+                )}
+                {data?.data?.order?.supplier?.supplierName && (
+                  <div className="flex items-center gap-5 border-b">
+                    <p className="w-28">Supplier</p>
+                    <p>{data?.data?.order?.supplier?.supplierName}</p>
+                  </div>
+                )}
+                {data?.data?.order?.salesRepName && (
+                  <div className="flex items-center gap-5 border-b">
+                    <p className="w-28">Local Partner</p>
+                    <p>{data?.data?.order?.salesRepName}</p>
+                  </div>
+                )}
+                {data?.data?.order?.poNumber && (
+                  <div className="flex items-center gap-5 border-b">
+                    <p className="w-28">P.O. # </p>
+                    <p>{data?.data?.order?.poNumber}</p>
+                  </div>
+                )}
+                {data?.data?.order?.invoiceId && (
+                  <div className="flex items-center gap-5 border-b">
+                    <p className="w-28">Invoice No </p>
+                    <p>{data?.data?.order?.invoiceId}</p>
+                  </div>
+                )}
+                {data?.data?.order?.trackingNumber && (
+                  <div className="flex items-center gap-5 border-b">
+                    <p className="w-28">Tracking No: </p>
+                    <p>{data?.data?.order?.trackingNumber}</p>
+                  </div>
+                )}
+              </div>
+              {/* ================ */}
+              <div className="w-full grid grid-cols-2 gap-10 text-sm">
+                <div>
+                  <h6>Deliver To</h6>
+
+                  <div className="flex gap-2 items-center">
+                    <p>{data?.data?.order?.address?.companyaddress}</p>
+                    <p>{data?.data?.order?.address?.addressLineOne}</p>
+                    <p>{data?.data?.order?.address?.addressLineTwo}</p>
+                  </div>
+
+                  <div className="flex gap-2 items-center">
+                    <p>{data?.data?.order?.address?.town}</p>
+                    <p>{data?.data?.order?.address?.state}</p>
+                    <p>{data?.data?.order?.address?.zipCode}</p>
+                  </div>
+
+                  <p>{data?.data?.order?.address?.country}</p>
+                  <p>Phone: {data?.data?.order?.address?.phoneNum}</p>
+                  <span
+                    onClick={() => Router.push("/edit")}
+                    className="text-blue-500 text-xs cursor-pointer"
+                  >
+                    Edit
+                  </span>
+                </div>
+                <div>
+                  <h6>Invoice To</h6>
+                  <div className="flex gap-2 items-center">
+                    <p>{data?.data?.order?.user?.companyName}</p>
+                    <p>{data?.data?.order?.user?.billingAddress}</p>
+                    {/* <p>{data?.data?.order?.user?.addressLineTwo}</p> */}
+                  </div>
+
+                  <div className="flex gap-2 items-center">
+                    <p>{data?.data?.order?.user?.town}</p>
+                    <p>{data?.data?.order?.user?.state}</p>
+                    <p>{data?.data?.order?.user?.zipCode}</p>
+                  </div>
+
+                  <p>{data?.data?.order?.user?.country}</p>
+                  <p>
+                    Phone: {data?.data?.order?.address?.countryCode}{" "}
+                    {data?.data?.order?.address?.phoneNumber}
+                  </p>
+                  <span
+                    onClick={() => Router.push("/edit")}
+                    className="text-blue-500 text-xs cursor-pointer"
+                  >
+                    Edit
+                  </span>
+                </div>
+              </div>
+            </div>
+            {/* {data?.data?.order?.statusId >= 2 && (
               <CusSupInformationCard
                 heading="Supplier Information"
                 image={data?.data?.order?.supplier?.image}
@@ -406,7 +518,7 @@ export default function OrderDetail() {
                 ${data?.data?.order?.supplier?.country ?? ""}`,
                 }}
               />
-            )}
+            )} */}
           </div>
 
           {/* Right side */}

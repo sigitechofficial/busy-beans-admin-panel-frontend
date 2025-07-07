@@ -638,7 +638,7 @@ export default function Leftbar(props) {
               <>
                 <div className="m-2 relative space-y-1">
                   <ListItems title="Category" to="/category" />
-                  <ListItems title="Sub Category" to="/sub-category" />
+                  {/* <ListItems title="Sub Category" to="/sub-category" /> */}
                 </div>
                 <hr className="w-full" />
               </>

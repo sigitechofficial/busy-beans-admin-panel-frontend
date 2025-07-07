@@ -15,6 +15,7 @@ import { BASE_URL } from "@/utilities/URL";
 import { string } from "yup";
 import { PatchAPI } from "@/utilities/PatchAPI";
 import PhoneInput from "react-phone-input-2";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
 export default function EditsSalesRepresentative() {
   const { salesRepresentativeID } = useParams();
@@ -34,9 +35,12 @@ export default function EditsSalesRepresentative() {
     image: "",
     phoneNumber: "",
     countryCode: "+1",
+    creditLimit: "",
     status: true,
   });
   const [imagePreview, setImagePreview] = useState("");
+  const [visible, setVisible] = useState(false);
+  const [changePasswordStatus, setChangePasswordStatus] = useState(false);
 
   const { data } = GetAPI(`api/v1/admin/sales-rep/${salesRepresentativeID}`);
 
@@ -65,9 +69,10 @@ export default function EditsSalesRepresentative() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!saleRepresentative?.image) {
-      info_toaster("Select image");
-    } else if (!saleRepresentative?.srName.trim()) {
+    // if (!saleRepresentative?.image) {
+    //   info_toaster("Select image");
+    // } else
+    if (!saleRepresentative?.srName.trim()) {
       info_toaster("Enter Sale Representative name");
     } else if (!saleRepresentative?.country?.trim()) {
       info_toaster("Enter Country");
@@ -81,21 +86,25 @@ export default function EditsSalesRepresentative() {
       info_toaster("Enter Phone Number");
     } else if (!saleRepresentative?.address?.trim()) {
       info_toaster("Enter Address");
-    } else if (!saleRepresentative?.territory?.trim()) {
-      info_toaster("Enter Territory");
-    } else if (saleRepresentative?.status === "") {
+    }
+    // else if (!saleRepresentative?.territory?.trim()) {
+    //   info_toaster("Enter Territory");
+    // }
+    else if (saleRepresentative?.status === "") {
       info_toaster("Select Status");
     } else if (!saleRepresentative?.email?.trim()) {
       info_toaster("Enter email");
-    } else if (!saleRepresentative?.password?.trim()) {
-      info_toaster("Enter password");
+    } else if (changePasswordStatus && !saleRepresentative?.password) {
+      info_toaster("Enter New password");
     } else {
       setLoader(true);
       try {
         const formData = new FormData();
         formData.append("srName", saleRepresentative?.srName);
         formData.append("email", saleRepresentative?.email);
-        formData.append("password", saleRepresentative?.password);
+        if (changePasswordStatus) {
+          formData.append("password", saleRepresentative?.password);
+        }
         formData.append("country", saleRepresentative?.country);
         formData.append("city", saleRepresentative?.city);
         formData.append("state", saleRepresentative?.state);
@@ -146,7 +155,7 @@ export default function EditsSalesRepresentative() {
     setSaleRepresentative({
       srName: data?.data?.data?.srName ?? "",
       email: data?.data?.data?.email ?? "",
-      password: data?.data?.data?.password ?? "",
+      // password: data?.data?.data?.password ?? "",
       country: data?.data?.data?.country ?? "",
       city: data?.data?.data?.city ?? "",
       state: data?.data?.data?.state ?? "",
@@ -157,18 +166,19 @@ export default function EditsSalesRepresentative() {
       image: data?.data?.data?.image ?? "",
       phoneNumber: data?.data?.data?.phoneNumber ?? "",
       countryCode: data?.data?.data?.countryCode ?? "",
+      creditLimit: data?.data?.data?.creditLimit ?? "",
       status: data?.data?.data?.status ?? "",
     });
     setImagePreview(data?.data?.data?.image);
   }, [data]);
 
   return (
-    <div className="space-y-8">
+    <form onSubmit={handleSubmit} className="space-y-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-x-2">
           <BackButton />
           <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-            Edit Local Partner
+            Update Local Partner
           </h2>
         </div>
       </div>
@@ -176,223 +186,48 @@ export default function EditsSalesRepresentative() {
       {loader ? (
         <MiniLoader />
       ) : (
-        <form
-          onSubmit={handleSubmit}
-          className="px-5 md:px-10 xl:px-14 py-5 md:py-8 xl:py-10 shadow-tableShadow border border-borderColor rounded-sm space-y-6"
-        >
-          <button
-            type="button"
-            onClick={handleSelectImage}
-            className="rounded-xl border border-tabBorderColor border-opacity-40 size-20 flex items-center justify-center"
-          >
-            <input
-              type="file"
-              className="hidden selectImage"
-              onChange={handleImage}
-            />
-            {imagePreview ? (
-              <img
-                src={
-                  !saleRepresentative?.image?.name
-                    ? BASE_URL + imagePreview
-                    : imagePreview
-                }
-                alt="supplier-image"
-                className="object-cover object-center"
-              />
-            ) : (
-              <LuImageUp size={"60"} color="rgba(0, 0, 0, 0.6)" />
-            )}
-          </button>
-          <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
-            {/* Left Side */}
-            <div className="space-y-4">
-              <div className="grid md:grid-cols-2 max-md:gap-y-4 gap-x-6">
-                <div className="flex flex-col gap-y-2">
-                  <label className="text-labelColor font-medium font-satoshi">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    name="srName"
-                    value={saleRepresentative?.srName}
-                    placeholder="Enter Name"
-                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="flex flex-col gap-y-2 w-full">
-                  <label className="text-labelColor font-medium font-satoshi">
-                    Country
-                  </label>
-                  <input
-                    type="text"
-                    name="country"
-                    value={saleRepresentative?.country}
-                    placeholder="Enter Country Name"
-                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    onChange={handleChange}
-                  />
-                  {/* <Select
-                    placeholder="Choose country"
-                    className="w-full"
-                    styles={selectStyles2}
-                  /> */}
-                </div>
-              </div>
-              <div className="grid md:grid-cols-2 max-md:gap-y-4 gap-x-6">
-                <div className="flex flex-col gap-y-2 w-full">
-                  <label className="text-labelColor font-medium font-satoshi">
-                    City
-                  </label>
-                  <input
-                    type="text"
-                    name="city"
-                    value={saleRepresentative?.city}
-                    placeholder="Enter City Name"
-                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    onChange={handleChange}
-                  />
-                  {/* <Select
-                    placeholder="Select City"
-                    className="w-full"
-                    styles={selectStyles2}
-                  /> */}
-                </div>
-                <div className="flex flex-col gap-y-2 w-full">
-                  <label className="text-labelColor font-medium font-satoshi">
-                    State
-                  </label>
-                  <input
-                    type="text"
-                    name="state"
-                    value={saleRepresentative?.state}
-                    placeholder="Enter State Name"
-                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    onChange={handleChange}
-                  />
-                  {/* <Select
-                    placeholder="Select State"
-                    className="w-full"
-                    styles={selectStyles2}
-                  /> */}
-                </div>
-              </div>
-              <div className="grid md:grid-cols-2 max-md:gap-y-4 gap-x-6">
-                <div className="flex flex-col gap-y-2">
-                  <label className="text-labelColor font-medium font-satoshi">
-                    Zip Code
-                  </label>
-                  <input
-                    type="text"
-                    name="zipCode"
-                    value={saleRepresentative?.zipCode}
-                    placeholder="Enter Zip code"
-                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="flex flex-col gap-y-2">
-                  <label className="text-labelColor font-medium font-satoshi">
-                    Territory{" "}
-                  </label>
-                  <input
-                    type="text"
-                    name="territory"
-                    value={saleRepresentative?.territory}
-                    placeholder="Enter Territory name"
-                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-              <div className="flex flex-col gap-y-2">
-                <label className="text-labelColor font-medium font-satoshi">
-                  Address{" "}
-                </label>
+        <div className="space-y-6">
+          <div className="grid xl:grid-cols-2 gap-6">
+            {/* Basic Information */}
+            <div className="bg-white border border-borderColor rounded p-6 space-y-6 shadow-sm">
+              <h3 className="text-lg font-medium">1. Basic Information</h3>
+              <button
+                type="button"
+                onClick={handleSelectImage}
+                className="rounded-xl border border-tabBorderColor border-opacity-40 size-20 flex items-center justify-center"
+              >
                 <input
-                  type="text"
-                  name="address"
-                  value={saleRepresentative?.address}
-                  placeholder="Enter Address"
-                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                  onChange={handleChange}
+                  type="file"
+                  className="hidden selectImage"
+                  onChange={handleImage}
                 />
-              </div>
-              {/* <div className="flex flex-col gap-y-2">
-                <label className="text-labelColor font-medium font-satoshi">
-                  Business website
-                </label>
-                <input
-                  type="text"
-                  name="businessWeb"
-                  value={saleRepresentative?.businessWeb}
-                  placeholder="Enter Business name"
-                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                  onChange={handleChange}
-                />
-              </div> */}
-
-              <div className="flex flex-col gap-y-2">
-                <label className="text-labelColor font-medium font-satoshi">
-                  Phone number
-                </label>
-                <div className="grid grid-cols-10 gap-x-2">
-                  <PhoneInput
-                    focusBorderColor="none"
-                    borderWidth="none"
-                    className="chakra_input col-span-2"
-                    inputStyle={{
-                      width: "90px",
-                      height: "45px",
-                      borderRadius: "4px",
-                      border: "1px solid #00000033",
-                      backgroundColor: "#ffffff",
-                      color: "#6f4e37",
-                      opacity: "20",
-                    }}
-                    buttonStyle={{
-                      backgroundColor: "#ffffff",
-                      border: "1px solid #86644C",
-                    }}
-                    containerStyle={{
-                      borderRadius: "12px",
-                      // backgroundColor: "#6f4e37",
-                    }}
-                    dropdownStyle={{
-                      backgroundColor: "#6f4e37",
-                      borderRadius: "8px",
-                    }}
-                    country={"us"}
-                    onChange={(phone) =>
-                      setSaleRepresentative({
-                        ...saleRepresentative,
-                        countryCode: phone,
-                      })
+                {imagePreview ? (
+                  <img
+                    src={
+                      !saleRepresentative?.image?.name
+                        ? BASE_URL + imagePreview
+                        : imagePreview
                     }
+                    alt="supplier-image"
+                    className="object-cover object-center"
                   />
-                  <input
-                    type="number"
-                    name="phoneNumber"
-                    value={saleRepresentative?.phoneNumber}
-                    placeholder="Enter Phone Number"
-                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5  w-full col-span-8"
-                    onChange={handleChange}
-                  />
-                </div>
-                {/* <input
-                  type="number"
-                  name="phoneNumber"
-                  value={saleRepresentative?.phoneNumber}
-                  placeholder="Enter Phone Number"
+                ) : (
+                  <LuImageUp size={"60"} color="rgba(0, 0, 0, 0.6)" />
+                )}
+              </button>
+              <div className="flex flex-col gap-y-2">
+                <label className="text-labelColor font-medium font-satoshi">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  name="srName"
+                  value={saleRepresentative?.srName}
+                  placeholder="Enter Name"
                   className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
-                /> */}
+                />
               </div>
-            </div>
-
-            {/* right side */}
-            <div className="space-y-4">
               <div className="flex flex-col gap-y-2 w-full">
                 <label className="text-labelColor font-medium font-satoshi">
                   Status
@@ -418,44 +253,474 @@ export default function EditsSalesRepresentative() {
                   styles={selectStyles2}
                 />
               </div>
-              {/* <div className="flex flex-col gap-y-2">
+              <div className="flex flex-col gap-y-2">
                 <label className="text-labelColor font-medium font-satoshi">
-                  Email
+                  Credit Limit
                 </label>
                 <input
-                  type="email"
-                  name="email"
-                  value={saleRepresentative?.email}
-                  placeholder="Enter Email"
+                  type="number"
+                  name="creditLimit"
+                  value={saleRepresentative?.creditLimit}
+                  placeholder="Enter Credit Limit"
                   className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
               </div>
-              <div className="flex flex-col gap-y-2">
-                <label className="text-labelColor font-medium font-satoshi">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  value={saleRepresentative?.password}
-                  placeholder="Enter password"
-                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                  onChange={handleChange}
-                />
-              </div> */}
-              <div>
-                <button
-                  type="submit"
-                  className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
-                >
-                  Update Local Partner
-                </button>
+            </div>
+
+            {/* === Section 2: Contact Info === */}
+            <div className="bg-white border border-borderColor rounded p-6 space-y-6 shadow-sm">
+              <h3 className="text-lg font-medium">2. Contact Information</h3>
+              <div className="space-y-4">
+                <div className="grid md:grid-cols-2 max-md:gap-y-4 gap-x-6">
+                  <div className="flex flex-col gap-y-2 w-full">
+                    <label className="text-labelColor font-medium font-satoshi">
+                      Country
+                    </label>
+                    <input
+                      type="text"
+                      name="country"
+                      value={saleRepresentative?.country}
+                      placeholder="Enter Country Name"
+                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-y-2 w-full">
+                    <label className="text-labelColor font-medium font-satoshi">
+                      State
+                    </label>
+                    <input
+                      type="text"
+                      name="state"
+                      value={saleRepresentative?.state}
+                      placeholder="Enter State Name"
+                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-2 max-md:gap-y-4 gap-x-6">
+                  <div className="flex flex-col gap-y-2 w-full">
+                    <label className="text-labelColor font-medium font-satoshi">
+                      City
+                    </label>
+                    <input
+                      type="text"
+                      name="city"
+                      value={saleRepresentative?.city}
+                      placeholder="Enter City Name"
+                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-y-2">
+                    <label className="text-labelColor font-medium font-satoshi">
+                      Zip Code
+                    </label>
+                    <input
+                      type="text"
+                      name="zipCode"
+                      value={saleRepresentative?.zipCode}
+                      placeholder="Enter Zip code"
+                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-y-2">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Territory{" "}
+                  </label>
+                  <input
+                    type="text"
+                    name="territory"
+                    value={saleRepresentative?.territory}
+                    placeholder="Enter Territory name"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="flex flex-col gap-y-2">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Address{" "}
+                  </label>
+                  <input
+                    type="text"
+                    name="address"
+                    value={saleRepresentative?.address}
+                    placeholder="Enter Address"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="flex flex-col gap-y-2">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Phone number
+                  </label>
+                  <div className="grid grid-cols-10 gap-x-2">
+                    <PhoneInput
+                      focusBorderColor="none"
+                      borderWidth="none"
+                      className="chakra_input col-span-2"
+                      inputStyle={{
+                        width: "90px",
+                        height: "45px",
+                        borderRadius: "4px",
+                        border: "1px solid #00000033",
+                        backgroundColor: "#ffffff",
+                        color: "#6f4e37",
+                        opacity: "20",
+                      }}
+                      buttonStyle={{
+                        backgroundColor: "#ffffff",
+                        border: "1px solid #86644C",
+                      }}
+                      containerStyle={{
+                        borderRadius: "12px",
+                        // backgroundColor: "#6f4e37",
+                      }}
+                      dropdownStyle={{
+                        backgroundColor: "#6f4e37",
+                        borderRadius: "8px",
+                      }}
+                      country={"us"}
+                      onChange={(phone) =>
+                        setSaleRepresentative({
+                          ...saleRepresentative,
+                          countryCode: phone,
+                        })
+                      }
+                    />
+                    <input
+                      type="number"
+                      name="phoneNumber"
+                      value={saleRepresentative?.phoneNumber}
+                      placeholder="Enter Phone Number"
+                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5  w-full col-span-8"
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* === Section 3: Bank & Login Details === */}
+            <div className="bg-white border border-borderColor rounded p-6 space-y-6 shadow-sm">
+              <h3 className="text-lg font-medium">3. Login Details</h3>
+              <div className="space-y-4">
+                <div className="flex flex-col gap-y-2">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={saleRepresentative?.email}
+                    placeholder="Enter Email"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  {changePasswordStatus && (
+                    <div className="flex flex-col gap-y-2 relative">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Update Password
+                      </label>
+                      <input
+                        type={visible ? "text" : "password"}
+                        name="password"
+                        autoComplete="off"
+                        value={saleRepresentative?.password}
+                        placeholder="Enter New Password"
+                        className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none ps-2.5 pe-12 py-3"
+                        onChange={handleChange}
+                      />
+                      <button
+                        onClick={() => setVisible(!visible)}
+                        type="button"
+                        className="text-labelColor absolute right-4 top-11"
+                      >
+                        {visible ? (
+                          <AiOutlineEye size={24} color="#000000" />
+                        ) : (
+                          <AiOutlineEyeInvisible size={24} color="#64748b" />
+                        )}
+                      </button>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-end gap-x-2 pb-4">
+                    <label className="text-black font-medium font-satoshi">
+                      Update Password
+                    </label>
+                    <input
+                      checked={changePasswordStatus}
+                      type="checkbox"
+                      name="passwordStatus"
+                      onChange={() =>
+                        setChangePasswordStatus(!changePasswordStatus)
+                      }
+                      className="size-4 border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </form>
+          <div>
+            <button
+              type="submit"
+              className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
+            >
+              Update Local Partner
+            </button>
+          </div>
+
+          {/* <div
+            onSubmit={handleSubmit}
+            className="px-5 md:px-10 xl:px-14 py-5 md:py-8 xl:py-10 shadow-tableShadow border border-borderColor rounded-sm space-y-6"
+          >
+            <button
+              type="button"
+              onClick={handleSelectImage}
+              className="rounded-xl border border-tabBorderColor border-opacity-40 size-20 flex items-center justify-center"
+            >
+              <input
+                type="file"
+                className="hidden selectImage"
+                onChange={handleImage}
+              />
+              {imagePreview ? (
+                <img
+                  src={
+                    !saleRepresentative?.image?.name
+                      ? BASE_URL + imagePreview
+                      : imagePreview
+                  }
+                  alt="supplier-image"
+                  className="object-cover object-center"
+                />
+              ) : (
+                <LuImageUp size={"60"} color="rgba(0, 0, 0, 0.6)" />
+              )}
+            </button>
+            <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
+              <div className="space-y-4">
+                <div className="grid md:grid-cols-2 max-md:gap-y-4 gap-x-6">
+                  <div className="flex flex-col gap-y-2">
+                    <label className="text-labelColor font-medium font-satoshi">
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      name="srName"
+                      value={saleRepresentative?.srName}
+                      placeholder="Enter Name"
+                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-y-2 w-full">
+                    <label className="text-labelColor font-medium font-satoshi">
+                      Country
+                    </label>
+                    <input
+                      type="text"
+                      name="country"
+                      value={saleRepresentative?.country}
+                      placeholder="Enter Country Name"
+                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-2 max-md:gap-y-4 gap-x-6">
+                  <div className="flex flex-col gap-y-2 w-full">
+                    <label className="text-labelColor font-medium font-satoshi">
+                      City
+                    </label>
+                    <input
+                      type="text"
+                      name="city"
+                      value={saleRepresentative?.city}
+                      placeholder="Enter City Name"
+                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-y-2 w-full">
+                    <label className="text-labelColor font-medium font-satoshi">
+                      State
+                    </label>
+                    <input
+                      type="text"
+                      name="state"
+                      value={saleRepresentative?.state}
+                      placeholder="Enter State Name"
+                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-2 max-md:gap-y-4 gap-x-6">
+                  <div className="flex flex-col gap-y-2">
+                    <label className="text-labelColor font-medium font-satoshi">
+                      Zip Code
+                    </label>
+                    <input
+                      type="text"
+                      name="zipCode"
+                      value={saleRepresentative?.zipCode}
+                      placeholder="Enter Zip code"
+                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-y-2">
+                    <label className="text-labelColor font-medium font-satoshi">
+                      Territory{" "}
+                    </label>
+                    <input
+                      type="text"
+                      name="territory"
+                      value={saleRepresentative?.territory}
+                      placeholder="Enter Territory name"
+                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-y-2">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Address{" "}
+                  </label>
+                  <input
+                    type="text"
+                    name="address"
+                    value={saleRepresentative?.address}
+                    placeholder="Enter Address"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-y-2">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Phone number
+                  </label>
+                  <div className="grid grid-cols-10 gap-x-2">
+                    <PhoneInput
+                      focusBorderColor="none"
+                      borderWidth="none"
+                      className="chakra_input col-span-2"
+                      inputStyle={{
+                        width: "90px",
+                        height: "45px",
+                        borderRadius: "4px",
+                        border: "1px solid #00000033",
+                        backgroundColor: "#ffffff",
+                        color: "#6f4e37",
+                        opacity: "20",
+                      }}
+                      buttonStyle={{
+                        backgroundColor: "#ffffff",
+                        border: "1px solid #86644C",
+                      }}
+                      containerStyle={{
+                        borderRadius: "12px",
+                        backgroundColor: "#6f4e37",
+                      }}
+                      dropdownStyle={{
+                        backgroundColor: "#6f4e37",
+                        borderRadius: "8px",
+                      }}
+                      country={"us"}
+                      onChange={(phone) =>
+                        setSaleRepresentative({
+                          ...saleRepresentative,
+                          countryCode: phone,
+                        })
+                      }
+                    />
+                    <input
+                      type="number"
+                      name="phoneNumber"
+                      value={saleRepresentative?.phoneNumber}
+                      placeholder="Enter Phone Number"
+                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5  w-full col-span-8"
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex flex-col gap-y-2 w-full">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Status
+                  </label>
+                  <Select
+                    placeholder="Active/ InActive"
+                    options={[
+                      { label: "Active", value: true },
+                      { label: "InActive", value: false },
+                    ]}
+                    value={
+                      saleRepresentative?.status
+                        ? { label: "Active", value: true }
+                        : { label: "InActive", value: false }
+                    }
+                    onChange={(e) =>
+                      setSaleRepresentative({
+                        ...saleRepresentative,
+                        status: e.value,
+                      })
+                    }
+                    className="w-full"
+                    styles={selectStyles2}
+                  />
+                </div>
+                <div className="flex flex-col gap-y-2">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={saleRepresentative?.email}
+                    placeholder="Enter Email"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="flex flex-col gap-y-2">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={saleRepresentative?.password}
+                    placeholder="Enter password"
+                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    onChange={handleChange}
+                  />
+                </div>
+                <div>
+                  <button
+                    type="submit"
+                    className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
+                  >
+                    Update Local Partner
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div> */}
+        </div>
       )}
-    </div>
+    </form>
   );
 }

@@ -37,7 +37,6 @@ export default function AddNewSupplier() {
     registerDate: "",
     bankAccount: "",
   });
-  console.log("🚀 ~ AddNewSupplier ~ supplier:", supplier);
   const [visible, setVisible] = useState(false);
   const [imagePreview, setImagePreview] = useState("");
   const [loader, setLoader] = useState(false);
@@ -118,10 +117,6 @@ export default function AddNewSupplier() {
             value: state?.name,
             label: state?.name,
           })
-        );
-        console.log(
-          "🚀 ~ handleSelectedCountryStatesCities ~ tempAllCities:",
-          tempAllCities
         );
         setAllCities([...tempAllCities]);
       } else {
@@ -204,6 +199,7 @@ export default function AddNewSupplier() {
         formData.append("registerDate", supplier?.registerDate);
         formData.append("bankAccount", supplier?.bankAccount);
         const res = await PostAPI("api/v1/admin/supplier", formData);
+        console.log("🚀 ~ handleSubmit ~ res:", res)
         if (res?.data?.status === "success") {
           success_toaster("Supplier added successfully");
           setLoader(false);
@@ -649,6 +645,7 @@ export default function AddNewSupplier() {
           </form>
           <div>
             <button
+            onSubmit={handleSubmit}
               type="submit"
               className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
             >

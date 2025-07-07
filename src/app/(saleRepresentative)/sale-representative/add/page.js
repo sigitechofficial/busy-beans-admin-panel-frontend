@@ -278,7 +278,7 @@ export default function AddSaleRepresentative() {
                   onChange={handleChange}
                 />
               </div>
-              <div className="flex flex-col gap-y-2">
+              {/* <div className="flex flex-col gap-y-2">
                 <label className="text-labelColor font-medium font-satoshi">
                   Business website
                 </label>
@@ -290,7 +290,7 @@ export default function AddSaleRepresentative() {
                   className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
                 />
-              </div>
+              </div> */}
               <div className="flex flex-col gap-y-2 w-full">
                 <label className="text-labelColor font-medium font-satoshi">
                   Status

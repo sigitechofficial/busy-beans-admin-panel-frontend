@@ -33,7 +33,6 @@ export default function Stock() {
   );
 
   const catOptions = [];
-
   category?.data?.data?.map((item) => {
     catOptions.push({ value: item?.id, label: item?.name });
   });
@@ -296,7 +295,7 @@ export default function Stock() {
       name: prod?.name,
       quantity: prod?.quantity,
       price: "$" + prod?.price,
-      weight: "$" + prod?.weight,
+      weight: prod?.weight ? prod.weight + " lbs" : "",
       wholesalePrice: "$" + prod?.wholesalePrice ?? "",
       productCode: prod?.productCode ?? "",
       sku: prod?.sku ?? "",
@@ -717,10 +716,10 @@ export default function Stock() {
                         className="w-full"
                         styles={selectStyles2}
                         options={[
-                          { value: "lbs", label: "LBS" },
-                          { value: "kg", label: "Kilogram (kg)" },
-                          { value: "g", label: "Gram (g)" },
-                          { value: "pounds", label: "pounds" },
+                          { value: "lbs", label: "Pounds (lbs)" },
+                          // { value: "kg", label: "Kilogram (kg)" },
+                          // { value: "g", label: "Gram (g)" },
+                          // { value: "pounds", label: "pounds" },
                         ]}
                         value={productDetail?.unit}
                         onChange={(e) => {

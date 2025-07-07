@@ -130,6 +130,7 @@ export default function Leftbar(props) {
   };
 
   const handleConnectAccount = async () => {
+    if (typeof window === "undefined") return;
     const path = url.split("/");
     if (isAccountConnected === "false" && connectAccountId !== "null") {
       console.log("1");

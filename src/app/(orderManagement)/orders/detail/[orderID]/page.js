@@ -12,13 +12,15 @@ import { PatchAPI } from "@/utilities/PatchAPI";
 import { PostAPI } from "@/utilities/PostAPI";
 import { selectStyles2 } from "@/utilities/SelectStyle";
 import { success_toaster } from "@/utilities/Toaster";
-import { useParams } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { Dialog } from "primereact/dialog";
 import React, { useState } from "react";
 import Select from "react-select";
 
 export default function OrderDetail() {
   const { orderID } = useParams();
+  const pathname = usePathname();
+  const router = useRouter();
   const [chequeId, setChequeId] = useState("");
   const [modal, setModal] = useState({
     type: "", // addCheque , editCheque
@@ -306,7 +308,7 @@ export default function OrderDetail() {
         </div>
 
         <div className="flex items-center gap-x-2 sm:gap-x-4 [&>button]:py-2 sm:[&>button]:py-3 [&>button]:px-2 sm:[&>button]:px-5 [&>button]:rounded-lg [&>button]:font-nunito [&>button]:font-medium max-sm:[&>button]:text-sm">
-          <button
+          {/* <button
             type="button"
             onClick={handleAddChequeModel}
             className="bg-black text-white disabled:cursor-not-allowed"
@@ -314,7 +316,7 @@ export default function OrderDetail() {
             {data?.data?.order?.chequeDetail
               ? "Edit Bank Check"
               : "Add Bank Check"}
-          </button>
+          </button> */}
           <button
             type="button"
             disabled={
@@ -336,7 +338,7 @@ export default function OrderDetail() {
           </button>
           <button
             type="button"
-            // disabled={data?.data?.order?.invoiceId ? true : false}
+            disabled={data?.data?.order?.statusId === 6 ? true : false}
             className="bg-black text-white disabled:cursor-not-allowed"
             onClick={() => handleSendInvoice(data?.data?.order?.statusId)}
           >
@@ -357,6 +359,7 @@ export default function OrderDetail() {
             Cancel Order
           </button>
           <button
+            onClick={() => router.push(`${pathname}/invoice`)}
             type="button"
             className="border border-buttonBorderColor shadow-buttonShadow"
           >

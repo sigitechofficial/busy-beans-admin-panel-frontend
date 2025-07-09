@@ -1,13 +1,20 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import html2pdf from "html2pdf.js";
+import dayjs from "dayjs";
+import { PostAPI } from "@/utilities/PostAPI";
+import { info_toaster, success_toaster } from "@/utilities/Toaster";
+import { PatchAPI } from "@/utilities/PatchAPI";
 
-export default function InvoicePDFDownload({ invoiceData }) {
+export default function InvoicePDFDownload({ invoiceData, reFetch }) {
   const invoiceRef = useRef(null);
 
   const [data, setData] = useState("");
+  const [isPrint, setIsPrint] = useState(false);
+
   const handleDownload = () => {
+    setIsPrint(true);
     const element = invoiceRef.current;
     if (!element) return;
 
@@ -21,7 +28,40 @@ export default function InvoicePDFDownload({ invoiceData }) {
       })
       .from(element)
       .save();
+    setTimeout(() => {
+      setIsPrint(false);
+    }, 3000);
   };
+
+  const handleQtyChange = (index, value) => {
+    const updated = [...data];
+    updated[index] = { ...updated[index], qty: value };
+    setData(updated);
+  };
+
+  const handleUpdate = async () => {
+    const itemsForApi = data?.map((item) => ({
+      id: item?.id,
+      productId: item?.productId,
+      qty: item?.qty,
+    }));
+
+    let res = await PatchAPI(
+      `api/v1/admin/order-management/update-order/${invoiceData?.id}`,
+      { items: itemsForApi }
+    );
+    console.log(res, "resresres");
+    if (res?.status === "1") {
+      success_toaster(res?.message);
+      reFetch();
+    } else {
+      info_toaster(res?.message);
+    }
+  };
+
+  useEffect(() => {
+    setData(invoiceData?.items);
+  }, [invoiceData]);
 
   return (
     <div className="w-full max-w-[800px] mx-auto">
@@ -32,7 +72,10 @@ export default function InvoicePDFDownload({ invoiceData }) {
         >
           Download Invoice
         </button>
-        <button className="mb-4 px-4 py-2 bg-themeLight text-white rounded">
+        <button
+          onClick={handleUpdate}
+          className="mb-4 px-4 py-2 bg-themeLight text-white rounded"
+        >
           Update Invoice
         </button>
       </div>
@@ -55,27 +98,26 @@ export default function InvoicePDFDownload({ invoiceData }) {
             <div className="w-full [&>div>h6]:w-36 space-y-1">
               <div className="flex items-center text-sm font-semibold">
                 <h6>Invoice number:</h6>
-                <p>VSQDHYUL-0001</p>
+                <p>INV-00{invoiceData?.id}</p>
               </div>
               <div className="flex items-center text-sm font-semibold">
                 <h6>Date of issue:</h6>
-                <p>July 7, 2025</p>
+                <p>{dayjs(invoiceData?.on).format("DD/MM/YYYY")}</p>
               </div>
-              <div className="flex items-center text-sm font-semibold">
+              {/* <div className="flex items-center text-sm font-semibold">
                 <h6>Date due:</h6>
-                <p>September 5, 2025</p>
-              </div>
+                <p>--</p>
+              </div> */}
               <div className="flex items-center text-sm font-semibold">
                 <h6>PO Number:</h6>
-                <p>yess to chai</p>
+                <p>{invoiceData?.poNumber}</p>
               </div>
             </div>
 
-            <div className="flex gap-20 text-sm">
+            <div className="grid grid-cols-2 text-sm">
               <div>
-                <div className="font-bold">
-                  {invoiceData?.address?.companyaddress}
-                </div>
+                <div className="font-bold">{invoiceData?.salesRepName}</div>
+                <div>{invoiceData?.address?.companyaddress}</div>
 
                 <div>{invoiceData?.address?.addressLineOne}</div>
                 <div>{invoiceData?.address?.addressLineTwo}</div>
@@ -86,7 +128,7 @@ export default function InvoicePDFDownload({ invoiceData }) {
                     "," +
                     invoiceData?.address?.country}
                 </div>
-                <div>+1 833-843-2326</div>
+                <div>--</div>
               </div>
               <div>
                 <div className="font-bold">Bill to</div>
@@ -105,7 +147,7 @@ export default function InvoicePDFDownload({ invoiceData }) {
 
           {/* Amount Due */}
           <div className="text-xl font-semibold">
-            $69.04 USD due September 5, 2025
+            ${invoiceData?.totalBill} due amount
           </div>
           <a
             href="#"
@@ -116,56 +158,70 @@ export default function InvoicePDFDownload({ invoiceData }) {
 
           {/* Table */}
           <div className="mt-4">
-            <table className="w-full border-t border-b border-gray-300 text-sm">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="text-left py-2 px-2 font-semibold">
-                    Description
-                  </th>
-                  <th className="text-right py-2 px-2 font-semibold">Qty</th>
-                  <th className="text-right py-2 px-2 font-semibold">
-                    Unit price
-                  </th>
-                  <th className="text-right py-2 px-2 font-semibold">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {invoiceData?.items?.map((prod) => {
-                  return (
-                    <tr className="border-t">
-                      <td className="py-2 px-2">{prod?.product}</td>
-                      <td className="py-2 px-2 text-right">
-                        {" "}
-                        <input
-                          className="border-none outline-none w-6"
-                          type="text"
-                          value={data ? data : prod?.qty}
-                          onChange={(e) => setData(e.target.value)}
-                        />
-                      </td>
-                      <td className="py-2 px-2 text-right">${prod?.price}</td>
-                      <td className="py-2 px-2 text-right">${prod?.price}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            <div className="w-full text-sm">
+              <div className="border-b-2 grid grid-cols-4">
+                <p className="text-left py-2 px-2 font-semibold">Description</p>
+                <p className="text-right py-2 px-2 font-semibold">Qty</p>
+                <p className="text-right py-2 px-2 font-semibold">Unit price</p>
+                <p className="text-right py-2 px-2 font-semibold">Amount</p>
+              </div>
+
+              <div>
+                {data &&
+                  data?.map((prod, index) => {
+                    return (
+                      <div className="border-b last:border-0 grid grid-cols-4">
+                        <td className="py-2 px-2">{prod?.product}</td>
+                        <td className="py-2 px-2 text-right">
+                          {" "}
+                          {isPrint ? (
+                            <div className="text-right">{prod?.qty}</div>
+                          ) : (
+                            <input
+                              className="w-12 text-right border-none outline-none bg-transparent"
+                              type="text"
+                              value={prod?.qty}
+                              onChange={(e) =>
+                                handleQtyChange(index, e.target.value)
+                              }
+                            />
+                          )}
+                        </td>
+                        <td className="py-2 px-2 text-right">${prod?.price}</td>
+                        <td className="py-2 px-2 text-right">${prod?.price}</td>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
           </div>
 
           {/* Totals */}
           <div className="flex flex-col items-end mt-4">
             <div className="w-full max-w-xs">
-              <div className="flex justify-between py-1">
-                <span className="text-gray-700">Subtotal</span>
-                <span>${invoiceData?.subTotal}</span>
+              <div className="flex justify-between py-1 border-b">
+                <span className="text-gray-700">VAT</span>
+                <span>${parseFloat(invoiceData?.vat)?.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between py-1">
+              <div className="flex justify-between py-1 border-b">
+                <span className="text-gray-700">Subtotal</span>
+                <span>${parseFloat(invoiceData?.subTotal)?.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between py-1 border-b">
+                <span className="text-gray-700 capitalize">
+                  shipping Charges
+                </span>
+                <span>
+                  ${parseFloat(invoiceData?.shippingCharges)?.toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between py-1 border-b">
                 <span className="text-gray-700">Total</span>
-                <span>${invoiceData?.totalBill}</span>
+                <span>${parseFloat(invoiceData?.totalBill)?.toFixed(2)}</span>
               </div>
               <div className="flex justify-between py-1 font-bold text-lg">
                 <span>Amount due</span>
-                <span>${invoiceData?.totalBill}</span>
+                <span>${parseFloat(invoiceData?.totalBill)?.toFixed(2)}</span>
               </div>
             </div>
           </div>

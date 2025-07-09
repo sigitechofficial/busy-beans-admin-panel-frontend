@@ -7,10 +7,9 @@ import React from "react";
 function Invoice() {
   const { orderID } = useParams();
   const { data, reFetch } = GetAPI(`api/v1/admin/order-details/${orderID}`);
-  console.log("🚀 ~ OrderDetail ~ data:", data?.data?.order);
   return (
     <div className="w-full">
-      <InvoicePDFDownload invoiceData={data?.data?.order} />
+      <InvoicePDFDownload invoiceData={data?.data?.order} reFetch={reFetch} />
     </div>
   );
 }

@@ -76,7 +76,7 @@ export default function SupplierOrders() {
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
           Acknowldge Orders
         </h2>
-        <Select placeholder="Filters" className="w-40" styles={selectStyles} />
+        {/* <Select placeholder="Filters" className="w-40" styles={selectStyles} /> */}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
@@ -93,6 +93,7 @@ export default function SupplierOrders() {
           data={datas}
           placeholder={"Search ..."}
           pagination={true}
+          search={true}
         />
       </div>
     </div>

@@ -16,6 +16,7 @@ import { success_toaster } from "@/utilities/Toaster";
 import { DeleteAPI } from "@/utilities/DeleteAPI";
 import MiniLoader from "@/components/ui/MiniLoader";
 import { Dialog } from "primereact/dialog";
+import Loader from "@/components/ui/Loader";
 
 export default function Suppliers() {
   const router = useRouter();
@@ -93,11 +94,11 @@ export default function Suppliers() {
   const datas = [];
   data?.data?.data?.map((supplier, i) => {
     datas.push({
-      sl: i + 1, 
+      sl: i + 1,
       supplierName: supplier?.supplierName,
       email: supplier?.email,
       address: `${supplier?.addressOne}, ${supplier?.addressTwo}, ${supplier?.city}, ${supplier?.state}, ${supplier?.zipCode}, ${supplier?.country}`,
-      phoneNum: supplier?.countryCode +supplier?.phoneNum,
+      phoneNum: supplier?.countryCode + supplier?.phoneNum,
       // addressOne: supplier?.addressOne,
       // addressTwo: supplier?.addressTwo,
       businessRegistrationNumber: supplier?.businessRegistrationNumber,
@@ -162,7 +163,9 @@ export default function Suppliers() {
     });
   });
 
-  return (
+  return data?.length === 0 ? (
+    <Loader />
+  ) : (
     <div className="space-y-8">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -170,11 +173,11 @@ export default function Suppliers() {
             Supplier Management
           </h2>
 
-          <Select
+          {/* <Select
             placeholder="Filters"
             className="w-40"
             styles={selectStyles}
-          />
+          /> */}
         </div>
         <div className="flex justify-end">
           <button
@@ -188,7 +191,10 @@ export default function Suppliers() {
 
       <div className="space-y-4">
         <div className="grid  grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-          <ManagementTab title="Total Supplier" desc={data?.data?.data?.length} />
+          <ManagementTab
+            title="Total Supplier"
+            desc={data?.data?.data?.length}
+          />
           {/* <ManagementTab title="New Supplier" desc="5000" />
           <ManagementTab title="Pending Request" desc="500" />
           <ManagementTab title="Active Supplier" desc="55,000" />
@@ -227,6 +233,7 @@ export default function Suppliers() {
           data={datas}
           placeholder={"Search ..."}
           pagination={true}
+          search={true}
         />
       </div>
 
@@ -275,5 +282,5 @@ export default function Suppliers() {
         </form>
       </Dialog>
     </div>
-  ); 
+  );
 }

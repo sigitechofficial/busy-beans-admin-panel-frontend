@@ -87,7 +87,7 @@ export default function PartnerCommissionReport() {
         <div className="flex items-center gap-x-2">
           <BackButton />
           <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-             Partner Profits Report
+            Partner Profits Report
           </h2>
         </div>
 
@@ -158,6 +158,7 @@ export default function PartnerCommissionReport() {
           data={datas}
           placeholder={"Search ..."}
           pagination={true}
+          search={true}
         />
       </div>
     </div>

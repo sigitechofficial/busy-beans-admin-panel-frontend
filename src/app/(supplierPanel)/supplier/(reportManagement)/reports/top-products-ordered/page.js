@@ -157,6 +157,7 @@ export default function AssignedOrders() {
           data={datas}
           placeholder={"Search ..."}
           pagination={true}
+          search={true}
         />
       </div>
     </div>

@@ -129,7 +129,7 @@ export default function RootLayout({ children }) {
           className={
             isLayoutDisplay
               ? ""
-              : `w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] float-right clear-right relative top-[94px] bg-white min-h-[calc(100vh-94px)] space-y-6] ${
+              : `w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] float-right clear-right relative top-[94px] bg-white min-h-[calc(100vh-94px)] space-y-6 ${
                   pathname !== "/" ? "py-6 px-6 2xl:px-12" : ""
                 }`
           }

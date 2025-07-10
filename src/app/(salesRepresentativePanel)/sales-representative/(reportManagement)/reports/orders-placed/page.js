@@ -169,6 +169,7 @@ export default function UnpaidPartnerBalance() {
           data={datas}
           placeholder={"Search ..."}
           pagination={true}
+          search={true}
         />
       </div>
     </div>

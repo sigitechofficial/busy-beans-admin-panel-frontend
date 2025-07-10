@@ -410,6 +410,7 @@ export default function Customers() {
           checkbox={type === "all" || type === "assigned" ? false : true}
           selectedRows={selectedRows}
           setSelectedRows={setSelectedRows}
+          search={true}
         />
       </div>
 
@@ -435,6 +436,7 @@ export default function Customers() {
               placeholder={"Search ..."}
               pagination={true}
               hide={true}
+              search={true}
             />
             <div className="flex justify-end">
               <button

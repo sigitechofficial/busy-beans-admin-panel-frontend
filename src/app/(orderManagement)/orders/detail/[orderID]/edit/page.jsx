@@ -16,8 +16,17 @@ function EditPage() {
     orderID && GetAPI(`api/v1/admin/order-details/${orderID}`);
 
   const { data } = GetAPI("api/v1/admin/address-management/country");
-  const [allStates, setAllStates] = useState([]);
-  const [allCities, setAllCities] = useState([]);
+
+  // Separate state for shipping and billing
+  const [shippingStates, setShippingStates] = useState([]);
+  console.log("🚀 ~ EditPage ~ shippingStates:", shippingStates)
+  const [shippingCities, setShippingCities] = useState([]);
+  console.log("🚀 ~ EditPage ~ shippingCities:", shippingCities)
+  const [billingStates, setBillingStates] = useState([]);
+  console.log("🚀 ~ EditPage ~ billingStates:", billingStates)
+  const [billingCities, setBillingCities] = useState([]);
+  console.log("🚀 ~ EditPage ~ billingCities:", billingCities)
+
   const [supplier, setSupplier] = useState({
     supplierName: "",
     companyaddress: "",
@@ -46,10 +55,10 @@ function EditPage() {
     billingtown: "",
     billingcountry: "",
     billingstate: "",
+    billingcity: "",
     billingzipCode: "",
     billingstatus: true,
   });
-  console.log("🚀 ~ EditPage ~ supplier:", supplier);
 
   const allCountries = [];
   data?.data?.data?.map((country) =>
@@ -63,52 +72,99 @@ function EditPage() {
     setSupplier({ ...supplier, [e.target.name]: e.target.value });
   };
 
-  const handleSelectedCountryStatesCities = async (stateID) => {
-    try {
-      const res = await axios.get(
-        BASE_URL +
-          `api/v1/admin/address-management/city?stateInSystemId=${stateID}`
-      );
-      if (res?.data?.status === "success") {
-        const tempAllCities = [];
-        res?.data?.data?.data?.map((state) =>
-          tempAllCities.push({
-            value: state?.name,
-            label: state?.name,
-          })
-        );
-        setAllCities([...tempAllCities]);
-      } else {
-        throw new Error(res?.data?.message || "An unexpected error occurred.");
-      }
-    } catch (error) {
-      ErrorHandler(error);
-    }
-  };
-
-  const handleSelectedCountryStates = async (countryName) => {
+  // SHIPPING handlers
+  const handleShippingCountry = async (countryName) => {
+    setSupplier((prev) => ({
+      ...prev,
+      country: countryName,
+      // state: "",
+      // city: "",
+    }));
     const selectedCountry = data?.data?.data?.find(
       (country) => country?.name === countryName
     );
-    try {
+    if (selectedCountry) {
       const res = await axios.get(
         BASE_URL +
           `api/v1/admin/address-management/state?countryInSystemId=${selectedCountry?.id}`
       );
       if (res?.data?.status === "success") {
-        const tempAllStates = [];
-        res?.data?.data?.data?.map((state) =>
-          tempAllStates.push({
+        setShippingStates(
+          res?.data?.data?.data?.map((state) => ({
             value: state?.id,
             label: state?.name,
-          })
+          }))
         );
-        setAllStates([...tempAllStates]);
-      } else {
-        throw new Error(res?.data?.message || "An unexpected error occurred.");
+        setShippingCities([]);
       }
-    } catch (error) {
-      ErrorHandler(error);
+    }
+  };
+
+  const handleShippingState = async (stateObj) => {
+    setSupplier((prev) => ({
+      ...prev,
+      state: stateObj?.label,
+      city: "",
+    }));
+    const res = await axios.get(
+      BASE_URL +
+        `api/v1/admin/address-management/city?stateInSystemId=${stateObj?.value}`
+    );
+    if (res?.data?.status === "success") {
+      setShippingCities(
+        res?.data?.data?.data?.map((city) => ({
+          value: city?.name,
+          label: city?.name,
+        }))
+      );
+    }
+  };
+
+  // BILLING handlers
+  const handleBillingCountry = async (countryName) => {
+    setSupplier((prev) => ({
+      ...prev,
+      billingcountry: countryName,
+      // billingstate: "",
+      // billingcity: "",
+    }));
+    const selectedCountry = data?.data?.data?.find(
+      (country) => country?.name === countryName
+    );
+    if (selectedCountry) {
+      const res = await axios.get(
+        BASE_URL +
+          `api/v1/admin/address-management/state?countryInSystemId=${selectedCountry?.id}`
+      );
+      if (res?.data?.status === "success") {
+        setBillingStates(
+          res?.data?.data?.data?.map((state) => ({
+            value: state?.id,
+            label: state?.name,
+          }))
+        );
+        setBillingCities([]);
+      }
+    }
+  };
+
+  const handleBillingState = async (stateObj) => {
+    setSupplier((prev) => ({
+      ...prev,
+      billingstate: stateObj?.label,
+      billingcity: "",
+    }));
+    const res = await axios.get(
+      BASE_URL +
+        `api/v1/admin/address-management/city?stateInSystemId=${stateObj?.value}`
+    );
+    if (res?.data?.status === "success") {
+      setBillingCities(
+        res?.data?.data?.data?.map((city) => ({
+          value: city?.name,
+          label: city?.name,
+        }))
+      );
     }
   };
 
@@ -149,8 +205,6 @@ function EditPage() {
         status: supplier?.billingstatus,
       }
     );
-    console.log("🚀 ~ handleBillingToUpdate ~ res:", res);
-
     if (res?.data?.status === "success") {
       success_toaster(res?.data?.status);
       reFetch();
@@ -182,25 +236,36 @@ function EditPage() {
       billingcountry:
         orderData?.data?.order?.user?.billingAddresses?.[0]?.country,
       billingstate: orderData?.data?.order?.user?.billingAddresses?.[0]?.state,
+      billingcity: orderData?.data?.order?.user?.billingAddresses?.[0]?.town,
       billingzipCode:
         orderData?.data?.order?.user?.billingAddresses?.[0]?.zipCode,
       billingstatus:
         orderData?.data?.order?.user?.billingAddresses?.[0]?.status,
     });
+
+    // Pre-populate shipping states/cities
+    if (orderData?.data?.order?.address?.country) {
+      handleShippingCountry(orderData?.data?.order?.address?.country);
+    }
+    // Pre-populate billing states/cities
+    if (orderData?.data?.order?.user?.billingAddresses?.[0]?.country) {
+      handleBillingCountry(orderData?.data?.order?.user?.billingAddresses?.[0]?.country);
+    }
+    // eslint-disable-next-line
   }, [data]);
 
   return (
-    <div className="w-full grid grid-cols-2 gap-10 py-4 px-8 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm">
+    <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-10 py-8 px-8 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm">
+      {/* Shipping Address */}
       <div className="w-full space-y-2">
         <h4 className="font-semibold">Shipping Address</h4>
-        <div className="w-full space-y-2">
+        <div className="w-full space-y-2 pt-8">
           <p>Company Address</p>
           <input
             className="w-full h-12 bg-transparent outline-none border-2 px-4 border-gray-100 rounded-lg"
             type="text"
             name="companyaddress"
             value={supplier?.companyaddress}
-            id=""
             onChange={handleChange}
           />
         </div>
@@ -211,7 +276,6 @@ function EditPage() {
             type="text"
             name="addressOne"
             value={supplier?.addressOne}
-            id=""
             onChange={handleChange}
           />
         </div>
@@ -222,88 +286,57 @@ function EditPage() {
             type="text"
             name="addressTwo"
             value={supplier?.addressTwo}
-            id=""
             onChange={handleChange}
           />
         </div>
         <div className="w-full grid grid-cols-2 gap-5">
           <div className="w-full space-y-2">
             <p>Country</p>
-
             <Select
               placeholder="Select Country"
               className="w-full"
               styles={drawerSelectStyles}
               value={
                 supplier?.country
-                  ? {
-                      value: supplier?.country,
-                      label: supplier?.country,
-                    }
+                  ? { value: supplier?.country, label: supplier?.country }
                   : null
               }
-              options={allCountries ?? []}
-              onChange={(e) => {
-                setSupplier({
-                  ...supplier,
-                  country: e.label,
-                  state: "",
-                  city: "",
-                });
-                handleSelectedCountryStates(e.label);
-              }}
+              options={allCountries}
+              onChange={(e) => handleShippingCountry(e.label)}
             />
           </div>
           <div className="w-full space-y-2">
             <p>State</p>
-
             <Select
               placeholder="Select State"
               className="w-full"
               styles={drawerSelectStyles}
               value={
                 supplier?.state
-                  ? {
-                      value: supplier?.state,
-                      label: supplier?.state,
-                    }
+                  ? shippingStates.find((s) => s.label === supplier?.state)
                   : null
               }
-              options={allStates ?? []}
-              onChange={(e) => {
-                setSupplier({
-                  ...supplier,
-                  state: e?.label,
-                  city: "",
-                });
-                handleSelectedCountryStatesCities(e.value);
-              }}
+              options={shippingStates}
+              onChange={handleShippingState}
             />
           </div>
         </div>
         <div className="w-full grid grid-cols-2 gap-5">
           <div className="w-full space-y-2">
             <p>Town / City</p>
-
             <Select
               placeholder="Select City"
               className="w-full"
               styles={drawerSelectStyles}
               value={
                 supplier?.city
-                  ? {
-                      value: supplier?.city,
-                      label: supplier?.city,
-                    }
+                  ? { value: supplier?.city, label: supplier?.city }
                   : null
               }
-              options={allCities ?? []}
-              onChange={(e) => {
-                setSupplier({
-                  ...supplier,
-                  city: e.label,
-                });
-              }}
+              options={shippingCities}
+              onChange={(e) =>
+                setSupplier((prev) => ({ ...prev, city: e.label }))
+              }
             />
           </div>
           <div className="w-full space-y-2">
@@ -313,12 +346,10 @@ function EditPage() {
               type="text"
               name="zipCode"
               value={supplier?.zipCode}
-              id=""
               onChange={handleChange}
             />
           </div>
         </div>
-
         <div className="pt-5">
           <button
             onClick={handleSupplierUpdate}
@@ -329,18 +360,16 @@ function EditPage() {
         </div>
       </div>
 
-      {/* ================= */}
+      {/* Billing Address */}
       <div className="w-full space-y-2">
         <h4 className="font-semibold">Billing Address</h4>
-
-        <div className="w-full space-y-2">
+        <div className="w-full space-y-2 pt-8">
           <p>Address</p>
           <input
             className="w-full h-12 bg-transparent outline-none border-2 px-4 border-gray-100 rounded-lg"
             type="text"
             name="billingcompanyaddress"
             value={supplier?.billingcompanyaddress}
-            id=""
             onChange={handleChange}
           />
         </div>
@@ -351,7 +380,6 @@ function EditPage() {
             type="text"
             name="billingaddressOne"
             value={supplier?.billingaddressOne}
-            id=""
             onChange={handleChange}
           />
         </div>
@@ -362,88 +390,57 @@ function EditPage() {
             type="text"
             name="billingaddressTwo"
             value={supplier?.billingaddressTwo}
-            id=""
             onChange={handleChange}
           />
         </div>
         <div className="w-full grid grid-cols-2 gap-5">
           <div className="w-full space-y-2">
             <p>Country</p>
-
             <Select
               placeholder="Select Country"
               className="w-full"
               styles={drawerSelectStyles}
               value={
                 supplier?.billingcountry
-                  ? {
-                      value: supplier?.billingcountry,
-                      label: supplier?.billingcountry,
-                    }
+                  ? { value: supplier?.billingcountry, label: supplier?.billingcountry }
                   : null
               }
-              options={allCountries ?? []}
-              onChange={(e) => {
-                setSupplier({
-                  ...supplier,
-                  billingcountry: e.label,
-                  billingstate: "",
-                  billingcity: "",
-                });
-                handleSelectedCountryStates(e.label);
-              }}
+              options={allCountries}
+              onChange={(e) => handleBillingCountry(e.label)}
             />
           </div>
           <div className="w-full space-y-2">
             <p>State</p>
-
             <Select
               placeholder="Select State"
               className="w-full"
               styles={drawerSelectStyles}
               value={
                 supplier?.billingstate
-                  ? {
-                      value: supplier?.billingstate,
-                      label: supplier?.billingstate,
-                    }
+                  ? billingStates.find((s) => s.label === supplier?.billingstate)
                   : null
               }
-              options={allStates ?? []}
-              onChange={(e) => {
-                setSupplier({
-                  ...supplier,
-                  billingstate: e?.label,
-                  billingcity: "",
-                });
-                handleSelectedCountryStatesCities(e.value);
-              }}
+              options={billingStates}
+              onChange={handleBillingState}
             />
           </div>
         </div>
         <div className="w-full grid grid-cols-2 gap-5">
           <div className="w-full space-y-2">
             <p>Town / City</p>
-
             <Select
               placeholder="Select City"
               className="w-full"
               styles={drawerSelectStyles}
               value={
                 supplier?.billingcity
-                  ? {
-                      value: supplier?.billingcity,
-                      label: supplier?.billingcity,
-                    }
+                  ? { value: supplier?.billingcity, label: supplier?.billingcity }
                   : null
               }
-              options={allCities ?? []}
-              onChange={(e) => {
-                setSupplier({
-                  ...supplier,
-                  billingcity: e.label,
-                });
-              }}
+              options={billingCities}
+              onChange={(e) =>
+                setSupplier((prev) => ({ ...prev, billingcity: e.label }))
+              }
             />
           </div>
           <div className="w-full space-y-2">
@@ -453,12 +450,10 @@ function EditPage() {
               type="text"
               name="billingzipCode"
               value={supplier?.billingzipCode}
-              id=""
               onChange={handleChange}
             />
           </div>
         </div>
-
         <div className="pt-5">
           <button
             onClick={handleBillingToUpdate}

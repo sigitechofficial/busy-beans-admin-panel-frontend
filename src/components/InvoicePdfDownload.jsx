@@ -50,12 +50,12 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
       `api/v1/admin/order-management/update-order/${invoiceData?.id}`,
       { items: itemsForApi }
     );
-    console.log(res, "resresres");
-    if (res?.status === "1") {
-      success_toaster(res?.message);
+
+    if (res?.data?.status === "success") {
+      success_toaster("success");
       reFetch();
     } else {
-      info_toaster(res?.message);
+      info_toaster("something went wrong");
     }
   };
 
@@ -65,28 +65,13 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
 
   return (
     <div className="w-full max-w-[800px] mx-auto">
-      <div className="flex items-center gap-5">
-        <button
-          onClick={handleDownload}
-          className="mb-4 px-4 py-2 bg-black text-white rounded"
-        >
-          Download Invoice
-        </button>
-        <button
-          onClick={handleUpdate}
-          className="mb-4 px-4 py-2 bg-themeLight text-white rounded"
-        >
-          Update Invoice
-        </button>
-      </div>
-
       <div ref={invoiceRef} className="w-full">
-        <div className="w-full mx-auto bg-white border rounded-lg shadow-lg p-8 font-inter">
+        <div className="w-full mx-auto bg-white pt-8 pb-14 font-satoshi">
           {/* Header */}
           <div className="flex items-center justify-between pb-4 mb-6">
-            <h1 className="text-3xl font-semibold">Invoice</h1>
+            <h1 className="text-3xl font-semibold uppercase">Invoice</h1>
             <img
-              src="https://static.wixstatic.com/media/41bb17_6b71dd75eefb4e7cbc85b9b5115889d3~mv2.png/v1/fill/w_193,h_90,al_c,lg_1,q_85,enc_avif,quality_auto/41bb17_6b71dd75eefb4e7cbc85b9b5115889d3~mv2.png"
+              src="/images/logocoffee.png"
               alt="Busy Bean Coffee"
               crossOrigin="anonymous"
               className="h-16"
@@ -95,63 +80,117 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
 
           {/* Invoice Info */}
           <div className="grid grid-cols-1 gap-8 mb-6">
-            <div className="w-full [&>div>h6]:w-36 space-y-1">
+            <div className="">
               <div className="flex items-center text-sm font-semibold">
-                <h6>Invoice number:</h6>
-                <p>INV-00{invoiceData?.id}</p>
+                <div className="w-36">Invoice number:</div>
+                <div>INV-00{invoiceData?.id}</div>
               </div>
               <div className="flex items-center text-sm font-semibold">
-                <h6>Date of issue:</h6>
-                <p>{dayjs(invoiceData?.on).format("DD/MM/YYYY")}</p>
+                <div className="w-36">Date of issue:</div>
+                <div>{dayjs(invoiceData?.on).format("DD/MM/YYYY")}</div>
               </div>
-              {/* <div className="flex items-center text-sm font-semibold">
-                <h6>Date due:</h6>
-                <p>--</p>
-              </div> */}
               <div className="flex items-center text-sm font-semibold">
-                <h6>PO Number:</h6>
-                <p>{invoiceData?.poNumber}</p>
+                <div className="w-36">PO Number:</div>
+                <div>{invoiceData?.poNumber}</div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 text-sm">
+            <div className="grid grid-cols-2 text-sm gap-4">
+              {/* Sales Rep Section */}
               <div>
-                <div className="font-bold">{invoiceData?.salesRepName}</div>
-                <div>{invoiceData?.address?.companyaddress}</div>
-
-                <div>{invoiceData?.address?.addressLineOne}</div>
-                <div>{invoiceData?.address?.addressLineTwo}</div>
+                <div className="font-bold">From</div>
+                <div>{invoiceData?.salesRepName}</div>
+                <div>{invoiceData?.salesRep?.address}</div>
                 <div>
-                  {invoiceData?.address?.town +
-                    "," +
-                    invoiceData?.address?.zipCode +
-                    "," +
-                    invoiceData?.address?.country}
+                  {invoiceData?.salesRep?.city}, {invoiceData?.salesRep?.state}{" "}
+                  {invoiceData?.salesRep?.zipCode}
                 </div>
-                <div>--</div>
+                <div>{invoiceData?.salesRep?.country}</div>
+                <div>
+                  {invoiceData?.salesRep?.countryCode}{" "}
+                  {invoiceData?.salesRep?.phoneNumber}
+                </div>
+                <div>{invoiceData?.salesRep?.email}</div>
               </div>
+
+              {/* Bill To Section */}
               <div>
                 <div className="font-bold">Bill to</div>
-                <div>{invoiceData?.user?.name}</div>
-                <div>{invoiceData?.user?.companyName}</div>
-                <div>{invoiceData?.user?.billingAddress}</div>
-                <div>
-                  {invoiceData?.user?.countryCode +
-                    " " +
-                    invoiceData?.user?.phoneNumber}
-                </div>
-                <div>{invoiceData?.user?.email}</div>
+
+                {/* Company address or name */}
+                {invoiceData?.user?.billingAddresses?.[0]?.companyaddress && (
+                  <div>
+                    {invoiceData.user.billingAddresses[0].companyaddress}
+                  </div>
+                )}
+
+                {/* Company name if available */}
+                {invoiceData?.user?.companyName && (
+                  <div>{invoiceData.user.companyName}</div>
+                )}
+
+                {/* Address lines */}
+                {invoiceData?.user?.billingAddresses?.[0]?.addressLineOne && (
+                  <div>
+                    {invoiceData.user.billingAddresses[0].addressLineOne +
+                      ", " +
+                      invoiceData?.user?.billingAddresses?.[0]?.addressLineTwo}
+                  </div>
+                )}
+                {/* {invoiceData?.user?.billingAddresses?.[0]?.addressLineTwo && (
+                  <div>
+                    {invoiceData.user.billingAddresses[0].addressLineTwo}
+                  </div>
+                )} */}
+
+                {/* Town, State, Zip */}
+                {(invoiceData?.user?.billingAddresses?.[0]?.town ||
+                  invoiceData?.user?.billingAddresses?.[0]?.state ||
+                  invoiceData?.user?.billingAddresses?.[0]?.zipCode) && (
+                  <div>
+                    {[
+                      invoiceData.user.billingAddresses[0].town,
+                      invoiceData.user.billingAddresses[0].state,
+                      invoiceData.user.billingAddresses[0].zipCode,
+                    ]
+                      .filter(Boolean)
+                      .join(", ")}
+                  </div>
+                )}
+
+                {/* Country */}
+                {invoiceData?.user?.billingAddresses?.[0]?.country && (
+                  <div>{invoiceData.user.billingAddresses[0].country}</div>
+                )}
+
+                {/* Phone */}
+                {(invoiceData?.user?.countryCode ||
+                  invoiceData?.user?.phoneNumber) && (
+                  <div>
+                    {[
+                      invoiceData.user.countryCode,
+                      invoiceData.user.phoneNumber,
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                  </div>
+                )}
+
+                {/* Email */}
+                {invoiceData?.user?.email && (
+                  <div>{invoiceData.user.email}</div>
+                )}
               </div>
             </div>
           </div>
 
           {/* Amount Due */}
-          <div className="text-xl font-semibold">
+          <div className="text-xl font-semibold mt-10">
             ${invoiceData?.totalBill} due amount
           </div>
           <a
             href="#"
-            className="text-blue-600 underline mb-6 inline-block hover:text-blue-800"
+            className="text-blue-600 font-semibold underline mb-10 inline-block hover:text-blue-800"
           >
             Pay online
           </a>
@@ -159,9 +198,12 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
           {/* Table */}
           <div className="mt-4">
             <div className="w-full text-sm">
-              <div className="border-b-2 grid grid-cols-4">
-                <p className="text-left py-2 px-2 font-semibold">Description</p>
-                <p className="text-right py-2 px-2 font-semibold">Qty</p>
+              <div className="border-b-2 grid grid-cols-6">
+                <p className=" py-2 px-2 font-semibold">Code</p>
+                <p className="text-left py-2 px-2 font-semibold col-span-2">
+                  Item
+                </p>
+                <p className="text-right py-2 px-2 font-semibold">Quantity</p>
                 <p className="text-right py-2 px-2 font-semibold">Unit price</p>
                 <p className="text-right py-2 px-2 font-semibold">Amount</p>
               </div>
@@ -170,15 +212,22 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
                 {data &&
                   data?.map((prod, index) => {
                     return (
-                      <div className="border-b last:border-0 grid grid-cols-4">
-                        <td className="py-2 px-2">{prod?.product}</td>
-                        <td className="py-2 px-2 text-right">
+                      <div className="border-b last:border-0 grid grid-cols-6 h-8 items-center">
+                        <div className="px-2 text-left">
+                          {prod?.productCode}
+                        </div>
+                        <div className=" px-2 font-semibold col-span-2">
+                          {prod?.product}
+                        </div>
+                        <div className=" px-2 text-right">
                           {" "}
                           {isPrint ? (
-                            <div className="text-right">{prod?.qty}</div>
+                            <div className="text-center font-semibold">
+                              {prod?.qty}
+                            </div>
                           ) : (
                             <input
-                              className="w-12 text-right border-none outline-none bg-transparent"
+                              className="w-12 text-center outline-none bg-transparent border rounded  font-semibold"
                               type="text"
                               value={prod?.qty}
                               onChange={(e) =>
@@ -186,9 +235,9 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
                               }
                             />
                           )}
-                        </td>
-                        <td className="py-2 px-2 text-right">${prod?.price}</td>
-                        <td className="py-2 px-2 text-right">${prod?.price}</td>
+                        </div>
+                        <div className=" px-2 text-right">${prod?.price}</div>
+                        <div className=" px-2 text-right">${prod?.price}</div>
                       </div>
                     );
                   })}
@@ -197,35 +246,51 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
           </div>
 
           {/* Totals */}
-          <div className="flex flex-col items-end mt-4">
-            <div className="w-full max-w-xs">
-              <div className="flex justify-between py-1 border-b">
-                <span className="text-gray-700">VAT</span>
-                <span>${parseFloat(invoiceData?.vat)?.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between py-1 border-b">
-                <span className="text-gray-700">Subtotal</span>
-                <span>${parseFloat(invoiceData?.subTotal)?.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between py-1 border-b">
-                <span className="text-gray-700 capitalize">
-                  shipping Charges
-                </span>
-                <span>
-                  ${parseFloat(invoiceData?.shippingCharges)?.toFixed(2)}
-                </span>
-              </div>
-              <div className="flex justify-between py-1 border-b">
-                <span className="text-gray-700">Total</span>
-                <span>${parseFloat(invoiceData?.totalBill)?.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between py-1 font-bold text-lg">
-                <span>Amount due</span>
-                <span>${parseFloat(invoiceData?.totalBill)?.toFixed(2)}</span>
-              </div>
+
+          <div className="w-full max-w-xs ml-auto mt-5 text-sm">
+            <div className="flex justify-between items-center py-1">
+              <span className="text-gray-700">VAT</span>
+              <span>${parseFloat(invoiceData?.vat)?.toFixed(2)}</span>
+            </div>
+
+            <div className="flex justify-between items-center py-1">
+              <span className="text-gray-700">Subtotal</span>
+              <span>${parseFloat(invoiceData?.subTotal)?.toFixed(2)}</span>
+            </div>
+
+            <div className="flex justify-between items-center py-1">
+              <span className="text-gray-700 capitalize">shipping Charges</span>
+              <span>
+                ${parseFloat(invoiceData?.shippingCharges)?.toFixed(2)}
+              </span>
+            </div>
+
+            <div className="flex justify-between py-1">
+              <span className="text-gray-700">Total</span>
+              <span>${parseFloat(invoiceData?.totalBill)?.toFixed(2)}</span>
+            </div>
+
+            <div className="flex justify-between py-1 font-bold text-lg">
+              <span>Amount due</span>
+              <span>${parseFloat(invoiceData?.totalBill)?.toFixed(2)}</span>
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="flex items-center justify-end mt-8 gap-5">
+        <button
+          onClick={handleDownload}
+          className="mb-4 px-4 py-2 bg-black text-white rounded"
+        >
+          Download Invoice
+        </button>
+        <button
+          onClick={handleUpdate}
+          className="mb-4 px-4 py-2 bg-theme text-white rounded"
+        >
+          Update Invoice
+        </button>
       </div>
     </div>
   );

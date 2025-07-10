@@ -363,7 +363,7 @@ export default function OrderDetail() {
             type="button"
             className="border border-buttonBorderColor shadow-buttonShadow"
           >
-            Print Invoice
+            Edit Invoice
           </button>
         </div>
       </div>

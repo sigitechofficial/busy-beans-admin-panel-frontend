@@ -1,5 +1,6 @@
 import axios from "axios";
 import { BASE_URL } from "./URL";
+import { info_toaster } from "./Toaster";
 
 export const PatchAPI = async (url, postData) => {
   let config = {
@@ -25,6 +26,8 @@ export const PatchAPI = async (url, postData) => {
         error.response.data?.message ||
         error.response.statusText ||
         "Server Error";
+
+        info_toaster(errorMessage)
       throw new Error(`HTTP Error: - ${errorMessage}`);
     } else if (error.request) {
       throw new Error("Network Error: No response received from the server.");

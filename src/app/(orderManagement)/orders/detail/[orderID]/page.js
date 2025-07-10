@@ -466,7 +466,7 @@ export default function OrderDetail() {
                   <p>{data?.data?.order?.address?.country}</p>
                   <p>Phone: {data?.data?.order?.address?.phoneNum}</p>
                   <span
-                    onClick={() => Router.push("/edit")}
+                    onClick={() => router.push(`${pathname}/edit`)}
                     className="text-blue-500 text-xs cursor-pointer"
                   >
                     Edit
@@ -492,7 +492,7 @@ export default function OrderDetail() {
                     {data?.data?.order?.address?.phoneNumber}
                   </p>
                   <span
-                    onClick={() => Router.push("/edit")}
+                    onClick={() => router.push(`${pathname}/edit`)}
                     className="text-blue-500 text-xs cursor-pointer"
                   >
                     Edit

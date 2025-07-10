@@ -206,6 +206,7 @@ export default function States() {
           data={stateListDatas}
           placeholder={"Search ..."}
           pagination={true}
+          search={true}
         />
       </div>
 

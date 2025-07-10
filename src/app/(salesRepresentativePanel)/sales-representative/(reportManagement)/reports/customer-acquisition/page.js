@@ -165,6 +165,7 @@ export default function CustomerAcquistionReport() {
           data={datas}
           placeholder={"Search ..."}
           pagination={true}
+          search={true}
         />
       </div>
     </div>

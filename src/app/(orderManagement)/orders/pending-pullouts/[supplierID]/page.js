@@ -66,7 +66,7 @@ export default function PendingPulloutsOrders() {
         adminReceivableAmount: order?.adminReceivableAmount?.replace("$", ""),
       })
     );
-    console.log("🚀 ~ handlePulloutPayments ~ orderList:", orderList)
+    console.log("🚀 ~ handlePulloutPayments ~ orderList:", orderList);
     const receivableAmount = selectedRows?.reduce((total, order) => {
       const amount = parseFloat(
         order?.adminReceivableAmount?.replace("$", "") || 0
@@ -143,6 +143,7 @@ export default function PendingPulloutsOrders() {
             checkbox={true}
             selectedRows={selectedRows}
             setSelectedRows={setSelectedRows}
+            search={true}
           />
         </div>
       )}

@@ -446,7 +446,7 @@ export default function Home() {
     <Loader />
   ) : userType === "admin" ? (
     <>
-      <div
+      {/* <div
         className={`bg-red-500 z-10 text-center text-white py-2 ${
           userType === "salesRepresentative" &&
           (isAccountConnected === "false" || connectAccountId === "null")
@@ -467,7 +467,7 @@ export default function Home() {
             ? "Connect Account"
             : "Complete Account Registration"}
         </button>
-      </div>
+      </div> */}
       <div className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain">
         <div className="relative z-30 py-5 px-6 2xl:px-12">
           <div className="flex justify-between items-center">

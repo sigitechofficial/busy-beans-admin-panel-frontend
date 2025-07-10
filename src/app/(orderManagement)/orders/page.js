@@ -155,6 +155,7 @@ export default function Orders() {
           onRowClick={(e) => {
             Example: router.push(`/orders/detail/${e.data.id}`);
           }}
+          search={true}
         />
       </div>
     </div>

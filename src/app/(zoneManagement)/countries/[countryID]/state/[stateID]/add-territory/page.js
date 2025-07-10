@@ -328,6 +328,7 @@ export default function AddTerritory() {
                   checkbox={true}
                   selectedRows={selectedRows}
                   setSelectedRows={setSelectedRows}
+                  search={true}
                 />
               </div>
             )}

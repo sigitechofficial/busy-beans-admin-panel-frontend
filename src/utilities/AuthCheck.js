@@ -7,7 +7,7 @@ export const setLoginStatus = (data) => {
     localStorage.setItem("loginStatus", data);
   } catch (err) {}
 };
-
+ 
 export const AuthCheck = () => {
   const router = useRouter();
   useEffect(() => {

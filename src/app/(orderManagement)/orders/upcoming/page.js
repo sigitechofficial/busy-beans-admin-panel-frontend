@@ -145,6 +145,7 @@ export default function UpcomingOrders() {
           checkbox={true}
           selectedRows={selectedRows}
           setSelectedRows={setSelectedRows}
+          search={true}
         />
       </div>
 

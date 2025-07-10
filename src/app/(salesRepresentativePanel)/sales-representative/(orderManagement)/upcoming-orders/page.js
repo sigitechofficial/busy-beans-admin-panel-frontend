@@ -120,7 +120,7 @@ export default function UpcomingOrders() {
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
           Upcoming Orders
         </h2>
-        <Select placeholder="Filters" className="w-40" styles={selectStyles} />
+        {/* <Select placeholder="Filters" className="w-40" styles={selectStyles} /> */}
       </div>
 
       <div className="flex justify-end">
@@ -149,6 +149,7 @@ export default function UpcomingOrders() {
           checkbox={true}
           selectedRows={selectedRows}
           setSelectedRows={setSelectedRows}
+          search={true}
         />
       </div>
 
@@ -171,6 +172,7 @@ export default function UpcomingOrders() {
             placeholder={"Search ..."}
             pagination={true}
             hide={true}
+            search={true}
           />
           <div className="flex justify-end">
             <button

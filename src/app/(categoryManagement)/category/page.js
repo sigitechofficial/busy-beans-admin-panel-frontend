@@ -207,11 +207,11 @@ export default function Category() {
             All Categories
           </h2>
 
-          <Select
+          {/* <Select
             placeholder="Filters"
             className="w-40"
             styles={selectStyles}
-          />
+          /> */}
         </div>
         <div className="flex justify-end">
           <button

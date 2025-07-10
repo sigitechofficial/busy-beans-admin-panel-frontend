@@ -4,3 +4,4 @@ export default function ProtectedRoute({children}) {
   AuthCheck();
   return children;
 }
+ 

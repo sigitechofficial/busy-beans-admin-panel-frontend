@@ -192,6 +192,7 @@ export default function Cities() {
           data={datas}
           placeholder={"Search ..."}
           pagination={true}
+          search={true}
           //   checkbox={true}
           //   selectedRows={selectedRows}
           //   setSelectedRows={setSelectedRows}

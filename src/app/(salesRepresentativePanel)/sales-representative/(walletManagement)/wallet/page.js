@@ -27,8 +27,7 @@ export default function page() {
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
           Wallet Management
         </h2>
-
-        <Select placeholder="Filters" className="w-40" styles={selectStyles} />
+        {/* <Select placeholder="Filters" className="w-40" styles={selectStyles} /> */}
       </div>
 
       <p className="font-inter font-medium text-lg text-black">
@@ -47,8 +46,8 @@ export default function page() {
         <ManagementTab
           title="Credit remaining"
           desc={`$${
-            Number(data?.data?.credit?.creditLimit ?? 0) -
-            Number(data?.data?.credit?.creditUsed ?? 0)
+            data?.data?.credit?.creditLimit -
+            Number(data?.data?.credit?.creditUsed?.replace(/,/g, ""))
           }`}
         />
       </div>

@@ -236,7 +236,7 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
                             />
                           )}
                         </div>
-                        <div className=" px-2 text-right">${prod?.price}</div>
+                        <div className=" px-2 text-right">${prod?.price/prod?.qty}</div>
                         <div className=" px-2 text-right">${prod?.price}</div>
                       </div>
                     );

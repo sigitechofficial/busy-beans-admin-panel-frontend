@@ -407,10 +407,10 @@ export default function OrderCard(props) {
                       --
                     </td>
                     <td className="py-2 px-2 text-right border border-gray-200">
-                      {item?.price}
+                      {parseFloat(item?.price/item?.qty).toFixed(2)}
                     </td>
                     <td className="py-2 px-2 text-right border border-gray-200">
-                      {(item?.price * item?.qty).toFixed(2)}
+                      {parseFloat(item?.price).toFixed(2)}
                     </td>
                   </tr>
                 </>
@@ -431,10 +431,10 @@ export default function OrderCard(props) {
             <tr>
               <td colSpan={6} className="border border-gray-200"></td>
               <td className="py-2 px-2 text-right border border-gray-200">
-                Fedex
+                Shipping Charges
               </td>
               <td className="py-2 px-2 text-right border border-gray-200">
-                --
+               {props?.orderData?.shippingCharges}
               </td>
             </tr>
             {/* Total Row */}

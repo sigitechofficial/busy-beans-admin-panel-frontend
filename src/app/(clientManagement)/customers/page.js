@@ -97,29 +97,29 @@ export default function Customers() {
   };
 
   const columns = [
-    { field: "sl", header: "SL", sort: true },
+    // { field: "sl", header: "SL", sort: true },
     { field: "name", header: "Name", sort: true },
-    { field: "email", header: "Email", sort: true },
-    { field: "phoneNumber", header: "Phone Number", sort: true },
+    // { field: "email", header: "Email", sort: true },
+    // { field: "phoneNumber", header: "Phone Number", sort: true },
     { field: "emailToSendInvoices", header: "Invoice Email", sort: true },
-    { field: "saleTaxNumber", header: "Sale Tax Number", sort: true },
+    // { field: "saleTaxNumber", header: "Sale Tax Number", sort: true },
     { field: "totalOrderAmount", header: "Total Orders", sort: true },
     { field: "totalOrderPlaced", header: "Total Orders Placed", sort: true },
-    {
-      field: "salesRepName",
-      header: "Sales Representative Name",
-      minWidth: "14rem",
-    },
-    {
-      field: "salesRepState",
-      header: "Sales Representative State",
-      minWidth: "14rem",
-    },
+    // {
+    //   field: "salesRepName",
+    //   header: "Sales Representative Name",
+    //   minWidth: "14rem",
+    // },
+    // {
+    //   field: "salesRepState",
+    //   header: "Sales Representative State",
+    //   minWidth: "14rem",
+    // },
     { field: "status", header: "Status" },
-    {
-      field: "changeStatus",
-      header: "Change Status",
-    },
+    // {
+    //   field: "changeStatus",
+    //   header: "Change Status",
+    // },
     // { field: "action", header: "Action" },  // pending to be done
   ];
 
@@ -411,6 +411,9 @@ export default function Customers() {
           selectedRows={selectedRows}
           setSelectedRows={setSelectedRows}
           search={true}
+          onRowClick={(e) => {
+            router.push(`/customers/${e?.data?.id}`);
+          }}
         />
       </div>
 

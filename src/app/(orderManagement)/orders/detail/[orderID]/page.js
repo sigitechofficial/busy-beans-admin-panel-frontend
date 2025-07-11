@@ -389,6 +389,7 @@ export default function OrderDetail() {
               Cancel Order
             </button>
           )}
+          
           <button
             onClick={() => router.push(`${pathname}/invoice`)}
             type="button"

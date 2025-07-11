@@ -510,11 +510,6 @@ export default function Stock() {
                       placeholder="Enter Item Name"
                       className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     />
-                    {/* <Select
-                placeholder="Coffee"
-                className="w-full"
-                styles={selectStyles2}
-              /> */}
                   </div>
 
                   <div className="flex flex-col gap-y-2">

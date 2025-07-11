@@ -1,0 +1,176 @@
+"use client";
+import Loader from "@/components/ui/Loader";
+import MiniLoader from "@/components/ui/MiniLoader";
+import ErrorHandler from "@/utilities/ErrorHandler";
+import GetAPI from "@/utilities/GetAPI";
+import { PatchAPI } from "@/utilities/PatchAPI";
+import { success_toaster } from "@/utilities/Toaster";
+import { Dialog } from "primereact/dialog";
+import { useEffect, useState } from "react";
+
+export default function ShippingChargesManagement() {
+  const [rows, setRows] = useState([]);
+  const [loader, setLoader] = useState(false);
+  const [modal, setModal] = useState(false);
+
+  const { data, reFetch } = GetAPI("api/v1/admin/shipping-charges-list");
+
+  useEffect(() => {
+    if (data?.data?.data?.length > 0) {
+      const formattedRows = data.data.data
+        .map((item) => ({
+          min: item.weightFrom,
+          max: item.weightTo,
+          charge: item.charges,
+          id: item.id,
+        }))
+        .reverse(); // Reverse the mapped array
+      setRows(formattedRows);
+    }
+  }, [data]);
+
+  const addRow = () => {
+    setRows([...rows, { min: "", max: "", charge: "" }]);
+  };
+
+  const deleteRow = (index) => {
+    const updated = rows.filter((_, i) => i !== index);
+    setRows(updated);
+  };
+
+  const updateRow = (index, field, value) => {
+    const updated = [...rows];
+    updated[index][field] = value;
+    setRows(updated);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const payload = {
+      company: "FedEx Ground E",
+      ranges: rows.map((row) => ({
+        company: "FedEx Ground E",
+        weightFrom: Number(row.min),
+        weightTo: Number(row.max),
+        charges: row.charge.toString(),
+      })),
+    };
+    setLoader(true);
+    try {
+      const res = await PatchAPI("api/v1/admin/shipping-charges-update", {
+        ranges: [...payload?.ranges],
+      });
+      if (res?.data?.status === "success") {
+        success_toaster("Shipping Ranges updated successfully");
+        reFetch();
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      setLoader(false);
+      ErrorHandler(error);
+    }finally{
+      setLoader(false)
+    }
+  };
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+
+  //   console.log("🚀 Submitting PATCH payload:", payload);
+
+  //   try {
+  //     setLoader(true);
+  //     const response = await fetch("/api/v1/admin/shipping-charges", {
+  //       method: "PATCH",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(payload),
+  //     });
+
+  //     const result = await response.json();
+  //     console.log("✅ Response:", result);
+  //     setLoader(false);
+  //   } catch (error) {
+  //     console.error("❌ Error submitting patch:", error);
+  //     setLoader(false);
+  //   }
+  // };
+
+  const handleCancel = () => {
+    setModal(false);
+  };
+
+  return (
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+          Shipping Charges Management
+        </h2>
+      </div>
+
+      {loader ? (
+        <Loader />
+      ) : (
+        <div>
+          <div className="space-y-4" id="shipping-rows">
+            <div class="grid grid-cols-4 gap-4 items-center font-semibold text-gray-700 border-b pb-2 mb-4">
+              <div>Min Range</div>
+              <div>Max Range</div>
+              <div>Charges($)</div>
+              <div>Action</div>
+            </div>
+
+            {rows.map((row, index) => (
+              <div key={index} className="grid grid-cols-4 gap-4 items-center">
+                <input
+                  type="number"
+                  placeholder="Min Range"
+                  className="w-full px-4 py-2 border rounded-md"
+                  value={row.min}
+                  onChange={(e) => updateRow(index, "min", e.target.value)}
+                />
+                <input
+                  type="number"
+                  placeholder="Max Range"
+                  className="w-full px-4 py-2 border rounded-md"
+                  value={row.max}
+                  onChange={(e) => updateRow(index, "max", e.target.value)}
+                />
+                <input
+                  type="number"
+                  placeholder="Charges"
+                  className="w-full px-4 py-2 border rounded-md"
+                  value={row.charge}
+                  onChange={(e) => updateRow(index, "charge", e.target.value)}
+                />
+                <button
+                  onClick={() => deleteRow(index)}
+                  className="text-red-600 font-semibold border border-red-600 w-20"
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
+
+            <div className="flex justify-end gap-x-2">
+              <button
+                onClick={addRow}
+                className="mt-6 px-6 py-2.5 bg-theme text-white font-semibold rounded hover:bg-white hover:text-theme border border-theme"
+              >
+                Add More Charges
+              </button>
+              <button
+                onClick={handleSubmit}
+                className="mt-6 px-6 py-2.5 bg-theme text-white font-semibold rounded hover:bg-white hover:text-theme border border-theme"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

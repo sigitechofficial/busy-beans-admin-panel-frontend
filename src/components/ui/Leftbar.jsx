@@ -6,7 +6,12 @@ import { FiUsers } from "react-icons/fi";
 import { GiSaloon } from "react-icons/gi";
 import { BiCategory } from "react-icons/bi";
 import { TbAlignBoxBottomCenter } from "react-icons/tb";
-import { FaAngleDown, FaUserEdit, FaAngleUp } from "react-icons/fa";
+import {
+  FaAngleDown,
+  FaUserEdit,
+  FaAngleUp,
+  FaShippingFast,
+} from "react-icons/fa";
 import { RiCouponLine } from "react-icons/ri";
 import { MdOutlineSubscriptions } from "react-icons/md";
 import { FaRegBell } from "react-icons/fa";
@@ -744,6 +749,13 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
+
+          <ListHead
+            title="Shipping Charges Management"
+            Icon={FaShippingFast}
+            to={"/shipping-charges"}
+            active={pathname.includes("/shipping-charges")}
+          />
 
           <ListHead
             title="Report Management"

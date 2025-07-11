@@ -149,7 +149,7 @@ export default function CreateOrder() {
           Create Order
         </h2>
 
-        <Select placeholder="Filters" className="w-40" styles={selectStyles} />
+        {/* <Select placeholder="Filters" className="w-40" styles={selectStyles} /> */}
         {/* <div className="flex items-center gap-x-4">
       <div>
         <button className="flex items-center gap-x-2 px-2 sm:px-5 md:px-8 py-2.5 md:py-3 rounded-lg shadow-buttonShadow border border-buttonBorderColor bg-white ">

@@ -18,6 +18,9 @@ import React, { useState } from "react";
 import Select from "react-select";
 
 export default function OrderDetail() {
+  if (typeof window !== "undefined") {
+    var userType = localStorage.getItem("userType");
+  }
   const { orderID } = useParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -317,25 +320,51 @@ export default function OrderDetail() {
               ? "Edit Bank Check"
               : "Add Bank Check"}
           </button> */}
-          <button
-            type="button"
-            disabled={
-              data?.data?.order?.statusId === 5 ||
-              data?.data?.order?.statusId === 6
-                ? true
-                : false
-            }
-            className="bg-black text-white disabled:cursor-not-allowed"
-            onClick={() => handleAssignSupplier(data?.data?.order?.statusId)}
-          >
-            {data?.data?.order?.statusId === 1
-              ? "Assign Supplier"
-              : data?.data?.order?.statusId === 2
-              ? "Acknowledge Supplier"
-              : data?.data?.order?.statusId === 3
-              ? "Dispatch Order"
-              : "Order Delivered"}
-          </button>
+          {userType === "admin" ? (
+            <button
+              type="button"
+              disabled={
+                data?.data?.order?.statusId === 5 ||
+                data?.data?.order?.statusId === 6
+                  ? true
+                  : false
+              }
+              className="bg-black text-white disabled:cursor-not-allowed"
+              onClick={() => handleAssignSupplier(data?.data?.order?.statusId)}
+            >
+              {data?.data?.order?.statusId === 1
+                ? "Assign Supplier"
+                : data?.data?.order?.statusId === 2
+                ? "Acknowledge Supplier"
+                : data?.data?.order?.statusId === 3
+                ? "Dispatch Order"
+                : "Order Delivered"}
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled={
+                data?.data?.order?.statusId === 5 ||
+                data?.data?.order?.statusId === 6
+                  ? true
+                  : false
+              }
+              className={`${
+                data?.data?.order?.statusId === 1 ||
+                data?.data?.order?.statusId === 2
+                  ? "block"
+                  : "hidden"
+              } bg-black text-white disabled:cursor-not-allowed`}
+              onClick={() => handleAssignSupplier(data?.data?.order?.statusId)}
+            >
+              {data?.data?.order?.statusId === 1
+                ? "Assign Supplier"
+                : data?.data?.order?.statusId === 2
+                ? "Acknowledge Supplier"
+                : ""}
+            </button>
+          )}
+
           <button
             type="button"
             disabled={data?.data?.order?.statusId === 6 ? true : false}
@@ -345,19 +374,21 @@ export default function OrderDetail() {
             {data?.data?.order?.invoiceId ? "Invoice reminder" : "Send Invoice"}
           </button>
 
-          <button
-            disabled={
-              data?.data?.order?.statusId === 5 ||
-              data?.data?.order?.statusId === 6
-                ? true
-                : false
-            }
-            type="button"
-            onClick={handleCancelOrder}
-            className="bg-theme text-white disabled:cursor-not-allowed"
-          >
-            Cancel Order
-          </button>
+          {userType === "admin" && (
+            <button
+              disabled={
+                data?.data?.order?.statusId === 5 ||
+                data?.data?.order?.statusId === 6
+                  ? true
+                  : false
+              }
+              type="button"
+              onClick={handleCancelOrder}
+              className="bg-theme text-white disabled:cursor-not-allowed"
+            >
+              Cancel Order
+            </button>
+          )}
           <button
             onClick={() => router.push(`${pathname}/invoice`)}
             type="button"

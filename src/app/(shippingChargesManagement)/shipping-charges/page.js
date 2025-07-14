@@ -29,8 +29,21 @@ export default function ShippingChargesManagement() {
     }
   }, [data]);
 
+  // const addRow = () => {
+  //   setRows([...rows, { min: "", max: "", charge: "" }]);
+  // };
   const addRow = () => {
-    setRows([...rows, { min: "", max: "", charge: "" }]);
+    const lastRow = rows[rows.length - 1];
+    const newMin = lastRow ? Number(lastRow.max) + 1 : 0;
+
+    setRows([
+      ...rows,
+      {
+        min: newMin,
+        max: "",
+        charge: "",
+      },
+    ]);
   };
 
   const deleteRow = (index) => {
@@ -46,6 +59,28 @@ export default function ShippingChargesManagement() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      if (
+        row.min === "" ||
+        row.max === "" ||
+        row.charge === "" ||
+        isNaN(row.min) ||
+        isNaN(row.max) ||
+        isNaN(row.charge)
+      ) {
+        ErrorHandler(new Error(`Please fill all fields for row ${i + 1}.`));
+        return;
+      }
+
+      if (Number(row.min) >= Number(row.max)) {
+        ErrorHandler(
+          new Error(`Min value cannot be greater than Max in row ${i + 1}.`)
+        );
+        return;
+      }
+    }
+
     const payload = {
       company: "FedEx Ground E",
       ranges: rows.map((row) => ({
@@ -55,6 +90,7 @@ export default function ShippingChargesManagement() {
         charges: row.charge.toString(),
       })),
     };
+
     setLoader(true);
     try {
       const res = await PatchAPI("api/v1/admin/shipping-charges-update", {
@@ -67,10 +103,9 @@ export default function ShippingChargesManagement() {
         throw new Error(res?.data?.message || "An unexpected error occurred.");
       }
     } catch (error) {
-      setLoader(false);
       ErrorHandler(error);
-    }finally{
-      setLoader(false)
+    } finally {
+      setLoader(false);
     }
   };
 
@@ -102,7 +137,9 @@ export default function ShippingChargesManagement() {
     setModal(false);
   };
 
-  return (
+  return data?.length === 0 ? (
+    <Loader />
+  ) : (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
@@ -111,7 +148,7 @@ export default function ShippingChargesManagement() {
       </div>
 
       {loader ? (
-        <Loader />
+        <MiniLoader />
       ) : (
         <div>
           <div className="space-y-4" id="shipping-rows">
@@ -130,6 +167,7 @@ export default function ShippingChargesManagement() {
                   className="w-full px-4 py-2 border rounded-md"
                   value={row.min}
                   onChange={(e) => updateRow(index, "min", e.target.value)}
+                  disabled={index !== 0}
                 />
                 <input
                   type="number"

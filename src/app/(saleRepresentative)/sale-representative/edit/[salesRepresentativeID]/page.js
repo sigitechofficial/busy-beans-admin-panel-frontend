@@ -5,7 +5,7 @@ import BackButton from "@/components/ui/BackButton";
 import MiniLoader from "@/components/ui/MiniLoader";
 import { LuImageUp } from "react-icons/lu";
 import Select from "react-select";
-import { selectStyles2 } from "@/utilities/SelectStyle";
+import { drawerSelectStyles, selectStyles2 } from "@/utilities/SelectStyle";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import { PostAPI } from "@/utilities/PostAPI";
@@ -16,6 +16,7 @@ import { string } from "yup";
 import { PatchAPI } from "@/utilities/PatchAPI";
 import PhoneInput from "react-phone-input-2";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import axios from "axios";
 
 export default function EditsSalesRepresentative() {
   const { salesRepresentativeID } = useParams();
@@ -39,10 +40,25 @@ export default function EditsSalesRepresentative() {
     status: true,
   });
   const [imagePreview, setImagePreview] = useState("");
+  const [allStates, setAllStates] = useState([]);
+  const [allCities, setAllCities] = useState([]);
   const [visible, setVisible] = useState(false);
   const [changePasswordStatus, setChangePasswordStatus] = useState(false);
+  const [customCityMode, setCustomCityMode] = useState(false);
+
+  const { data: countriesData } = GetAPI(
+    "api/v1/admin/address-management/country"
+  );
 
   const { data } = GetAPI(`api/v1/admin/sales-rep/${salesRepresentativeID}`);
+
+  const allCountries = [];
+  countriesData?.data?.data?.map((country) =>
+    allCountries.push({
+      value: country?.name,
+      label: country?.name,
+    })
+  );
 
   const handleChange = (e) => {
     setSaleRepresentative({
@@ -64,6 +80,55 @@ export default function EditsSalesRepresentative() {
       setImagePreview(url);
     } else {
       info_toaster("File not selected");
+    }
+  };
+
+  const handleSelectedCountryStates = async (countryName) => {
+    const selectedCountry = countriesData?.data?.data?.find(
+      (country) => country?.name === countryName
+    );
+    try {
+      const res = await axios.get(
+        BASE_URL +
+          `api/v1/admin/address-management/state?countryInSystemId=${selectedCountry?.id}`
+      );
+      if (res?.data?.status === "success") {
+        const tempAllStates = [];
+        res?.data?.data?.data?.map((state) =>
+          tempAllStates.push({
+            value: state?.id,
+            label: state?.name,
+          })
+        );
+        setAllStates([...tempAllStates]);
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
+    }
+  };
+
+  const handleSelectedCountryStatesCities = async (stateID) => {
+    try {
+      const res = await axios.get(
+        BASE_URL +
+          `api/v1/admin/address-management/city?stateInSystemId=${stateID}`
+      );
+      if (res?.data?.status === "success") {
+        const tempAllCities = [];
+        res?.data?.data?.data?.map((state) =>
+          tempAllCities.push({
+            value: state?.name,
+            label: state?.name,
+          })
+        );
+        setAllCities([...tempAllCities]);
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
     }
   };
 
@@ -277,26 +342,71 @@ export default function EditsSalesRepresentative() {
                     <label className="text-labelColor font-medium font-satoshi">
                       Country
                     </label>
-                    <input
+                    {/* <input
                       type="text"
                       name="country"
                       value={saleRepresentative?.country}
                       placeholder="Enter Country Name"
                       className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       onChange={handleChange}
+                    /> */}
+                    <Select
+                      placeholder="Select Country"
+                      className="w-full"
+                      styles={drawerSelectStyles}
+                      value={
+                        saleRepresentative?.country
+                          ? {
+                              value: saleRepresentative.country,
+                              label: saleRepresentative.country,
+                            }
+                          : null
+                      }
+                      options={allCountries ?? []}
+                      onChange={(e) => {
+                        setSaleRepresentative({
+                          ...saleRepresentative,
+                          country: e.label,
+                          state: "",
+                          city: "",
+                        });
+                        handleSelectedCountryStates(e.label);
+                      }}
                     />
                   </div>
                   <div className="flex flex-col gap-y-2 w-full">
                     <label className="text-labelColor font-medium font-satoshi">
                       State
                     </label>
-                    <input
+                    {/* <input
                       type="text"
                       name="state"
                       value={saleRepresentative?.state}
                       placeholder="Enter State Name"
                       className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       onChange={handleChange}
+                    /> */}
+                    <Select
+                      placeholder="Select State"
+                      className="w-full"
+                      styles={drawerSelectStyles}
+                      value={
+                        saleRepresentative?.state
+                          ? {
+                              value: saleRepresentative.state,
+                              label: saleRepresentative.state,
+                            }
+                          : null
+                      }
+                      options={allStates ?? []}
+                      onChange={(e) => {
+                        setSaleRepresentative({
+                          ...saleRepresentative,
+                          state: e?.label,
+                          city: "",
+                        });
+                        handleSelectedCountryStatesCities(e.value);
+                      }}
                     />
                   </div>
                 </div>
@@ -305,14 +415,67 @@ export default function EditsSalesRepresentative() {
                     <label className="text-labelColor font-medium font-satoshi">
                       City
                     </label>
-                    <input
+                    {/* <input
                       type="text"
                       name="city"
                       value={saleRepresentative?.city}
                       placeholder="Enter City Name"
                       className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       onChange={handleChange}
-                    />
+                    /> */}
+                    {!customCityMode ? (
+                      <>
+                        <Select
+                          placeholder="Select City"
+                          className="w-full"
+                          styles={drawerSelectStyles}
+                          value={
+                            saleRepresentative?.city
+                              ? {
+                                  value: saleRepresentative.city,
+                                  label: saleRepresentative.city,
+                                }
+                              : null
+                          }
+                          options={allCities ?? []}
+                          onChange={(e) => {
+                            setSaleRepresentative({
+                              ...saleRepresentative,
+                              city: e.label,
+                            });
+                          }}
+                        />
+                        <button
+                          type="button"
+                          className="text-sm bg-theme text-white hover:text-theme hover:bg-white duration-150 rounded-sm border border-theme mt-1 px-2 self-end"
+                          onClick={() => setCustomCityMode(true)}
+                        >
+                          Enter Custom City Name
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <input
+                          type="text"
+                          placeholder="Enter custom city"
+                          className="w-full px-3 py-3 border border-gray-300 rounded"
+                          value={saleRepresentative?.city}
+                          onChange={(e) =>
+                            setSaleRepresentative({
+                              ...saleRepresentative,
+                              city: e.target.value,
+                            })
+                          }
+                        />
+                        <button
+                          type="button"
+                          className="text-sm bg-theme text-white hover:text-theme hover:bg-white duration-150 rounded-sm border border-theme mt-1 px-2 self-end"
+                          onClick={() => setCustomCityMode(false)}
+                        >
+                          Back to Select
+                        </button>
+                      </>
+                    )}
                   </div>
                   <div className="flex flex-col gap-y-2">
                     <label className="text-labelColor font-medium font-satoshi">

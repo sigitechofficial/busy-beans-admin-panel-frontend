@@ -358,6 +358,9 @@ export default function Stock() {
                 weight: prod?.weight,
                 wholesalePrice: prod?.wholesalePrice,
                 desc: prod?.desc,
+                productCode: prod?.productCode,
+                sku: prod?.sku,
+                grind: prod?.grind,
               });
               setProductID(prod?.id);
               setImagePreview(BASE_URL + prod?.image);
@@ -464,7 +467,10 @@ export default function Stock() {
         {loader === "add" || loader === "edit" || loader === "delete" ? (
           <MiniLoader />
         ) : (
-          <form className="space-y-4 flex flex-col items-center">
+          <form
+            onSubmit={handleStock}
+            className="space-y-4 flex flex-col items-center"
+          >
             {/* header */}
             {modal !== "delete" && (
               <button
@@ -735,7 +741,6 @@ export default function Stock() {
                 </button>
                 <button
                   type="submit"
-                  onClick={handleStock}
                   className="rounded-lg border border-theme text-white px-10  bg-theme"
                 >
                   {modal === "add"

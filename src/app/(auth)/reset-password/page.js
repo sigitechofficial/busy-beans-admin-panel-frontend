@@ -8,6 +8,7 @@ import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import { PostAPI } from "@/utilities/PostAPI";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import MiniLoader from "@/components/ui/MiniLoader";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
 export default function ResetPassword() {
   if (typeof window !== "undefined") {
@@ -19,6 +20,10 @@ export default function ResetPassword() {
     newPassword: "",
     confirmPassword: "",
   });
+  const [visibility, setVisibility] = useState({
+    pass: false,
+    confirmPass: false,
+  });
   const [modal, setModal] = useState(false);
   const [loader, setLoader] = useState(false);
 
@@ -26,8 +31,12 @@ export default function ResetPassword() {
     e.preventDefault();
     if (passwords?.newPassword.trim() === "") {
       info_toaster("Enter new password");
+    } else if (passwords?.newPassword.trim().length < 6) {
+      info_toaster("Password must be atleast 6 characters");
     } else if (passwords?.confirmPassword.trim() === "") {
       info_toaster("Confirm new password");
+    } else if (passwords?.confirmPassword.trim().length < 6) {
+      info_toaster("Confirm Password must be atleast 6 characters");
     } else if (
       passwords?.newPassword.trim() !== passwords?.confirmPassword.trim()
     ) {
@@ -117,12 +126,12 @@ export default function ResetPassword() {
                 className="space-y-6 flex flex-col justify-between"
               >
                 <div className="space-y-4">
-                  <div className="flex flex-col gap-y-2">
+                  <div className="flex flex-col gap-y-2 relative">
                     <label className="text-white font-medium">
                       New Password
                     </label>
                     <input
-                      type="password"
+                      type={visibility?.pass ? "text" : "password"}
                       name="newPassword"
                       onChange={(e) =>
                         setPasswords({
@@ -133,13 +142,39 @@ export default function ResetPassword() {
                       placeholder="Enter Password"
                       className="border border-borderColor text-themeLight rounded-[4px] outline-none px-3 py-2.5"
                     />
+                    <div>
+                      {" "}
+                      {passwords?.newPassword.length > 0 &&
+                        passwords?.newPassword.length < 6 && (
+                          <div className="text-red-600 space-y-1 pb-1">
+                            <hr className="border-none h-0.5 bg-white bg-opacity-20" />
+                            <p>Password must be atleast 6 characters</p>
+                          </div>
+                        )}
+                    </div>
+                    <button
+                      onClick={() =>
+                        setVisibility({
+                          ...visibility,
+                          pass: !visibility?.pass,
+                        })
+                      }
+                      type="button"
+                      className="text-black absolute right-4 top-11"
+                    >
+                      {visibility?.pass ? (
+                        <AiOutlineEye size={24} color="#000000" />
+                      ) : (
+                        <AiOutlineEyeInvisible size={24} color="#000000" />
+                      )}
+                    </button>
                   </div>
-                  <div className="flex flex-col gap-y-2">
+                  <div className="flex flex-col gap-y-2 relative">
                     <label className="text-white font-medium">
                       Confirm Password
                     </label>
                     <input
-                      type="password"
+                      type={visibility?.confirmPass ? "text" : "password"}
                       name="confirmPassword"
                       onChange={(e) =>
                         setPasswords({
@@ -150,6 +185,32 @@ export default function ResetPassword() {
                       placeholder="Enter Confirm Password"
                       className="border border-borderColor text-themeLight rounded-[4px] outline-none px-3 py-2.5"
                     />
+                    <div>
+                      {" "}
+                      {passwords?.confirmPassword.length > 0 &&
+                        passwords?.confirmPassword.length < 6 && (
+                          <div className="text-red-600 space-y-1 pb-1">
+                            <hr className="border-none h-0.5 bg-white bg-opacity-20" />
+                            <p>Confirm Password must be atleast 6 characters</p>
+                          </div>
+                        )}
+                    </div>
+                    <button
+                      onClick={() =>
+                        setVisibility({
+                          ...visibility,
+                          confirmPass: !visibility?.confirmPass,
+                        })
+                      }
+                      type="button"
+                      className="text-black absolute right-4 top-11"
+                    >
+                      {visibility?.confirmPass ? (
+                        <AiOutlineEye size={24} color="#000000" />
+                      ) : (
+                        <AiOutlineEyeInvisible size={24} color="#000000" />
+                      )}
+                    </button>
                   </div>
                 </div>
                 <div>

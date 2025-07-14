@@ -37,9 +37,9 @@ export default function PartnerCreditLimit() {
   const columns = [
     { field: "sl", header: "SL", sort: true },
     { field: "srName", header: "Supplier Name" },
-    { field: "creditLimit", header: "Credit Limit" },
-    { field: "creditUsed", header: "Credit Used" },
-    { field: "creditUsedPercentage", header: "Credit Utilization (%)" },
+    { field: "creditLimit", header: "Credit Limit", sort: true },
+    { field: "creditUsed", header: "Credit Used", sort: true },
+    { field: "creditUsedPercentage", header: "Credit Utilization (%)", sort: true },
   ];
 
   const datas = [];

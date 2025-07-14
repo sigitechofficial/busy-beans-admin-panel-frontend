@@ -37,11 +37,11 @@ export default function CustomerReport() {
   const columns = [
     { field: "sl", header: "SL", sort: true },
     { field: "name", header: "Customer Name" },
-    { field: "numberOfOrders", header: "No of Orders" },
+    { field: "numberOfOrders", header: "No of Orders", sort: true },
     { field: "lastOrderDate", header: "Last Order Date" },
-    { field: "outstandingBalance", header: "Outstanding Balance" },
-    { field: "avgSpent", header: "Avg. Spent" },
-    { field: "totatSpent", header: "Total Spent" },
+    { field: "outstandingBalance", header: "Outstanding Balance", sort: true },
+    { field: "avgSpent", header: "Avg. Spent", sort: true },
+    { field: "totatSpent", header: "Total Spent", sort: true },
   ];
 
   const datas = [];

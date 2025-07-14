@@ -25,8 +25,8 @@ export default function Customers() {
   const [modal, setModal] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectedState, setselectedState] = useState({
-    value: "all",
-    label: "All",
+    value: "",
+    label: "",
   });
 
   const { data, reFetch } = GetAPI(
@@ -38,15 +38,12 @@ export default function Customers() {
         : "/sale-rep/assign"
     } `
   );
-  console.log("🚀 ~ Customers ~ data:", data?.data);
 
   const { data: dashboardCards } = GetAPI(
     "api/v1/admin/customer-management/dahboard-cards"
   );
-  // console.log("🚀 ~ Customers ~ dashboardCards:",dashboardCards?.data?.data)
 
   const { data: salesRepresentativeData } = GetAPI("api/v1/admin/sales-rep");
-  // console.log("🚀 ~ Customers ~ data:", data?.data);
 
   const handleCancel = () => {
     setModal("");
@@ -288,17 +285,20 @@ export default function Customers() {
   });
 
   customers?.map((customer, i) => {
+    const stateValue = customer?.salesRepState;
+    if (!stateValue) return;
+
     const checkState = StatesOptions?.find(
-      (stateName) => stateName?.value === customer?.salesRepState
+      (stateName) => stateName?.value === stateValue
     );
+
     if (!checkState) {
       StatesOptions.push({
-        value: customer?.salesRepState,
-        label: customer?.salesRepState,
+        value: stateValue,
+        label: stateValue,
       });
     }
   });
-  console.log("🚀 ~ Customers ~ StatesOptions:", StatesOptions);
 
   return data?.length === 0 ? (
     <Loader />
@@ -381,7 +381,7 @@ export default function Customers() {
           title="Total Customer"
           desc={dashboardCards?.data?.data?.totalCustomer}
         />
-        <ManagementTab
+        {/* <ManagementTab
           title="New Customer"
           desc={dashboardCards?.data?.data?.newCustomer}
         />
@@ -392,7 +392,7 @@ export default function Customers() {
         <ManagementTab
           title="Inactive Customer"
           desc={dashboardCards?.data?.data?.inactiveCustomer}
-        />
+        /> */}
         {/* <ManagementTab title="T.Revenue Generated" desc="18,000" />
         <ManagementTab title="Total Orders" desc="5000" />
         <ManagementTab title="Pending Orders" desc="5000" />

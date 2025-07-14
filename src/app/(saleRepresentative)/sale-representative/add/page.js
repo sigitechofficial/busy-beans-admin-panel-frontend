@@ -516,7 +516,7 @@ export default function AddSaleRepresentative() {
                         // backgroundColor: "#6f4e37",
                       }}
                       dropdownStyle={{
-                        backgroundColor: "#6f4e37",
+                        backgroundColor: "#86644C",
                         borderRadius: "8px",
                       }}
                       country={"us"}
@@ -806,7 +806,7 @@ export default function AddSaleRepresentative() {
                       // backgroundColor: "#6f4e37",
                     }}
                     dropdownStyle={{
-                      backgroundColor: "#6f4e37",
+                     backgroundColor: "#86644C",
                       borderRadius: "8px",
                     }}
                     country={"us"}

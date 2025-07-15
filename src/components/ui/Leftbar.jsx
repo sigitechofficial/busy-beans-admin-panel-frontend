@@ -911,6 +911,22 @@ export default function Leftbar(props) {
               </>
             )}
 
+          {/* <ListHead
+            title="Create Order"
+            Icon={AiOutlineUnorderedList}
+            to={"/sales-representative/create-order"}
+            active={pathname === "/sales-representative/create-order"}
+            // Angle={
+            //   active?.orderManagement?.tab === "walletManagement" &&
+            //   active?.orderManagement?.status
+            //     ? FaAngleUp
+            //     : FaAngleDown
+            // }
+            // onClick={() =>
+            //   handleActive("walletManagement", active?.orderManagement?.status)
+            // }
+          /> */}
+
           <ListHead
             title="Order Management"
             Icon={AiOutlineUnorderedList}
@@ -939,7 +955,7 @@ export default function Leftbar(props) {
                     title="Upcoming Orders"
                     to="/sales-representative/upcoming-orders"
                   />
-                  <ListItems title="Assigned Orders" to="/orders/assigned" />
+                  {/* <ListItems title="Assigned Orders" to="/orders/assigned" /> */}
                   <ListItems
                     title="Acknowledged Orders"
                     to="/orders/acknowledged"
@@ -948,7 +964,7 @@ export default function Leftbar(props) {
                     title="Dispatched Orders"
                     to="/orders/dispatched"
                   />
-                  <ListItems title="Delivered Orders" to="/orders/delivered" />
+                  {/* <ListItems title="Delivered Orders" to="/orders/delivered" /> */}
                   <ListItems title="Cancelled Orders" to="/orders/cancelled" />
                 </div>
                 <hr className="w-full" />

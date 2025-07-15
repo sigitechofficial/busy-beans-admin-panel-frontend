@@ -350,18 +350,16 @@ export default function OrderDetail() {
                   : false
               }
               className={`${
-                data?.data?.order?.statusId === 1 ||
-                data?.data?.order?.statusId === 2
-                  ? "block"
-                  : "hidden"
+                data?.data?.order?.statusId === 3 ? "block" : "hidden"
               } bg-black text-white disabled:cursor-not-allowed`}
               onClick={() => handleAssignSupplier(data?.data?.order?.statusId)}
             >
-              {data?.data?.order?.statusId === 1
+              {/* {data?.data?.order?.statusId === 1
                 ? "Assign Supplier"
                 : data?.data?.order?.statusId === 2
                 ? "Acknowledge Supplier"
-                : ""}
+                : ""} */}
+              Dispatch Order
             </button>
           )}
 
@@ -389,7 +387,7 @@ export default function OrderDetail() {
               Cancel Order
             </button>
           )}
-          
+
           <button
             onClick={() => router.push(`${pathname}/invoice`)}
             type="button"

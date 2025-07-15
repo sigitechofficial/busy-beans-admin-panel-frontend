@@ -175,7 +175,7 @@ export default function EditsSalesRepresentative() {
         formData.append("state", saleRepresentative?.state);
         formData.append("zipCode", saleRepresentative?.zipCode);
         formData.append("address", saleRepresentative?.address);
-        formData.append("territory", saleRepresentative?.territory);
+        formData.append("territoryName", saleRepresentative?.territory);
         formData.append("image", saleRepresentative?.image);
         formData.append("phoneNumber", saleRepresentative?.phoneNumber);
         formData.append("status", saleRepresentative?.status);
@@ -226,7 +226,7 @@ export default function EditsSalesRepresentative() {
       state: data?.data?.data?.state ?? "",
       zipCode: data?.data?.data?.zipCode ?? "",
       address: data?.data?.data?.address ?? "",
-      territory: data?.data?.data?.territory ?? "",
+      territory: data?.data?.data?.territoryName ?? "",
       businessWeb: data?.data?.data?.businessWeb ?? "",
       image: data?.data?.data?.image ?? "",
       phoneNumber: data?.data?.data?.phoneNumber ?? "",
@@ -493,13 +493,13 @@ export default function EditsSalesRepresentative() {
                 </div>
                 <div className="flex flex-col gap-y-2">
                   <label className="text-labelColor font-medium font-satoshi">
-                    Territory{" "}
+                    Title{" "}
                   </label>
                   <input
                     type="text"
                     name="territory"
                     value={saleRepresentative?.territory}
-                    placeholder="Enter Territory name"
+                    placeholder="Enter Title"
                     className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />

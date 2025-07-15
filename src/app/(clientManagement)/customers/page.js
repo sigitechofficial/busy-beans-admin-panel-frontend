@@ -25,8 +25,8 @@ export default function Customers() {
   const [modal, setModal] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectedState, setselectedState] = useState({
-    value: "",
-    label: "",
+    value: "all",
+    label: "ALL",
   });
 
   const { data, reFetch } = GetAPI(
@@ -365,7 +365,7 @@ export default function Customers() {
                 ? info_toaster("Select atleast one customer")
                 : setModal("assign");
             }}
-            className="rounded-lg font-inter font-medium text-white px-10 py-2.5 sm:h-full bg-theme"
+            className="rounded-lg font-inter font-medium text-white px-10 py-2.5 sm:h-full border border-theme bg-theme hover:bg-white hover:text-theme duration-150"
           >
             {type === "unassigned" &&
               // ?

@@ -8,6 +8,7 @@ import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import { PatchAPI } from "@/utilities/PatchAPI";
 
 export default function InvoicePDFDownload({ invoiceData, reFetch }) {
+  console.log("🚀 ~ InvoicePDFDownload ~ invoiceData:", invoiceData)
   const invoiceRef = useRef(null);
 
   const [data, setData] = useState("");
@@ -99,7 +100,8 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
               {/* Sales Rep Section */}
               <div>
                 <div className="font-bold">From</div>
-                <div>{invoiceData?.salesRepName}</div>
+                {/* <div>{invoiceData?.salesRepName}</div> */}
+                <div>{invoiceData?.salesRep?.territoryName}</div>
                 <div>{invoiceData?.salesRep?.address}</div>
                 <div>
                   {invoiceData?.salesRep?.city}, {invoiceData?.salesRep?.state}{" "}
@@ -248,10 +250,10 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
           {/* Totals */}
 
           <div className="w-full max-w-xs ml-auto mt-5 text-sm">
-            <div className="flex justify-between items-center py-1">
+            {/* <div className="flex justify-between items-center py-1">
               <span className="text-gray-700">VAT</span>
               <span>${parseFloat(invoiceData?.vat)?.toFixed(2)}</span>
-            </div>
+            </div> */}
 
             <div className="flex justify-between items-center py-1">
               <span className="text-gray-700">Subtotal</span>

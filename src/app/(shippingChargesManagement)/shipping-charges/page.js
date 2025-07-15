@@ -164,10 +164,11 @@ export default function ShippingChargesManagement() {
                 <input
                   type="number"
                   placeholder="Min Range"
-                  className="w-full px-4 py-2 border rounded-md"
-                  value={row.min}
+                  className="w-full px-4 py-2 border rounded-md disabled:cursor-not-allowed"
+                  value={index === 0 ? 0 : row.min}
                   onChange={(e) => updateRow(index, "min", e.target.value)}
-                  disabled={index !== 0}
+                  disabled={true}
+                  // disabled={index !== 0 || index === 0}
                 />
                 <input
                   type="number"

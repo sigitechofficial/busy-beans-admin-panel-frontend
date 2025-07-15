@@ -254,8 +254,18 @@ export default function Leftbar(props) {
         props?.navbarVis
           ? "fixed w-full sm:max-w-[240px] lg:max-w-[288px]"
           : "hidden"
-      } h-full sm:py-5 sm:pl-2 mt-0 sm:mt-[94px] border-r-2 z-50`}
+      } h-full sm:pb-5 sm:pl-2 border-r-2 z-50`}
     >
+      <div className="flex items-center justify-center font-bold text-4xl min-h-[70px] h-[94px] border-b max-sm:hidden">
+        <Link href="/">
+          <img
+            src="/images/logocoffee.png"
+            alt="logo"
+            className="h-full max-h-[70px]"
+          />
+        </Link>
+      </div>
+
       <div className="sm:hidden flex justify-between items-center py-3 w-11/12 mx-auto">
         <div>
           {" "}
@@ -281,7 +291,7 @@ export default function Leftbar(props) {
       </div>
 
       {userType === "admin" ? (
-        <ul className="flex flex-col space-y-1 overflow-auto h-[90%]">
+        <ul className="flex flex-col space-y-1 pt-2 overflow-auto h-[90%]">
           <ListHead title="Dashboard" to="/" Icon={MdDashboard} />
           <ListHead
             title="Order Management"

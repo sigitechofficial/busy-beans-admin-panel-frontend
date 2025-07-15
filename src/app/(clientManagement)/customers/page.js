@@ -99,28 +99,28 @@ export default function Customers() {
   const columns = [
     // { field: "sl", header: "SL", sort: true },
     { field: "name", header: "Name", sort: true },
-    // { field: "email", header: "Email", sort: true },
-    // { field: "phoneNumber", header: "Phone Number", sort: true },
+    { field: "email", header: "Email", sort: true },
+    { field: "phoneNumber", header: "Phone Number", sort: true },
     { field: "emailToSendInvoices", header: "Invoice Email", sort: true },
-    // { field: "saleTaxNumber", header: "Sale Tax Number", sort: true },
+    { field: "saleTaxNumber", header: "Sale Tax Number", sort: true },
     { field: "totalOrderAmount", header: "Total Orders", sort: true },
     { field: "totalOrderPlaced", header: "Total Orders Placed", sort: true },
-    // {
-    //   field: "salesRepName",
-    //   header: "Sales Representative Name",
-    //   minWidth: "14rem",
-    // },
-    // {
-    //   field: "salesRepState",
-    //   header: "Sales Representative State",
-    //   minWidth: "14rem",
-    // },
+    {
+      field: "salesRepName",
+      header: "Sales Representative Name",
+      minWidth: "14rem",
+    },
+    {
+      field: "salesRepState",
+      header: "Sales Representative State",
+      minWidth: "14rem",
+    },
     { field: "status", header: "Status" },
-    // {
-    //   field: "changeStatus",
-    //   header: "Change Status",
-    // },
-    // { field: "action", header: "Action" },  // pending to be done
+    {
+      field: "changeStatus",
+      header: "Change Status",
+    },
+    { field: "action", header: "Action" },  // pending to be done
   ];
 
   const salesRepresentativeColumns = [
@@ -303,157 +303,167 @@ export default function Customers() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div>
+      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-          Customer Management
+          Customers
         </h2>
 
-        <Select
-          // defaultInputValue={StatesOptions[0]}
-          options={StatesOptions}
-          value={selectedState?.value ? selectedState : null}
-          placeholder="Select State"
-          className="w-40"
-          styles={drawerSelectStyles}
-          onChange={(e) => setselectedState(e)}
-        />
+        <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
+          <li>New Customer</li>
+          <li>Groups</li>
+          <li>Nearby</li>
+          <li>Export</li>
+        </ul>
       </div>
-
-      <div className="flex justify-between">
-        <div>
-          <button
-            onClick={() => setType("all")}
-            className={`${
-              type === "all" ? "bg-black text-white" : "bg-white text-black"
-            } font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
-            duration-200 max-sm:w-60`}
-          >
-            All Customers
-          </button>
-          <button
-            onClick={() => setType("unassigned")}
-            className={`${
-              type === "unassigned"
-                ? "bg-black text-white"
-                : "bg-white text-black"
-            }  font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
-            duration-200 max-sm:w-60`}
-          >
-            Unassigned Local Partner
-          </button>
-          <button
-            onClick={() => setType("assigned")}
-            className={`${
-              type === "assigned"
-                ? "bg-black text-white"
-                : "bg-white text-black"
-            }  font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
-            duration-200 max-sm:w-60`}
-          >
-            Assigned Local Partner
-          </button>
+      <div className="space-y-8 pb-6 pt-32 px-6 2xl:px-12">
+        <div className="flex items-center justify-end">
+          <Select
+            // defaultInputValue={StatesOptions[0]}
+            options={StatesOptions}
+            value={selectedState?.value ? selectedState : null}
+            placeholder="Select State"
+            className="w-40"
+            styles={drawerSelectStyles}
+            onChange={(e) => setselectedState(e)}
+          />
         </div>
-        <div
-          className={`${
-            type === "all" || type === "assigned" ? "hidden" : "block"
-          }`}
-        >
-          <button
-            onClick={() => {
-              selectedRows?.length === 0
-                ? info_toaster("Select atleast one customer")
-                : setModal("assign");
-            }}
-            className="rounded-lg font-inter font-medium text-white px-10 py-2.5 sm:h-full bg-theme"
-          >
-            {type === "unassigned" &&
-              // ?
-              //  "Reassign Sale Representative"
-              // :
-              "Assign Local Partner"}
-          </button>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-        <ManagementTab
-          title="Total Customer"
-          desc={dashboardCards?.data?.data?.totalCustomer}
-        />
-        <ManagementTab
-          title="New Customer"
-          desc={dashboardCards?.data?.data?.newCustomer}
-        />
-        <ManagementTab
-          title="Active Customer"
-          desc={dashboardCards?.data?.data?.activeCustomer}
-        />
-        <ManagementTab
-          title="Inactive Customer"
-          desc={dashboardCards?.data?.data?.inactiveCustomer}
-        />
-        {/* <ManagementTab title="T.Revenue Generated" desc="18,000" />
+        <div className="flex justify-between">
+          <div>
+            <button
+              onClick={() => setType("all")}
+              className={`${
+                type === "all" ? "bg-black text-white" : "bg-white text-black"
+              } font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
+            duration-200 max-sm:w-60`}
+            >
+              All Customers
+            </button>
+            <button
+              onClick={() => setType("unassigned")}
+              className={`${
+                type === "unassigned"
+                  ? "bg-black text-white"
+                  : "bg-white text-black"
+              }  font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
+            duration-200 max-sm:w-60`}
+            >
+              Unassigned Local Partner
+            </button>
+            <button
+              onClick={() => setType("assigned")}
+              className={`${
+                type === "assigned"
+                  ? "bg-black text-white"
+                  : "bg-white text-black"
+              }  font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
+            duration-200 max-sm:w-60`}
+            >
+              Assigned Local Partner
+            </button>
+          </div>
+          <div
+            className={`${
+              type === "all" || type === "assigned" ? "hidden" : "block"
+            }`}
+          >
+            <button
+              onClick={() => {
+                selectedRows?.length === 0
+                  ? info_toaster("Select atleast one customer")
+                  : setModal("assign");
+              }}
+              className="rounded-lg font-inter font-medium text-white px-10 py-2.5 sm:h-full bg-theme"
+            >
+              {type === "unassigned" &&
+                // ?
+                //  "Reassign Sale Representative"
+                // :
+                "Assign Local Partner"}
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+          <ManagementTab
+            title="Total Customer"
+            desc={dashboardCards?.data?.data?.totalCustomer}
+          />
+          <ManagementTab
+            title="New Customer"
+            desc={dashboardCards?.data?.data?.newCustomer}
+          />
+          <ManagementTab
+            title="Active Customer"
+            desc={dashboardCards?.data?.data?.activeCustomer}
+          />
+          <ManagementTab
+            title="Inactive Customer"
+            desc={dashboardCards?.data?.data?.inactiveCustomer}
+          />
+          {/* <ManagementTab title="T.Revenue Generated" desc="18,000" />
         <ManagementTab title="Total Orders" desc="5000" />
         <ManagementTab title="Pending Orders" desc="5000" />
         <ManagementTab title="Total Orders Amount" desc="55,000" />
         <ManagementTab title="Receiving Amount" desc="18,000" />
         <ManagementTab title="Pending Payments" desc="500" /> */}
-      </div>
+        </div>
 
-      <div>
-        <MyDataTable
-          columns={columns}
-          data={datas}
-          placeholder={"Search ..."}
-          pagination={true}
-          checkbox={type === "all" || type === "assigned" ? false : true}
-          selectedRows={selectedRows}
-          setSelectedRows={setSelectedRows}
-          search={true}
-          onRowClick={(e) => {
-            router.push(`/customers/${e?.data?.id}`);
-          }}
-        />
-      </div>
+        <div>
+          <MyDataTable
+            columns={columns}
+            data={datas}
+            placeholder={"Search ..."}
+            pagination={true}
+            checkbox={type === "all" || type === "assigned" ? false : true}
+            selectedRows={selectedRows}
+            setSelectedRows={setSelectedRows}
+            search={true}
+            onRowClick={(e) => {
+              router.push(`/customers/${e?.data?.id}`);
+            }}
+          />
+        </div>
 
-      <Dialog
-        visible={modal === "assign"}
-        style={{ width: "80vw" }}
-        // breakpoints={{ "1496px": "40vw", "1024px": "70vw", "641px": "80vw" }}
-        className="font-nunito"
-        onHide={handleCancel}
-        header={
-          <div className="font-nunito font-bold text-2xl text-center">
-            Assign Local Partner
-          </div>
-        }
-      >
-        {loader === "unassigned" ? (
-          <MiniLoader />
-        ) : (
-          <div className="space-y-4">
-            <MyDataTable
-              columns={salesRepresentativeColumns}
-              data={salesRepresentativeDatas}
-              placeholder={"Search ..."}
-              pagination={true}
-              hide={true}
-              search={true}
-            />
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="rounded-lg border border-theme bg-theme text-white hover:bg-white hover:text-theme duration-150
-                 shadow-buttonShadow px-6 font-nunito py-3 font-medium"
-              >
-                Cancel
-              </button>
+        <Dialog
+          visible={modal === "assign"}
+          style={{ width: "80vw" }}
+          // breakpoints={{ "1496px": "40vw", "1024px": "70vw", "641px": "80vw" }}
+          className="font-nunito"
+          onHide={handleCancel}
+          header={
+            <div className="font-nunito font-bold text-2xl text-center">
+              Assign Local Partner
             </div>
-          </div>
-        )}
-      </Dialog>
+          }
+        >
+          {loader === "unassigned" ? (
+            <MiniLoader />
+          ) : (
+            <div className="space-y-4">
+              <MyDataTable
+                columns={salesRepresentativeColumns}
+                data={salesRepresentativeDatas}
+                placeholder={"Search ..."}
+                pagination={true}
+                hide={true}
+                search={true}
+              />
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="rounded-lg border border-theme bg-theme text-white hover:bg-white hover:text-theme duration-150
+                 shadow-buttonShadow px-6 font-nunito py-3 font-medium"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </Dialog>
+      </div>
     </div>
   );
 }

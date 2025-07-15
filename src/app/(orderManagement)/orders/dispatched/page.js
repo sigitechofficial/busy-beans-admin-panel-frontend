@@ -55,7 +55,7 @@ export default function DispatchedOrders() {
       itemsPrice: "$" + detail?.itemsPrice,
       vat: detail?.vat,
       totalWeight: detail?.totalWeight + "kg",
-      shippingCharges: '$' + detail?.shippingCharges,
+      shippingCharges: "$" + detail?.shippingCharges,
       note: detail?.note,
       paymentMethod: detail?.paymentMethod,
       poNumber: detail?.poNumber,
@@ -79,30 +79,33 @@ export default function DispatchedOrders() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div>
+      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
           Dispatched Orders
         </h2>
-        {/* <Select placeholder="Filters" className="w-40" styles={selectStyles} /> */}
       </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-        <ManagementTab title="Total Orders" desc={data?.data?.data?.length} />
-        {/* <ManagementTab title="New Orders" desc="5%" />
+      <div className="space-y-8 pt-32 px-6 2xl:px-12 ">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+          <ManagementTab title="Total Orders" desc={data?.data?.data?.length} />
+          {/* <ManagementTab title="New Orders" desc="5%" />
          <ManagementTab title="Pending Orders" desc="5000" />
          <ManagementTab title="In progress Orders" desc="5,000" />
          <ManagementTab title="Cancelled Orders" desc="5,000" /> */}
-      </div>
+        </div>
 
-      <div>
-        <MyDataTable
-          columns={columns}
-          data={datas}
-          placeholder={"Search ..."}
-          pagination={true}
-          search={true}
-        />
+        <div>
+          <MyDataTable
+            columns={columns}
+            data={datas}
+            placeholder={"Search ..."}
+            pagination={true}
+            search={true}
+            onRowClick={(e) => {
+              Example: router.push(`/orders/detail/${e.data.id}`);
+            }}
+          />
+        </div>
       </div>
     </div>
   );

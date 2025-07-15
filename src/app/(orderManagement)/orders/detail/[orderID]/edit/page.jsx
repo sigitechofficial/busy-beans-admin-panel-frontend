@@ -19,13 +19,13 @@ function EditPage() {
 
   // Separate state for shipping and billing
   const [shippingStates, setShippingStates] = useState([]);
-  console.log("🚀 ~ EditPage ~ shippingStates:", shippingStates)
+  console.log("🚀 ~ EditPage ~ shippingStates:", shippingStates);
   const [shippingCities, setShippingCities] = useState([]);
-  console.log("🚀 ~ EditPage ~ shippingCities:", shippingCities)
+  console.log("🚀 ~ EditPage ~ shippingCities:", shippingCities);
   const [billingStates, setBillingStates] = useState([]);
-  console.log("🚀 ~ EditPage ~ billingStates:", billingStates)
+  console.log("🚀 ~ EditPage ~ billingStates:", billingStates);
   const [billingCities, setBillingCities] = useState([]);
-  console.log("🚀 ~ EditPage ~ billingCities:", billingCities)
+  console.log("🚀 ~ EditPage ~ billingCities:", billingCities);
 
   const [supplier, setSupplier] = useState({
     supplierName: "",
@@ -249,218 +249,237 @@ function EditPage() {
     }
     // Pre-populate billing states/cities
     if (orderData?.data?.order?.user?.billingAddresses?.[0]?.country) {
-      handleBillingCountry(orderData?.data?.order?.user?.billingAddresses?.[0]?.country);
+      handleBillingCountry(
+        orderData?.data?.order?.user?.billingAddresses?.[0]?.country
+      );
     }
     // eslint-disable-next-line
   }, [data]);
 
   return (
-    <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-10 py-8 px-8 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm">
-      {/* Shipping Address */}
-      <div className="w-full space-y-2">
-        <h4 className="font-semibold">Shipping Address</h4>
-        <div className="w-full space-y-2 pt-8">
-          <p>Company Address</p>
-          <input
-            className="w-full h-12 bg-transparent outline-none border-2 px-4 border-gray-100 rounded-lg"
-            type="text"
-            name="companyaddress"
-            value={supplier?.companyaddress}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="w-full space-y-2">
-          <p>Address Line 1</p>
-          <input
-            className="w-full h-12 bg-transparent outline-none border-2 px-4 border-gray-100 rounded-lg"
-            type="text"
-            name="addressOne"
-            value={supplier?.addressOne}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="w-full space-y-2">
-          <p>Address Line 2</p>
-          <input
-            className="w-full h-12 bg-transparent outline-none border-2 px-4 border-gray-100 rounded-lg"
-            type="text"
-            name="addressTwo"
-            value={supplier?.addressTwo}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="w-full grid grid-cols-2 gap-5">
-          <div className="w-full space-y-2">
-            <p>Country</p>
-            <Select
-              placeholder="Select Country"
-              className="w-full"
-              styles={drawerSelectStyles}
-              value={
-                supplier?.country
-                  ? { value: supplier?.country, label: supplier?.country }
-                  : null
-              }
-              options={allCountries}
-              onChange={(e) => handleShippingCountry(e.label)}
-            />
-          </div>
-          <div className="w-full space-y-2">
-            <p>State</p>
-            <Select
-              placeholder="Select State"
-              className="w-full"
-              styles={drawerSelectStyles}
-              value={
-                supplier?.state
-                  ? shippingStates.find((s) => s.label === supplier?.state)
-                  : null
-              }
-              options={shippingStates}
-              onChange={handleShippingState}
-            />
-          </div>
-        </div>
-        <div className="w-full grid grid-cols-2 gap-5">
-          <div className="w-full space-y-2">
-            <p>Town / City</p>
-            <Select
-              placeholder="Select City"
-              className="w-full"
-              styles={drawerSelectStyles}
-              value={
-                supplier?.city
-                  ? { value: supplier?.city, label: supplier?.city }
-                  : null
-              }
-              options={shippingCities}
-              onChange={(e) =>
-                setSupplier((prev) => ({ ...prev, city: e.label }))
-              }
-            />
-          </div>
-          <div className="w-full space-y-2">
-            <p>ZIP Code</p>
-            <input
-              className="w-full h-12 bg-transparent outline-none border-2 px-4 border-gray-100 rounded-lg"
-              type="text"
-              name="zipCode"
-              value={supplier?.zipCode}
-              onChange={handleChange}
-            />
-          </div>
-        </div>
-        <div className="pt-5">
-          <button
-            onClick={handleSupplierUpdate}
-            className="h-12 px-4 bg-theme text-white rounded-lg"
-          >
-            Save Changes
-          </button>
-        </div>
+    <div>
+      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
+        <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+          Orders / {orderID} / Addresses
+        </h2>
       </div>
+      <div className="pt-32 px-6 2xl:px-12 ">
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-10 py-8 px-8 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm">
+          {/* Shipping Address */}
+          <div className="w-full space-y-2">
+            <h4 className="font-semibold">Shipping Address</h4>
+            <div className="w-full space-y-2 pt-8">
+              <p>Company Address</p>
+              <input
+                className="w-full h-12 bg-transparent outline-none border-2 px-4 border-gray-100 rounded-lg"
+                type="text"
+                name="companyaddress"
+                value={supplier?.companyaddress}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="w-full space-y-2">
+              <p>Address Line 1</p>
+              <input
+                className="w-full h-12 bg-transparent outline-none border-2 px-4 border-gray-100 rounded-lg"
+                type="text"
+                name="addressOne"
+                value={supplier?.addressOne}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="w-full space-y-2">
+              <p>Address Line 2</p>
+              <input
+                className="w-full h-12 bg-transparent outline-none border-2 px-4 border-gray-100 rounded-lg"
+                type="text"
+                name="addressTwo"
+                value={supplier?.addressTwo}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="w-full grid grid-cols-2 gap-5">
+              <div className="w-full space-y-2">
+                <p>Country</p>
+                <Select
+                  placeholder="Select Country"
+                  className="w-full"
+                  styles={drawerSelectStyles}
+                  value={
+                    supplier?.country
+                      ? { value: supplier?.country, label: supplier?.country }
+                      : null
+                  }
+                  options={allCountries}
+                  onChange={(e) => handleShippingCountry(e.label)}
+                />
+              </div>
+              <div className="w-full space-y-2">
+                <p>State</p>
+                <Select
+                  placeholder="Select State"
+                  className="w-full"
+                  styles={drawerSelectStyles}
+                  value={
+                    supplier?.state
+                      ? shippingStates.find((s) => s.label === supplier?.state)
+                      : null
+                  }
+                  options={shippingStates}
+                  onChange={handleShippingState}
+                />
+              </div>
+            </div>
+            <div className="w-full grid grid-cols-2 gap-5">
+              <div className="w-full space-y-2">
+                <p>Town / City</p>
+                <Select
+                  placeholder="Select City"
+                  className="w-full"
+                  styles={drawerSelectStyles}
+                  value={
+                    supplier?.city
+                      ? { value: supplier?.city, label: supplier?.city }
+                      : null
+                  }
+                  options={shippingCities}
+                  onChange={(e) =>
+                    setSupplier((prev) => ({ ...prev, city: e.label }))
+                  }
+                />
+              </div>
+              <div className="w-full space-y-2">
+                <p>ZIP Code</p>
+                <input
+                  className="w-full h-12 bg-transparent outline-none border-2 px-4 border-gray-100 rounded-lg"
+                  type="text"
+                  name="zipCode"
+                  value={supplier?.zipCode}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+            <div className="pt-5">
+              <button
+                onClick={handleSupplierUpdate}
+                className="h-12 px-4 bg-theme text-white rounded-lg"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
 
-      {/* Billing Address */}
-      <div className="w-full space-y-2">
-        <h4 className="font-semibold">Billing Address</h4>
-        <div className="w-full space-y-2 pt-8">
-          <p>Address</p>
-          <input
-            className="w-full h-12 bg-transparent outline-none border-2 px-4 border-gray-100 rounded-lg"
-            type="text"
-            name="billingcompanyaddress"
-            value={supplier?.billingcompanyaddress}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="w-full space-y-2">
-          <p>Address Line 1</p>
-          <input
-            className="w-full h-12 bg-transparent outline-none border-2 px-4 border-gray-100 rounded-lg"
-            type="text"
-            name="billingaddressOne"
-            value={supplier?.billingaddressOne}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="w-full space-y-2">
-          <p>Address Line 2</p>
-          <input
-            className="w-full h-12 bg-transparent outline-none border-2 px-4 border-gray-100 rounded-lg"
-            type="text"
-            name="billingaddressTwo"
-            value={supplier?.billingaddressTwo}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="w-full grid grid-cols-2 gap-5">
+          {/* Billing Address */}
           <div className="w-full space-y-2">
-            <p>Country</p>
-            <Select
-              placeholder="Select Country"
-              className="w-full"
-              styles={drawerSelectStyles}
-              value={
-                supplier?.billingcountry
-                  ? { value: supplier?.billingcountry, label: supplier?.billingcountry }
-                  : null
-              }
-              options={allCountries}
-              onChange={(e) => handleBillingCountry(e.label)}
-            />
+            <h4 className="font-semibold">Billing Address</h4>
+            <div className="w-full space-y-2 pt-8">
+              <p>Address</p>
+              <input
+                className="w-full h-12 bg-transparent outline-none border-2 px-4 border-gray-100 rounded-lg"
+                type="text"
+                name="billingcompanyaddress"
+                value={supplier?.billingcompanyaddress}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="w-full space-y-2">
+              <p>Address Line 1</p>
+              <input
+                className="w-full h-12 bg-transparent outline-none border-2 px-4 border-gray-100 rounded-lg"
+                type="text"
+                name="billingaddressOne"
+                value={supplier?.billingaddressOne}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="w-full space-y-2">
+              <p>Address Line 2</p>
+              <input
+                className="w-full h-12 bg-transparent outline-none border-2 px-4 border-gray-100 rounded-lg"
+                type="text"
+                name="billingaddressTwo"
+                value={supplier?.billingaddressTwo}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="w-full grid grid-cols-2 gap-5">
+              <div className="w-full space-y-2">
+                <p>Country</p>
+                <Select
+                  placeholder="Select Country"
+                  className="w-full"
+                  styles={drawerSelectStyles}
+                  value={
+                    supplier?.billingcountry
+                      ? {
+                          value: supplier?.billingcountry,
+                          label: supplier?.billingcountry,
+                        }
+                      : null
+                  }
+                  options={allCountries}
+                  onChange={(e) => handleBillingCountry(e.label)}
+                />
+              </div>
+              <div className="w-full space-y-2">
+                <p>State</p>
+                <Select
+                  placeholder="Select State"
+                  className="w-full"
+                  styles={drawerSelectStyles}
+                  value={
+                    supplier?.billingstate
+                      ? billingStates.find(
+                          (s) => s.label === supplier?.billingstate
+                        )
+                      : null
+                  }
+                  options={billingStates}
+                  onChange={handleBillingState}
+                />
+              </div>
+            </div>
+            <div className="w-full grid grid-cols-2 gap-5">
+              <div className="w-full space-y-2">
+                <p>Town / City</p>
+                <Select
+                  placeholder="Select City"
+                  className="w-full"
+                  styles={drawerSelectStyles}
+                  value={
+                    supplier?.billingcity
+                      ? {
+                          value: supplier?.billingcity,
+                          label: supplier?.billingcity,
+                        }
+                      : null
+                  }
+                  options={billingCities}
+                  onChange={(e) =>
+                    setSupplier((prev) => ({ ...prev, billingcity: e.label }))
+                  }
+                />
+              </div>
+              <div className="w-full space-y-2">
+                <p>ZIP Code</p>
+                <input
+                  className="w-full h-12 bg-transparent outline-none border-2 px-4 border-gray-100 rounded-lg"
+                  type="text"
+                  name="billingzipCode"
+                  value={supplier?.billingzipCode}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+            <div className="pt-5">
+              <button
+                onClick={handleBillingToUpdate}
+                className="h-12 px-4 bg-theme text-white rounded-lg"
+              >
+                Save Changes
+              </button>
+            </div>
           </div>
-          <div className="w-full space-y-2">
-            <p>State</p>
-            <Select
-              placeholder="Select State"
-              className="w-full"
-              styles={drawerSelectStyles}
-              value={
-                supplier?.billingstate
-                  ? billingStates.find((s) => s.label === supplier?.billingstate)
-                  : null
-              }
-              options={billingStates}
-              onChange={handleBillingState}
-            />
-          </div>
-        </div>
-        <div className="w-full grid grid-cols-2 gap-5">
-          <div className="w-full space-y-2">
-            <p>Town / City</p>
-            <Select
-              placeholder="Select City"
-              className="w-full"
-              styles={drawerSelectStyles}
-              value={
-                supplier?.billingcity
-                  ? { value: supplier?.billingcity, label: supplier?.billingcity }
-                  : null
-              }
-              options={billingCities}
-              onChange={(e) =>
-                setSupplier((prev) => ({ ...prev, billingcity: e.label }))
-              }
-            />
-          </div>
-          <div className="w-full space-y-2">
-            <p>ZIP Code</p>
-            <input
-              className="w-full h-12 bg-transparent outline-none border-2 px-4 border-gray-100 rounded-lg"
-              type="text"
-              name="billingzipCode"
-              value={supplier?.billingzipCode}
-              onChange={handleChange}
-            />
-          </div>
-        </div>
-        <div className="pt-5">
-          <button
-            onClick={handleBillingToUpdate}
-            className="h-12 px-4 bg-theme text-white rounded-lg"
-          >
-            Save Changes
-          </button>
         </div>
       </div>
     </div>

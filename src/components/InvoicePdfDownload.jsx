@@ -64,7 +64,7 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
   }, [invoiceData]);
 
   return (
-    <div className="w-full max-w-[800px] mx-auto">
+    <div className="w-full max-w-[800px] mx-auto pt-32">
       <div ref={invoiceRef} className="w-full">
         <div className="w-full mx-auto bg-white pt-8 pb-14 font-satoshi">
           {/* Header */}
@@ -236,7 +236,9 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
                             />
                           )}
                         </div>
-                        <div className=" px-2 text-right">${prod?.price/prod?.qty}</div>
+                        <div className=" px-2 text-right">
+                          ${prod?.price / prod?.qty}
+                        </div>
                         <div className=" px-2 text-right">${prod?.price}</div>
                       </div>
                     );

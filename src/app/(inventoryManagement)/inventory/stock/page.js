@@ -383,54 +383,69 @@ export default function Stock() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div className="space-y-8">
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-            Inventory Managment
-          </h2>
+    <div>
+      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
+        <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+          Inventory Management
+        </h2>
 
-          {/* <Select
-            placeholder="Filters"
-            className="w-40"
-            styles={selectStyles}
-          /> */}
-          {/* <div className="flex items-center gap-x-4">
-            <div>
-              <button className="flex items-center gap-x-2 px-2 sm:px-5 md:px-8 py-2.5 md:py-3 rounded-lg shadow-buttonShadow border border-buttonBorderColor bg-white ">
-                <RiFileDownloadLine size={24} />
-                <span className="font-nunito text-black">Download CSV</span>
-              </button>
+        <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
+          <li onClick={() => setModal("add")}>New Product</li>
+          <li>Import</li>
+          <li>Export</li>
+        </ul>
+      </div>
+      <div className="space-y-8 pt-32 px-6 2xl:px-12 ">
+        {/* <div className="space-y-4"> */}
+          {/* <div className="flex items-center justify-between">
+            <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+              Inventory Managment
+            </h2>
+
+            <Select
+              placeholder="Filters"
+              className="w-40"
+              styles={selectStyles}
+            />
+            <div className="flex items-center gap-x-4">
+              <div>
+                <button className="flex items-center gap-x-2 px-2 sm:px-5 md:px-8 py-2.5 md:py-3 rounded-lg shadow-buttonShadow border border-buttonBorderColor bg-white ">
+                  <RiFileDownloadLine size={24} />
+                  <span className="font-nunito text-black">Download CSV</span>
+                </button>
+              </div>
             </div>
           </div> */}
+          {/* <div className="flex justify-end">
+            <button
+              onClick={() => setModal("add")}
+              className="rounded-lg font-inter font-medium text-white px-10 py-2.5 sm:py-4 bg-theme"
+            >
+              + Add Stock
+            </button>
+          </div> */}
+        {/* </div> */}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+          <ManagementTab
+            title="Total Products"
+            desc={data?.data?.data?.length}
+          />
+          {/* <ManagementTab title="Total Countries" desc="5000" /> */}
+          {/* <ManagementTab title="Total Cities" desc="55000" /> */}
         </div>
-        <div className="flex justify-end">
-          <button
-            onClick={() => setModal("add")}
-            className="rounded-lg font-inter font-medium text-white px-10 py-2.5 sm:py-4 bg-theme"
-          >
-            + Add Stock
-          </button>
+
+        <div>
+          <MyDataTable
+            columns={columns}
+            data={datas}
+            placeholder={"Search ..."}
+            pagination={true}
+            search={true}
+          />
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-        <ManagementTab title="Total Products" desc={data?.data?.data?.length} />
-        {/* <ManagementTab title="Total Countries" desc="5000" /> */}
-        {/* <ManagementTab title="Total Cities" desc="55000" /> */}
-      </div>
-
-      <div>
-        <MyDataTable
-          columns={columns}
-          data={datas}
-          placeholder={"Search ..."}
-          pagination={true}
-          search={true}
-        />
-      </div>
-
-      {/* <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+        {/* <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
         {data?.data?.data?.map((item, i) => (
           <StockCard
             key={i}
@@ -441,96 +456,96 @@ export default function Stock() {
           />
         ))}
       </div> */}
-      {/* Modal */}
-      <Dialog
-        visible={modal === "add" || modal === "edit" || modal === "delete"}
-        style={{ width: "40vw" }}
-        // breakpoints={{ "1496px": "40vw", "1024px": "70vw", "641px": "80vw" }}
-        className="font-nunito"
-        onHide={handleCancel}
-        header={
-          <div className="font-nunito font-bold text-2xl text-center">
-            {modal === "add"
-              ? "Add"
-              : modal === "edit"
-              ? "Update"
-              : modal === "delete"
-              ? "Delete"
-              : ""}{" "}
-            Stock/ Inventory
-          </div>
-        }
-      >
-        {loader === "add" || loader === "edit" || loader === "delete" ? (
-          <MiniLoader />
-        ) : (
-          <form className="space-y-4 flex flex-col items-center">
-            {/* header */}
-            {modal !== "delete" && (
-              <button
-                type="button"
-                onClick={handleImageClick}
-                className="overflow-hidden rounded-xl border border-tabBorderColor border-opacity-40 size-28 flex items-center justify-center"
-              >
-                <input
-                  type="file"
-                  name="name"
-                  className="image hidden"
-                  onChange={handleImage}
-                />
-                {imagePreview ? (
-                  <img
-                    src={imagePreview}
-                    alt="product image"
-                    className="h-full w-full object-cover object-center"
+        {/* Modal */}
+        <Dialog
+          visible={modal === "add" || modal === "edit" || modal === "delete"}
+          style={{ width: "40vw" }}
+          // breakpoints={{ "1496px": "40vw", "1024px": "70vw", "641px": "80vw" }}
+          className="font-nunito"
+          onHide={handleCancel}
+          header={
+            <div className="font-nunito font-bold text-2xl text-center">
+              {modal === "add"
+                ? "Add"
+                : modal === "edit"
+                ? "Update"
+                : modal === "delete"
+                ? "Delete"
+                : ""}{" "}
+              Stock/ Inventory
+            </div>
+          }
+        >
+          {loader === "add" || loader === "edit" || loader === "delete" ? (
+            <MiniLoader />
+          ) : (
+            <form className="space-y-4 flex flex-col items-center">
+              {/* header */}
+              {modal !== "delete" && (
+                <button
+                  type="button"
+                  onClick={handleImageClick}
+                  className="overflow-hidden rounded-xl border border-tabBorderColor border-opacity-40 size-28 flex items-center justify-center"
+                >
+                  <input
+                    type="file"
+                    name="name"
+                    className="image hidden"
+                    onChange={handleImage}
                   />
+                  {imagePreview ? (
+                    <img
+                      src={imagePreview}
+                      alt="product image"
+                      className="h-full w-full object-cover object-center"
+                    />
+                  ) : (
+                    <LuImageUp size={"100"} color="rgba(0, 0, 0, 0.6)" />
+                  )}
+                </button>
+              )}
+
+              {/* body */}
+              <div className="w-full space-y-4">
+                {modal === "delete" ? (
+                  <p className="text-labelColor font-nunito font-medium text-lg text-center">
+                    Are you sure you want to delete this Stock ?
+                  </p>
                 ) : (
-                  <LuImageUp size={"100"} color="rgba(0, 0, 0, 0.6)" />
-                )}
-              </button>
-            )}
+                  <div className="space-y-4">
+                    <div className="flex flex-col gap-y-2 w-full">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Item Name
+                      </label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={productDetail?.name}
+                        onChange={handleChange}
+                        placeholder="Enter Item Name"
+                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      />
+                    </div>
 
-            {/* body */}
-            <div className="w-full space-y-4">
-              {modal === "delete" ? (
-                <p className="text-labelColor font-nunito font-medium text-lg text-center">
-                  Are you sure you want to delete this Stock ?
-                </p>
-              ) : (
-                <div className="space-y-4">
-                  <div className="flex flex-col gap-y-2 w-full">
-                    <label className="text-labelColor font-medium font-satoshi">
-                      Item Name
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={productDetail?.name}
-                      onChange={handleChange}
-                      placeholder="Enter Item Name"
-                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    />
-                  </div>
+                    <div className="flex flex-col gap-y-2">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Description
+                      </label>
+                      <input
+                        type="text"
+                        name="desc"
+                        value={productDetail?.desc}
+                        onChange={handleChange}
+                        placeholder="Enter Description"
+                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      />
+                    </div>
 
-                  <div className="flex flex-col gap-y-2">
-                    <label className="text-labelColor font-medium font-satoshi">
-                      Description
-                    </label>
-                    <input
-                      type="text"
-                      name="desc"
-                      value={productDetail?.desc}
-                      onChange={handleChange}
-                      placeholder="Enter Description"
-                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-y-2 w-full">
-                    <label className="text-labelColor font-medium font-satoshi">
-                      Category
-                    </label>
-                    {/* <input
+                    <div className="flex flex-col gap-y-2 w-full">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Category
+                      </label>
+                      {/* <input
                         type="text"
                         name="unit"
                         value={productDetail?.unit}
@@ -539,158 +554,158 @@ export default function Stock() {
                         className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       /> */}
 
-                    <Select
-                      placeholder="Category"
-                      className="w-full"
-                      value={productDetail?.category}
-                      styles={selectStyles2}
-                      options={catOptions}
-                      onChange={(e) => {
-                        setProductDetail({ ...productDetail, category: e });
-                      }}
-                    />
-                  </div>
-
-                  <div className="grid sm:grid-cols-2 gap-y-4 gap-x-6">
-                    <div className="flex flex-col gap-y-2 w-full">
-                      <label className="text-labelColor font-medium font-satoshi">
-                        Price($)
-                      </label>
-                      <input
-                        type="text"
-                        name="price"
-                        min="0"
-                        value={productDetail?.price}
-                        onChange={handleChange}
-                        placeholder="Enter price"
-                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      <Select
+                        placeholder="Category"
+                        className="w-full"
+                        value={productDetail?.category}
+                        styles={selectStyles2}
+                        options={catOptions}
+                        onChange={(e) => {
+                          setProductDetail({ ...productDetail, category: e });
+                        }}
                       />
-                      <div
-                        className={`text-red-600 space-y-1 pb-1 ${
-                          !/^\d*\.?\d*$/.test(productDetail?.price)
-                            ? "block"
-                            : "hidden"
-                        }`}
-                      >
-                        <hr className="border-none h-0.5 bg-white bg-opacity-20" />
-                        <p>Invalid Price</p>
-                      </div>
                     </div>
-                    <div className="flex flex-col gap-y-2 w-full">
-                      <label className="text-labelColor font-medium font-satoshi">
-                        Whole Sale Price($)
-                      </label>
-                      <input
-                        type="text"
-                        name="wholesalePrice"
-                        min="0"
-                        value={productDetail?.wholesalePrice}
-                        onChange={handleChange}
-                        placeholder="Enter whole sale price"
-                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      />
-                      <div
-                        className={`text-red-600 space-y-1 pb-1 ${
-                          !/^\d*\.?\d*$/.test(productDetail?.wholesalePrice)
-                            ? "block"
-                            : "hidden"
-                        }`}
-                      >
-                        <hr className="border-none h-0.5 bg-white bg-opacity-20" />
-                        <p>Invalid whole sale price</p>
+
+                    <div className="grid sm:grid-cols-2 gap-y-4 gap-x-6">
+                      <div className="flex flex-col gap-y-2 w-full">
+                        <label className="text-labelColor font-medium font-satoshi">
+                          Price($)
+                        </label>
+                        <input
+                          type="text"
+                          name="price"
+                          min="0"
+                          value={productDetail?.price}
+                          onChange={handleChange}
+                          placeholder="Enter price"
+                          className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        />
+                        <div
+                          className={`text-red-600 space-y-1 pb-1 ${
+                            !/^\d*\.?\d*$/.test(productDetail?.price)
+                              ? "block"
+                              : "hidden"
+                          }`}
+                        >
+                          <hr className="border-none h-0.5 bg-white bg-opacity-20" />
+                          <p>Invalid Price</p>
+                        </div>
                       </div>
-                      {/* <Select
+                      <div className="flex flex-col gap-y-2 w-full">
+                        <label className="text-labelColor font-medium font-satoshi">
+                          Whole Sale Price($)
+                        </label>
+                        <input
+                          type="text"
+                          name="wholesalePrice"
+                          min="0"
+                          value={productDetail?.wholesalePrice}
+                          onChange={handleChange}
+                          placeholder="Enter whole sale price"
+                          className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        />
+                        <div
+                          className={`text-red-600 space-y-1 pb-1 ${
+                            !/^\d*\.?\d*$/.test(productDetail?.wholesalePrice)
+                              ? "block"
+                              : "hidden"
+                          }`}
+                        >
+                          <hr className="border-none h-0.5 bg-white bg-opacity-20" />
+                          <p>Invalid whole sale price</p>
+                        </div>
+                        {/* <Select
                   placeholder="Kg"
                   className="w-full"
                   styles={selectStyles2}
                 /> */}
-                    </div>
-                  </div>
-
-                  <div className="grid sm:grid-cols-3 gap-y-4 gap-x-6">
-                    <div className="flex flex-col gap-y-2 w-full">
-                      <label className="text-labelColor font-medium font-satoshi">
-                        Product Code
-                      </label>
-                      <input
-                        type="text"
-                        name="productCode"
-                        min="0"
-                        value={productDetail?.productCode}
-                        onChange={handleChange}
-                        placeholder="Enter Product Code"
-                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-y-2 w-full">
-                      <label className="text-labelColor font-medium font-satoshi">
-                        SKU
-                      </label>
-                      <input
-                        type="text"
-                        name="sku"
-                        min="0"
-                        value={productDetail?.sku}
-                        onChange={handleChange}
-                        placeholder="Enter SKU"
-                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-y-2 w-full">
-                      <label className="text-labelColor font-medium font-satoshi">
-                        Grind
-                      </label>
-                      <input
-                        type="text"
-                        name="grind"
-                        min="0"
-                        value={productDetail?.grind}
-                        onChange={handleChange}
-                        placeholder="Enter Grind"
-                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid sm:grid-cols-3 gap-y-4 gap-x-6">
-                    <div className="flex flex-col gap-y-2">
-                      <label className="text-labelColor font-medium font-satoshi">
-                        Quanity
-                      </label>
-                      <input
-                        type="text"
-                        name="quantity"
-                        min="0"
-                        value={productDetail?.quantity}
-                        onChange={handleChange}
-                        placeholder="Enter Quantity"
-                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      />
-                      <div
-                        className={`text-red-600 space-y-1 pb-1 ${
-                          !/^\d*\.?\d*$/?.test(productDetail?.quantity)
-                            ? "block"
-                            : "hidden"
-                        }`}
-                      >
-                        <hr className="border-none h-0.5 bg-white bg-opacity-20" />
-                        <p>Invalid Quantity</p>
                       </div>
                     </div>
-                    <div className="flex flex-col gap-y-2">
-                      <label className="text-labelColor font-medium font-satoshi">
-                        Weight
-                      </label>
-                      <input
-                        type="text"
-                        name="weight"
-                        min="0"
-                        value={productDetail?.weight}
-                        onChange={handleChange}
-                        placeholder="Enter Weight"
-                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      />
-                      {/* <div
+
+                    <div className="grid sm:grid-cols-3 gap-y-4 gap-x-6">
+                      <div className="flex flex-col gap-y-2 w-full">
+                        <label className="text-labelColor font-medium font-satoshi">
+                          Product Code
+                        </label>
+                        <input
+                          type="text"
+                          name="productCode"
+                          min="0"
+                          value={productDetail?.productCode}
+                          onChange={handleChange}
+                          placeholder="Enter Product Code"
+                          className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-y-2 w-full">
+                        <label className="text-labelColor font-medium font-satoshi">
+                          SKU
+                        </label>
+                        <input
+                          type="text"
+                          name="sku"
+                          min="0"
+                          value={productDetail?.sku}
+                          onChange={handleChange}
+                          placeholder="Enter SKU"
+                          className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-y-2 w-full">
+                        <label className="text-labelColor font-medium font-satoshi">
+                          Grind
+                        </label>
+                        <input
+                          type="text"
+                          name="grind"
+                          min="0"
+                          value={productDetail?.grind}
+                          onChange={handleChange}
+                          placeholder="Enter Grind"
+                          className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid sm:grid-cols-3 gap-y-4 gap-x-6">
+                      <div className="flex flex-col gap-y-2">
+                        <label className="text-labelColor font-medium font-satoshi">
+                          Quanity
+                        </label>
+                        <input
+                          type="text"
+                          name="quantity"
+                          min="0"
+                          value={productDetail?.quantity}
+                          onChange={handleChange}
+                          placeholder="Enter Quantity"
+                          className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        />
+                        <div
+                          className={`text-red-600 space-y-1 pb-1 ${
+                            !/^\d*\.?\d*$/?.test(productDetail?.quantity)
+                              ? "block"
+                              : "hidden"
+                          }`}
+                        >
+                          <hr className="border-none h-0.5 bg-white bg-opacity-20" />
+                          <p>Invalid Quantity</p>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-y-2">
+                        <label className="text-labelColor font-medium font-satoshi">
+                          Weight
+                        </label>
+                        <input
+                          type="text"
+                          name="weight"
+                          min="0"
+                          value={productDetail?.weight}
+                          onChange={handleChange}
+                          placeholder="Enter Weight"
+                          className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        />
+                        {/* <div
                         className={`text-red-600 space-y-1 pb-1 ${
                           !/^\d*\.?\d*$/?.test(productDetail?.weight)
                             ? "block"
@@ -700,58 +715,59 @@ export default function Stock() {
                         <hr className="border-none h-0.5 bg-white bg-opacity-20" />
                         <p>Invalid Weight</p>
                       </div> */}
-                    </div>
+                      </div>
 
-                    <div className="flex flex-col gap-y-2 w-full">
-                      <label className="text-labelColor font-medium font-satoshi">
-                        Units
-                      </label>
-                      <Select
-                        placeholder="Kg"
-                        className="w-full"
-                        styles={selectStyles2}
-                        options={[
-                          { value: "lbs", label: "Pounds (lbs)" },
-                          // { value: "kg", label: "Kilogram (kg)" },
-                          // { value: "g", label: "Gram (g)" },
-                          // { value: "pounds", label: "pounds" },
-                        ]}
-                        value={productDetail?.unit}
-                        onChange={(e) => {
-                          setProductDetail({ ...productDetail, unit: e });
-                        }}
-                      />
+                      <div className="flex flex-col gap-y-2 w-full">
+                        <label className="text-labelColor font-medium font-satoshi">
+                          Units
+                        </label>
+                        <Select
+                          placeholder="Kg"
+                          className="w-full"
+                          styles={selectStyles2}
+                          options={[
+                            { value: "lbs", label: "Pounds (lbs)" },
+                            // { value: "kg", label: "Kilogram (kg)" },
+                            // { value: "g", label: "Gram (g)" },
+                            // { value: "pounds", label: "pounds" },
+                          ]}
+                          value={productDetail?.unit}
+                          onChange={(e) => {
+                            setProductDetail({ ...productDetail, unit: e });
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
+                )}
+                <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
+                  <button
+                    type="button"
+                    onClick={handleCancel}
+                    className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow  px-6"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    onClick={handleStock}
+                    className="rounded-lg border border-theme text-white px-10  bg-theme"
+                  >
+                    {modal === "add"
+                      ? "Add"
+                      : modal === "edit"
+                      ? "Update"
+                      : modal === "delete"
+                      ? "Delete"
+                      : ""}{" "}
+                    Stock
+                  </button>
                 </div>
-              )}
-              <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow  px-6"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  onClick={handleStock}
-                  className="rounded-lg border border-theme text-white px-10  bg-theme"
-                >
-                  {modal === "add"
-                    ? "Add"
-                    : modal === "edit"
-                    ? "Update"
-                    : modal === "delete"
-                    ? "Delete"
-                    : ""}{" "}
-                  Stock
-                </button>
               </div>
-            </div>
-          </form>
-        )}
-      </Dialog>
+            </form>
+          )}
+        </Dialog>
+      </div>
     </div>
   );
 }

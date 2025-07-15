@@ -163,92 +163,99 @@ export default function SaleRepresentative() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div className="space-y-8">
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-            Local Partners
-          </h2>
+    <div>
+      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
+        <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+          Local Partners
+        </h2>
+      </div>
+      <div className="space-y-8 pt-32 px-6 2xl:px-12 ">
+        <div className="space-y-4">
+          {/* <div className="flex items-center justify-between">
+            <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+              Local Partners
+            </h2>
 
-          {/* <Select
+            <Select
             placeholder="Filters"
             className="w-40"
             styles={selectStyles}
-          /> */}
-        </div>
-        <div className="flex justify-end">
-          <button
-            onClick={() => router.push("/sale-representative/add")}
-            className="rounded-lg font-inter font-medium border border-theme text-white bg-theme hover:bg-white hover:text-theme duration-150 px-2 sm:px-3 py-2.5 sm:py-4"
-          >
-            + Add New Local Partner
-          </button>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <div className="grid  grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-          <ManagementTab
-            title="Total Local Partners"
-            desc={data?.data?.data?.length ?? 0}
           />
-          {/* <ManagementTab title="New Sales Represenatives" desc="5000" /> */}
-        </div>
-      </div>
-
-      <div>
-        <MyDataTable
-          columns={columns}
-          data={datas}
-          placeholder={"Search ..."}
-          pagination={true}
-          search={true}
-        />
-      </div>
-
-      <Dialog
-        visible={modal === "delete"}
-        style={{ width: "40vw" }}
-        className="font-nunito"
-        onHide={handleModalClose}
-        header={
-          <div className="font-nunito font-bold text-2xl text-center">
-            Delete Supplier
+          </div> */}
+          <div className="flex justify-end">
+            <button
+              onClick={() => router.push("/sale-representative/add")}
+              className="rounded-lg font-inter font-medium border border-theme text-white bg-theme hover:bg-white hover:text-theme duration-150 px-2 sm:px-3 py-2.5 sm:py-4"
+            >
+              + Add New Local Partner
+            </button>
           </div>
-        }
-      >
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4 flex flex-col items-center"
-        >
-          {loader === "delete" ? (
-            <MiniLoader />
-          ) : (
-            <div className="w-full space-y-4">
-              {modal === "delete" && (
-                <p className="text-labelColor font-nunito font-medium text-lg text-center">
-                  Are you sure you want to delete this Local Partner ?
-                </p>
-              )}
-              <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
-                <button
-                  type="button"
-                  onClick={handleModalClose}
-                  className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow  px-6"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-lg border border-theme text-white px-10 bg-theme"
-                >
-                  Delete
-                </button>
-              </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="grid  grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+            <ManagementTab
+              title="Total Local Partners"
+              desc={data?.data?.data?.length ?? 0}
+            />
+            {/* <ManagementTab title="New Sales Represenatives" desc="5000" /> */}
+          </div>
+        </div>
+
+        <div>
+          <MyDataTable
+            columns={columns}
+            data={datas}
+            placeholder={"Search ..."}
+            pagination={true}
+            search={true}
+          />
+        </div>
+
+        <Dialog
+          visible={modal === "delete"}
+          style={{ width: "40vw" }}
+          className="font-nunito"
+          onHide={handleModalClose}
+          header={
+            <div className="font-nunito font-bold text-2xl text-center">
+              Delete Supplier
             </div>
-          )}
-        </form>
-      </Dialog>
+          }
+        >
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4 flex flex-col items-center"
+          >
+            {loader === "delete" ? (
+              <MiniLoader />
+            ) : (
+              <div className="w-full space-y-4">
+                {modal === "delete" && (
+                  <p className="text-labelColor font-nunito font-medium text-lg text-center">
+                    Are you sure you want to delete this Local Partner ?
+                  </p>
+                )}
+                <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
+                  <button
+                    type="button"
+                    onClick={handleModalClose}
+                    className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow  px-6"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="rounded-lg border border-theme text-white px-10 bg-theme"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            )}
+          </form>
+        </Dialog>
+      </div>
     </div>
   );
 }

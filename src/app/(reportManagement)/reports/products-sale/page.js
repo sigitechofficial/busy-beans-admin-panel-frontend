@@ -82,83 +82,91 @@ export default function ProductSale() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-x-2">
-          <BackButton />
-          <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-            Products Sales Report
-          </h2>
-        </div>
-        <div className="min-w-40">
-          {displayCustomFilters ? (
-            <div className="flex gap-x-2 items-center h-[42px]">
-              <div className=" space-x-2">
-                <label
-                  htmlFor="startDate"
-                  className=" text-labelColor font-workSans font-semibold"
-                >
-                  Start Date:
-                </label>
-                <input
-                  type="date"
-                  id="startDate"
-                  name="startDate"
-                  value={customDates?.startDate}
-                  onChange={handleCustomDates}
-                  className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium 
-                            text-labelColor"
-                />
-              </div>
-              <div className="space-x-2">
-                <label
-                  htmlFor="endDate"
-                  className=" text-labelColor font-workSans font-semibold"
-                >
-                  End Date:
-                </label>
-                <input
-                  type="date"
-                  id="endDate"
-                  name="endDate"
-                  value={customDates?.endDate}
-                  onChange={handleCustomDates}
-                  className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium 
-                            text-labelColor"
-                />
-              </div>
-              <div className="h-full flex items-center gap-x-2">
-                <button
-                  onClick={handleCancel}
-                  className="px-2 h-full rounded-lg border border-theme text-theme bg-white hover:text-white hover:bg-theme duration-200 group"
-                >
-                  <ImCross size={24} />
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="font-bold">
-              <Select
-                styles={drawerSelectStyles}
-                defaultValue={{ value: "allTime", label: "All Time" }}
-                placeholder="Select Year, Month, Week ..."
-                value={selectedOption ? selectedOption : null}
-                onChange={(val) => handleChange(val)}
-                options={options ? options : null}
-              />
-            </div>
-          )}
-        </div>
+    <div>
+      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
+        <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+          Products Sales Report
+        </h2>
       </div>
 
-      <div>
-        <MyDataTable
-          columns={columns}
-          data={datas}
-          placeholder={"Search ..."}
-          pagination={true}
-          search={true}
-        />
+      <div className="space-y-8 pt-32 px-6 2xl:px-12 ">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-x-2">
+            <BackButton />
+            {/* <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+              Products Sales Report
+            </h2> */}
+          </div>
+          <div className="min-w-40">
+            {displayCustomFilters ? (
+              <div className="flex gap-x-2 items-center h-[42px]">
+                <div className=" space-x-2">
+                  <label
+                    htmlFor="startDate"
+                    className=" text-labelColor font-workSans font-semibold"
+                  >
+                    Start Date:
+                  </label>
+                  <input
+                    type="date"
+                    id="startDate"
+                    name="startDate"
+                    value={customDates?.startDate}
+                    onChange={handleCustomDates}
+                    className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium 
+                            text-labelColor"
+                  />
+                </div>
+                <div className="space-x-2">
+                  <label
+                    htmlFor="endDate"
+                    className=" text-labelColor font-workSans font-semibold"
+                  >
+                    End Date:
+                  </label>
+                  <input
+                    type="date"
+                    id="endDate"
+                    name="endDate"
+                    value={customDates?.endDate}
+                    onChange={handleCustomDates}
+                    className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium 
+                            text-labelColor"
+                  />
+                </div>
+                <div className="h-full flex items-center gap-x-2">
+                  <button
+                    onClick={handleCancel}
+                    className="px-2 h-full rounded-lg border border-theme text-theme bg-white hover:text-white hover:bg-theme duration-200 group"
+                  >
+                    <ImCross size={24} />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="font-bold">
+                <Select
+                  styles={drawerSelectStyles}
+                  defaultValue={{ value: "allTime", label: "All Time" }}
+                  placeholder="Select Year, Month, Week ..."
+                  value={selectedOption ? selectedOption : null}
+                  onChange={(val) => handleChange(val)}
+                  options={options ? options : null}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <MyDataTable
+            columns={columns}
+            data={datas}
+            placeholder={"Search ..."}
+            pagination={true}
+            search={true}
+          />
+        </div>
       </div>
     </div>
   );

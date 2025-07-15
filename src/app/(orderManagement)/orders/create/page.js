@@ -145,23 +145,32 @@ export default function CreateOrder() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div>
+      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
           Create Order
         </h2>
 
         <Select placeholder="Filters" className="w-40" styles={selectStyles} />
-        {/* <div className="flex items-center gap-x-4">
+      </div>
+
+      <div className="space-y-8 pt-32 px-6 2xl:px-12">
+        {/* <div className="flex items-center justify-between">
+        <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+          Create Order
+        </h2>
+
+        <Select placeholder="Filters" className="w-40" styles={selectStyles} />
+        <div className="flex items-center gap-x-4">
       <div>
         <button className="flex items-center gap-x-2 px-2 sm:px-5 md:px-8 py-2.5 md:py-3 rounded-lg shadow-buttonShadow border border-buttonBorderColor bg-white ">
           <RiFileDownloadLine size={24} />
           <span className="font-nunito text-black">Download CSV</span>
         </button>
       </div>
-    </div> */}
-      </div>
-      {/* <div
+    </div>
+      </div> */}
+        {/* <div
         className={`${
           connectAccountId !== "null" && isAccountConnected === "true"
             ? "hidden"
@@ -178,49 +187,50 @@ export default function CreateOrder() {
             : "Complete Account Registration"}
         </button>
       </div> */}
-      <div className="space-y-4 relative">
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-          {data?.data?.data?.map((item, i) => (
-            <StockCard
-              key={i}
-              id={item?.id}
-              itemName={item?.name}
-              grind={item?.grind}
-              productCode={item?.productCode}
-              sku={item?.sku}
-              // stock={item?.quantity}
-              weight={item?.weight}
-              unit={item?.unit}
-              imageURL={item?.image}
-              qty={handleQty(item?.id)}
-              wholesalePrice={item?.wholesalePrice}
-              price={item?.price}
-              handlePlus={handlePlus}
-              handleMinus={handleMinus}
-            />
-          ))}
+        <div className="space-y-4 relative">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+            {data?.data?.data?.map((item, i) => (
+              <StockCard
+                key={i}
+                id={item?.id}
+                itemName={item?.name}
+                grind={item?.grind}
+                productCode={item?.productCode}
+                sku={item?.sku}
+                // stock={item?.quantity}
+                weight={item?.weight}
+                unit={item?.unit}
+                imageURL={item?.image}
+                qty={handleQty(item?.id)}
+                wholesalePrice={item?.wholesalePrice}
+                price={item?.price}
+                handlePlus={handlePlus}
+                handleMinus={handleMinus}
+              />
+            ))}
+          </div>
+          <div className="fixed right-10 bottom-10">
+            <button
+              onClick={() =>
+                createOrderData?.length > 0
+                  ? setVisibleRight(true)
+                  : info_toaster("No Item is Selected")
+              }
+              className="rounded-lg font-inter font-medium text-white px-2 sm:px-4 py-2.5 sm:py-4 bg-theme"
+            >
+              Create Order
+              <div className="absolute -right-3 -top-3 bg-black size-7 rounded-full text-lg">
+                {createOrderData?.length}
+              </div>
+            </button>
+          </div>
+          <DrawerBeans
+            drawerOpen={visibleRight}
+            setDrawerOpen={setVisibleRight}
+            setQuotationData={setCreateOrderData}
+            type="createOrder"
+          />
         </div>
-        <div className="fixed right-10 bottom-10">
-          <button
-            onClick={() =>
-              createOrderData?.length > 0
-                ? setVisibleRight(true)
-                : info_toaster("No Item is Selected")
-            }
-            className="rounded-lg font-inter font-medium text-white px-2 sm:px-4 py-2.5 sm:py-4 bg-theme"
-          >
-            Create Order
-            <div className="absolute -right-3 -top-3 bg-black size-7 rounded-full text-lg">
-              {createOrderData?.length}
-            </div>
-          </button>
-        </div>
-        <DrawerBeans
-          drawerOpen={visibleRight}
-          setDrawerOpen={setVisibleRight}
-          setQuotationData={setCreateOrderData}
-          type="createOrder"
-        />
       </div>
     </div>
   );

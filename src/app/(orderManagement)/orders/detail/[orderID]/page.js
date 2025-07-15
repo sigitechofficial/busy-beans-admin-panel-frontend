@@ -2,6 +2,7 @@
 export const dynamic = "force-dynamic";
 import BackButton from "@/components/ui/BackButton";
 import CusSupInformationCard from "@/components/ui/CusSupInformationCard";
+import { RiArrowDownSLine } from "react-icons/ri";
 import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
 import OrderCard from "@/components/ui/OrderCard";
@@ -294,24 +295,55 @@ export default function OrderDetail() {
     }
   };
 
-  return data?.length ? (
+  return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div className="space-y-8">
-      <div className="flex flex-col md:flex-row md:items-center space-y-2 justify-between">
-        <div className="flex items-center gap-x-2">
-          <BackButton />
-          <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-            Order/{data?.data?.order?.id}
-          </h2>
-
-          <div className="bg-themeGreen text-white rounded-lg py-2 px-4 font-medium text-sm">
+    <div>
+      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
+        <h2 className="text-xl lg:text-2xl font-inter font-semibold flex items-center gap-2">
+          Order / {data?.data?.order?.id}{" "}
+          <span
+            className={` rounded-lg py-2 px-4 font-medium text-sm text-white ${
+              data?.data?.order?.orderCurrentStatus?.includes("Cancelled")
+                ? "bg-red-500 "
+                : "bg-themeGreen "
+            }`}
+          >
             {data?.data?.order?.orderCurrentStatus}
-          </div>
-        </div>
+          </span>
+        </h2>
 
-        <div className="flex items-center gap-x-2 sm:gap-x-4 [&>button]:py-2 sm:[&>button]:py-3 [&>button]:px-2 sm:[&>button]:px-5 [&>button]:rounded-lg [&>button]:font-nunito [&>button]:font-medium max-sm:[&>button]:text-sm">
-          {/* <button
+        <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
+          <li>Edit Details</li>
+          <li>Modify Items</li>
+          <li>Convert to Standing Order</li>
+          <li className="group flex items-center">
+            More
+            <RiArrowDownSLine />
+            <ul className="absolute top-5 right-0 bg-theme text-white rounded-lg p-3 space-y-2 hidden group-hover:block">
+              <li>Email</li>
+              <li>Export</li>
+              <li>Cancel Order</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <div className="space-y-8 pb-6 pt-32 px-6 2xl:px-12">
+        <div className="flex flex-col md:flex-row md:items-center space-y-2 justify-end">
+          {/* <div className="flex items-center gap-x-2">
+            <BackButton />
+            <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+              Order/{data?.data?.order?.id}
+            </h2>
+
+            <div className="bg-themeGreen text-white rounded-lg py-2 px-4 font-medium text-sm">
+              {data?.data?.order?.orderCurrentStatus}
+            </div>
+          </div> */}
+
+          <div className="flex items-center gap-x-2 sm:gap-x-4 [&>button]:py-2 sm:[&>button]:py-3 [&>button]:px-2 sm:[&>button]:px-5 [&>button]:rounded-lg [&>button]:font-nunito [&>button]:font-medium max-sm:[&>button]:text-sm">
+            {/* <button
             type="button"
             onClick={handleAddChequeModel}
             className="bg-black text-white disabled:cursor-not-allowed"
@@ -320,93 +352,99 @@ export default function OrderDetail() {
               ? "Edit Bank Check"
               : "Add Bank Check"}
           </button> */}
-          {userType === "admin" ? (
+            {userType === "admin" ? (
+              <button
+                type="button"
+                disabled={
+                  data?.data?.order?.statusId === 5 ||
+                  data?.data?.order?.statusId === 6
+                    ? true
+                    : false
+                }
+                className="bg-black text-white disabled:cursor-not-allowed"
+                onClick={() =>
+                  handleAssignSupplier(data?.data?.order?.statusId)
+                }
+              >
+                {data?.data?.order?.statusId === 1
+                  ? "Assign Supplier"
+                  : data?.data?.order?.statusId === 2
+                  ? "Acknowledge Supplier"
+                  : data?.data?.order?.statusId === 3
+                  ? "Dispatch Order"
+                  : "Order Delivered"}
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={
+                  data?.data?.order?.statusId === 5 ||
+                  data?.data?.order?.statusId === 6
+                    ? true
+                    : false
+                }
+                className={`${
+                  data?.data?.order?.statusId === 1 ||
+                  data?.data?.order?.statusId === 2
+                    ? "block"
+                    : "hidden"
+                } bg-black text-white disabled:cursor-not-allowed`}
+                onClick={() =>
+                  handleAssignSupplier(data?.data?.order?.statusId)
+                }
+              >
+                {data?.data?.order?.statusId === 1
+                  ? "Assign Supplier"
+                  : data?.data?.order?.statusId === 2
+                  ? "Acknowledge Supplier"
+                  : ""}
+              </button>
+            )}
+
             <button
               type="button"
-              disabled={
-                data?.data?.order?.statusId === 5 ||
-                data?.data?.order?.statusId === 6
-                  ? true
-                  : false
-              }
+              disabled={data?.data?.order?.statusId === 6 ? true : false}
               className="bg-black text-white disabled:cursor-not-allowed"
-              onClick={() => handleAssignSupplier(data?.data?.order?.statusId)}
+              onClick={() => handleSendInvoice(data?.data?.order?.statusId)}
             >
-              {data?.data?.order?.statusId === 1
-                ? "Assign Supplier"
-                : data?.data?.order?.statusId === 2
-                ? "Acknowledge Supplier"
-                : data?.data?.order?.statusId === 3
-                ? "Dispatch Order"
-                : "Order Delivered"}
+              {data?.data?.order?.invoiceId
+                ? "Invoice reminder"
+                : "Send Invoice"}
             </button>
-          ) : (
-            <button
-              type="button"
-              disabled={
-                data?.data?.order?.statusId === 5 ||
-                data?.data?.order?.statusId === 6
-                  ? true
-                  : false
-              }
-              className={`${
-                data?.data?.order?.statusId === 1 ||
-                data?.data?.order?.statusId === 2
-                  ? "block"
-                  : "hidden"
-              } bg-black text-white disabled:cursor-not-allowed`}
-              onClick={() => handleAssignSupplier(data?.data?.order?.statusId)}
-            >
-              {data?.data?.order?.statusId === 1
-                ? "Assign Supplier"
-                : data?.data?.order?.statusId === 2
-                ? "Acknowledge Supplier"
-                : ""}
-            </button>
-          )}
 
-          <button
-            type="button"
-            disabled={data?.data?.order?.statusId === 6 ? true : false}
-            className="bg-black text-white disabled:cursor-not-allowed"
-            onClick={() => handleSendInvoice(data?.data?.order?.statusId)}
-          >
-            {data?.data?.order?.invoiceId ? "Invoice reminder" : "Send Invoice"}
-          </button>
+            {userType === "admin" && (
+              <button
+                disabled={
+                  data?.data?.order?.statusId === 5 ||
+                  data?.data?.order?.statusId === 6
+                    ? true
+                    : false
+                }
+                type="button"
+                onClick={handleCancelOrder}
+                className="bg-theme text-white disabled:cursor-not-allowed"
+              >
+                Cancel Order
+              </button>
+            )}
 
-          {userType === "admin" && (
             <button
-              disabled={
-                data?.data?.order?.statusId === 5 ||
-                data?.data?.order?.statusId === 6
-                  ? true
-                  : false
-              }
+              onClick={() => router.push(`${pathname}/invoice`)}
               type="button"
-              onClick={handleCancelOrder}
-              className="bg-theme text-white disabled:cursor-not-allowed"
+              className="border border-buttonBorderColor shadow-buttonShadow"
             >
-              Cancel Order
+              Edit Invoice
             </button>
-          )}
-          
-          <button
-            onClick={() => router.push(`${pathname}/invoice`)}
-            type="button"
-            className="border border-buttonBorderColor shadow-buttonShadow"
-          >
-            Edit Invoice
-          </button>
+          </div>
         </div>
-      </div>
 
-      {loader === "acknowledgeSupplier" || loader === "orderDelivered" ? (
-        <MiniLoader />
-      ) : (
-        <div className="grid grid-cols-1 gap-6 lg:gap-8 xl:gap-x-12">
-          {/* Left side */}
-          <div className="space-y-6">
-            {/* <CusSupInformationCard
+        {loader === "acknowledgeSupplier" || loader === "orderDelivered" ? (
+          <MiniLoader />
+        ) : (
+          <div className="grid grid-cols-1 gap-6 lg:gap-8 xl:gap-x-12">
+            {/* Left side */}
+            <div className="space-y-6">
+              {/* <CusSupInformationCard
               heading="Customer Information"
               image={data?.data?.order?.user?.image}
               name={data?.data?.order?.user?.name}
@@ -427,112 +465,112 @@ export default function OrderDetail() {
               }}
             /> */}
 
-            <div className="w-full grid grid-cols-2 gap-20 py-4 px-8 space-y-4 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm">
-              <div className="w-full [&>div]:h-10 text-sm">
-                {data?.data?.order?.on && (
-                  <div className="flex items-center gap-5 border-b">
-                    <p className="w-28">Ordered On </p>
-                    <p>{data?.data?.order?.on}</p>
-                  </div>
-                )}
-                {data?.data?.order?.customerName && (
-                  <div className="flex items-center gap-5 border-b">
-                    <p className="w-28">Customer</p>
-                    <p>{data?.data?.order?.customerName}</p>
-                  </div>
-                )}
-                {data?.data?.order?.createdBy && (
-                  <div className="flex items-center gap-5 border-b">
-                    <p className="w-28">Created By</p>
-                    <p>{data?.data?.order?.createdBy}</p>
-                  </div>
-                )}
-                {data?.data?.order?.supplier?.supplierName && (
-                  <div className="flex items-center gap-5 border-b">
-                    <p className="w-28">Supplier</p>
-                    <p>{data?.data?.order?.supplier?.supplierName}</p>
-                  </div>
-                )}
-                {data?.data?.order?.salesRepName && (
-                  <div className="flex items-center gap-5 border-b">
-                    <p className="w-28">Local Partner</p>
-                    <p>{data?.data?.order?.salesRepName}</p>
-                  </div>
-                )}
-                {data?.data?.order?.poNumber && (
-                  <div className="flex items-center gap-5 border-b">
-                    <p className="w-28">P.O. # </p>
-                    <p>{data?.data?.order?.poNumber}</p>
-                  </div>
-                )}
-                {data?.data?.order?.invoiceId && (
-                  <div className="flex items-center gap-5 border-b">
-                    <p className="w-28">Invoice No </p>
-                    <p>{data?.data?.order?.invoiceId}</p>
-                  </div>
-                )}
-                {data?.data?.order?.trackingNumber && (
-                  <div className="flex items-center gap-5 border-b">
-                    <p className="w-28">Tracking No: </p>
-                    <p>{data?.data?.order?.trackingNumber}</p>
-                  </div>
-                )}
-              </div>
-              {/* ================ */}
-              <div className="w-full grid grid-cols-2 gap-10 text-sm">
-                <div>
-                  <h6>Deliver To</h6>
-
-                  <div className="flex gap-2 items-center">
-                    <p>{data?.data?.order?.address?.companyaddress}</p>
-                    <p>{data?.data?.order?.address?.addressLineOne}</p>
-                    <p>{data?.data?.order?.address?.addressLineTwo}</p>
-                  </div>
-
-                  <div className="flex gap-2 items-center">
-                    <p>{data?.data?.order?.address?.town}</p>
-                    <p>{data?.data?.order?.address?.state}</p>
-                    <p>{data?.data?.order?.address?.zipCode}</p>
-                  </div>
-
-                  <p>{data?.data?.order?.address?.country}</p>
-                  <p>Phone: {data?.data?.order?.address?.phoneNum}</p>
-                  <span
-                    onClick={() => router.push(`${pathname}/edit`)}
-                    className="text-blue-500 text-xs cursor-pointer"
-                  >
-                    Edit
-                  </span>
+              <div className="w-full grid grid-cols-2 gap-20 py-4 px-8 space-y-4 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm">
+                <div className="w-full [&>div]:h-10 text-sm">
+                  {data?.data?.order?.on && (
+                    <div className="flex items-center gap-5 border-b">
+                      <p className="w-28">Ordered On </p>
+                      <p>{data?.data?.order?.on}</p>
+                    </div>
+                  )}
+                  {data?.data?.order?.customerName && (
+                    <div className="flex items-center gap-5 border-b">
+                      <p className="w-28">Customer</p>
+                      <p>{data?.data?.order?.customerName}</p>
+                    </div>
+                  )}
+                  {data?.data?.order?.createdBy && (
+                    <div className="flex items-center gap-5 border-b">
+                      <p className="w-28">Created By</p>
+                      <p>{data?.data?.order?.createdBy}</p>
+                    </div>
+                  )}
+                  {data?.data?.order?.supplier?.supplierName && (
+                    <div className="flex items-center gap-5 border-b">
+                      <p className="w-28">Supplier</p>
+                      <p>{data?.data?.order?.supplier?.supplierName}</p>
+                    </div>
+                  )}
+                  {data?.data?.order?.salesRepName && (
+                    <div className="flex items-center gap-5 border-b">
+                      <p className="w-28">Local Partner</p>
+                      <p>{data?.data?.order?.salesRepName}</p>
+                    </div>
+                  )}
+                  {data?.data?.order?.poNumber && (
+                    <div className="flex items-center gap-5 border-b">
+                      <p className="w-28">P.O. # </p>
+                      <p>{data?.data?.order?.poNumber}</p>
+                    </div>
+                  )}
+                  {data?.data?.order?.invoiceId && (
+                    <div className="flex items-center gap-5 border-b">
+                      <p className="w-28">Invoice No </p>
+                      <p>{data?.data?.order?.invoiceId}</p>
+                    </div>
+                  )}
+                  {data?.data?.order?.trackingNumber && (
+                    <div className="flex items-center gap-5 border-b">
+                      <p className="w-28">Tracking No: </p>
+                      <p>{data?.data?.order?.trackingNumber}</p>
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <h6>Invoice To</h6>
-                  <div className="flex gap-2 items-center">
-                    <p>{data?.data?.order?.user?.companyName}</p>
-                    <p>{data?.data?.order?.user?.billingAddress}</p>
-                    {/* <p>{data?.data?.order?.user?.addressLineTwo}</p> */}
-                  </div>
+                {/* ================ */}
+                <div className="w-full grid grid-cols-2 gap-10 text-sm">
+                  <div>
+                    <h6>Deliver To</h6>
 
-                  <div className="flex gap-2 items-center">
-                    <p>{data?.data?.order?.user?.town}</p>
-                    <p>{data?.data?.order?.user?.state}</p>
-                    <p>{data?.data?.order?.user?.zipCode}</p>
-                  </div>
+                    <div className="flex gap-2 items-center">
+                      <p>{data?.data?.order?.address?.companyaddress}</p>
+                      <p>{data?.data?.order?.address?.addressLineOne}</p>
+                      <p>{data?.data?.order?.address?.addressLineTwo}</p>
+                    </div>
 
-                  <p>{data?.data?.order?.user?.country}</p>
-                  <p>
-                    Phone: {data?.data?.order?.address?.countryCode}{" "}
-                    {data?.data?.order?.address?.phoneNumber}
-                  </p>
-                  <span
-                    onClick={() => router.push(`${pathname}/edit`)}
-                    className="text-blue-500 text-xs cursor-pointer"
-                  >
-                    Edit
-                  </span>
+                    <div className="flex gap-2 items-center">
+                      <p>{data?.data?.order?.address?.town}</p>
+                      <p>{data?.data?.order?.address?.state}</p>
+                      <p>{data?.data?.order?.address?.zipCode}</p>
+                    </div>
+
+                    <p>{data?.data?.order?.address?.country}</p>
+                    <p>Phone: {data?.data?.order?.address?.phoneNum}</p>
+                    <span
+                      onClick={() => router.push(`${pathname}/edit`)}
+                      className="text-blue-500 text-xs cursor-pointer"
+                    >
+                      Edit
+                    </span>
+                  </div>
+                  <div>
+                    <h6>Invoice To</h6>
+                    <div className="flex gap-2 items-center">
+                      <p>{data?.data?.order?.user?.companyName}</p>
+                      <p>{data?.data?.order?.user?.billingAddress}</p>
+                      {/* <p>{data?.data?.order?.user?.addressLineTwo}</p> */}
+                    </div>
+
+                    <div className="flex gap-2 items-center">
+                      <p>{data?.data?.order?.user?.town}</p>
+                      <p>{data?.data?.order?.user?.state}</p>
+                      <p>{data?.data?.order?.user?.zipCode}</p>
+                    </div>
+
+                    <p>{data?.data?.order?.user?.country}</p>
+                    <p>
+                      Phone: {data?.data?.order?.address?.countryCode}{" "}
+                      {data?.data?.order?.address?.phoneNumber}
+                    </p>
+                    <span
+                      onClick={() => router.push(`${pathname}/edit`)}
+                      className="text-blue-500 text-xs cursor-pointer"
+                    >
+                      Edit
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-            {/* {data?.data?.order?.statusId >= 2 && (
+              {/* {data?.data?.order?.statusId >= 2 && (
               <CusSupInformationCard
                 heading="Supplier Information"
                 image={data?.data?.order?.supplier?.image}
@@ -554,93 +592,93 @@ export default function OrderDetail() {
                 }}
               />
             )} */}
-          </div>
+            </div>
 
-          {/* Right side */}
-          <div className="space-y-8 -order-last xl:-order-first">
-            <TrackOrder
-              orderHistories={data?.data?.order?.orderHistories}
-              statusId={data?.data?.order?.statusId}
-            />
-            <OrderCard
-              reFetch={reFetch}
-              orderData={data?.data?.order}
-              modal={modal}
-              setModal={setModal}
-            />
+            {/* Right side */}
+            <div className="space-y-8 -order-last xl:-order-first">
+              <TrackOrder
+                orderHistories={data?.data?.order?.orderHistories}
+                statusId={data?.data?.order?.statusId}
+              />
+              <OrderCard
+                reFetch={reFetch}
+                orderData={data?.data?.order}
+                modal={modal}
+                setModal={setModal}
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <Dialog
-        visible={
-          (modal?.type === "cancelOrder" && modal?.status) ||
-          (modal?.type === "addCheque" && modal?.status) ||
-          (modal?.type === "editCheque" && modal?.status)
-        }
-        style={{ width: "40vw" }}
-        className="font-nunito"
-        onHide={() =>
-          setModal({
-            type: "",
-            status: false,
-          })
-        }
-        header={
-          <div className="font-nunito font-bold text-2xl text-center">
-            {modal?.type === "cancelOrder"
-              ? "Cancel Order"
-              : modal?.type === "addCheque"
-              ? "Add Bank Check"
-              : "Edit Bank Check"}
-          </div>
-        }
-      >
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4 flex flex-col items-center"
+        <Dialog
+          visible={
+            (modal?.type === "cancelOrder" && modal?.status) ||
+            (modal?.type === "addCheque" && modal?.status) ||
+            (modal?.type === "editCheque" && modal?.status)
+          }
+          style={{ width: "40vw" }}
+          className="font-nunito"
+          onHide={() =>
+            setModal({
+              type: "",
+              status: false,
+            })
+          }
+          header={
+            <div className="font-nunito font-bold text-2xl text-center">
+              {modal?.type === "cancelOrder"
+                ? "Cancel Order"
+                : modal?.type === "addCheque"
+                ? "Add Bank Check"
+                : "Edit Bank Check"}
+            </div>
+          }
         >
-          {loader === "cancelOrder" || loader === "addCheque" ? (
-            <MiniLoader />
-          ) : (
-            <div className="w-full space-y-4">
-              {modal?.type === "cancelOrder" ? (
-                <p className="text-labelColor font-nunito font-medium text-lg text-center">
-                  Are you sure you want to cancel this Order ?
-                </p>
-              ) : (
-                <div className="w-full space-y-4">
-                  <div className="flex flex-col gap-y-2">
-                    <label className="text-labelColor font-medium font-satoshi">
-                      Bank Check Number
-                    </label>
-                    <input
-                      type="text"
-                      name="chequeNumber"
-                      value={addCheque?.chequeNumber}
-                      onChange={handleChange}
-                      placeholder="Enter Cheque Number"
-                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-y-2">
-                    <label className="text-labelColor font-medium font-satoshi">
-                      Bank Check Date
-                    </label>
-                    <input
-                      type="date"
-                      name="chequeDate"
-                      value={addCheque?.chequeDate}
-                      onChange={handleChange}
-                      placeholder="Select Cheque Date"
-                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-y-2">
-                    <label className="text-labelColor font-medium font-satoshi">
-                      Bank Check Status
-                    </label>
-                    {/* <input
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4 flex flex-col items-center"
+          >
+            {loader === "cancelOrder" || loader === "addCheque" ? (
+              <MiniLoader />
+            ) : (
+              <div className="w-full space-y-4">
+                {modal?.type === "cancelOrder" ? (
+                  <p className="text-labelColor font-nunito font-medium text-lg text-center">
+                    Are you sure you want to cancel this Order ?
+                  </p>
+                ) : (
+                  <div className="w-full space-y-4">
+                    <div className="flex flex-col gap-y-2">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Bank Check Number
+                      </label>
+                      <input
+                        type="text"
+                        name="chequeNumber"
+                        value={addCheque?.chequeNumber}
+                        onChange={handleChange}
+                        placeholder="Enter Cheque Number"
+                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-y-2">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Bank Check Date
+                      </label>
+                      <input
+                        type="date"
+                        name="chequeDate"
+                        value={addCheque?.chequeDate}
+                        onChange={handleChange}
+                        placeholder="Select Cheque Date"
+                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-y-2">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Bank Check Status
+                      </label>
+                      {/* <input
                       type="chequeStatus"
                       name="desc"
                       value={addCheque?.chequeStatus}
@@ -648,52 +686,52 @@ export default function OrderDetail() {
                       placeholder="Enter Description"
                       className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     /> */}
-                    <Select
-                      placeholder="Select Cheque Status"
-                      className="w-full"
-                      value={
-                        addCheque?.chequeStatus?.value
-                          ? addCheque?.chequeStatus
-                          : null
-                      }
-                      styles={selectStyles2}
-                      options={chequeStatusOptions}
-                      onChange={(e) => {
-                        setAddCheque({ ...addCheque, chequeStatus: e });
-                      }}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-y-2">
-                    <label className="text-labelColor font-medium font-satoshi">
-                      Bank Name
-                    </label>
-                    <input
-                      type="text"
-                      name="bankName"
-                      value={addCheque?.bankName}
-                      onChange={handleChange}
-                      placeholder="Enter Bank Name"
-                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-y-2">
-                    <label className="text-labelColor font-medium font-satoshi">
-                      Bank Check Branch
-                    </label>
-                    <input
-                      type="text"
-                      name="bankBranch"
-                      value={addCheque?.bankBranch}
-                      onChange={handleChange}
-                      placeholder="Enter Bank Branch"
-                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-y-2">
-                    <label className="text-labelColor font-medium font-satoshi">
-                      Bank Check Type
-                    </label>
-                    {/* <input
+                      <Select
+                        placeholder="Select Cheque Status"
+                        className="w-full"
+                        value={
+                          addCheque?.chequeStatus?.value
+                            ? addCheque?.chequeStatus
+                            : null
+                        }
+                        styles={selectStyles2}
+                        options={chequeStatusOptions}
+                        onChange={(e) => {
+                          setAddCheque({ ...addCheque, chequeStatus: e });
+                        }}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-y-2">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Bank Name
+                      </label>
+                      <input
+                        type="text"
+                        name="bankName"
+                        value={addCheque?.bankName}
+                        onChange={handleChange}
+                        placeholder="Enter Bank Name"
+                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-y-2">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Bank Check Branch
+                      </label>
+                      <input
+                        type="text"
+                        name="bankBranch"
+                        value={addCheque?.bankBranch}
+                        onChange={handleChange}
+                        placeholder="Enter Bank Branch"
+                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-y-2">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Bank Check Type
+                      </label>
+                      {/* <input
                       type="chequeType"
                       name="desc"
                       value={addCheque?.chequeType}
@@ -701,65 +739,66 @@ export default function OrderDetail() {
                       placeholder="Enter Description"
                       className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     /> */}
-                    <Select
-                      placeholder="Select Bank Check Type"
-                      className="w-full"
-                      value={
-                        addCheque?.chequeType?.value
-                          ? addCheque?.chequeType
-                          : null
-                      }
-                      styles={selectStyles2}
-                      options={chequeTypeOptions}
-                      onChange={(e) => {
-                        setAddCheque({ ...addCheque, chequeType: e });
-                      }}
-                    />
+                      <Select
+                        placeholder="Select Bank Check Type"
+                        className="w-full"
+                        value={
+                          addCheque?.chequeType?.value
+                            ? addCheque?.chequeType
+                            : null
+                        }
+                        styles={selectStyles2}
+                        options={chequeTypeOptions}
+                        onChange={(e) => {
+                          setAddCheque({ ...addCheque, chequeType: e });
+                        }}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-y-2">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Bank Check Receipt Date
+                      </label>
+                      <input
+                        type="date"
+                        name="chequeReceiptDate"
+                        value={addCheque?.chequeReceiptDate}
+                        onChange={handleChange}
+                        placeholder="Enter Description"
+                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      />
+                    </div>
                   </div>
-                  <div className="flex flex-col gap-y-2">
-                    <label className="text-labelColor font-medium font-satoshi">
-                      Bank Check Receipt Date
-                    </label>
-                    <input
-                      type="date"
-                      name="chequeReceiptDate"
-                      value={addCheque?.chequeReceiptDate}
-                      onChange={handleChange}
-                      placeholder="Enter Description"
-                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    />
-                  </div>
-                </div>
-              )}
+                )}
 
-              <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setModal({
-                      type: "",
-                      status: false,
-                    })
-                  }
-                  className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow  px-6"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-lg border border-theme text-white px-10 bg-theme"
-                >
-                  {modal?.type === "cancelOrder"
-                    ? "Cancel Order"
-                    : modal?.type === "addCheque"
-                    ? "Add Bank Check"
-                    : "Update Bank Check"}
-                </button>
+                <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setModal({
+                        type: "",
+                        status: false,
+                      })
+                    }
+                    className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow  px-6"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="rounded-lg border border-theme text-white px-10 bg-theme"
+                  >
+                    {modal?.type === "cancelOrder"
+                      ? "Cancel Order"
+                      : modal?.type === "addCheque"
+                      ? "Add Bank Check"
+                      : "Update Bank Check"}
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
-        </form>
-      </Dialog>
+            )}
+          </form>
+        </Dialog>
+      </div>
     </div>
   );
 }

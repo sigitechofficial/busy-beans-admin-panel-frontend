@@ -12,7 +12,7 @@ export default function TrackOrder({ statusId, orderHistories }) {
     };
   };
   return (
-    <div className="flex justify-between flex-nowrap gap-x-4 relative">
+    <div className="flex justify-between flex-nowrap gap-x-4 relative z-0">
       <div className="border-2 border-dashed absolute w-[85%] ml-[8%] border-dottedLine/40 top-4 z-10"></div>
       <TrackOrderTab
         heading="Order Placed"

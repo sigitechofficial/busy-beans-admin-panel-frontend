@@ -37,10 +37,10 @@ export default function ProductSale() {
   const columns = [
     { field: "sl", header: "SL", sort: true },
     { field: "name", header: "Product Name" },
-    { field: "unitsSold", header: "Units Sold" },
-    { field: "wholesalePriceTotal", header: "Total Whole Sale Price" },
-    { field: "customerPriceTotal", header: "Total Price Customers" },
-    { field: "revenue", header: "Revenue" },
+    { field: "unitsSold", header: "Units Sold", sort: true },
+    { field: "wholesalePriceTotal", header: "Total Whole Sale Price", sort: true },
+    { field: "customerPriceTotal", header: "Total Price Customers", sort: true },
+    { field: "revenue", header: "Revenue", sort: true },
   ];
 
   const datas = [];

@@ -358,6 +358,9 @@ export default function Stock() {
                 weight: prod?.weight,
                 wholesalePrice: prod?.wholesalePrice,
                 desc: prod?.desc,
+                productCode: prod?.productCode,
+                sku: prod?.sku,
+                grind: prod?.grind,
               });
               setProductID(prod?.id);
               setImagePreview(BASE_URL + prod?.image);
@@ -456,54 +459,57 @@ export default function Stock() {
           />
         ))}
       </div> */}
-        {/* Modal */}
-        <Dialog
-          visible={modal === "add" || modal === "edit" || modal === "delete"}
-          style={{ width: "40vw" }}
-          // breakpoints={{ "1496px": "40vw", "1024px": "70vw", "641px": "80vw" }}
-          className="font-nunito"
-          onHide={handleCancel}
-          header={
-            <div className="font-nunito font-bold text-2xl text-center">
-              {modal === "add"
-                ? "Add"
-                : modal === "edit"
-                ? "Update"
-                : modal === "delete"
-                ? "Delete"
-                : ""}{" "}
-              Stock/ Inventory
-            </div>
-          }
-        >
-          {loader === "add" || loader === "edit" || loader === "delete" ? (
-            <MiniLoader />
-          ) : (
-            <form className="space-y-4 flex flex-col items-center">
-              {/* header */}
-              {modal !== "delete" && (
-                <button
-                  type="button"
-                  onClick={handleImageClick}
-                  className="overflow-hidden rounded-xl border border-tabBorderColor border-opacity-40 size-28 flex items-center justify-center"
-                >
-                  <input
-                    type="file"
-                    name="name"
-                    className="image hidden"
-                    onChange={handleImage}
+      {/* Modal */}
+      <Dialog
+        visible={modal === "add" || modal === "edit" || modal === "delete"}
+        style={{ width: "40vw" }}
+        // breakpoints={{ "1496px": "40vw", "1024px": "70vw", "641px": "80vw" }}
+        className="font-nunito"
+        onHide={handleCancel}
+        header={
+          <div className="font-nunito font-bold text-2xl text-center">
+            {modal === "add"
+              ? "Add"
+              : modal === "edit"
+              ? "Update"
+              : modal === "delete"
+              ? "Delete"
+              : ""}{" "}
+            Stock/ Inventory
+          </div>
+        }
+      >
+        {loader === "add" || loader === "edit" || loader === "delete" ? (
+          <MiniLoader />
+        ) : (
+          <form
+            onSubmit={handleStock}
+            className="space-y-4 flex flex-col items-center"
+          >
+            {/* header */}
+            {modal !== "delete" && (
+              <button
+                type="button"
+                onClick={handleImageClick}
+                className="overflow-hidden rounded-xl border border-tabBorderColor border-opacity-40 size-28 flex items-center justify-center"
+              >
+                <input
+                  type="file"
+                  name="name"
+                  className="image hidden"
+                  onChange={handleImage}
+                />
+                {imagePreview ? (
+                  <img
+                    src={imagePreview}
+                    alt="product image"
+                    className="h-full w-full object-cover object-center"
                   />
-                  {imagePreview ? (
-                    <img
-                      src={imagePreview}
-                      alt="product image"
-                      className="h-full w-full object-cover object-center"
-                    />
-                  ) : (
-                    <LuImageUp size={"100"} color="rgba(0, 0, 0, 0.6)" />
-                  )}
-                </button>
-              )}
+                ) : (
+                  <LuImageUp size={"100"} color="rgba(0, 0, 0, 0.6)" />
+                )}
+              </button>
+            )}
 
               {/* body */}
               <div className="w-full space-y-4">
@@ -717,57 +723,55 @@ export default function Stock() {
                       </div> */}
                       </div>
 
-                      <div className="flex flex-col gap-y-2 w-full">
-                        <label className="text-labelColor font-medium font-satoshi">
-                          Units
-                        </label>
-                        <Select
-                          placeholder="Kg"
-                          className="w-full"
-                          styles={selectStyles2}
-                          options={[
-                            { value: "lbs", label: "Pounds (lbs)" },
-                            // { value: "kg", label: "Kilogram (kg)" },
-                            // { value: "g", label: "Gram (g)" },
-                            // { value: "pounds", label: "pounds" },
-                          ]}
-                          value={productDetail?.unit}
-                          onChange={(e) => {
-                            setProductDetail({ ...productDetail, unit: e });
-                          }}
-                        />
-                      </div>
+                    <div className="flex flex-col gap-y-2 w-full">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Units
+                      </label>
+                      <Select
+                        placeholder="Kg"
+                        className="w-full"
+                        styles={selectStyles2}
+                        options={[
+                          { value: "lbs", label: "Pounds (lbs)" },
+                          // { value: "kg", label: "Kilogram (kg)" },
+                          // { value: "g", label: "Gram (g)" },
+                          // { value: "pounds", label: "pounds" },
+                        ]}
+                        value={productDetail?.unit}
+                        onChange={(e) => {
+                          setProductDetail({ ...productDetail, unit: e });
+                        }}
+                      />
                     </div>
                   </div>
-                )}
-                <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
-                  <button
-                    type="button"
-                    onClick={handleCancel}
-                    className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow  px-6"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    onClick={handleStock}
-                    className="rounded-lg border border-theme text-white px-10  bg-theme"
-                  >
-                    {modal === "add"
-                      ? "Add"
-                      : modal === "edit"
-                      ? "Update"
-                      : modal === "delete"
-                      ? "Delete"
-                      : ""}{" "}
-                    Stock
-                  </button>
                 </div>
+              )}
+              <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow  px-6"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-lg border border-theme text-white px-10  bg-theme"
+                >
+                  {modal === "add"
+                    ? "Add"
+                    : modal === "edit"
+                    ? "Update"
+                    : modal === "delete"
+                    ? "Delete"
+                    : ""}{" "}
+                  Stock
+                </button>
               </div>
-            </form>
-          )}
-        </Dialog>
-      </div>
+            </div>
+          </form>
+        )}
+      </Dialog>
     </div>
   );
 }

@@ -546,7 +546,7 @@ export default function AddNewSupplier() {
                         // backgroundColor: "#6f4e37",
                       }}
                       dropdownStyle={{
-                        backgroundColor: "#6f4e37",
+                        backgroundColor: "#86644C",
                         borderRadius: "8px",
                       }}
                       country={"us"}
@@ -826,7 +826,7 @@ export default function AddNewSupplier() {
 //                         border: "1px solid #86644C",
 //                       }}
 //                       dropdownStyle={{
-//                         backgroundColor: "#6f4e37",
+//                         backgroundColor: "#86644C",
 //                         borderRadius: "8px",
 //                       }}
 //                       containerStyle={{ borderRadius: "12px" }}

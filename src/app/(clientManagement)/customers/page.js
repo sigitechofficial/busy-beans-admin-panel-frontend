@@ -26,7 +26,7 @@ export default function Customers() {
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectedState, setselectedState] = useState({
     value: "all",
-    label: "All",
+    label: "ALL",
   });
 
   const { data, reFetch } = GetAPI(
@@ -38,15 +38,12 @@ export default function Customers() {
         : "/sale-rep/assign"
     } `
   );
-  console.log("🚀 ~ Customers ~ data:", data?.data);
 
   const { data: dashboardCards } = GetAPI(
     "api/v1/admin/customer-management/dahboard-cards"
   );
-  // console.log("🚀 ~ Customers ~ dashboardCards:",dashboardCards?.data?.data)
 
   const { data: salesRepresentativeData } = GetAPI("api/v1/admin/sales-rep");
-  // console.log("🚀 ~ Customers ~ data:", data?.data);
 
   const handleCancel = () => {
     setModal("");
@@ -288,17 +285,20 @@ export default function Customers() {
   });
 
   customers?.map((customer, i) => {
+    const stateValue = customer?.salesRepState;
+    if (!stateValue) return;
+
     const checkState = StatesOptions?.find(
-      (stateName) => stateName?.value === customer?.salesRepState
+      (stateName) => stateName?.value === stateValue
     );
+
     if (!checkState) {
       StatesOptions.push({
-        value: customer?.salesRepState,
-        label: customer?.salesRepState,
+        value: stateValue,
+        label: stateValue,
       });
     }
   });
-  console.log("🚀 ~ Customers ~ StatesOptions:", StatesOptions);
 
   return data?.length === 0 ? (
     <Loader />
@@ -359,50 +359,50 @@ export default function Customers() {
                   : "bg-white text-black"
               }  font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
             duration-200 max-sm:w-60`}
-            >
-              Assigned Local Partner
-            </button>
-          </div>
-          <div
-            className={`${
-              type === "all" || type === "assigned" ? "hidden" : "block"
-            }`}
           >
-            <button
-              onClick={() => {
-                selectedRows?.length === 0
-                  ? info_toaster("Select atleast one customer")
-                  : setModal("assign");
-              }}
-              className="rounded-lg font-inter font-medium text-white px-10 py-2.5 sm:h-full bg-theme"
-            >
-              {type === "unassigned" &&
-                // ?
-                //  "Reassign Sale Representative"
-                // :
-                "Assign Local Partner"}
-            </button>
-          </div>
+            Assigned Local Partner
+          </button>
         </div>
+        <div
+          className={`${
+            type === "all" || type === "assigned" ? "hidden" : "block"
+          }`}
+        >
+          <button
+            onClick={() => {
+              selectedRows?.length === 0
+                ? info_toaster("Select atleast one customer")
+                : setModal("assign");
+            }}
+            className="rounded-lg font-inter font-medium text-white px-10 py-2.5 sm:h-full border border-theme bg-theme hover:bg-white hover:text-theme duration-150"
+          >
+            {type === "unassigned" &&
+              // ?
+              //  "Reassign Sale Representative"
+              // :
+              "Assign Local Partner"}
+          </button>
+        </div>
+      </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-          <ManagementTab
-            title="Total Customer"
-            desc={dashboardCards?.data?.data?.totalCustomer}
-          />
-          <ManagementTab
-            title="New Customer"
-            desc={dashboardCards?.data?.data?.newCustomer}
-          />
-          <ManagementTab
-            title="Active Customer"
-            desc={dashboardCards?.data?.data?.activeCustomer}
-          />
-          <ManagementTab
-            title="Inactive Customer"
-            desc={dashboardCards?.data?.data?.inactiveCustomer}
-          />
-          {/* <ManagementTab title="T.Revenue Generated" desc="18,000" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+        <ManagementTab
+          title="Total Customer"
+          desc={dashboardCards?.data?.data?.totalCustomer}
+        />
+        {/* <ManagementTab
+          title="New Customer"
+          desc={dashboardCards?.data?.data?.newCustomer}
+        />
+        <ManagementTab
+          title="Active Customer"
+          desc={dashboardCards?.data?.data?.activeCustomer}
+        />
+        <ManagementTab
+          title="Inactive Customer"
+          desc={dashboardCards?.data?.data?.inactiveCustomer}
+        /> */}
+        {/* <ManagementTab title="T.Revenue Generated" desc="18,000" />
         <ManagementTab title="Total Orders" desc="5000" />
         <ManagementTab title="Pending Orders" desc="5000" />
         <ManagementTab title="Total Orders Amount" desc="55,000" />

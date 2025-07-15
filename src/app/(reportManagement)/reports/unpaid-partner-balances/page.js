@@ -37,8 +37,8 @@ export default function UnpaidPartnerBalance() {
   const columns = [
     { field: "sl", header: "SL", sort: true },
     { field: "srName", header: "Supplier Name" },
-    { field: "outstandingBalance", header: "Outstanding Balance" },
-    { field: "ordersOnCredit", header: "Orders on credit" },
+    { field: "outstandingBalance", header: "Outstanding Balance", sort: true },
+    { field: "ordersOnCredit", header: "Orders on credit", sort: true },
   ];
 
   const datas = [];

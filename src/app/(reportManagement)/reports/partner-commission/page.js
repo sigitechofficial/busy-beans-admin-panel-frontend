@@ -37,10 +37,14 @@ export default function PartnerCommissionReport() {
   const columns = [
     { field: "sl", header: "SL", sort: true },
     { field: "srName", header: "Supplier Name" },
-    { field: "ordersPlaced", header: "Orders Placed" },
-    { field: "totalSales", header: "Total Sales" },
-    { field: "wholesalePriceCost", header: "Whole Sale Price Cost" },
-    { field: "totalCommission", header: "Total Partner Profits" },
+    { field: "ordersPlaced", header: "Orders Placed", sort: true },
+    { field: "totalSales", header: "Total Sales", sort: true },
+    {
+      field: "wholesalePriceCost",
+      header: "Whole Sale Price Cost",
+      sort: true,
+    },
+    { field: "totalCommission", header: "Total Partner Profits", sort: true },
   ];
 
   const datas = [];

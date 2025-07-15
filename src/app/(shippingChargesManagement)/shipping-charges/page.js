@@ -29,8 +29,21 @@ export default function ShippingChargesManagement() {
     }
   }, [data]);
 
+  // const addRow = () => {
+  //   setRows([...rows, { min: "", max: "", charge: "" }]);
+  // };
   const addRow = () => {
-    setRows([...rows, { min: "", max: "", charge: "" }]);
+    const lastRow = rows[rows.length - 1];
+    const newMin = lastRow ? Number(lastRow.max) + 1 : 0;
+
+    setRows([
+      ...rows,
+      {
+        min: newMin,
+        max: "",
+        charge: "",
+      },
+    ]);
   };
 
   const deleteRow = (index) => {
@@ -46,6 +59,28 @@ export default function ShippingChargesManagement() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      if (
+        row.min === "" ||
+        row.max === "" ||
+        row.charge === "" ||
+        isNaN(row.min) ||
+        isNaN(row.max) ||
+        isNaN(row.charge)
+      ) {
+        ErrorHandler(new Error(`Please fill all fields for row ${i + 1}.`));
+        return;
+      }
+
+      if (Number(row.min) >= Number(row.max)) {
+        ErrorHandler(
+          new Error(`Min value cannot be greater than Max in row ${i + 1}.`)
+        );
+        return;
+      }
+    }
+
     const payload = {
       company: "FedEx Ground E",
       ranges: rows.map((row) => ({
@@ -55,6 +90,7 @@ export default function ShippingChargesManagement() {
         charges: row.charge.toString(),
       })),
     };
+
     setLoader(true);
     try {
       const res = await PatchAPI("api/v1/admin/shipping-charges-update", {
@@ -67,7 +103,6 @@ export default function ShippingChargesManagement() {
         throw new Error(res?.data?.message || "An unexpected error occurred.");
       }
     } catch (error) {
-      setLoader(false);
       ErrorHandler(error);
     } finally {
       setLoader(false);
@@ -102,9 +137,11 @@ export default function ShippingChargesManagement() {
     setModal(false);
   };
 
-  return (
-    <div>
-      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
+  return data?.length === 0 ? (
+    <Loader />
+  ) : (
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
           Shipping Charges Management
         </h2>
@@ -116,52 +153,51 @@ export default function ShippingChargesManagement() {
           </h2>
         </div> */}
 
-        {loader ? (
-          <Loader />
-        ) : (
-          <div>
-            <div className="space-y-4" id="shipping-rows">
-              <div class="grid grid-cols-4 gap-4 items-center font-semibold text-gray-700 border-b pb-2 mb-4">
-                <div>Min Range</div>
-                <div>Max Range</div>
-                <div>Charges($)</div>
-                <div>Action</div>
-              </div>
+      {loader ? (
+        <MiniLoader />
+      ) : (
+        <div>
+          <div className="space-y-4" id="shipping-rows">
+            <div class="grid grid-cols-4 gap-4 items-center font-semibold text-gray-700 border-b pb-2 mb-4">
+              <div>Min Range</div>
+              <div>Max Range</div>
+              <div>Charges($)</div>
+              <div>Action</div>
+            </div>
 
-              {rows.map((row, index) => (
-                <div
-                  key={index}
-                  className="grid grid-cols-4 gap-4 items-center"
+            {rows.map((row, index) => (
+              <div key={index} className="grid grid-cols-4 gap-4 items-center">
+                <input
+                  type="number"
+                  placeholder="Min Range"
+                  className="w-full px-4 py-2 border rounded-md disabled:cursor-not-allowed"
+                  value={index === 0 ? 0 : row.min}
+                  onChange={(e) => updateRow(index, "min", e.target.value)}
+                  disabled={true}
+                  // disabled={index !== 0 || index === 0}
+                />
+                <input
+                  type="number"
+                  placeholder="Max Range"
+                  className="w-full px-4 py-2 border rounded-md"
+                  value={row.max}
+                  onChange={(e) => updateRow(index, "max", e.target.value)}
+                />
+                <input
+                  type="number"
+                  placeholder="Charges"
+                  className="w-full px-4 py-2 border rounded-md"
+                  value={row.charge}
+                  onChange={(e) => updateRow(index, "charge", e.target.value)}
+                />
+                <button
+                  onClick={() => deleteRow(index)}
+                  className="text-red-600 font-semibold border border-red-600 w-20"
                 >
-                  <input
-                    type="number"
-                    placeholder="Min Range"
-                    className="w-full px-4 py-2 border rounded-md"
-                    value={row.min}
-                    onChange={(e) => updateRow(index, "min", e.target.value)}
-                  />
-                  <input
-                    type="number"
-                    placeholder="Max Range"
-                    className="w-full px-4 py-2 border rounded-md"
-                    value={row.max}
-                    onChange={(e) => updateRow(index, "max", e.target.value)}
-                  />
-                  <input
-                    type="number"
-                    placeholder="Charges"
-                    className="w-full px-4 py-2 border rounded-md"
-                    value={row.charge}
-                    onChange={(e) => updateRow(index, "charge", e.target.value)}
-                  />
-                  <button
-                    onClick={() => deleteRow(index)}
-                    className="text-red-600 font-semibold border border-red-600 w-20"
-                  >
-                    Delete
-                  </button>
-                </div>
-              ))}
+                  Delete
+                </button>
+              </div>
+            ))}
 
               <div className="flex justify-end gap-x-2">
                 <button

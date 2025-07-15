@@ -35,10 +35,7 @@ export default function AddSaleRepresentative() {
     creditLimit: "",
     status: true,
   });
-  console.log(
-    "🚀 ~ AddSaleRepresentative ~ saleRepresentative:",
-    saleRepresentative
-  );
+
   const [imagePreview, setImagePreview] = useState("");
   const [visible, setVisible] = useState(false);
   const [allStates, setAllStates] = useState([]);
@@ -174,8 +171,12 @@ export default function AddSaleRepresentative() {
     } else if (!saleRepresentative?.password?.trim()) {
       info_toaster("Enter password");
     } else {
-      setLoader(true);
+      // setLoader(true);
       try {
+        console.log(
+          "🚀 ~ AddSaleRepresentative ~ saleRepresentative:",
+          saleRepresentative
+        );
         const formData = new FormData();
         formData.append("srName", saleRepresentative?.srName);
         formData.append("email", saleRepresentative?.email);
@@ -475,13 +476,13 @@ export default function AddSaleRepresentative() {
                 </div>
                 <div className="flex flex-col gap-y-2">
                   <label className="text-labelColor font-medium font-satoshi">
-                    Territory{" "}
+                    Title{" "}
                   </label>
                   <input
                     type="text"
                     name="territory"
                     value={saleRepresentative?.territory}
-                    placeholder="Enter Territory name"
+                    placeholder="Enter Title"
                     className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
                   />
@@ -516,7 +517,7 @@ export default function AddSaleRepresentative() {
                         // backgroundColor: "#6f4e37",
                       }}
                       dropdownStyle={{
-                        backgroundColor: "#6f4e37",
+                        backgroundColor: "#86644C",
                         borderRadius: "8px",
                       }}
                       country={"us"}
@@ -806,7 +807,7 @@ export default function AddSaleRepresentative() {
                       // backgroundColor: "#6f4e37",
                     }}
                     dropdownStyle={{
-                      backgroundColor: "#6f4e37",
+                     backgroundColor: "#86644C",
                       borderRadius: "8px",
                     }}
                     country={"us"}

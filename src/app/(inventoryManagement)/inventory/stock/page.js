@@ -773,5 +773,7 @@ export default function Stock() {
         )}
       </Dialog>
     </div>
+    </div>
+    
   );
 }

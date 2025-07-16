@@ -12,12 +12,11 @@ export default function SalesRepresentativeCustomers() {
     var userID = localStorage.getItem("userID");
   }
 
-
-  const router  = useRouter()
+  const router = useRouter();
   const { data } = GetAPI(
     `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID} `
   );
-  console.log("🚀 ~ SalesRepresentativeCustomers ~ data:", data?.data?.data)
+  console.log("🚀 ~ SalesRepresentativeCustomers ~ data:", data?.data?.data);
 
   const columns = [
     { field: "sl", header: "SL", sort: true },
@@ -63,27 +62,48 @@ export default function SalesRepresentativeCustomers() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div>
+      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
           Customer Management
         </h2>
 
-        <Select placeholder="Filters" className="w-40" styles={selectStyles} />
+        {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">
+          <li>Invoice</li>
+          <li>Quickbooks</li>
+          <li>Schedule</li>
+          <li>Bulk Modify</li>
+          <li>Export</li>
+        </ul> */}
       </div>
+      <div className="space-y-8 pb-6 pt-32 px-6 2xl:px-12">
+        <div className="flex items-center justify-end">
+          {/* <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+            Customer Management
+          </h2> */}
 
-      <div className="flex justify-end">
-        <button
-          onClick={() => router.push("/sales-representative/customers/add")}
-          className="rounded-lg font-inter font-medium border border-theme text-white bg-theme hover:bg-white hover:text-theme duration-150 px-2 sm:px-3 py-2.5 sm:py-4"
-        >
-          + Add New Customer
-        </button>
-      </div>
+          <Select
+            placeholder="Filters"
+            className="w-40"
+            styles={selectStyles}
+          />
+        </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-        <ManagementTab title="Total Customer" desc={data?.data?.data?.length} />
-        {/* <ManagementTab
+        <div className="flex justify-end">
+          <button
+            onClick={() => router.push("/sales-representative/customers/add")}
+            className="rounded-lg font-inter font-medium border border-theme text-white bg-theme hover:bg-white hover:text-theme duration-150 px-2 sm:px-3 py-2.5 sm:py-4"
+          >
+            + Add New Customer
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+          <ManagementTab
+            title="Total Customer"
+            desc={data?.data?.data?.length}
+          />
+          {/* <ManagementTab
           title="New Customer"
           desc={dashboardCards?.data?.data?.newCustomer}
         />
@@ -95,16 +115,17 @@ export default function SalesRepresentativeCustomers() {
           title="Inactive Customer"
           desc={dashboardCards?.data?.data?.inactiveCustomer}
         /> */}
-      </div>
+        </div>
 
-      <div>
-        <MyDataTable
-          columns={columns}
-          data={datas}
-          placeholder={"Search ..."}
-          pagination={true}
-          search={true}
-        />
+        <div>
+          <MyDataTable
+            columns={columns}
+            data={datas}
+            placeholder={"Search ..."}
+            pagination={true}
+            search={true}
+          />
+        </div>
       </div>
     </div>
   );

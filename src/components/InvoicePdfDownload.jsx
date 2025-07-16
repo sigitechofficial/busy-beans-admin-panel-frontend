@@ -8,7 +8,7 @@ import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import { PatchAPI } from "@/utilities/PatchAPI";
 
 export default function InvoicePDFDownload({ invoiceData, reFetch }) {
-  console.log("🚀 ~ InvoicePDFDownload ~ invoiceData:", invoiceData)
+  console.log("🚀 ~ InvoicePDFDownload ~ invoiceData:", invoiceData);
   const invoiceRef = useRef(null);
 
   const [data, setData] = useState("");
@@ -98,26 +98,39 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
 
             <div className="grid grid-cols-2 text-sm gap-4">
               {/* Sales Rep Section */}
-              <div>
-                <div className="font-bold">From</div>
-                {/* <div>{invoiceData?.salesRepName}</div> */}
-                <div>{invoiceData?.salesRep?.territoryName}</div>
-                <div>{invoiceData?.salesRep?.address}</div>
+              {invoiceData?.salesRep ? (
                 <div>
-                  {invoiceData?.salesRep?.city}, {invoiceData?.salesRep?.state}{" "}
-                  {invoiceData?.salesRep?.zipCode}
+                  <div className="font-bold">From</div>
+                  {/* <div>{invoiceData?.salesRepName}</div> */}
+                  <div>{invoiceData?.salesRep?.territoryName}</div>
+                  <div>{invoiceData?.salesRep?.address}</div>
+                  <div>
+                    {invoiceData?.salesRep?.city},{" "}
+                    {invoiceData?.salesRep?.state}{" "}
+                    {invoiceData?.salesRep?.zipCode}
+                  </div>
+                  <div>{invoiceData?.salesRep?.country}</div>
+                  <div>
+                    {invoiceData?.salesRep?.countryCode}{" "}
+                    {invoiceData?.salesRep?.phoneNumber}
+                  </div>
+                  <div>{invoiceData?.salesRep?.email}</div>
                 </div>
-                <div>{invoiceData?.salesRep?.country}</div>
+              ) : (
                 <div>
-                  {invoiceData?.salesRep?.countryCode}{" "}
-                  {invoiceData?.salesRep?.phoneNumber}
+                  <div className="font-bold">From</div>
+                  <div className="uppercase">Busy Bean Coffee Inc.</div>
+                  <div className="uppercase">1141 CAINHOY RD 350</div>
+                  <div className="uppercase">WAREHOUSE 1</div>
+                  <div className="uppercase">CHARLESTON SC 29492, USA</div>
+                  <div className="uppercase">+1 833-843-2326</div>
+                  <div>info@busybeancoffee.com</div>
                 </div>
-                <div>{invoiceData?.salesRep?.email}</div>
-              </div>
+              )}
 
               {/* Bill To Section */}
-              <div>
-                <div className="font-bold">Bill to</div>
+              <div className="uppercase">
+                <div className="font-bold capitalize">Bill to</div>
 
                 {/* Company address or name */}
                 {invoiceData?.user?.billingAddresses?.[0]?.companyaddress && (
@@ -180,7 +193,7 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
 
                 {/* Email */}
                 {invoiceData?.user?.email && (
-                  <div>{invoiceData.user.email}</div>
+                  <div className="lowercase">{invoiceData.user.email}</div>
                 )}
               </div>
             </div>
@@ -274,10 +287,10 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
               <span>${parseFloat(invoiceData?.totalBill)?.toFixed(2)}</span>
             </div>
 
-            <div className="flex justify-between py-1 font-bold text-lg">
+            {/* <div className="flex justify-between py-1 font-bold text-lg">
               <span>Amount due</span>
               <span>${parseFloat(invoiceData?.totalBill)?.toFixed(2)}</span>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

@@ -786,7 +786,7 @@ export default function Leftbar(props) {
           </div>
         </ul>
       ) : userType === "supplier" ? (
-        <ul className="flex flex-col space-y-1 overflow-auto h-[90%]">
+        <ul className="flex flex-col space-y-1 pt-2  overflow-auto h-[90%]">
           <ListHead title="Dashboard" to="/" Icon={MdDashboard} />
 
           <ListHead
@@ -859,7 +859,7 @@ export default function Leftbar(props) {
           </div>
         </ul>
       ) : userType === "salesRepresentative" ? (
-        <ul className="flex flex-col space-y-1 overflow-auto h-[90%]">
+        <ul className="flex flex-col space-y-1 pt-2 overflow-auto h-[90%]">
           <ListHead title="Dashboard" to="/" Icon={MdDashboard} />
 
           <ListHead

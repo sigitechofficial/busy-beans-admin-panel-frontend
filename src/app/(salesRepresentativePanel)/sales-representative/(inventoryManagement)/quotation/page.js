@@ -78,25 +78,37 @@ export default function SalesRepresentativeInventory() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div>
+      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
           Quotation Management
         </h2>
 
-        <input
-          type="text"
-          name="name"
-          value={filter}
-          onChange={(e) => {
-            setFilter(e.target.value);
-          }}
-          // value={userData?.info?.name}
-          placeholder="Search Product by name"
-          className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-2"
-        />
-        {/* <Select placeholder="Filters" className="w-40" styles={selectStyles} /> */}
-        {/* <div className="flex items-center gap-x-4">
+        {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">
+          <li>Invoice</li>
+          <li>Quickbooks</li>
+          <li>Schedule</li>
+          <li>Bulk Modify</li>
+          <li>Export</li>
+        </ul> */}
+      </div>
+      <div className="space-y-8 pb-6 pt-32 px-6 2xl:px-12">
+        <div className="flex items-center justify-end">
+        
+
+          <input
+            type="text"
+            name="name"
+            value={filter}
+            onChange={(e) => {
+              setFilter(e.target.value);
+            }}
+            // value={userData?.info?.name}
+            placeholder="Search Product by name"
+            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-2"
+          />
+          {/* <Select placeholder="Filters" className="w-40" styles={selectStyles} /> */}
+          {/* <div className="flex items-center gap-x-4">
       <div>
         <button className="flex items-center gap-x-2 px-2 sm:px-5 md:px-8 py-2.5 md:py-3 rounded-lg shadow-buttonShadow border border-buttonBorderColor bg-white ">
           <RiFileDownloadLine size={24} />
@@ -104,42 +116,43 @@ export default function SalesRepresentativeInventory() {
         </button>
       </div>
     </div> */}
-      </div>
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-          {handleFilter()?.map((item, i) => (
-            <StockCard
-              key={i}
-              id={item?.id}
-              itemName={item?.name}
-              quantity={item?.quantity}
-              price={item?.price}
-              wholesalePrice={item?.wholesalePrice}
-              weight={item?.weight}
-              unit={item?.unit}
-              imageURL={item?.image}
-              qty={handleQty(item?.id)}
-              handlePlus={handlePlus}
-              handleMinus={handleMinus}
-            />
-          ))}
         </div>
-        <div className="fixed bottom-4 right-3">
-          <button
-            onClick={() => setVisibleRight(true)}
-            className="rounded-lg font-inter font-medium text-white px-2 sm:px-3 py-2.5 sm:py-4 bg-theme"
-          >
-            Send Quote
-            <div className="absolute -right-3 -top-3 bg-black size-7 rounded-full text-lg">
-              {quotationData?.length}
-            </div>
-          </button>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+            {handleFilter()?.map((item, i) => (
+              <StockCard
+                key={i}
+                id={item?.id}
+                itemName={item?.name}
+                quantity={item?.quantity}
+                price={item?.price}
+                wholesalePrice={item?.wholesalePrice}
+                weight={item?.weight}
+                unit={item?.unit}
+                imageURL={item?.image}
+                qty={handleQty(item?.id)}
+                handlePlus={handlePlus}
+                handleMinus={handleMinus}
+              />
+            ))}
+          </div>
+          <div className="fixed bottom-4 right-3">
+            <button
+              onClick={() => setVisibleRight(true)}
+              className="rounded-lg font-inter font-medium text-white px-2 sm:px-3 py-2.5 sm:py-4 bg-theme"
+            >
+              Send Quote
+              <div className="absolute -right-3 -top-3 bg-black size-7 rounded-full text-lg">
+                {quotationData?.length}
+              </div>
+            </button>
+          </div>
+          <DrawerBeans
+            drawerOpen={visibleRight}
+            setDrawerOpen={setVisibleRight}
+            setQuotationData={setQuotationData}
+          />
         </div>
-        <DrawerBeans
-          drawerOpen={visibleRight}
-          setDrawerOpen={setVisibleRight}
-          setQuotationData={setQuotationData}
-        />
       </div>
     </div>
   );

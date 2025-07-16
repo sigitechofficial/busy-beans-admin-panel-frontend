@@ -676,7 +676,7 @@ export default function Home() {
       </div>
     </>
   ) : userType === "salesRepresentative" ? (
-    <>
+    <div>
       <div
         className={`bg-red-500 z-10 text-center text-white py-2 ${
           userType === "salesRepresentative" &&
@@ -892,7 +892,7 @@ export default function Home() {
           </div>
         </div>
       </div>
-    </>
+    </div>
   ) : (
     <div>Dashboard In progress</div>
   );

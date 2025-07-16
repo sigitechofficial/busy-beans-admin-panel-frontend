@@ -455,30 +455,44 @@ export default function page() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center gap-x-2">
-        <button
-          onClick={() => router.push("/sales-representative/customers")}
-          className="size-8 text-theme rounded-full hover:bg-theme hover:text-white duration-200"
-        >
-          <FaLongArrowAltLeft size={30} />
-        </button>{" "}
+    <div>
+      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
           Add New Customer
         </h2>
-      </div>
 
-      {/* main section start */}
-      <div className="lg:gap-x-12 xl:gap-16 relative px-5 md:px-10 xl:px-14 py-5 md:py-8 xl:py-10 shadow-tableShadow border border-borderColor rounded-sm gap-y-4">
-        {(step === 2 || step === 3) && !loader && (
+        {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">
+          <li>Invoice</li>
+          <li>Quickbooks</li>
+          <li>Schedule</li>
+          <li>Bulk Modify</li>
+          <li>Export</li>
+        </ul> */}
+      </div>
+      <div className="space-y-8 pb-6 pt-32 px-6 2xl:px-12">
+        <div className="flex items-center gap-x-2">
           <button
-            onClick={() => setStep(step - 1)}
-            className="absolute left-5 top-2 flex justify-center items-center w-8 h-8 text-theme rounded-full hover:bg-theme hover:text-white  duration-200"
+            onClick={() => router.push("/sales-representative/customers")}
+            className="size-8 text-theme rounded-full hover:bg-theme hover:text-white duration-200"
           >
             <FaLongArrowAltLeft size={30} />
-          </button>
-        )}
-        {/* <div className="w-60 md:w-72 lg:w-80">
+          </button>{" "}
+          {/* <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+            Add New Customer
+          </h2> */}
+        </div>
+
+        {/* main section start */}
+        <div className="lg:gap-x-12 xl:gap-16 relative px-5 md:px-10 xl:px-14 py-5 md:py-8 xl:py-10 shadow-tableShadow border border-borderColor rounded-sm gap-y-4">
+          {(step === 2 || step === 3) && !loader && (
+            <button
+              onClick={() => setStep(step - 1)}
+              className="absolute left-5 top-2 flex justify-center items-center w-8 h-8 text-theme rounded-full hover:bg-theme hover:text-white  duration-200"
+            >
+              <FaLongArrowAltLeft size={30} />
+            </button>
+          )}
+          {/* <div className="w-60 md:w-72 lg:w-80">
             <img
               src="/images/logocoffee.png"
               alt="logo"
@@ -486,22 +500,22 @@ export default function page() {
             />
           </div> */}
 
-        {loader ? (
-          <MiniLoader />
-        ) : (
-          <div>
-            {/* <p className="font-satoshi text-theme font-black text-2xl lg:text-3xl text-center">
+          {loader ? (
+            <MiniLoader />
+          ) : (
+            <div>
+              {/* <p className="font-satoshi text-theme font-black text-2xl lg:text-3xl text-center">
                 Welcome to Busy Bean Coffee
               </p> */}
-            {step === 1 && (
-              <div className="space-y-6">
-                <div className="font-satoshi space-y-4">
-                  <p className="font-black text-xl lg:text-2xl text-theme">
-                    1. Shipping Address
-                  </p>
-                  <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
-                    <div className="space-y-4">
-                      {/* <Select
+              {step === 1 && (
+                <div className="space-y-6">
+                  <div className="font-satoshi space-y-4">
+                    <p className="font-black text-xl lg:text-2xl text-theme">
+                      1. Shipping Address
+                    </p>
+                    <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
+                      <div className="space-y-4">
+                        {/* <Select
                       placeholder="Select Country"
                       className="w-full"
                       styles={drawerSelectStyles}
@@ -513,7 +527,7 @@ export default function page() {
                         handleSelectedCountryCities(e.label);
                       }}
                     /> */}
-                      {/* <div className="flex flex-col gap-y-2">
+                        {/* <div className="flex flex-col gap-y-2">
                       <label className="text-labelColor font-medium font-satoshi">
                         Company Address
                       </label>
@@ -543,55 +557,55 @@ export default function page() {
                         </LoadScript>
                       </div>
                     </div> */}
-                      <div className="flex flex-col gap-y-2">
-                        <label className="text-labelColor font-medium font-satoshi">
-                          Company Name{" "}
-                        </label>
-                        <input
-                          type="text"
-                          name="companyaddress"
-                          value={userData?.address?.companyaddress}
-                          placeholder="XYZ Company"
-                          className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                          onChange={handleAddress}
-                        />
+                        <div className="flex flex-col gap-y-2">
+                          <label className="text-labelColor font-medium font-satoshi">
+                            Company Name{" "}
+                          </label>
+                          <input
+                            type="text"
+                            name="companyaddress"
+                            value={userData?.address?.companyaddress}
+                            placeholder="XYZ Company"
+                            className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                            onChange={handleAddress}
+                          />
+                        </div>
+                        <div className="flex flex-col gap-y-2">
+                          <label className="text-labelColor font-medium font-satoshi">
+                            Address Line 1
+                          </label>
+                          <input
+                            type="text"
+                            name="addressLineOne"
+                            onChange={handleAddress}
+                            value={userData?.address?.addressLineOne}
+                            placeholder="Enter address line 1"
+                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-y-2">
+                          <label className="text-labelColor font-medium font-satoshi">
+                            Address Line 2
+                          </label>
+                          <input
+                            type="text"
+                            name="addressLineTwo"
+                            onChange={handleAddress}
+                            value={userData?.address?.addressLineTwo}
+                            placeholder="Enter address line 2"
+                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                          />
+                        </div>
                       </div>
-                      <div className="flex flex-col gap-y-2">
-                        <label className="text-labelColor font-medium font-satoshi">
-                          Address Line 1
-                        </label>
-                        <input
-                          type="text"
-                          name="addressLineOne"
-                          onChange={handleAddress}
-                          value={userData?.address?.addressLineOne}
-                          placeholder="Enter address line 1"
-                          className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-y-2">
-                        <label className="text-labelColor font-medium font-satoshi">
-                          Address Line 2
-                        </label>
-                        <input
-                          type="text"
-                          name="addressLineTwo"
-                          onChange={handleAddress}
-                          value={userData?.address?.addressLineTwo}
-                          placeholder="Enter address line 2"
-                          className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                        />
-                      </div>
-                    </div>
 
-                    <div className="flex flex-col justify-between gap-y-4">
-                      <div className="space-y-4">
-                        <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
-                          <div className="flex flex-col gap-y-2">
-                            <label className="text-labelColor font-medium font-satoshi">
-                              Country
-                            </label>
-                            {/* <input
+                      <div className="flex flex-col justify-between gap-y-4">
+                        <div className="space-y-4">
+                          <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
+                            <div className="flex flex-col gap-y-2">
+                              <label className="text-labelColor font-medium font-satoshi">
+                                Country
+                              </label>
+                              {/* <input
                             type="text"
                             name="country"
                             onChange={handleAddress}
@@ -599,69 +613,69 @@ export default function page() {
                             placeholder="Enter Country"
                             className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                           /> */}
-                            <Select
-                              placeholder="Select Country"
-                              className="w-full"
-                              styles={drawerSelectStyles}
-                              value={
-                                userData?.address?.country
-                                  ? {
-                                      value: userData.address.country,
-                                      label: userData.address.country,
-                                    }
-                                  : null
-                              }
-                              options={allCountries ?? []}
-                              onChange={(e) => {
-                                // setSaleRepresentative({
-                                //   ...saleRepresentative,
-                                //   country: e.label,
-                                //   state: "",
-                                //   city: "",
-                                // });
-                                setUserData({
-                                  ...userData,
-                                  address: {
-                                    ...userData?.address,
-                                    country: e.label,
-                                    state: "",
-                                    town: "",
-                                  },
-                                });
-                                handleSelectedCountryStates(e.label);
-                              }}
-                            />
-                          </div>
-                          <div className="flex flex-col gap-y-2">
-                            <label className="text-labelColor font-medium font-satoshi">
-                              State
-                            </label>
-                            <Select
-                              placeholder="Select State"
-                              className="w-full"
-                              styles={drawerSelectStyles}
-                              value={
-                                userData?.address?.state
-                                  ? {
-                                      value: userData.address.state,
-                                      label: userData.address.state,
-                                    }
-                                  : null
-                              }
-                              options={allStates ?? []}
-                              onChange={(e) => {
-                                setUserData({
-                                  ...userData,
-                                  address: {
-                                    ...userData?.address,
-                                    state: e.label,
-                                    town: "",
-                                  },
-                                });
-                                handleSelectedCountryStatesCities(e.value);
-                              }}
-                            />
-                            {/* <input
+                              <Select
+                                placeholder="Select Country"
+                                className="w-full"
+                                styles={drawerSelectStyles}
+                                value={
+                                  userData?.address?.country
+                                    ? {
+                                        value: userData.address.country,
+                                        label: userData.address.country,
+                                      }
+                                    : null
+                                }
+                                options={allCountries ?? []}
+                                onChange={(e) => {
+                                  // setSaleRepresentative({
+                                  //   ...saleRepresentative,
+                                  //   country: e.label,
+                                  //   state: "",
+                                  //   city: "",
+                                  // });
+                                  setUserData({
+                                    ...userData,
+                                    address: {
+                                      ...userData?.address,
+                                      country: e.label,
+                                      state: "",
+                                      town: "",
+                                    },
+                                  });
+                                  handleSelectedCountryStates(e.label);
+                                }}
+                              />
+                            </div>
+                            <div className="flex flex-col gap-y-2">
+                              <label className="text-labelColor font-medium font-satoshi">
+                                State
+                              </label>
+                              <Select
+                                placeholder="Select State"
+                                className="w-full"
+                                styles={drawerSelectStyles}
+                                value={
+                                  userData?.address?.state
+                                    ? {
+                                        value: userData.address.state,
+                                        label: userData.address.state,
+                                      }
+                                    : null
+                                }
+                                options={allStates ?? []}
+                                onChange={(e) => {
+                                  setUserData({
+                                    ...userData,
+                                    address: {
+                                      ...userData?.address,
+                                      state: e.label,
+                                      town: "",
+                                    },
+                                  });
+                                  handleSelectedCountryStatesCities(e.value);
+                                }}
+                              />
+                              {/* <input
                             type="text"
                             name="state"
                             onChange={handleAddress}
@@ -669,31 +683,31 @@ export default function page() {
                             placeholder="Enter State"
                             className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                           /> */}
+                            </div>
                           </div>
-                        </div>
-                        <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
-                          <div className="flex flex-col gap-y-2">
-                            <label className="text-labelColor font-medium font-satoshi">
-                              Town / City
-                            </label>
+                          <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
+                            <div className="flex flex-col gap-y-2">
+                              <label className="text-labelColor font-medium font-satoshi">
+                                Town / City
+                              </label>
 
-                            <input
-                              type="text"
-                              name="town"
-                              onChange={(e) => {
-                                setUserData({
-                                  ...userData,
-                                  address: {
-                                    ...userData?.address,
-                                    town: e.target.value,
-                                  },
-                                });
-                              }}
-                              value={userData?.town}
-                              placeholder="Enter town"
-                              className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                            />
-                            {/* <Select
+                              <input
+                                type="text"
+                                name="town"
+                                onChange={(e) => {
+                                  setUserData({
+                                    ...userData,
+                                    address: {
+                                      ...userData?.address,
+                                      town: e.target.value,
+                                    },
+                                  });
+                                }}
+                                value={userData?.town}
+                                placeholder="Enter town"
+                                className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                              />
+                              {/* <Select
                               placeholder="Select City"
                               className="w-full"
                               styles={drawerSelectStyles}
@@ -716,7 +730,7 @@ export default function page() {
                                 });
                               }}
                             /> */}
-                            {/* <input
+                              {/* <input
                             type="text"
                             name="town"
                             onChange={handleAddress}
@@ -724,22 +738,22 @@ export default function page() {
                             placeholder="Enter Town / City"
                             className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                           /> */}
+                            </div>
+                            <div className="flex flex-col gap-y-2">
+                              <label className="text-labelColor font-medium font-satoshi">
+                                Zip Code
+                              </label>
+                              <input
+                                type="text"
+                                name="zipCode"
+                                onChange={handleAddress}
+                                value={userData?.address?.zipCode}
+                                placeholder="Enter Zip Code"
+                                className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                              />
+                            </div>
                           </div>
-                          <div className="flex flex-col gap-y-2">
-                            <label className="text-labelColor font-medium font-satoshi">
-                              Zip Code
-                            </label>
-                            <input
-                              type="text"
-                              name="zipCode"
-                              onChange={handleAddress}
-                              value={userData?.address?.zipCode}
-                              placeholder="Enter Zip Code"
-                              className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                            />
-                          </div>
-                        </div>
-                        {/* <div className="flex flex-col gap-y-2">
+                          {/* <div className="flex flex-col gap-y-2">
                           <label className="text-labelColor font-medium font-satoshi">
                             Billing Address
                           </label>
@@ -763,8 +777,8 @@ export default function page() {
                             />
                           </div>
                         </div> */}
-                      </div>
-                      {/* <div>
+                        </div>
+                        {/* <div>
                         <button
                           onClick={handleStep1}
                           className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
@@ -772,29 +786,29 @@ export default function page() {
                           Next
                         </button>
                       </div> */}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-x-2">
-                  <input
-                    type="checkbox"
-                    name="billingStatus"
-                    onChange={handleBillingShippingAddress}
-                    className="size-4 border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none"
-                  />
-                  <label className="text-labelColor font-medium font-satoshi">
-                    Billing Address same as Shipping Address
-                  </label>
-                </div>
+                  <div className="flex items-center gap-x-2">
+                    <input
+                      type="checkbox"
+                      name="billingStatus"
+                      onChange={handleBillingShippingAddress}
+                      className="size-4 border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none"
+                    />
+                    <label className="text-labelColor font-medium font-satoshi">
+                      Billing Address same as Shipping Address
+                    </label>
+                  </div>
 
-                <div className="font-satoshi space-y-4">
-                  <p className="font-black text-xl lg:text-2xl text-theme">
-                    Billing Address
-                  </p>
-                  <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
-                    <div className="space-y-4">
-                      {/* <Select
+                  <div className="font-satoshi space-y-4">
+                    <p className="font-black text-xl lg:text-2xl text-theme">
+                      Billing Address
+                    </p>
+                    <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
+                      <div className="space-y-4">
+                        {/* <Select
                       placeholder="Select Country"
                       className="w-full"
                       styles={drawerSelectStyles}
@@ -806,7 +820,7 @@ export default function page() {
                         handleSelectedCountryCities(e.label);
                       }}
                     /> */}
-                      {/* <div className="flex flex-col gap-y-2">
+                        {/* <div className="flex flex-col gap-y-2">
                       <label className="text-labelColor font-medium font-satoshi">
                         Company Address
                       </label>
@@ -836,102 +850,102 @@ export default function page() {
                         </LoadScript>
                       </div>
                     </div> */}
-                      <div className="flex flex-col gap-y-2">
-                        <label className="text-labelColor font-medium font-satoshi">
-                          Billing Address{" "}
-                        </label>
-                        <input
-                          type="text"
-                          name="companyaddress"
-                          value={userData?.billingAddress?.companyaddress}
-                          placeholder="Enter Address"
-                          className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                          onChange={handleBillingAddress}
-                        />
-                      </div>
-                      <div className="space-y-4">
-                        <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
-                          <div className="flex flex-col gap-y-2">
-                            <label className="text-labelColor font-medium font-satoshi">
-                              Country
-                            </label>
-                            <Select
-                              placeholder="Select Country"
-                              className="w-full"
-                              styles={drawerSelectStyles}
-                              options={allCountries ?? []}
-                              value={
-                                userData?.billingAddress?.country
-                                  ? {
-                                      value: userData.billingAddress.country,
-                                      label: userData.billingAddress.country,
-                                    }
-                                  : null
-                              }
-                              onChange={(e) => {
-                                setUserData({
-                                  ...userData,
-                                  billingAddress: {
-                                    ...userData?.billingAddress,
-                                    country: e.label,
-                                    state: "",
-                                    town: "",
-                                  },
-                                });
-                                handleSelectedCountryStates(e.label);
-                              }}
-                            />
-                          </div>
-                          <div className="flex flex-col gap-y-2">
-                            <label className="text-labelColor font-medium font-satoshi">
-                              State
-                            </label>
-                            <Select
-                              placeholder="Select State"
-                              className="w-full"
-                              styles={drawerSelectStyles}
-                              value={{
-                                value: userData?.billingAddress?.state,
-                                label: userData?.billingAddress?.state,
-                              }}
-                              options={allStates ?? []}
-                              onChange={(e) => {
-                                setUserData({
-                                  ...userData,
-                                  billingAddress: {
-                                    ...userData?.billingAddress,
-                                    state: e.label,
-                                    town: "",
-                                  },
-                                });
-                                handleSelectedCountryStatesCities(e.value);
-                              }}
-                            />
-                          </div>
+                        <div className="flex flex-col gap-y-2">
+                          <label className="text-labelColor font-medium font-satoshi">
+                            Billing Address{" "}
+                          </label>
+                          <input
+                            type="text"
+                            name="companyaddress"
+                            value={userData?.billingAddress?.companyaddress}
+                            placeholder="Enter Address"
+                            className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                            onChange={handleBillingAddress}
+                          />
                         </div>
-                        <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
-                          <div className="flex flex-col gap-y-2">
-                            <label className="text-labelColor font-medium font-satoshi">
-                              Town / City
-                            </label>
-                            <input
-                              type="text"
-                              name="billingAddress"
-                              onChange={(e) => {
-                                setUserData({
-                                  ...userData,
-                                  billingAddress: {
-                                    ...userData?.billingAddress,
-                                    town: e.target.value,
-                                  },
-                                });
-                              }}
-                              placeholder="Enter town"
-                              className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                              value={userData?.billingAddress?.town}
-                            />
+                        <div className="space-y-4">
+                          <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
+                            <div className="flex flex-col gap-y-2">
+                              <label className="text-labelColor font-medium font-satoshi">
+                                Country
+                              </label>
+                              <Select
+                                placeholder="Select Country"
+                                className="w-full"
+                                styles={drawerSelectStyles}
+                                options={allCountries ?? []}
+                                value={
+                                  userData?.billingAddress?.country
+                                    ? {
+                                        value: userData.billingAddress.country,
+                                        label: userData.billingAddress.country,
+                                      }
+                                    : null
+                                }
+                                onChange={(e) => {
+                                  setUserData({
+                                    ...userData,
+                                    billingAddress: {
+                                      ...userData?.billingAddress,
+                                      country: e.label,
+                                      state: "",
+                                      town: "",
+                                    },
+                                  });
+                                  handleSelectedCountryStates(e.label);
+                                }}
+                              />
+                            </div>
+                            <div className="flex flex-col gap-y-2">
+                              <label className="text-labelColor font-medium font-satoshi">
+                                State
+                              </label>
+                              <Select
+                                placeholder="Select State"
+                                className="w-full"
+                                styles={drawerSelectStyles}
+                                value={{
+                                  value: userData?.billingAddress?.state,
+                                  label: userData?.billingAddress?.state,
+                                }}
+                                options={allStates ?? []}
+                                onChange={(e) => {
+                                  setUserData({
+                                    ...userData,
+                                    billingAddress: {
+                                      ...userData?.billingAddress,
+                                      state: e.label,
+                                      town: "",
+                                    },
+                                  });
+                                  handleSelectedCountryStatesCities(e.value);
+                                }}
+                              />
+                            </div>
+                          </div>
+                          <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
+                            <div className="flex flex-col gap-y-2">
+                              <label className="text-labelColor font-medium font-satoshi">
+                                Town / City
+                              </label>
+                              <input
+                                type="text"
+                                name="billingAddress"
+                                onChange={(e) => {
+                                  setUserData({
+                                    ...userData,
+                                    billingAddress: {
+                                      ...userData?.billingAddress,
+                                      town: e.target.value,
+                                    },
+                                  });
+                                }}
+                                placeholder="Enter town"
+                                className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                                value={userData?.billingAddress?.town}
+                              />
 
-                            {/* <Select
+                              {/* <Select
                               placeholder="Select City"
                               className="w-full"
                               styles={drawerSelectStyles}
@@ -954,7 +968,7 @@ export default function page() {
                                 });
                               }}
                             /> */}
-                            {/* <input
+                              {/* <input
                             type="text"
                             name="town"
                             onChange={handleAddress}
@@ -962,77 +976,77 @@ export default function page() {
                             placeholder="Enter Town / City"
                             className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                           /> */}
-                          </div>
-                          <div className="flex flex-col gap-y-2">
-                            <label className="text-labelColor font-medium font-satoshi">
-                              Zip Code
-                            </label>
-                            <input
-                              type="text"
-                              name="zipCode"
-                              onChange={(e) => {
-                                setUserData({
-                                  ...userData,
-                                  billingAddress: {
-                                    ...userData.billingAddress,
-                                    zipCode: e.target.value,
-                                  },
-                                });
-                              }}
-                              value={userData?.billingAddress?.zipCode}
-                              placeholder="Enter Zip Code"
-                              className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                            />
+                            </div>
+                            <div className="flex flex-col gap-y-2">
+                              <label className="text-labelColor font-medium font-satoshi">
+                                Zip Code
+                              </label>
+                              <input
+                                type="text"
+                                name="zipCode"
+                                onChange={(e) => {
+                                  setUserData({
+                                    ...userData,
+                                    billingAddress: {
+                                      ...userData.billingAddress,
+                                      zipCode: e.target.value,
+                                    },
+                                  });
+                                }}
+                                value={userData?.billingAddress?.zipCode}
+                                placeholder="Enter Zip Code"
+                                className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                              />
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div>
-                        <button
-                          onClick={handleStep1}
-                          className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
-                        >
-                          Next
-                        </button>
+                        <div>
+                          <button
+                            onClick={handleStep1}
+                            className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
+                          >
+                            Next
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
-            {step === 2 && (
-              <div className="font-satoshi space-y-4">
-                <p className="font-black text-xl lg:text-2xl text-theme flex items-center justify-between gap-x-2">
-                  2. Company Details
-                </p>
-                <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
-                  <div className="space-y-4">
-                    <div className="flex flex-col gap-y-2">
-                      <label className="text-labelColor font-medium font-satoshi">
-                        Company Name
-                      </label>
-                      <input
-                        type="text"
-                        name="companyName"
-                        onChange={handleInfo}
-                        value={userData?.info?.companyName}
-                        placeholder="Enter Company Name"
-                        className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-y-2">
-                      <label className="text-labelColor font-medium font-satoshi">
-                        Company Info
-                      </label>
-                      <input
-                        type="text"
-                        name="companyInfo"
-                        onChange={handleInfo}
-                        value={userData?.info?.companyInfo}
-                        placeholder="Enter Company Info"
-                        className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      />
-                    </div>
-                    {/* <div className="flex flex-col gap-y-2">
+              )}
+              {step === 2 && (
+                <div className="font-satoshi space-y-4">
+                  <p className="font-black text-xl lg:text-2xl text-theme flex items-center justify-between gap-x-2">
+                    2. Company Details
+                  </p>
+                  <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
+                    <div className="space-y-4">
+                      <div className="flex flex-col gap-y-2">
+                        <label className="text-labelColor font-medium font-satoshi">
+                          Company Name
+                        </label>
+                        <input
+                          type="text"
+                          name="companyName"
+                          onChange={handleInfo}
+                          value={userData?.info?.companyName}
+                          placeholder="Enter Company Name"
+                          className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-y-2">
+                        <label className="text-labelColor font-medium font-satoshi">
+                          Company Info
+                        </label>
+                        <input
+                          type="text"
+                          name="companyInfo"
+                          onChange={handleInfo}
+                          value={userData?.info?.companyInfo}
+                          placeholder="Enter Company Info"
+                          className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        />
+                      </div>
+                      {/* <div className="flex flex-col gap-y-2">
                       <label className="text-labelColor font-medium font-satoshi">
                         Phone Number
                       </label>
@@ -1045,234 +1059,244 @@ export default function page() {
                         className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       />
                     </div> */}
-                    <div className="flex flex-col gap-y-2">
-                      <label className="text-labelColor font-medium font-satoshi">
-                        Phone number
-                      </label>
-                      {/* <input
+                      <div className="flex flex-col gap-y-2">
+                        <label className="text-labelColor font-medium font-satoshi">
+                          Phone number
+                        </label>
+                        {/* <input
                   type="text"
                   name=""
                   placeholder="Enter Phone Number"
                   className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                 /> */}
-                      <div className="grid grid-cols-10 gap-x-2">
-                        <PhoneInput
-                          focusBorderColor="none"
-                          borderWidth="none"
-                          className="chakra_input col-span-2"
-                          inputStyle={{
-                            width: "90px",
-                            height: "45px",
-                            borderRadius: "4px",
-                            border: "1px solid #00000033",
-                            backgroundColor: "#ffffff",
-                            color: "#6f4e37",
-                            opacity: "20",
-                          }}
-                          buttonStyle={{
-                            backgroundColor: "#ffffff",
-                            border: "1px solid #86644C",
-                          }}
-                          containerStyle={{
-                            borderRadius: "12px",
-                            // backgroundColor: "#6f4e37",
-                          }}
-                          dropdownStyle={{
-                          backgroundColor: "#86644C",
-                            borderRadius: "8px",
-                          }}
-                          country={"us"}
-                          value={userData?.info?.countryCode}
-                          onChange={(phone) =>
-                            setUserData({
-                              ...userData,
-                              info: {
-                                ...userData?.info,
-                                countryCode: phone,
-                              },
-                            })
-                          }
-                        />
-                        <input
-                          type="number"
-                          name="phoneNumber"
-                          value={userData?.info?.phoneNumber}
-                          placeholder="Enter Phone Number"
-                          className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5  w-full col-span-8"
-                          onChange={handleInfo}
-                        />
+                        <div className="grid grid-cols-10 gap-x-2">
+                          <PhoneInput
+                            focusBorderColor="none"
+                            borderWidth="none"
+                            className="chakra_input col-span-2"
+                            inputStyle={{
+                              width: "90px",
+                              height: "45px",
+                              borderRadius: "4px",
+                              border: "1px solid #00000033",
+                              backgroundColor: "#ffffff",
+                              color: "#6f4e37",
+                              opacity: "20",
+                            }}
+                            buttonStyle={{
+                              backgroundColor: "#ffffff",
+                              border: "1px solid #86644C",
+                            }}
+                            containerStyle={{
+                              borderRadius: "12px",
+                              // backgroundColor: "#6f4e37",
+                            }}
+                            dropdownStyle={{
+                              backgroundColor: "#86644C",
+                              borderRadius: "8px",
+                            }}
+                            country={"us"}
+                            value={userData?.info?.countryCode}
+                            onChange={(phone) =>
+                              setUserData({
+                                ...userData,
+                                info: {
+                                  ...userData?.info,
+                                  countryCode: phone,
+                                },
+                              })
+                            }
+                          />
+                          <input
+                            type="number"
+                            name="phoneNumber"
+                            value={userData?.info?.phoneNumber}
+                            placeholder="Enter Phone Number"
+                            className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5  w-full col-span-8"
+                            onChange={handleInfo}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col justify-between gap-y-4">
+                      <div className="space-y-4">
+                        <div className="flex flex-col gap-y-2">
+                          <label className="text-labelColor font-medium font-satoshi">
+                            Sale Tax Number <span>(if applicable)</span>
+                          </label>
+                          <input
+                            type="text"
+                            name="saleTaxNumber"
+                            onChange={handleInfo}
+                            value={userData?.info?.saleTaxNumber}
+                            placeholder="Enter sale tax number"
+                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-y-2">
+                          <label className="text-labelColor font-medium font-satoshi">
+                            Email to send invoices
+                          </label>
+                          <input
+                            type="email"
+                            name="emailToSendInvoices"
+                            onChange={handleInfo}
+                            value={userData?.info?.emailToSendInvoices}
+                            placeholder="Enter Email"
+                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <button
+                          onClick={handleStep2}
+                          className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
+                        >
+                          Next
+                        </button>
                       </div>
                     </div>
                   </div>
-
-                  <div className="flex flex-col justify-between gap-y-4">
+                </div>
+              )}
+              {step === 3 && (
+                <form
+                  onSubmit={handleSubmit}
+                  className="font-satoshi space-y-4"
+                >
+                  <p className="font-black text-xl lg:text-2xl text-theme">
+                    3. User Details
+                  </p>
+                  <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
                     <div className="space-y-4">
                       <div className="flex flex-col gap-y-2">
                         <label className="text-labelColor font-medium font-satoshi">
-                          Sale Tax Number <span>(if applicable)</span>
+                          Full Name
                         </label>
                         <input
                           type="text"
-                          name="saleTaxNumber"
+                          name="name"
                           onChange={handleInfo}
-                          value={userData?.info?.saleTaxNumber}
-                          placeholder="Enter sale tax number"
+                          value={userData?.info?.name}
+                          placeholder="Enter Name"
                           className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                         />
                       </div>
                       <div className="flex flex-col gap-y-2">
                         <label className="text-labelColor font-medium font-satoshi">
-                          Email to send invoices
+                          Login Email
                         </label>
                         <input
                           type="email"
-                          name="emailToSendInvoices"
+                          name="email"
                           onChange={handleInfo}
-                          value={userData?.info?.emailToSendInvoices}
-                          placeholder="Enter Email"
+                          value={userData?.info?.email}
+                          placeholder="Enter email"
                           className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                         />
                       </div>
                     </div>
-                    <div>
-                      <button
-                        onClick={handleStep2}
-                        className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
-                      >
-                        Next
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            {step === 3 && (
-              <form onSubmit={handleSubmit} className="font-satoshi space-y-4">
-                <p className="font-black text-xl lg:text-2xl text-theme">
-                  3. User Details
-                </p>
-                <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
-                  <div className="space-y-4">
-                    <div className="flex flex-col gap-y-2">
-                      <label className="text-labelColor font-medium font-satoshi">
-                        Full Name
-                      </label>
-                      <input
-                        type="text"
-                        name="name"
-                        onChange={handleInfo}
-                        value={userData?.info?.name}
-                        placeholder="Enter Name"
-                        className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-y-2">
-                      <label className="text-labelColor font-medium font-satoshi">
-                        Login Email
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        onChange={handleInfo}
-                        value={userData?.info?.email}
-                        placeholder="Enter email"
-                        className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      />
-                    </div>
-                  </div>
 
-                  <div className="flex flex-col justify-between gap-y-4">
-                    <div className="space-y-4">
-                      <div className="flex flex-col gap-y-2 relative">
-                        <label className="text-labelColor font-medium font-satoshi">
-                          Password
-                        </label>
-                        <input
-                          type={visibility?.pass ? "text" : "password"}
-                          name="password"
-                          onChange={handleInfo}
-                          value={userData?.info?.password}
-                          placeholder="Enter Password"
-                          className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                        />
-                        {userData?.info?.password.length > 0 && (
-                          <p className="text-red-700 text font-semibold text-sm">
-                            {!passwordStrength?.weak?.test(
-                              userData?.info?.password.trim()
-                            )
-                              ? "Password is too weak, contain atleat 6 characters consider adding more complexity"
-                              : !passwordStrength?.medium?.test(
-                                  userData?.info?.password.trim()
-                                )
-                              ? "Password should include both uppercase and lowercase letters"
-                              : !passwordStrength?.strong.test(
-                                  userData?.info?.password.trim()
-                                )
-                              ? "Password is strong! It should include at least one uppercase letter, one lowercase letter, one number, and one special character"
-                              : ""}
-                          </p>
-                        )}
-                        <button
-                          onClick={() =>
-                            setVisibility({
-                              ...visibility,
-                              pass: !visibility?.pass,
-                            })
-                          }
-                          type="button"
-                          className="text-black absolute right-4 top-11"
-                        >
-                          {visibility?.pass ? (
-                            <AiOutlineEye size={24} color="#000000" />
-                          ) : (
-                            <AiOutlineEyeInvisible size={24} color="#000000" />
+                    <div className="flex flex-col justify-between gap-y-4">
+                      <div className="space-y-4">
+                        <div className="flex flex-col gap-y-2 relative">
+                          <label className="text-labelColor font-medium font-satoshi">
+                            Password
+                          </label>
+                          <input
+                            type={visibility?.pass ? "text" : "password"}
+                            name="password"
+                            onChange={handleInfo}
+                            value={userData?.info?.password}
+                            placeholder="Enter Password"
+                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                          />
+                          {userData?.info?.password.length > 0 && (
+                            <p className="text-red-700 text font-semibold text-sm">
+                              {!passwordStrength?.weak?.test(
+                                userData?.info?.password.trim()
+                              )
+                                ? "Password is too weak, contain atleat 6 characters consider adding more complexity"
+                                : !passwordStrength?.medium?.test(
+                                    userData?.info?.password.trim()
+                                  )
+                                ? "Password should include both uppercase and lowercase letters"
+                                : !passwordStrength?.strong.test(
+                                    userData?.info?.password.trim()
+                                  )
+                                ? "Password is strong! It should include at least one uppercase letter, one lowercase letter, one number, and one special character"
+                                : ""}
+                            </p>
                           )}
+                          <button
+                            onClick={() =>
+                              setVisibility({
+                                ...visibility,
+                                pass: !visibility?.pass,
+                              })
+                            }
+                            type="button"
+                            className="text-black absolute right-4 top-11"
+                          >
+                            {visibility?.pass ? (
+                              <AiOutlineEye size={24} color="#000000" />
+                            ) : (
+                              <AiOutlineEyeInvisible
+                                size={24}
+                                color="#000000"
+                              />
+                            )}
+                          </button>
+                        </div>
+                        <div className="flex flex-col gap-y-2 relative">
+                          <label className="text-labelColor font-medium font-satoshi">
+                            Confirm Password
+                          </label>
+                          <input
+                            type={visibility?.confirmPass ? "text" : "password"}
+                            name="confirmPassword"
+                            onChange={handleInfo}
+                            value={userData?.info?.confirmPassword}
+                            placeholder="Enter password again"
+                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                          />
+                          <button
+                            onClick={() =>
+                              setVisibility({
+                                ...visibility,
+                                confirmPass: !visibility?.confirmPass,
+                              })
+                            }
+                            type="button"
+                            className="text-black absolute right-4 top-11"
+                          >
+                            {visibility?.confirmPass ? (
+                              <AiOutlineEye size={24} color="#000000" />
+                            ) : (
+                              <AiOutlineEyeInvisible
+                                size={24}
+                                color="#000000"
+                              />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                      <div>
+                        <button
+                          type="submit"
+                          className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
+                        >
+                          Submit
                         </button>
                       </div>
-                      <div className="flex flex-col gap-y-2 relative">
-                        <label className="text-labelColor font-medium font-satoshi">
-                          Confirm Password
-                        </label>
-                        <input
-                          type={visibility?.confirmPass ? "text" : "password"}
-                          name="confirmPassword"
-                          onChange={handleInfo}
-                          value={userData?.info?.confirmPassword}
-                          placeholder="Enter password again"
-                          className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                        />
-                        <button
-                          onClick={() =>
-                            setVisibility({
-                              ...visibility,
-                              confirmPass: !visibility?.confirmPass,
-                            })
-                          }
-                          type="button"
-                          className="text-black absolute right-4 top-11"
-                        >
-                          {visibility?.confirmPass ? (
-                            <AiOutlineEye size={24} color="#000000" />
-                          ) : (
-                            <AiOutlineEyeInvisible size={24} color="#000000" />
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                    <div>
-                      <button
-                        type="submit"
-                        className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
-                      >
-                        Submit
-                      </button>
                     </div>
                   </div>
-                </div>
-              </form>
-            )}
-          </div>
-        )}
+                </form>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

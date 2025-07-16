@@ -1,15 +1,22 @@
 "use client";
 import { useParams } from "next/navigation";
-import React from "react";
+import React, { useState } from "react";
 
 function page() {
   const { userId } = useParams();
+  const [userData, setUserData] = useState({
+    edit: false,
+    email: "",
+  });
 
   return (
     <div className="w-full">
       <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-          Customers / <span className="text-theme">3 Eleven Corp</span> <span className="bg-themeGreen rounded-full text-xs text-white font-normal p-1">Active</span>
+          Customers / <span className="text-theme">3 Eleven Corp</span>{" "}
+          <span className="bg-themeGreen rounded-full text-xs text-white font-normal p-1">
+            Active
+          </span>
         </h2>
 
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
@@ -100,11 +107,25 @@ function page() {
                   Email to send invoices
                 </div>
                 <div className="text-gray-600 italic">
-                  raymond.perez@3levencorp.com
+                  {userData?.edit ? (
+                    <input
+                      className="rounded-lg border border-theme px-2 h-12 my-3 bg-transparent outline-none text-black"
+                      value={userData?.email}
+                      type="text"
+                      onChange={(e)=>setUserData({...userData, email:e.target.value})}
+                    />
+                  ) : (
+                    "raymond.perez@3levencorp.com"
+                  )}
                 </div>
               </div>
-              <button className="text-blue-600 hover:underline text-sm">
-                Edit
+              <button
+                onClick={() =>
+                  setUserData({ ...userData, edit: !userData.edit })
+                }
+                className="text-blue-600 hover:underline text-sm"
+              >
+                {userData?.edit ? "Save" : "Edit"}
               </button>
             </div>
           </div>

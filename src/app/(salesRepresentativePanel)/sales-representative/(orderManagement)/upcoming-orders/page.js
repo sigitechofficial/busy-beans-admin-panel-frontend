@@ -115,13 +115,25 @@ export default function UpcomingOrders() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+
+    <div>
+
+
+     <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-          Upcoming Orders
+        Upcoming Orders
         </h2>
-        {/* <Select placeholder="Filters" className="w-40" styles={selectStyles} /> */}
+
+        {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">
+          <li>Invoice</li>
+          <li>Quickbooks</li>
+          <li>Schedule</li>
+          <li>Bulk Modify</li>
+          <li>Export</li>
+        </ul> */}
       </div>
+      <div className="space-y-8 pb-6 pt-32 px-6 2xl:px-12">
+  
 
       <div className="flex justify-end">
         <button
@@ -186,6 +198,7 @@ export default function UpcomingOrders() {
           </div>
         </div>
       </Dialog>
+    </div>
     </div>
   );
 }

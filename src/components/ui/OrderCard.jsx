@@ -105,7 +105,7 @@ export default function OrderCard(props) {
         if (!dispatchOrderData?.trackingNumber) {
           info_toaster("Enter Tracking number");
         } else if (!dispatchOrderData?.shippingCompany) {
-          info_toaster("Select dispatching company");
+          info_toaster("Select Shipping company");
         } else {
           setLoader("dispatchOrder");
           const res = await PatchAPI("api/v1/admin/order-dispatch", {
@@ -117,7 +117,7 @@ export default function OrderCard(props) {
             },
           });
           if (res?.data?.status === "success") {
-            success_toaster("Order Dispatched successfully");
+            success_toaster("Order Shipped successfully");
             props?.reFetch();
             props?.setModal({
               type: "",

@@ -151,6 +151,7 @@ export default function SalesRepresentativeInventory() {
             drawerOpen={visibleRight}
             setDrawerOpen={setVisibleRight}
             setQuotationData={setQuotationData}
+            quotationData={quotationData}
           />
         </div>
       </div>

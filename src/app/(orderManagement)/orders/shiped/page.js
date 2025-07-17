@@ -8,17 +8,21 @@ import Loader from "@/components/ui/Loader";
 import { FaEye } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 
-export default function SupplierOrders() {
+export default function DispatchedOrders() {
   if (typeof window !== "undefined") {
-    var supplierId = localStorage.getItem("userID");
+    var userID = localStorage.getItem("userID");
+    var userType = localStorage.getItem("userType");
   }
   const router = useRouter();
   const { data } = GetAPI(
-    `api/v1/admin/orders?statusId=5&supplierId=${supplierId}`
+    userType === "salesRepresentative"
+      ? `api/v1/admin/orders?salesRepId=${userID}&statusId=4`
+      : "api/v1/admin/orders?statusId=4"
   );
 
   const columns = [
     { field: "sl", header: "SL", sort: true },
+    { field: "id", header: "Order ID", sort: true },
     { field: "customerName", header: "Customer Name" },
     { field: "totalBill", header: "Total Bill" },
     { field: "subTotal", header: "Sub Total" },
@@ -32,7 +36,9 @@ export default function SupplierOrders() {
     { field: "paymentMethod", header: "Payment Method" },
     { field: "poNumber", header: "Po Number" },
     { field: "orderFrequency", header: "Order Frequency" },
-    { field: "orderCurrentStatus", header: "Order Status" },
+    { field: "orderCurrentStatus", header: "Order Current Status" },
+    { field: "paymentStatus", header: "Payment Status" },
+    { field: "createdBy", header: "Created By" },
     { field: "action", header: "Action" },
   ];
 
@@ -40,6 +46,7 @@ export default function SupplierOrders() {
   data?.data?.data?.map((detail, i) => {
     return datas.push({
       sl: i + 1,
+      id: detail?.id,
       customerName: detail?.customerName,
       totalBill: "$" + detail?.totalBill,
       subTotal: "$" + detail?.subTotal,
@@ -54,11 +61,13 @@ export default function SupplierOrders() {
       poNumber: detail?.poNumber,
       orderFrequency: detail?.frequency,
       orderCurrentStatus: detail?.orderCurrentStatus,
+      paymentStatus: detail?.paymentStatus === "done" ? "Paid" : "Unpaid",
+      createdBy: detail?.createdBy,
       action: (
         <button
           className="border border-yellow-400 rounded-md p-2 text-yellow-400"
           onClick={() => {
-            router.push(`/supplier/order-detail/${detail?.id}`);
+            router.push(`/orders/detail/${detail?.id}`);
           }}
         >
           <FaEye size={24} />
@@ -73,31 +82,16 @@ export default function SupplierOrders() {
     <div>
       <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-            Delivered Orders
+          Shiped Orders
         </h2>
-
-        {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">
-          <li>Invoice</li>
-          <li>Quickbooks</li>
-          <li>Schedule</li>
-          <li>Bulk Modify</li>
-          <li>Export</li>
-        </ul> */}
       </div>
-      <div className="space-y-8 pb-6 pt-32 px-6 2xl:px-12">
-        {/* <div className="flex items-center justify-between">
-          <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-            Delivered Orders
-          </h2>
-          <Select placeholder="Filters" className="w-40" styles={selectStyles} />
-        </div> */}
-
+      <div className="space-y-8 pt-32 px-6 2xl:px-12 ">
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
           <ManagementTab title="Total Orders" desc={data?.data?.data?.length} />
           {/* <ManagementTab title="New Orders" desc="5%" />
-        <ManagementTab title="Pending Orders" desc="5000" />
-        <ManagementTab title="In progress Orders" desc="5,000" />
-        <ManagementTab title="Cancelled Orders" desc="5,000" /> */}
+         <ManagementTab title="Pending Orders" desc="5000" />
+         <ManagementTab title="In progress Orders" desc="5,000" />
+         <ManagementTab title="Cancelled Orders" desc="5,000" /> */}
         </div>
 
         <div>
@@ -107,6 +101,9 @@ export default function SupplierOrders() {
             placeholder={"Search ..."}
             pagination={true}
             search={true}
+            onRowClick={(e) => {
+              Example: router.push(`/orders/detail/${e.data.id}`);
+            }}
           />
         </div>
       </div>

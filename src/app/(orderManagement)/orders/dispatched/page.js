@@ -8,7 +8,7 @@ import Loader from "@/components/ui/Loader";
 import { FaEye } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 
-export default function DispatchedOrders() {
+export default function DeliveredOrders() {
   if (typeof window !== "undefined") {
     var userID = localStorage.getItem("userID");
     var userType = localStorage.getItem("userType");
@@ -16,8 +16,8 @@ export default function DispatchedOrders() {
   const router = useRouter();
   const { data } = GetAPI(
     userType === "salesRepresentative"
-      ? `api/v1/admin/orders?salesRepId=${userID}&statusId=4`
-      : "api/v1/admin/orders?statusId=4"
+      ? `api/v1/admin/orders?salesRepId=${userID}&statusId=5`
+      : "api/v1/admin/orders?statusId=5"
   );
 
   const columns = [
@@ -82,7 +82,7 @@ export default function DispatchedOrders() {
     <div>
       <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-          Dispatched Orders
+          Dispacthed Orders
         </h2>
       </div>
       <div className="space-y-8 pt-32 px-6 2xl:px-12 ">

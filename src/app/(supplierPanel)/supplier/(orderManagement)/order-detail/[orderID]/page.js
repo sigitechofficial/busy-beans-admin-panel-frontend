@@ -240,7 +240,7 @@ export default function OrderDetail() {
     <div>
       <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-           Order Details
+          Order Details
         </h2>
 
         {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">
@@ -268,20 +268,29 @@ export default function OrderDetail() {
             {data?.data?.order?.chequeDetail ? "Edit Cheque" : "Add Cheque"}
           </button> */}
 
-            <button
-              type="button"
-              className={`bg-black text-white disabled:cursor-not-allowed ${
+            {/* 
+ ${
                 data?.data?.order?.statusId === 2 ||
                 data?.data?.order?.statusId === 3
                   ? "block"
                   : "hidden"
-              }`}
+              } */}
+            <button
+              type="button"
+              className={`bg-black text-white disabled:cursor-not-allowed 
+               ${
+                 data?.data?.order?.statusId === 2 ||
+                 data?.data?.order?.statusId === 3
+                   ? "block"
+                   : "hidden"
+               }
+              `}
               onClick={() => handleAssignSupplier(data?.data?.order?.statusId)}
             >
               {data?.data?.order?.statusId === 2
                 ? "Acknowledge Supplier"
                 : data?.data?.order?.statusId === 3
-                ? "Dispatch Order"
+                ? "Ship Order" // dispatch order text replaced with ship order
                 : ""}
             </button>
             {/* <button

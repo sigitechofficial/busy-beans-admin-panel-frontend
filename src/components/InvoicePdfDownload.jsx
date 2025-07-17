@@ -91,7 +91,7 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
                   <input
                     className="text-start outline-none bg-transparent rounded  font-semibold"
                     type="text"
-                    value={"00"+invoiceData?.id}
+                    value={"00" + invoiceData?.id}
                     onChange={(e) => handleQtyChange(index, e.target.value)}
                   />
                 )}
@@ -111,7 +111,7 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
               {invoiceData?.salesRep ? (
                 <div>
                   <div className="font-bold">From</div>
-                  {/* <div>{invoiceData?.salesRepName}</div> */}
+                  <div>{invoiceData?.salesRepName}</div>
                   <div>{invoiceData?.salesRep?.territoryName}</div>
                   <div>{invoiceData?.salesRep?.address}</div>
                   <div>

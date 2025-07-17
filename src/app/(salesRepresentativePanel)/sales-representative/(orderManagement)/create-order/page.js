@@ -161,7 +161,7 @@ export default function CreateOrder() {
         <div className="flex items-center justify-end">
           {/* <h2 className="text-xl lg:text-2xl font-inter font-semibold">
             Create Order
-          </h2> */}
+          </h2> */} 
 
           {/* <Select placeholder="Filters" className="w-40" styles={selectStyles} /> */}
           {/* <div className="flex items-center gap-x-4">
@@ -231,6 +231,7 @@ export default function CreateOrder() {
             drawerOpen={visibleRight}
             setDrawerOpen={setVisibleRight}
             setQuotationData={setCreateOrderData}
+            quotationData={createOrderData}
             type="createOrder"
           />
         </div>

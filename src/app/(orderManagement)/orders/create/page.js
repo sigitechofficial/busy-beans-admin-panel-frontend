@@ -228,6 +228,7 @@ export default function CreateOrder() {
             drawerOpen={visibleRight}
             setDrawerOpen={setVisibleRight}
             setQuotationData={setCreateOrderData}
+            quotationData={createOrderData}
             type="createOrder"
           />
         </div>

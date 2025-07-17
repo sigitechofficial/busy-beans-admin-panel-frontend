@@ -97,7 +97,7 @@ export default function OrderDetail() {
         },
       });
       if (res?.data?.status === "success") {
-        success_toaster("Order Delivered successfully");
+        success_toaster("Order Dispatched successfully");
         reFetch();
         setLoader("");
       } else {
@@ -352,48 +352,50 @@ export default function OrderDetail() {
               ? "Edit Bank Check"
               : "Add Bank Check"}
           </button> */}
-          {userType === "admin" ? (
-            <button
-              type="button"
-              disabled={
-                data?.data?.order?.statusId === 5 ||
-                data?.data?.order?.statusId === 6
-                  ? true
-                  : false
-              }
-              className="bg-black text-white disabled:cursor-not-allowed"
-              onClick={() => handleAssignSupplier(data?.data?.order?.statusId)}
-            >
-              {data?.data?.order?.statusId === 1
-                ? "Assign Supplier"
-                : data?.data?.order?.statusId === 2
-                ? "Acknowledge Supplier"
-                : data?.data?.order?.statusId === 3
-                ? "Dispatch Order"
-                : "Order Delivered"}
-            </button>
-          ) : (
-            <button
-              type="button"
-              disabled={
-                data?.data?.order?.statusId === 5 ||
-                data?.data?.order?.statusId === 6
-                  ? true
-                  : false
-              }
-              className={`${
-                data?.data?.order?.statusId === 3 ? "block" : "hidden"
-              } bg-black text-white disabled:cursor-not-allowed`}
-              onClick={() => handleAssignSupplier(data?.data?.order?.statusId)}
-            >
-              {/* {data?.data?.order?.statusId === 1
+            {userType === "admin" ? (
+              <button
+                type="button"
+                disabled={
+                  data?.data?.order?.statusId === 5 ||
+                  data?.data?.order?.statusId === 6
+                    ? true
+                    : false
+                }
+                className="bg-black text-white disabled:cursor-not-allowed"
+                onClick={() =>
+                  handleAssignSupplier(data?.data?.order?.statusId)
+                }
+              >
+                {data?.data?.order?.statusId === 1
+                  ? "Assign Supplier"
+                  : data?.data?.order?.statusId === 2
+                  ? "Acknowledge Supplier"
+                  : data?.data?.order?.statusId === 3
+                  ? "Ship Order"
+                  : "Dispatch Order"}
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={
+                  data?.data?.order?.statusId === 5 ||
+                  data?.data?.order?.statusId === 6
+                    ? true
+                    : false
+                }
+                className={`${
+                  data?.data?.order?.statusId === 4 ? "block" : "hidden"
+                } bg-black text-white disabled:cursor-not-allowed`}
+                onClick={() => handleAssignSupplier(4)}
+              >
+                {/* {data?.data?.order?.statusId === 1
                 ? "Assign Supplier"
                 : data?.data?.order?.statusId === 2
                 ? "Acknowledge Supplier"
                 : ""} */}
-              Dispatch Order
-            </button>
-          )}
+                Dispatch Order
+              </button> // dispatch Order basically rpelaced with status 4 which is delivered Order beacuse dispatch is done by supplier so here we use only text dispatch but inside it hit status code of 4
+            )}
 
             <button
               type="button"
@@ -406,31 +408,31 @@ export default function OrderDetail() {
                 : "Send Invoice"}
             </button>
 
-          {userType === "admin" && (
-            <button
-              disabled={
-                data?.data?.order?.statusId === 5 ||
-                data?.data?.order?.statusId === 6
-                  ? true
-                  : false
-              }
-              type="button"
-              onClick={handleCancelOrder}
-              className="bg-theme text-white disabled:cursor-not-allowed"
-            >
-              Cancel Order
-            </button>
-          )}
+            {userType === "admin" && (
+              <button
+                disabled={
+                  data?.data?.order?.statusId === 5 ||
+                  data?.data?.order?.statusId === 6
+                    ? true
+                    : false
+                }
+                type="button"
+                onClick={handleCancelOrder}
+                className="bg-theme text-white disabled:cursor-not-allowed"
+              >
+                Cancel Order
+              </button>
+            )}
 
-          <button
-            onClick={() => router.push(`${pathname}/invoice`)}
-            type="button"
-            className="border border-buttonBorderColor shadow-buttonShadow"
-          >
-            Edit Invoice
-          </button>
+            <button
+              onClick={() => router.push(`${pathname}/invoice`)}
+              type="button"
+              className="border border-buttonBorderColor shadow-buttonShadow"
+            >
+              Edit Invoice
+            </button>
+          </div>
         </div>
-      </div>
 
         {loader === "acknowledgeSupplier" || loader === "orderDelivered" ? (
           <MiniLoader />

@@ -320,11 +320,11 @@ export default function Leftbar(props) {
                     title="Acknowledged Orders"
                     to="/orders/acknowledged"
                   />
+                  <ListItems title="Shiped Orders" to="/orders/shiped" />
                   <ListItems
                     title="Dispatched Orders"
                     to="/orders/dispatched"
                   />
-                  <ListItems title="Delivered Orders" to="/orders/delivered" />
                   <ListItems title="Cancelled Orders" to="/orders/cancelled" />
                 </div>
                 <hr className="w-full" />
@@ -824,12 +824,12 @@ export default function Leftbar(props) {
                     to="/supplier/acknowledge-orders"
                   />
                   <ListItems
-                    title="Dispatched Orders"
-                    to="/supplier/dispatched-orders"
+                    title="Shiped Orders"
+                    to="/supplier/shiped-orders"
                   />
                   <ListItems
-                    title="Delivered Orders"
-                    to="/supplier/delivered-orders"
+                    title="Dispatched Orders"
+                    to="/supplier/dispatched-orders"
                   />
                   <ListItems
                     title="Cancelled Orders"
@@ -971,10 +971,13 @@ export default function Leftbar(props) {
                     to="/orders/acknowledged"
                   />
                   <ListItems
+                    title="Shiped Orders"
+                    to="/orders/shiped"
+                  />
+                  <ListItems
                     title="Dispatched Orders"
                     to="/orders/dispatched"
                   />
-                  {/* <ListItems title="Delivered Orders" to="/orders/delivered" /> */}
                   <ListItems title="Cancelled Orders" to="/orders/cancelled" />
                 </div>
                 <hr className="w-full" />

@@ -30,12 +30,14 @@ export default function TrackOrder({ statusId, orderHistories }) {
         time={handleTrackOrderTab(3)?.date}
       />
       <TrackOrderTab
-        heading="Dispatched Orders"
+        // heading="Dispatched Orders"
+        heading="Shiped Orders"
         status={handleTrackOrderTab(4)?.status}
         time={handleTrackOrderTab(4)?.date}
       />
       <TrackOrderTab
-        heading="Delivered Order"
+        // heading="Delivered Order"
+        heading="Dispatched Order"
         status={handleTrackOrderTab(5)?.status}
         time={handleTrackOrderTab(5)?.date}
       />

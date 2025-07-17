@@ -133,9 +133,9 @@ export default function ShippingChargesManagement() {
   //   }
   // };
 
-  const handleCancel = () => {
-    setModal(false);
-  };
+  // const handleCancel = () => {
+  //   setModal(false);
+  // };
 
   return data?.length === 0 ? (
     <Loader />

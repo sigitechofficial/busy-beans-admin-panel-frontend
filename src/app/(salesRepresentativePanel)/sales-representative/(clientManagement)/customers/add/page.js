@@ -703,7 +703,7 @@ export default function page() {
                                     },
                                   });
                                 }}
-                                value={userData?.town}
+                                value={userData?.address?.town}
                                 placeholder="Enter town"
                                 className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                               />
@@ -904,10 +904,14 @@ export default function page() {
                                 placeholder="Select State"
                                 className="w-full"
                                 styles={drawerSelectStyles}
-                                value={{
-                                  value: userData?.billingAddress?.state,
-                                  label: userData?.billingAddress?.state,
-                                }}
+                                value={
+                                  userData?.billingAddress?.state
+                                    ? {
+                                        value: userData?.billingAddress?.state,
+                                        label: userData?.billingAddress?.state,
+                                      }
+                                    : null
+                                }
                                 options={allStates ?? []}
                                 onChange={(e) => {
                                   setUserData({

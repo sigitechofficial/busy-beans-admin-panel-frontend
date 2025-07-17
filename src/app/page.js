@@ -34,7 +34,7 @@ export default function Home() {
       ? "api/v1/admin/dashboard"
       : userType === "salesRepresentative"
       ? `api/v1/admin/sales-rep-dashboard/${userID}`
-      : ""
+      : `api/v1/admin/sales-rep-dashboard/${userID}`
   );
 
   const handleConnectAccount = async () => {

@@ -26,6 +26,7 @@ const DrawerBeans = ({
   drawerOpen: open,
   setDrawerOpen: setOpen,
   setQuotationData,
+  quotationData,
   type,
 }) => {
   if (typeof window !== "undefined") {
@@ -89,12 +90,12 @@ const DrawerBeans = ({
     setCounter(index);
   };
 
-  const drawerBodyRef = useRef(null);
+  // const drawerBodyRef = useRef(null);
 
-  const handleDrawerScroll = (event) => {
-    const scrollTop = event.target.scrollTop;
-    setDrawerScroll(scrollTop);
-  };
+  // const handleDrawerScroll = (event) => {
+  //   const scrollTop = event.target.scrollTop;
+  //   setDrawerScroll(scrollTop);
+  // };
 
   const handleItemClick = (actionType, id) => {
     if (actionType === "plus") {
@@ -157,13 +158,8 @@ const DrawerBeans = ({
 
   const handleSendQuotation = async () => {
     if (type === "createOrder") {
-      console.log("i am inside this");
       const createOrderData = JSON.parse(
         localStorage.getItem("createOrderData")
-      );
-      console.log(
-        "🚀 ~ handleSendQuotation ~ createOrderData:",
-        createOrderData
       );
       if (createOrderData?.length === 0) {
         info_toaster("No Product is selected");
@@ -300,7 +296,6 @@ const DrawerBeans = ({
         const res = await PostAPI("api/v1/admin/shipping-charges-on-weight", {
           weight: totalWeight,
         });
-        console.log("🚀 ~ fetchCharges ~ res:", res?.data?.data?.charges);
         if (res?.data?.status === "success") {
           success_toaster("Shipping Charges Added Successfully");
           setOrder({ ...order, shippingCharges: res?.data?.data?.charges });
@@ -313,10 +308,13 @@ const DrawerBeans = ({
         ErrorHandler(error);
       }
     };
-    if (type === "createOrder" && open) {
+    // if (type === "createOrder" && open) {
+    //   fetchCharges();
+    // }
+    if (open) {
       fetchCharges();
     }
-  }, [open]);
+  }, [open, quotationData]);
 
   return (
     <div className="card relative">

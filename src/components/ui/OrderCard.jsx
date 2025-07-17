@@ -496,8 +496,13 @@ export default function OrderCard(props) {
           <div className="font-nunito font-bold text-2xl ">
             {props?.orderData?.statusId === 1
               ? "Assign Supplier"
-              : "Dispatch Order"}
+              : "Ship Order"} 
           </div>
+          // <div className="font-nunito font-bold text-2xl ">
+          //   {props?.orderData?.statusId === 1
+          //     ? "Assign Supplier"
+          //     : "Dispatch Order"} 
+          // </div>
         }
       >
         {loader === "assignSupplier" || loader === "dispatchOrder" ? (
@@ -547,6 +552,7 @@ export default function OrderCard(props) {
                   <Select
                     placeholder="Select dispatch order company"
                     className="w-full"
+                    defaultValue={{ value: "fedex", label: "FedEX" }}
                     styles={selectStyles2}
                     options={[{ value: "fedex", label: "FedEX" }]}
                     onChange={(e) => {
@@ -583,7 +589,14 @@ export default function OrderCard(props) {
                   : props?.orderData?.statusId === 1 &&
                     suppliersData?.data?.data?.length > 0
                   ? "Assign Supplier"
-                  : "Dispatch Order"}
+                  : "Ship Order"}
+                {/* {props?.orderData?.statusId === 1 &&
+                suppliersData?.data?.data?.length === 0
+                  ? "Add Supplier"
+                  : props?.orderData?.statusId === 1 &&
+                    suppliersData?.data?.data?.length > 0
+                  ? "Assign Supplier"
+                  : "Dispatch Order"} */}
               </button>
             </div>
           </form>

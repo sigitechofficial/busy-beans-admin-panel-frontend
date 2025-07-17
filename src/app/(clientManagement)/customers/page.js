@@ -96,26 +96,28 @@ export default function Customers() {
   const columns = [
     // { field: "sl", header: "SL", sort: true },
     { field: "name", header: "Name", sort: true },
-    { field: "email", header: "Email", sort: true },
-    { field: "phoneNumber", header: "Phone Number", sort: true },
-    { field: "emailToSendInvoices", header: "Invoice Email", sort: true },
-    { field: "saleTaxNumber", header: "Sale Tax Number", sort: true },
-    { field: "totalOrderAmount", header: "Total Orders", sort: true },
-    { field: "totalOrderPlaced", header: "Total Orders Placed", sort: true },
+    { field: "mainContact", header: "	Main Contact" },
+    // { field: "email", header: "Email", sort: true },
+    // { field: "phoneNumber", header: "Phone Number", sort: true },
+    // { field: "emailToSendInvoices", header: "Invoice Email", sort: true },
+    // { field: "saleTaxNumber", header: "Sale Tax Number", sort: true },
+    // { field: "totalOrderAmount", header: "Total Orders", sort: true },
+    // { field: "totalOrderPlaced", header: "Total Orders Placed", sort: true },
     {
       field: "salesRepName",
-      header: "Sales Representative Name",
+      header: "Group",
       minWidth: "14rem",
     },
-    {
-      field: "salesRepState",
-      header: "Sales Representative State",
-      minWidth: "14rem",
-    },
-    { field: "status", header: "Status" },
+    // {
+    //   field: "salesRepState",
+    //   header: "Sales Representative State",
+    //   minWidth: "14rem",
+    // },
+    // { field: "status", header: "Status" },
+    { field: "lastOrder", header: "Last Order" },
     {
       field: "changeStatus",
-      header: "Change Status",
+      header: "Status",
     },
     // { field: "action", header: "Action" },  // pending to be done
   ];
@@ -145,7 +147,8 @@ export default function Customers() {
       ? datas.push({
           id: customer?.id,
           sl: i + 1,
-          name: customer?.name,
+          name: customer?.addresses?.[0]?.companyaddress, //company name
+          mainContact: customer?.name, //Main contact name
           email: customer?.email,
           phoneNumber: `${customer?.countryCode ?? ""} ${
             customer?.phoneNumber
@@ -155,26 +158,36 @@ export default function Customers() {
           totalOrderAmount: customer?.totalOrderAmount,
           totalOrderPlaced: customer?.totalOrderPlaced,
           salesRepName: customer?.salesRepName ?? (
-            <di className="w-44 bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
-              Not Assigned Yet
+            <di className="w-max text-xs bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+              Not Assigned
             </di>
           ),
           salesRepState: customer?.salesRepState ?? "-",
           status: (
             <div>
               {customer?.status ? (
-                <div className="w-24 bg-theme text-white font-semibold p-2 rounded-md flex justify-center">
+                <div className="w-24 bg-themeGreen text-white font-semibold p-2 rounded-md flex justify-center">
                   Active
                 </div>
               ) : (
-                <div className="w-24 bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+                <div className="w-24 bg-themeGreen text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
                   Inactive
                 </div>
               )}
             </div>
           ),
+          lastOrder: "last order",
           changeStatus: (
-            <label>
+            <label className="flex gap-2 items-center">
+              {customer?.status ? (
+                <div className="w-max text-xs bg-themeGreen text-white font-semibold p-2 rounded-md flex justify-center">
+                  Active
+                </div>
+              ) : (
+                <div className="w-max text-xs bg-themeGreen text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+                  Inactive
+                </div>
+              )}
               <Switch
                 onChange={() => {
                   handleStatus(customer?.id, customer?.status);
@@ -359,38 +372,38 @@ export default function Customers() {
                   : "bg-white text-black"
               }  font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
             duration-200 max-sm:w-60`}
+            >
+              Assigned Local Partner
+            </button>
+          </div>
+          <div
+            className={`${
+              type === "all" || type === "assigned" ? "hidden" : "block"
+            }`}
           >
-            Assigned Local Partner
-          </button>
+            <button
+              onClick={() => {
+                selectedRows?.length === 0
+                  ? info_toaster("Select atleast one customer")
+                  : setModal("assign");
+              }}
+              className="rounded-lg font-inter font-medium text-white px-10 py-2.5 sm:h-full border border-theme bg-theme hover:bg-white hover:text-theme duration-150"
+            >
+              {type === "unassigned" &&
+                // ?
+                //  "Reassign Sale Representative"
+                // :
+                "Assign Local Partner"}
+            </button>
+          </div>
         </div>
-        <div
-          className={`${
-            type === "all" || type === "assigned" ? "hidden" : "block"
-          }`}
-        >
-          <button
-            onClick={() => {
-              selectedRows?.length === 0
-                ? info_toaster("Select atleast one customer")
-                : setModal("assign");
-            }}
-            className="rounded-lg font-inter font-medium text-white px-10 py-2.5 sm:h-full border border-theme bg-theme hover:bg-white hover:text-theme duration-150"
-          >
-            {type === "unassigned" &&
-              // ?
-              //  "Reassign Sale Representative"
-              // :
-              "Assign Local Partner"}
-          </button>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-        <ManagementTab
-          title="Total Customer"
-          desc={dashboardCards?.data?.data?.totalCustomer}
-        />
-        {/* <ManagementTab
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+          <ManagementTab
+            title="Total Customer"
+            desc={dashboardCards?.data?.data?.totalCustomer}
+          />
+          {/* <ManagementTab
           title="New Customer"
           desc={dashboardCards?.data?.data?.newCustomer}
         />
@@ -402,7 +415,7 @@ export default function Customers() {
           title="Inactive Customer"
           desc={dashboardCards?.data?.data?.inactiveCustomer}
         /> */}
-        {/* <ManagementTab title="T.Revenue Generated" desc="18,000" />
+          {/* <ManagementTab title="T.Revenue Generated" desc="18,000" />
         <ManagementTab title="Total Orders" desc="5000" />
         <ManagementTab title="Pending Orders" desc="5000" />
         <ManagementTab title="Total Orders Amount" desc="55,000" />

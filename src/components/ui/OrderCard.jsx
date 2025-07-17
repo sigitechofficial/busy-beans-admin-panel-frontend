@@ -32,7 +32,7 @@ export default function OrderCard(props) {
 
   const [dispatchOrderData, setDispatchOrderData] = useState({
     trackingNumber: "",
-    shippingCompany: "",
+    shippingCompany: "fedex",
   });
 
   const { data: suppliersData } = GetAPI(

@@ -68,13 +68,13 @@ export default function SalesRepresentativeCustomers() {
           Customer Management
         </h2>
 
-        {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">
-          <li>Invoice</li>
-          <li>Quickbooks</li>
-          <li>Schedule</li>
-          <li>Bulk Modify</li>
-          <li>Export</li>
-        </ul> */}
+        <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">
+          <li
+            onClick={() => router.push("/sales-representative/customers/add")}
+          >
+            Add New Customer
+          </li>
+        </ul>
       </div>
       <div className="space-y-8 pb-6 pt-32 px-6 2xl:px-12">
         <div className="flex items-center justify-end">
@@ -89,14 +89,14 @@ export default function SalesRepresentativeCustomers() {
           />
         </div>
 
-        <div className="flex justify-end">
+        {/* <div className="flex justify-end">
           <button
             onClick={() => router.push("/sales-representative/customers/add")}
             className="rounded-lg font-inter font-medium border border-theme text-white bg-theme hover:bg-white hover:text-theme duration-150 px-2 sm:px-3 py-2.5 sm:py-4"
           >
             + Add New Customer
           </button>
-        </div>
+        </div> */}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
           <ManagementTab

@@ -69,8 +69,10 @@ export default function page() {
       zipCode: "",
       status: true,
     },
+    isChecked: true,
   });
   console.log("🚀 ~ page ~ userData:", userData);
+
   const [allStates, setAllStates] = useState([]);
   const [allCities, setAllCities] = useState([]);
 
@@ -116,7 +118,6 @@ export default function page() {
 
   const handleBillingShippingAddress = (e) => {
     const isChecked = e.target.checked;
-    console.log("Checkbox checked:", isChecked);
     if (isChecked) {
       setUserData({
         ...userData,
@@ -144,80 +145,164 @@ export default function page() {
     }
   };
 
-  const handleStep1 = () => {
-    if (userData?.address?.companyaddress.trim() === "") {
-      info_toaster("Company address cannot be empty");
-    }
-    // else if (userData?.address?.addressLineOne.trim() === "") {
-    //   info_toaster("address Line 1 cannot be empty");
-    // } else if (userData?.address?.addressLineTwo.trim() === "") {
-    //   info_toaster("address Line 2 cannot be empty");
-    // }
-    else if (userData?.address?.town.trim() === "") {
-      info_toaster("Town cannot be empty");
-    } else if (userData?.address?.zipCode.trim() === "") {
-      info_toaster("Zip code cannot be empty");
-    } else if (userData?.address?.country.trim() === "") {
-      info_toaster("Country name cannot be empty");
-    } else if (userData?.address?.state.trim() === "") {
-      info_toaster("State name cannot be empty");
-    } else if (userData?.billingAddress?.companyaddress.trim() === "") {
-      info_toaster("Billing Address cannot be empty");
-    } else if (userData?.billingAddress?.town.trim() === "") {
-      info_toaster("Billing Address Town cannot be empty");
-    } else if (userData?.billingAddress?.zipCode.trim() === "") {
-      info_toaster("Billing Address Zip code cannot be empty");
-    } else if (userData?.billingAddress?.country.trim() === "") {
-      info_toaster("Billing Address Country name cannot be empty");
-    } else if (userData?.billingAddress?.state.trim() === "") {
-      info_toaster("Billing Address State name cannot be empty");
-    } else {
-      success_toaster("Step 1 completed successfully");
-      setStep(2);
-    }
-  };
+  // const handleStep1 = () => {
+  //   if (userData?.address?.companyaddress.trim() === "") {
+  //     info_toaster("Company address cannot be empty");
+  //   }
+  //   // else if (userData?.address?.addressLineOne.trim() === "") {
+  //   //   info_toaster("address Line 1 cannot be empty");
+  //   // } else if (userData?.address?.addressLineTwo.trim() === "") {
+  //   //   info_toaster("address Line 2 cannot be empty");
+  //   // }
+  //   else if (userData?.address?.town.trim() === "") {
+  //     info_toaster("Town cannot be empty");
+  //   } else if (userData?.address?.zipCode.trim() === "") {
+  //     info_toaster("Zip code cannot be empty");
+  //   } else if (userData?.address?.country.trim() === "") {
+  //     info_toaster("Country name cannot be empty");
+  //   } else if (userData?.address?.state.trim() === "") {
+  //     info_toaster("State name cannot be empty");
+  //   } else if (userData?.billingAddress?.companyaddress.trim() === "") {
+  //     info_toaster("Billing Address cannot be empty");
+  //   } else if (userData?.billingAddress?.town.trim() === "") {
+  //     info_toaster("Billing Address Town cannot be empty");
+  //   } else if (userData?.billingAddress?.zipCode.trim() === "") {
+  //     info_toaster("Billing Address Zip code cannot be empty");
+  //   } else if (userData?.billingAddress?.country.trim() === "") {
+  //     info_toaster("Billing Address Country name cannot be empty");
+  //   } else if (userData?.billingAddress?.state.trim() === "") {
+  //     info_toaster("Billing Address State name cannot be empty");
+  //   } else {
+  //     success_toaster("Step 1 completed successfully");
+  //     setStep(2);
+  //   }
+  // };
 
-  const handleStep2 = () => {
-    if (!userData?.info?.companyName.trim()) {
-      info_toaster("Company Name cannot be empty");
-    } else if (!userData?.info?.companyInfo.trim()) {
-      info_toaster("Company Info cannot be empty");
-    } else if (!userData?.info?.phoneNumber.trim()) {
-      info_toaster("Phone number cannot be empty");
-    } else if (!userData?.info?.emailToSendInvoices.trim()) {
-      info_toaster("Invoice email cannot be empty");
-    } else if (
-      !emailValidity.test(userData?.info?.emailToSendInvoices.trim())
+  // const handleStep2 = () => {
+  //   if (!userData?.info?.companyName.trim()) {
+  //     info_toaster("Company Name cannot be empty");
+  //   } else if (!userData?.info?.companyInfo.trim()) {
+  //     info_toaster("Company Info cannot be empty");
+  //   } else if (!userData?.info?.phoneNumber.trim()) {
+  //     info_toaster("Phone number cannot be empty");
+  //   } else if (!userData?.info?.emailToSendInvoices.trim()) {
+  //     info_toaster("Invoice email cannot be empty");
+  //   } else if (
+  //     !emailValidity.test(userData?.info?.emailToSendInvoices.trim())
+  //   ) {
+  //     info_toaster("Invalid email format");
+  //   } else {
+  //     success_toaster("Step 2 completed successfully");
+  //     setStep(3);
+  //   }
+  // };
+
+  const validateCustomerForm = (userData) => {
+    // --- Shipping Address ---
+    const address = userData.address;
+    if (!address.companyaddress?.trim())
+      return { error: true, message: "Company address cannot be empty" };
+
+    if (!address.country?.trim())
+      return { error: true, message: "Country cannot be empty" };
+    if (!address.state?.trim())
+      return { error: true, message: "State cannot be empty" };
+    if (!address.town?.trim())
+      return { error: true, message: "Town cannot be empty" };
+    if (!address.zipCode?.trim())
+      return { error: true, message: "Zip code cannot be empty" };
+
+    // --- Billing Address ---
+    const billing = userData.isChecked
+      ? {
+          companyaddress: address.companyaddress,
+          town: address.town,
+          country: address.country,
+          state: address.state,
+          zipCode: address.zipCode,
+        }
+      : userData.billingAddress;
+
+    if (!billing.companyaddress?.trim())
+      return { error: true, message: "Billing address cannot be empty" };
+    if (!billing.town?.trim())
+      return { error: true, message: "Billing town cannot be empty" };
+    if (!billing.country?.trim())
+      return { error: true, message: "Billing country cannot be empty" };
+    if (!billing.state?.trim())
+      return { error: true, message: "Billing state cannot be empty" };
+    if (!billing.zipCode?.trim())
+      return { error: true, message: "Billing zip code cannot be empty" };
+
+    // --- Company Info ---
+    const info = userData.info;
+    if (!info.companyName?.trim())
+      return { error: true, message: "Company name cannot be empty" };
+    if (!info.companyInfo?.trim())
+      return { error: true, message: "Dispatch email cannot be empty" };
+    if (!info.phoneNumber?.trim())
+      return { error: true, message: "Phone number cannot be empty" };
+    if (!info.emailToSendInvoices?.trim())
+      return { error: true, message: "Invoice email cannot be empty" };
+    if (!emailValidity.test(info.emailToSendInvoices.trim()))
+      return { error: true, message: "Invalid invoice email format" };
+
+    // --- User Info ---
+    if (!info.name?.trim())
+      return { error: true, message: "Contact Name cannot be empty" };
+    if (!info.email?.trim())
+      return { error: true, message: "Login email cannot be empty" };
+    if (!emailValidity.test(info.email.trim()))
+      return { error: true, message: "Invalid login email" };
+    if (!info.password?.trim() || info.password.trim().length < 6)
+      return { error: true, message: "Password must be at least 6 characters" };
+
+    // Password strength
+    if (
+      !passwordStrength.weak.test(info.password.trim()) ||
+      !passwordStrength.medium.test(info.password.trim()) ||
+      !passwordStrength.strong.test(info.password.trim())
     ) {
-      info_toaster("Invalid email format");
-    } else {
-      success_toaster("Step 2 completed successfully");
-      setStep(3);
+      return {
+        error: true,
+        message: "Password must be strong and meet all requirements",
+      };
     }
+
+    if (!info.confirmPassword?.trim())
+      return { error: true, message: "Confirm password cannot be empty" };
+    if (info.password.trim() !== info.confirmPassword.trim())
+      return { error: true, message: "Passwords do not match" };
+
+    // ✅ Passed all checks
+    return { error: false };
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (userData?.info?.name.trim() === "") {
-      info_toaster("Name cannot be empty");
-    } else if (userData?.info?.email.trim() === "") {
-      info_toaster("Email cannot be empty");
-    } else if (!emailValidity.test(userData?.info?.email.trim())) {
-      info_toaster("Invalid Email");
-    } else if (userData?.info?.password.trim().length < 6) {
-      info_toaster("Password must be of minimum 6");
-    } else if (
-      !passwordStrength?.weak?.test(userData?.info?.password.trim()) ||
-      !passwordStrength?.medium?.test(userData?.info?.password.trim()) ||
-      !passwordStrength?.strong?.test(userData?.info?.password.trim())
-    ) {
-      info_toaster("Password must be Strong");
-    } else if (userData?.info?.confirmPassword.trim() === "") {
-      info_toaster("Enter password again");
-    } else if (
-      userData?.info?.password.trim() !== userData?.info?.confirmPassword.trim()
-    ) {
-      info_toaster("Password and confirm password must be same");
+
+    const finalBillingAddress = userData.isChecked
+      ? {
+          addressLineOne: userData.address.companyaddress,
+          town: userData.address.town,
+          country: userData.address.country,
+          state: userData.address.state,
+          zipCode: userData.address.zipCode,
+          status: true,
+        }
+      : {
+          addressLineOne: userData?.billingAddress?.companyaddress,
+          town: userData?.billingAddress?.town,
+          country: userData?.billingAddress?.country,
+          state: userData?.billingAddress?.state,
+          zipCode: userData?.billingAddress?.zipCode,
+          status: true,
+        };
+
+    const result = validateCustomerForm(userData);
+
+    if (result?.error) {
+      info_toaster(result.message);
     } else {
       // let cityStatus = selectedCountryCities.find(
       //   (city) => city?.name === userData?.address?.town
@@ -251,13 +336,16 @@ export default function page() {
               status: true,
             },
             billingAddress: {
-              addressLineOne: userData?.billingAddress?.companyaddress,
-              town: userData?.billingAddress?.town,
-              country: userData?.billingAddress?.country,
-              state: userData?.billingAddress?.state,
-              zipCode: userData?.billingAddress?.zipCode,
-              status: true,
+              ...finalBillingAddress,
             },
+            // billingAddress: {
+            //   addressLineOne: userData?.billingAddress?.companyaddress,
+            //   town: userData?.billingAddress?.town,
+            //   country: userData?.billingAddress?.country,
+            //   state: userData?.billingAddress?.state,
+            //   zipCode: userData?.billingAddress?.zipCode,
+            //   status: true,
+            // },
           }
         );
         if (res?.data?.status === "success") {
@@ -484,14 +572,14 @@ export default function page() {
 
         {/* main section start */}
         <div className="lg:gap-x-12 xl:gap-16 relative px-5 md:px-10 xl:px-14 py-5 md:py-8 xl:py-10 shadow-tableShadow border border-borderColor rounded-sm gap-y-4">
-          {(step === 2 || step === 3) && !loader && (
+          {/* {(step === 2 || step === 3) && !loader && (
             <button
               onClick={() => setStep(step - 1)}
               className="absolute left-5 top-2 flex justify-center items-center w-8 h-8 text-theme rounded-full hover:bg-theme hover:text-white  duration-200"
             >
               <FaLongArrowAltLeft size={30} />
             </button>
-          )}
+          )} */}
           {/* <div className="w-60 md:w-72 lg:w-80">
             <img
               src="/images/logocoffee.png"
@@ -503,7 +591,7 @@ export default function page() {
           {loader ? (
             <MiniLoader />
           ) : (
-            <div>
+            <div className="space-y-8">
               {/* <p className="font-satoshi text-theme font-black text-2xl lg:text-3xl text-center">
                 Welcome to Busy Bean Coffee
               </p> */}
@@ -559,13 +647,13 @@ export default function page() {
                     </div> */}
                         <div className="flex flex-col gap-y-2">
                           <label className="text-labelColor font-medium font-satoshi">
-                            Company Name{" "}
+                            Company Address{" "}
                           </label>
                           <input
                             type="text"
                             name="companyaddress"
                             value={userData?.address?.companyaddress}
-                            placeholder="XYZ Company"
+                            placeholder="XYZ company address"
                             className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                             onChange={handleAddress}
                           />
@@ -794,7 +882,17 @@ export default function page() {
                     <input
                       type="checkbox"
                       name="billingStatus"
-                      onChange={handleBillingShippingAddress}
+                      checked={userData?.isChecked}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+
+                        setUserData({
+                          ...userData,
+                          isChecked: checked,
+                        });
+
+                        // handleBillingShippingAddress(e);
+                      }}
                       className="size-4 border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none"
                     />
                     <label className="text-labelColor font-medium font-satoshi">
@@ -802,13 +900,14 @@ export default function page() {
                     </label>
                   </div>
 
-                  <div className="font-satoshi space-y-4">
-                    <p className="font-black text-xl lg:text-2xl text-theme">
-                      Billing Address
-                    </p>
-                    <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
-                      <div className="space-y-4">
-                        {/* <Select
+                  {!userData?.isChecked && (
+                    <div className="font-satoshi space-y-4">
+                      <p className="font-black text-xl lg:text-2xl text-theme">
+                        Billing Address
+                      </p>
+                      <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
+                        <div className="space-y-4">
+                          {/* <Select
                       placeholder="Select Country"
                       className="w-full"
                       styles={drawerSelectStyles}
@@ -820,7 +919,7 @@ export default function page() {
                         handleSelectedCountryCities(e.label);
                       }}
                     /> */}
-                        {/* <div className="flex flex-col gap-y-2">
+                          {/* <div className="flex flex-col gap-y-2">
                       <label className="text-labelColor font-medium font-satoshi">
                         Company Address
                       </label>
@@ -949,7 +1048,7 @@ export default function page() {
                                 value={userData?.billingAddress?.town}
                               />
 
-                              {/* <Select
+                                {/* <Select
                               placeholder="Select City"
                               className="w-full"
                               styles={drawerSelectStyles}
@@ -972,7 +1071,7 @@ export default function page() {
                                 });
                               }}
                             /> */}
-                              {/* <input
+                                {/* <input
                             type="text"
                             name="town"
                             onChange={handleAddress}
@@ -980,77 +1079,78 @@ export default function page() {
                             placeholder="Enter Town / City"
                             className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                           /> */}
-                            </div>
-                            <div className="flex flex-col gap-y-2">
-                              <label className="text-labelColor font-medium font-satoshi">
-                                Zip Code
-                              </label>
-                              <input
-                                type="text"
-                                name="zipCode"
-                                onChange={(e) => {
-                                  setUserData({
-                                    ...userData,
-                                    billingAddress: {
-                                      ...userData.billingAddress,
-                                      zipCode: e.target.value,
-                                    },
-                                  });
-                                }}
-                                value={userData?.billingAddress?.zipCode}
-                                placeholder="Enter Zip Code"
-                                className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                              />
+                              </div>
+                              <div className="flex flex-col gap-y-2">
+                                <label className="text-labelColor font-medium font-satoshi">
+                                  Zip Code
+                                </label>
+                                <input
+                                  type="text"
+                                  name="zipCode"
+                                  onChange={(e) => {
+                                    setUserData({
+                                      ...userData,
+                                      billingAddress: {
+                                        ...userData.billingAddress,
+                                        zipCode: e.target.value,
+                                      },
+                                    });
+                                  }}
+                                  value={userData?.billingAddress?.zipCode}
+                                  placeholder="Enter Zip Code"
+                                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                                />
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div>
-                          <button
-                            onClick={handleStep1}
-                            className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
-                          >
-                            Next
-                          </button>
+                          {/* <div>
+                            <button
+                              onClick={handleStep1}
+                              className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
+                            >
+                              Next
+                            </button>
+                          </div> */}
                         </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
-              {step === 2 && (
-                <div className="font-satoshi space-y-4">
-                  <p className="font-black text-xl lg:text-2xl text-theme flex items-center justify-between gap-x-2">
-                    2. Company Details
-                  </p>
-                  <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
-                    <div className="space-y-4">
-                      <div className="flex flex-col gap-y-2">
-                        <label className="text-labelColor font-medium font-satoshi">
-                          Company Name
-                        </label>
-                        <input
-                          type="text"
-                          name="companyName"
-                          onChange={handleInfo}
-                          value={userData?.info?.companyName}
-                          placeholder="Enter Company Name"
-                          className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-y-2">
-                        <label className="text-labelColor font-medium font-satoshi">
-                          Company Info
-                        </label>
-                        <input
-                          type="text"
-                          name="companyInfo"
-                          onChange={handleInfo}
-                          value={userData?.info?.companyInfo}
-                          placeholder="Enter Company Info"
-                          className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                        />
-                      </div>
-                      {/* <div className="flex flex-col gap-y-2">
+              {/* {step === 2 && ( */}
+              <div className="font-satoshi space-y-4">
+                <p className="font-black text-xl lg:text-2xl text-theme flex items-center justify-between gap-x-2">
+                  2. Company Details
+                </p>
+                <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
+                  <div className="space-y-4">
+                    <div className="flex flex-col gap-y-2">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Company Name
+                      </label>
+                      <input
+                        type="text"
+                        name="companyName"
+                        onChange={handleInfo}
+                        value={userData?.info?.companyName}
+                        placeholder="Sigi Technologies"
+                        className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-y-2">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Dispatch Email
+                      </label>
+                      <input
+                        type="text"
+                        name="companyInfo"
+                        onChange={handleInfo}
+                        value={userData?.info?.companyInfo}
+                        placeholder="xyz@gmail.com"
+                        className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      />
+                    </div>
+                    {/* <div className="flex flex-col gap-y-2">
                       <label className="text-labelColor font-medium font-satoshi">
                         Phone Number
                       </label>
@@ -1063,241 +1163,233 @@ export default function page() {
                         className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       />
                     </div> */}
-                      <div className="flex flex-col gap-y-2">
-                        <label className="text-labelColor font-medium font-satoshi">
-                          Phone number
-                        </label>
-                        {/* <input
+                    <div className="flex flex-col gap-y-2">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Phone number
+                      </label>
+                      {/* <input
                   type="text"
                   name=""
                   placeholder="Enter Phone Number"
                   className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                 /> */}
-                        <div className="grid grid-cols-10 gap-x-2">
-                          <PhoneInput
-                            focusBorderColor="none"
-                            borderWidth="none"
-                            className="chakra_input col-span-2"
-                            inputStyle={{
-                              width: "90px",
-                              height: "45px",
-                              borderRadius: "4px",
-                              border: "1px solid #00000033",
-                              backgroundColor: "#ffffff",
-                              color: "#6f4e37",
-                              opacity: "20",
-                            }}
-                            buttonStyle={{
-                              backgroundColor: "#ffffff",
-                              border: "1px solid #86644C",
-                            }}
-                            containerStyle={{
-                              borderRadius: "12px",
-                              // backgroundColor: "#6f4e37",
-                            }}
-                            dropdownStyle={{
-                              backgroundColor: "#86644C",
-                              borderRadius: "8px",
-                            }}
-                            country={"us"}
-                            value={userData?.info?.countryCode}
-                            onChange={(phone) =>
-                              setUserData({
-                                ...userData,
-                                info: {
-                                  ...userData?.info,
-                                  countryCode: phone,
-                                },
-                              })
-                            }
-                          />
-                          <input
-                            type="number"
-                            name="phoneNumber"
-                            value={userData?.info?.phoneNumber}
-                            placeholder="Enter Phone Number"
-                            className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5  w-full col-span-8"
-                            onChange={handleInfo}
-                          />
-                        </div>
+                      <div className="grid grid-cols-10 gap-x-2">
+                        <PhoneInput
+                          focusBorderColor="none"
+                          borderWidth="none"
+                          className="chakra_input col-span-2"
+                          inputStyle={{
+                            width: "90px",
+                            height: "45px",
+                            borderRadius: "4px",
+                            border: "1px solid #00000033",
+                            backgroundColor: "#ffffff",
+                            color: "#6f4e37",
+                            opacity: "20",
+                          }}
+                          buttonStyle={{
+                            backgroundColor: "#ffffff",
+                            border: "1px solid #86644C",
+                          }}
+                          containerStyle={{
+                            borderRadius: "12px",
+                            // backgroundColor: "#6f4e37",
+                          }}
+                          dropdownStyle={{
+                            backgroundColor: "#86644C",
+                            borderRadius: "8px",
+                          }}
+                          country={"us"}
+                          value={userData?.info?.countryCode}
+                          onChange={(phone) =>
+                            setUserData({
+                              ...userData,
+                              info: {
+                                ...userData?.info,
+                                countryCode: phone,
+                              },
+                            })
+                          }
+                        />
+                        <input
+                          type="number"
+                          name="phoneNumber"
+                          value={userData?.info?.phoneNumber}
+                          placeholder="Enter Phone Number"
+                          className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5  w-full col-span-8"
+                          onChange={handleInfo}
+                        />
                       </div>
                     </div>
+                  </div>
 
-                    <div className="flex flex-col justify-between gap-y-4">
-                      <div className="space-y-4">
-                        <div className="flex flex-col gap-y-2">
-                          <label className="text-labelColor font-medium font-satoshi">
-                            Sale Tax Number <span>(if applicable)</span>
-                          </label>
-                          <input
-                            type="text"
-                            name="saleTaxNumber"
-                            onChange={handleInfo}
-                            value={userData?.info?.saleTaxNumber}
-                            placeholder="Enter sale tax number"
-                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                          />
-                        </div>
-                        <div className="flex flex-col gap-y-2">
-                          <label className="text-labelColor font-medium font-satoshi">
-                            Email to send invoices
-                          </label>
-                          <input
-                            type="email"
-                            name="emailToSendInvoices"
-                            onChange={handleInfo}
-                            value={userData?.info?.emailToSendInvoices}
-                            placeholder="Enter Email"
-                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                          />
-                        </div>
+                  <div className="flex flex-col justify-between gap-y-4">
+                    <div className="space-y-4">
+                      <div className="flex flex-col gap-y-2">
+                        <label className="text-labelColor font-medium font-satoshi">
+                          Sale Tax Number <span>(if applicable)</span>
+                        </label>
+                        <input
+                          type="text"
+                          name="saleTaxNumber"
+                          onChange={handleInfo}
+                          value={userData?.info?.saleTaxNumber}
+                          placeholder="Enter sale tax number"
+                          className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        />
                       </div>
-                      <div>
+                      <div className="flex flex-col gap-y-2">
+                        <label className="text-labelColor font-medium font-satoshi">
+                          Invoice Email
+                        </label>
+                        <input
+                          type="email"
+                          name="emailToSendInvoices"
+                          onChange={handleInfo}
+                          value={userData?.info?.emailToSendInvoices}
+                          placeholder="abc@gmail.com"
+                          className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        />
+                      </div>
+                    </div>
+                    {/* <div>
                         <button
                           onClick={handleStep2}
                           className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
                         >
                           Next
                         </button>
-                      </div>
-                    </div>
+                      </div> */}
                   </div>
                 </div>
-              )}
-              {step === 3 && (
-                <form
-                  onSubmit={handleSubmit}
-                  className="font-satoshi space-y-4"
-                >
-                  <p className="font-black text-xl lg:text-2xl text-theme">
-                    3. User Details
-                  </p>
-                  <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
-                    <div className="space-y-4">
-                      <div className="flex flex-col gap-y-2">
-                        <label className="text-labelColor font-medium font-satoshi">
-                          Full Name
-                        </label>
-                        <input
-                          type="text"
-                          name="name"
-                          onChange={handleInfo}
-                          value={userData?.info?.name}
-                          placeholder="Enter Name"
-                          className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-y-2">
-                        <label className="text-labelColor font-medium font-satoshi">
-                          Login Email
-                        </label>
-                        <input
-                          type="email"
-                          name="email"
-                          onChange={handleInfo}
-                          value={userData?.info?.email}
-                          placeholder="Enter email"
-                          className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                        />
-                      </div>
+              </div>
+              {/* )} */}
+              {/* {step === 3 && ( */}
+              <form onSubmit={handleSubmit} className="font-satoshi space-y-4">
+                <p className="font-black text-xl lg:text-2xl text-theme">
+                  3. User Details
+                </p>
+                <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
+                  <div className="space-y-4">
+                    <div className="flex flex-col gap-y-2">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Full Name / Contact Name
+                      </label>
+                      <input
+                        type="text"
+                        name="name"
+                        onChange={handleInfo}
+                        value={userData?.info?.name}
+                        placeholder="Enter Name"
+                        className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      />
                     </div>
+                    <div className="flex flex-col gap-y-2">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Login Email / Contact Email
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        onChange={handleInfo}
+                        value={userData?.info?.email}
+                        placeholder="Enter email"
+                        className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      />
+                    </div>
+                  </div>
 
-                    <div className="flex flex-col justify-between gap-y-4">
-                      <div className="space-y-4">
-                        <div className="flex flex-col gap-y-2 relative">
-                          <label className="text-labelColor font-medium font-satoshi">
-                            Password
-                          </label>
-                          <input
-                            type={visibility?.pass ? "text" : "password"}
-                            name="password"
-                            onChange={handleInfo}
-                            value={userData?.info?.password}
-                            placeholder="Enter Password"
-                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                          />
-                          {userData?.info?.password.length > 0 && (
-                            <p className="text-red-700 text font-semibold text-sm">
-                              {!passwordStrength?.weak?.test(
-                                userData?.info?.password.trim()
-                              )
-                                ? "Password is too weak, contain atleat 6 characters consider adding more complexity"
-                                : !passwordStrength?.medium?.test(
-                                    userData?.info?.password.trim()
-                                  )
-                                ? "Password should include both uppercase and lowercase letters"
-                                : !passwordStrength?.strong.test(
-                                    userData?.info?.password.trim()
-                                  )
-                                ? "Password is strong! It should include at least one uppercase letter, one lowercase letter, one number, and one special character"
-                                : ""}
-                            </p>
-                          )}
-                          <button
-                            onClick={() =>
-                              setVisibility({
-                                ...visibility,
-                                pass: !visibility?.pass,
-                              })
-                            }
-                            type="button"
-                            className="text-black absolute right-4 top-11"
-                          >
-                            {visibility?.pass ? (
-                              <AiOutlineEye size={24} color="#000000" />
-                            ) : (
-                              <AiOutlineEyeInvisible
-                                size={24}
-                                color="#000000"
-                              />
-                            )}
-                          </button>
-                        </div>
-                        <div className="flex flex-col gap-y-2 relative">
-                          <label className="text-labelColor font-medium font-satoshi">
-                            Confirm Password
-                          </label>
-                          <input
-                            type={visibility?.confirmPass ? "text" : "password"}
-                            name="confirmPassword"
-                            onChange={handleInfo}
-                            value={userData?.info?.confirmPassword}
-                            placeholder="Enter password again"
-                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                          />
-                          <button
-                            onClick={() =>
-                              setVisibility({
-                                ...visibility,
-                                confirmPass: !visibility?.confirmPass,
-                              })
-                            }
-                            type="button"
-                            className="text-black absolute right-4 top-11"
-                          >
-                            {visibility?.confirmPass ? (
-                              <AiOutlineEye size={24} color="#000000" />
-                            ) : (
-                              <AiOutlineEyeInvisible
-                                size={24}
-                                color="#000000"
-                              />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                      <div>
+                  <div className="flex flex-col justify-between gap-y-4">
+                    <div className="space-y-4">
+                      <div className="flex flex-col gap-y-2 relative">
+                        <label className="text-labelColor font-medium font-satoshi">
+                          Password
+                        </label>
+                        <input
+                          type={visibility?.pass ? "text" : "password"}
+                          name="password"
+                          onChange={handleInfo}
+                          value={userData?.info?.password}
+                          placeholder="Enter Password"
+                          className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        />
+                        {userData?.info?.password.length > 0 && (
+                          <p className="text-red-700 text font-semibold text-sm">
+                            {!passwordStrength?.weak?.test(
+                              userData?.info?.password.trim()
+                            )
+                              ? "Password is too weak, contain atleat 6 characters consider adding more complexity"
+                              : !passwordStrength?.medium?.test(
+                                  userData?.info?.password.trim()
+                                )
+                              ? "Password should include both uppercase and lowercase letters"
+                              : !passwordStrength?.strong.test(
+                                  userData?.info?.password.trim()
+                                )
+                              ? "Password is strong! It should include at least one uppercase letter, one lowercase letter, one number, and one special character"
+                              : ""}
+                          </p>
+                        )}
                         <button
-                          type="submit"
-                          className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
+                          onClick={() =>
+                            setVisibility({
+                              ...visibility,
+                              pass: !visibility?.pass,
+                            })
+                          }
+                          type="button"
+                          className="text-black absolute right-4 top-11"
                         >
-                          Submit
+                          {visibility?.pass ? (
+                            <AiOutlineEye size={24} color="#000000" />
+                          ) : (
+                            <AiOutlineEyeInvisible size={24} color="#000000" />
+                          )}
+                        </button>
+                      </div>
+                      <div className="flex flex-col gap-y-2 relative">
+                        <label className="text-labelColor font-medium font-satoshi">
+                          Confirm Password
+                        </label>
+                        <input
+                          type={visibility?.confirmPass ? "text" : "password"}
+                          name="confirmPassword"
+                          onChange={handleInfo}
+                          value={userData?.info?.confirmPassword}
+                          placeholder="Enter password again"
+                          className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        />
+                        <button
+                          onClick={() =>
+                            setVisibility({
+                              ...visibility,
+                              confirmPass: !visibility?.confirmPass,
+                            })
+                          }
+                          type="button"
+                          className="text-black absolute right-4 top-11"
+                        >
+                          {visibility?.confirmPass ? (
+                            <AiOutlineEye size={24} color="#000000" />
+                          ) : (
+                            <AiOutlineEyeInvisible size={24} color="#000000" />
+                          )}
                         </button>
                       </div>
                     </div>
                   </div>
-                </form>
-              )}
+                </div>
+
+                <div className="w-[399px] pt-5">
+                  <button
+                    type="submit"
+                    className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
+                  >
+                    Submit
+                  </button>
+                </div>
+              </form>
+              {/* )} */}
             </div>
           )}
         </div>

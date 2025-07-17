@@ -8,10 +8,13 @@ import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import { PatchAPI } from "@/utilities/PatchAPI";
 
 export default function InvoicePDFDownload({ invoiceData, reFetch }) {
-  console.log("🚀 ~ InvoicePDFDownload ~ invoiceData:", invoiceData);
   const invoiceRef = useRef(null);
 
   const [data, setData] = useState("");
+  const [pdfData, setPdfData] = useState({
+    invNumber: "",
+    poNumber: "",
+  });
   const [isPrint, setIsPrint] = useState(false);
 
   const handleDownload = () => {
@@ -34,10 +37,19 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
     }, 3000);
   };
 
-  const handleQtyChange = (index, value) => {
-    const updated = [...data];
-    updated[index] = { ...updated[index], qty: value };
-    setData(updated);
+  const handleChange = (index, value, type) => {
+    switch (type) {
+      case "invNumber":
+        setPdfData({ ...pdfData, invNumber: value });
+        break;
+      case "poNumber":
+        setPdfData({ ...pdfData, poNumber: value });
+        break;
+      default:
+        const updated = [...data];
+        updated[index] = { ...updated[index], qty: value };
+        setData(updated);
+    }
   };
 
   const handleUpdate = async () => {
@@ -49,7 +61,13 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
 
     let res = await PatchAPI(
       `api/v1/admin/order-management/update-order/${invoiceData?.id}`,
-      { items: itemsForApi }
+      {
+        items: itemsForApi,
+        order: {
+          id: pdfData?.invNumber,
+          poNumber: pdfData?.poNumber,
+        },
+      }
     );
 
     if (res?.data?.status === "success") {
@@ -61,7 +79,17 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
   };
 
   useEffect(() => {
-    setData(invoiceData?.items);
+    if (invoiceData?.items) {
+      const enrichedItems = invoiceData.items.map((item) => ({
+        ...item,
+        unitPrice: item.qty ? item.price / item.qty : 0, // avoid NaN
+      }));
+      setData(enrichedItems);
+    }
+    setPdfData({
+      invNumber: invoiceData?.id,
+      poNumber: invoiceData?.poNumber,
+    });
   }, [invoiceData]);
 
   return (
@@ -86,14 +114,19 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
                 <div className="w-36">Invoice number:</div>
 
                 {isPrint ? (
-                  <div>INV-00{invoiceData?.id}</div>
+                  <div>INV-00{pdfData?.invNumber}</div>
                 ) : (
-                  <input
-                    className="text-start outline-none bg-transparent rounded  font-semibold"
-                    type="text"
-                    value={"00" + invoiceData?.id}
-                    onChange={(e) => handleQtyChange(index, e.target.value)}
-                  />
+                  <div className="flex items-center">
+                    INV-00
+                    <input
+                      className="text-start outline-none bg-transparent rounded  font-semibold"
+                      type="text"
+                      value={pdfData?.invNumber}
+                      onChange={(e) =>
+                        handleChange(0, e.target.value, "invNumber")
+                      }
+                    />
+                  </div>
                 )}
               </div>
               <div className="flex items-center text-sm font-semibold">
@@ -102,7 +135,18 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
               </div>
               <div className="flex items-center text-sm font-semibold">
                 <div className="w-36">PO Number:</div>
-                <div>{invoiceData?.poNumber}</div>
+                {isPrint ? (
+                  <div>{pdfData?.poNumber}</div>
+                ) : (
+                  <input
+                    className="text-start outline-none bg-transparent rounded  font-semibold"
+                    type="text"
+                    value={pdfData?.poNumber}
+                    onChange={(e) =>
+                      handleChange(0, e.target.value, "poNumber")
+                    }
+                  />
+                )}
               </div>
             </div>
 
@@ -236,7 +280,6 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
               <div>
                 {data &&
                   data?.map((prod, index) => {
-                    const unitPrice = prod?.price / prod?.qty;
                     return (
                       <div className="border-b last:border-0 grid grid-cols-6 h-8 items-center">
                         <div className="px-2 text-left">
@@ -257,12 +300,14 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
                               type="text"
                               value={prod?.qty}
                               onChange={(e) =>
-                                handleQtyChange(index, e.target.value)
+                                handleChange(index, e.target.value)
                               }
                             />
                           )}
                         </div>
-                        <div className=" px-2 text-right">${unitPrice}</div>
+                        <div className=" px-2 text-right">
+                          ${prod?.unitPrice}
+                        </div>
                         <div className=" px-2 text-right">${prod?.price}</div>
                       </div>
                     );

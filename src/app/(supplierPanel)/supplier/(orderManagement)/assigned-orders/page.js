@@ -16,14 +16,16 @@ export default function SupplierOrders() {
   const { data } = GetAPI(
     `api/v1/admin/orders?statusId=2&supplierId=${supplierId}`
   );
+  console.log("🚀 ~ SupplierOrders ~ data:", data?.data?.data)
 
   const columns = [
     // { field: "sl", header: "#", sort: true },
     { field: "id", header: "#", sort: true },
     { field: "customerName", header: "Customer" },
-    { field: "itemsPrice", header: "Items Price" },
-    { field: "subTotal", header: "Sub Total" },
-    { field: "totalBill", header: "Total" },
+    { field: "noOfItems", header: "No. of Items" },
+    // { field: "itemsPrice", header: "Items Price" },
+    // { field: "subTotal", header: "Sub Total" },
+    // { field: "totalBill", header: "Total" },
     // { field: "discountPrice", header: "Discount Price" },
     // { field: "discountPercentage", header: "Discount Percentage" },
     // { field: "vat", header: "Vat" },
@@ -43,6 +45,7 @@ export default function SupplierOrders() {
       sl: i + 1,
       id: detail?.id,
       customerName: detail?.customerName,
+      noOfItems: detail?.items?.length,
       totalBill: "$" + detail?.totalBill,
       subTotal: "$" + detail?.subTotal,
       discountPrice: "$" + detail?.discountPrice,

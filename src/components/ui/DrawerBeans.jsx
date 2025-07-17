@@ -34,6 +34,7 @@ const DrawerBeans = ({
     var userType = localStorage.getItem("userType");
   }
   const options = [];
+  const companyNameOptions = [];
   const paymentMethodOptions = [
     // { label: "COD", value: "cod" },
     { label: "Bank Check", value: "cheque" },
@@ -46,10 +47,11 @@ const DrawerBeans = ({
     { label: "Every Four Weeks", value: "every-four-weeks" },
   ];
   const [addressOptions, setAddressOptions] = useState([]);
-  console.log("🚀 ~ addressOptions:", addressOptions);
+
   const [counter, setCounter] = useState(null);
   const [render, setRender] = useState(false);
   const [email, setEmail] = useState("");
+  console.log("🚀 ~ email:", email);
   const [emailType, setEmailType] = useState(true);
   const [loader, setLoader] = useState(false);
   const [order, setOrder] = useState({
@@ -81,9 +83,17 @@ const DrawerBeans = ({
       ? `api/v1/admin/customer-management/customer-list/all`
       : `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}`
   );
+  // console.log("🚀 ~ data:", data?.data?.data);
 
   data?.data?.data?.map((user) =>
     options.push({ value: user?.email, label: user?.email })
+  );
+
+  data?.data?.data?.map((user) =>
+    companyNameOptions.push({
+      value: user?.id,
+      label: `${user?.companyName} ( ${user?.name} )`,
+    })
   );
 
   const handleCounterClick = (index) => {
@@ -290,6 +300,37 @@ const DrawerBeans = ({
     setAddressOptions([...addressList]);
   };
 
+  const handleCompanyName = (id) => {
+    // setEmail(email);
+    const selectedEmail = data?.data?.data?.find(
+      (customer) => customer?.id === id
+    );
+    console.log("🚀 ~ handleCompanyName ~ selectedEmail:", selectedEmail);
+    // console.log("🚀 ~ handleEmail ~ selectedEmail:", selectedEmail);
+    setOrder({
+      ...order,
+      userId: selectedEmail?.id,
+      addressId: "",
+    });
+    setEmail(selectedEmail?.email);
+    const addressList = (selectedEmail?.addresses ?? []).map((address) => {
+      const parts = [
+        address.companyaddress,
+        address.addressLineOne,
+        address.addressLineTwo,
+        address.town,
+        address.state,
+        address.zipCode,
+        address.country,
+      ].filter((part) => part && part.trim() !== "");
+      return {
+        value: address.id,
+        label: parts.length > 0 ? parts.join(", ") : "",
+      };
+    });
+    setAddressOptions([...addressList]);
+  };
+
   useEffect(() => {
     const fetchCharges = async () => {
       try {
@@ -340,18 +381,45 @@ const DrawerBeans = ({
                 <div className="space-y-4">
                   <div className="flex flex-col gap-y-2">
                     <label className="text-white font-medium font-satoshi">
-                      Email
+                      Company Name
                     </label>
                     <div className="flex items-center gap-x-2 min-h-full">
                       <Select
+                        placeholder="Select Company"
+                        className="w-full"
+                        styles={drawerSelectStyles}
+                        options={companyNameOptions}
+                        onChange={(e) => {
+                          // setEmail(e.value);
+                          handleCompanyName(e.value);
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-y-2">
+                    {/* <label className="text-white font-medium font-satoshi">
+                      Email
+                    </label> */}
+                    <div className="flex items-center gap-x-2 min-h-full">
+                      {/* <Select
                         placeholder="Select email"
                         className="w-full"
                         styles={drawerSelectStyles}
+                        value={{value: email, label: email}}
                         options={options}
                         onChange={(e) => {
-                          // setEmail(e.value);
+                          setEmail(e.value);
                           handleEmail(e.value);
                         }}
+                      /> */}
+                      <input
+                        type="text"
+                        value={email}
+                        name=""
+                        id=""
+                        placeholder="Email"
+                        className="w-full bg-white text-black rounded px-3 py-3 outline-none cursor-not-allowed font-satoshi placeholder-theme focus:ring-0 focus:border-theme"
+                        disabled
                       />
                     </div>
                   </div>
@@ -360,9 +428,14 @@ const DrawerBeans = ({
                       placeholder="Select Address"
                       className="w-full"
                       styles={drawerSelectStyles}
+                      value={
+                        addressOptions.find(
+                          (opt) => opt.value === order.addressId
+                        ) || null
+                      }
                       options={addressOptions}
                       onChange={(e) => {
-                        setOrder({ ...order, addressId: e.value });
+                        setOrder({ ...order, addressId: e?.value || "" });
                       }}
                     />
                   </div>
@@ -388,7 +461,6 @@ const DrawerBeans = ({
                       }}
                     />
                   </div>
-
                   <div>
                     <div className="w-full font-sf font-normal text-base text-theme-black-2 flex items-center gap-3 px-5 py-[5px] duration-300 border-2 border-white hover:border-goldenLight focus-within:border-goldenLight rounded-t">
                       <MdInsertComment size={24} />

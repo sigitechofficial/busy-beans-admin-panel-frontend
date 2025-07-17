@@ -193,35 +193,39 @@ export default function OrderCard(props) {
             </div>
           </div> */}
 
-          <div className="flex">
-            {/* <span className="text-black/60 w-2/4">Payment Status:</span> */}
+          {(userType === "admin" || userType === "salesRepresentative") && (
+            <div className="flex">
+              {/* <span className="text-black/60 w-2/4">Payment Status:</span> */}
 
-            {userType === "supplier" ||
-            (userType === "admin" &&
-              props?.orderData?.paymentMethod === "card") ||
-            props?.orderData?.statusId === 6 ? (
-              <div className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none">
-                {props?.orderData?.paymentStatus === "done" ? "Paid" : "Unpaid"}
-              </div>
-            ) : (
-              <span className="w-40">
-                <Select
-                  placeholder="Select Payment Status"
-                  className="w-full"
-                  value={
-                    props?.orderData?.paymentStatus === "pending"
-                      ? { value: "pending", label: "Unpaid" }
-                      : { value: "done", label: "Paid" }
-                  }
-                  styles={selectStyles2}
-                  options={paymentStausOptions}
-                  onChange={(e) => {
-                    handlePaymentStatus(e);
-                  }}
-                />
-              </span>
-            )}
-          </div>
+              {userType === "supplier" ||
+              (userType === "admin" &&
+                props?.orderData?.paymentMethod === "card") ||
+              props?.orderData?.statusId === 6 ? (
+                <div className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none">
+                  {props?.orderData?.paymentStatus === "done"
+                    ? "Paid"
+                    : "Unpaid"}
+                </div>
+              ) : (
+                <span className="w-40">
+                  <Select
+                    placeholder="Select Payment Status"
+                    className="w-full"
+                    value={
+                      props?.orderData?.paymentStatus === "pending"
+                        ? { value: "pending", label: "Unpaid" }
+                        : { value: "done", label: "Paid" }
+                    }
+                    styles={selectStyles2}
+                    options={paymentStausOptions}
+                    onChange={(e) => {
+                      handlePaymentStatus(e);
+                    }}
+                  />
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="w-full space-y-4">
@@ -367,12 +371,16 @@ export default function OrderCard(props) {
               <th className="py-2 px-2 text-center border border-gray-200">
                 Dispatched
               </th>
-              <th className="py-2 px-2 text-right border border-gray-200">
-                Unit $
-              </th>
-              <th className="py-2 px-2 text-right border border-gray-200">
-                Total $
-              </th>
+              {(userType === "admin" || userType === "salesRepresentative") && (
+                <th className="py-2 px-2 text-right border border-gray-200">
+                  Unit $
+                </th>
+              )}
+              {(userType === "admin" || userType === "salesRepresentative") && (
+                <th className="py-2 px-2 text-right border border-gray-200">
+                  Total $
+                </th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -408,47 +416,59 @@ export default function OrderCard(props) {
                     <td className="py-2 px-2 text-center border border-gray-200">
                       --
                     </td>
-                    <td className="py-2 px-2 text-right border border-gray-200">
-                      {parseFloat(item?.price / item?.qty).toFixed(2)}
-                    </td>
-                    <td className="py-2 px-2 text-right border border-gray-200">
-                      {parseFloat(item?.price).toFixed(2)}
-                    </td>
+                    {(userType === "admin" ||
+                      userType === "salesRepresentative") && (
+                      <td className="py-2 px-2 text-right border border-gray-200">
+                        {parseFloat(item?.price / item?.qty).toFixed(2)}
+                      </td>
+                    )}
+                    {(userType === "admin" ||
+                      userType === "salesRepresentative") && (
+                      <td className="py-2 px-2 text-right border border-gray-200">
+                        {parseFloat(item?.price).toFixed(2)}
+                      </td>
+                    )}
                   </tr>
                 </>
               );
             })}
 
             {/* Subtotal Row */}
-            <tr>
-              <td colSpan={6} className="border border-gray-200"></td>
-              <td className="py-2 px-2 text-right font-semibold border border-gray-200">
-                Sub-Total
-              </td>
-              <td className="py-2 px-2 text-right font-semibold border border-gray-200">
-                {props?.orderData?.subTotal}
-              </td>
-            </tr>
+            {(userType === "admin" || userType === "salesRepresentative") && (
+              <tr>
+                <td colSpan={6} className="border border-gray-200"></td>
+                <td className="py-2 px-2 text-right font-semibold border border-gray-200">
+                  Sub-Total
+                </td>
+                <td className="py-2 px-2 text-right font-semibold border border-gray-200">
+                  {props?.orderData?.subTotal}
+                </td>
+              </tr>
+            )}
             {/* Shipping Row */}
-            <tr>
-              <td colSpan={6} className="border border-gray-200"></td>
-              <td className="py-2 px-2 text-right border border-gray-200">
-                Shipping Charges
-              </td>
-              <td className="py-2 px-2 text-right border border-gray-200">
-                {props?.orderData?.shippingCharges}
-              </td>
-            </tr>
+            {(userType === "admin" || userType === "salesRepresentative") && (
+              <tr>
+                <td colSpan={6} className="border border-gray-200"></td>
+                <td className="py-2 px-2 text-right border border-gray-200">
+                  Shipping Charges
+                </td>
+                <td className="py-2 px-2 text-right border border-gray-200">
+                  {props?.orderData?.shippingCharges}
+                </td>
+              </tr>
+            )}
             {/* Total Row */}
-            <tr>
-              <td colSpan={6} className="border border-gray-200"></td>
-              <td className="py-2 px-2 text-right font-bold border border-gray-200">
-                Total USD ({props?.orderData?.items?.length} items)
-              </td>
-              <td className="py-2 px-2 text-right font-bold border border-gray-200">
-                {props?.orderData?.totalBill}
-              </td>
-            </tr>
+            {(userType === "admin" || userType === "salesRepresentative") && (
+              <tr>
+                <td colSpan={6} className="border border-gray-200"></td>
+                <td className="py-2 px-2 text-right font-bold border border-gray-200">
+                  Total USD ({props?.orderData?.items?.length} items)
+                </td>
+                <td className="py-2 px-2 text-right font-bold border border-gray-200">
+                  {props?.orderData?.totalBill}
+                </td>
+              </tr>
+            )}
             {/* Total Weight Row */}
             <tr>
               <td
@@ -458,18 +478,20 @@ export default function OrderCard(props) {
                 Total weight: {props?.orderData?.totalWeight} lbs
               </td>
             </tr>
-            <tr>
-              <td
-                colSpan={8}
-                className="py-2 px-2 text-left font-medium border border-gray-200"
-              >
-                Payment Method:{" "}
-                <span className="uppercase">
-                  {" "}
-                  {props?.orderData?.paymentMethod}
-                </span>
-              </td>
-            </tr>
+            {(userType === "admin" || userType === "salesRepresentative") && (
+              <tr>
+                <td
+                  colSpan={8}
+                  className="py-2 px-2 text-left font-medium border border-gray-200"
+                >
+                  Payment Method:{" "}
+                  <span className="uppercase">
+                    {" "}
+                    {props?.orderData?.paymentMethod}
+                  </span>
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -496,12 +518,12 @@ export default function OrderCard(props) {
           <div className="font-nunito font-bold text-2xl ">
             {props?.orderData?.statusId === 1
               ? "Assign Supplier"
-              : "Ship Order"} 
+              : "Ship Order"}
           </div>
           // <div className="font-nunito font-bold text-2xl ">
           //   {props?.orderData?.statusId === 1
           //     ? "Assign Supplier"
-          //     : "Dispatch Order"} 
+          //     : "Dispatch Order"}
           // </div>
         }
       >

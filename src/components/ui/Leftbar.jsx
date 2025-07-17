@@ -816,7 +816,8 @@ export default function Leftbar(props) {
               <>
                 <div className="m-2 relative space-y-1">
                   <ListItems
-                    title="Assigned Orders"
+                    // title="Assigned Orders"
+                    title="New Orders"
                     to="/supplier/assigned-orders"
                   />
                   <ListItems
@@ -827,14 +828,14 @@ export default function Leftbar(props) {
                     title="Shiped Orders"
                     to="/supplier/shiped-orders"
                   />
-                  <ListItems
+                  {/* <ListItems
                     title="Dispatched Orders"
                     to="/supplier/dispatched-orders"
-                  />
-                  <ListItems
+                  /> */}
+                  {/* <ListItems
                     title="Cancelled Orders"
                     to="/supplier/cancelled-orders"
-                  />
+                  /> */}
                 </div>
                 <hr className="w-full" />
               </>

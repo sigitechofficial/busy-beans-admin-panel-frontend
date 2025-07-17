@@ -64,7 +64,7 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
       {
         items: itemsForApi,
         order: {
-          id: pdfData?.invNumber,
+          invoiceNumber: pdfData?.invNumber,
           poNumber: pdfData?.poNumber,
         },
       }

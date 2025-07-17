@@ -19,28 +19,30 @@ export default function SupplierOrders() {
   console.log("🚀 ~ SupplierOrders ~ data:", data?.data?.data);
 
   const columns = [
-    { field: "sl", header: "SL", sort: true },
-    { field: "customerName", header: "Customer Name" },
-    { field: "totalBill", header: "Total Bill" },
-    { field: "subTotal", header: "Sub Total" },
-    { field: "discountPrice", header: "Discount Price" },
-    { field: "discountPercentage", header: "Discount Percentage" },
+    // { field: "sl", header: "#", sort: true },
+    { field: "id", header: "#", sort: true },
+    { field: "customerName", header: "Customer" },
     { field: "itemsPrice", header: "Items Price" },
-    { field: "vat", header: "Vat" },
-    { field: "totalWeight", header: "Total Weight" },
-    { field: "shippingCharges", header: "Shipping Charges" },
-    { field: "note", header: "Note" },
-    { field: "paymentMethod", header: "Payment Method" },
-    { field: "poNumber", header: "Po Number" },
-    { field: "orderFrequency", header: "Order Frequency" },
-    { field: "orderCurrentStatus", header: "Order Status" },
-    { field: "action", header: "Action" },
+    { field: "subTotal", header: "Sub Total" },
+    { field: "totalBill", header: "Total" },
+    // { field: "discountPrice", header: "Discount Price" },
+    // { field: "discountPercentage", header: "Discount Percentage" },
+    // { field: "vat", header: "Vat" },
+    // { field: "totalWeight", header: "Total Weight" },
+    // { field: "shippingCharges", header: "Shipping Charges" },
+    // { field: "note", header: "Note" },
+    // { field: "paymentMethod", header: "Payment Method" },
+    // { field: "poNumber", header: "Po Number" },
+    // { field: "orderFrequency", header: "Order Frequency" },
+    { field: "orderCurrentStatus", header: "Status" },
+    // { field: "action", header: "Action" },
   ];
 
   const datas = [];
   data?.data?.data?.map((detail, i) => {
     return datas.push({
       sl: i + 1,
+      id: detail?.id,
       customerName: detail?.customerName,
       totalBill: "$" + detail?.totalBill,
       subTotal: "$" + detail?.subTotal,
@@ -74,7 +76,7 @@ export default function SupplierOrders() {
     <div>
       <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-          Acknowldge Orders
+          Acknowledged Orders
         </h2>
 
         {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">
@@ -108,6 +110,9 @@ export default function SupplierOrders() {
             placeholder={"Search ..."}
             pagination={true}
             search={true}
+            onRowClick={(e) => {
+              router.push(`/supplier/order-detail/${e?.data?.id}`);
+            }}
           />
         </div>
       </div>

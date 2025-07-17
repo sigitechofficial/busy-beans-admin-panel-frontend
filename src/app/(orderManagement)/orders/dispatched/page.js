@@ -7,6 +7,7 @@ import GetAPI from "@/utilities/GetAPI";
 import Loader from "@/components/ui/Loader";
 import { FaEye } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import dayjs from "dayjs";
 
 export default function DeliveredOrders() {
   if (typeof window !== "undefined") {
@@ -21,25 +22,29 @@ export default function DeliveredOrders() {
   );
 
   const columns = [
-    { field: "sl", header: "SL", sort: true },
-    { field: "id", header: "Order ID", sort: true },
-    { field: "customerName", header: "Customer Name" },
-    { field: "totalBill", header: "Total Bill" },
-    { field: "subTotal", header: "Sub Total" },
-    { field: "discountPrice", header: "Discount Price" },
-    { field: "discountPercentage", header: "Discount Percentage" },
-    { field: "itemsPrice", header: "Items Price" },
-    { field: "vat", header: "Vat" },
-    { field: "totalWeight", header: "Total Weight" },
-    { field: "shippingCharges", header: "Shipping Charges" },
-    { field: "note", header: "Note" },
-    { field: "paymentMethod", header: "Payment Method" },
-    { field: "poNumber", header: "Po Number" },
-    { field: "orderFrequency", header: "Order Frequency" },
-    { field: "orderCurrentStatus", header: "Order Current Status" },
-    { field: "paymentStatus", header: "Payment Status" },
-    { field: "createdBy", header: "Created By" },
-    { field: "action", header: "Action" },
+    // { field: "sl", header: "SL", sort: true },
+    { field: "id", header: "#", sort: true },
+    { field: "customerName", header: "Customer" },
+    { field: "orderDate", header: "Order Date" },
+    { field: "deliveredOn", header: "Deliver On" },
+    // { field: "salesRepName", header: "Local Partner Name" },
+    // { field: "subTotal", header: "Sub Total" },
+    // { field: "discountPrice", header: "Discount Price" },
+    // { field: "discountPercentage", header: "Discount Percentage" },
+    // { field: "itemsPrice", header: "Items Price" },
+    // { field: "vat", header: "Vat" },
+    // { field: "totalWeight", header: "Total Weight" },
+    // { field: "shippingCharges", header: "Shipping Charges" },
+    // { field: "note", header: "Note" },
+    // { field: "paymentMethod", header: "Payment Method" },
+    // { field: "poNumber", header: "Po Number" },
+    // { field: "orderFrequency", header: "Order Frequency" },
+
+    { field: "totalBill", header: "Total" },
+    { field: "paymentStatus", header: "Invoice" },
+    // { field: "createdBy", header: "Created By" },
+    { field: "orderCurrentStatus", header: "Status" },
+    // { field: "action", header: "Action" },
   ];
 
   const datas = [];
@@ -63,6 +68,7 @@ export default function DeliveredOrders() {
       orderCurrentStatus: detail?.orderCurrentStatus,
       paymentStatus: detail?.paymentStatus === "done" ? "Paid" : "Unpaid",
       createdBy: detail?.createdBy,
+      orderDate: dayjs(detail?.on).format("DD/MM/YYYY"),
       action: (
         <button
           className="border border-yellow-400 rounded-md p-2 text-yellow-400"

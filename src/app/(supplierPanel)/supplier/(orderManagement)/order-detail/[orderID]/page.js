@@ -239,8 +239,17 @@ export default function OrderDetail() {
   ) : (
     <div>
       <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
-        <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-          Order Details
+        <h2 className="text-xl lg:text-2xl font-inter font-semibold flex items-center gap-2">
+          Order / {orderID}{" "}
+          <span
+            className={` rounded-lg py-2 px-4 font-medium text-sm text-white ${
+              data?.data?.order?.orderCurrentStatus?.includes("Cancelled")
+                ? "bg-red-500 "
+                : "bg-themeGreen "
+            }`}
+          >
+            {data?.data?.order?.orderCurrentStatus}
+          </span>
         </h2>
 
         {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">

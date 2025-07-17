@@ -117,7 +117,7 @@ export default function Customers() {
       field: "changeStatus",
       header: "Change Status",
     },
-    { field: "action", header: "Action" },  // pending to be done
+    // { field: "action", header: "Action" },  // pending to be done
   ];
 
   const salesRepresentativeColumns = [
@@ -189,14 +189,14 @@ export default function Customers() {
               />
             </label>
           ),
-          action: (
-            <button
-              className="border border-theme rounded-md p-2 text-theme"
-              onClick={() => router.push(`/customers/edit/${customer?.id}`)}
-            >
-              <FaEdit size={24} />
-            </button>
-          ),
+          // action: (
+          //   <button
+          //     className="border border-theme rounded-md p-2 text-theme"
+          //     onClick={() => router.push(`/customers/edit/${customer?.id}`)}
+          //   >
+          //     <FaEdit size={24} />
+          //   </button>
+          // ),
         })
       : selectedState?.value === customer?.salesRepState &&
         datas.push({

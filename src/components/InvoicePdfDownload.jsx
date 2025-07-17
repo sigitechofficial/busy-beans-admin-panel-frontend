@@ -84,7 +84,17 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
             <div className="">
               <div className="flex items-center text-sm font-semibold">
                 <div className="w-36">Invoice number:</div>
-                <div>INV-00{invoiceData?.id}</div>
+
+                {isPrint ? (
+                  <div>INV-00{invoiceData?.id}</div>
+                ) : (
+                  <input
+                    className="text-start outline-none bg-transparent rounded  font-semibold"
+                    type="text"
+                    value={"00"+invoiceData?.id}
+                    onChange={(e) => handleQtyChange(index, e.target.value)}
+                  />
+                )}
               </div>
               <div className="flex items-center text-sm font-semibold">
                 <div className="w-36">Date of issue:</div>
@@ -226,6 +236,7 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
               <div>
                 {data &&
                   data?.map((prod, index) => {
+                    const unitPrice = prod?.price / prod?.qty;
                     return (
                       <div className="border-b last:border-0 grid grid-cols-6 h-8 items-center">
                         <div className="px-2 text-left">
@@ -251,9 +262,7 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
                             />
                           )}
                         </div>
-                        <div className=" px-2 text-right">
-                          ${prod?.price / prod?.qty}
-                        </div>
+                        <div className=" px-2 text-right">${unitPrice}</div>
                         <div className=" px-2 text-right">${prod?.price}</div>
                       </div>
                     );

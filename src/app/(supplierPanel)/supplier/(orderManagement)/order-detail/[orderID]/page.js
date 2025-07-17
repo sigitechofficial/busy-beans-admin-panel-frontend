@@ -81,7 +81,6 @@ export default function OrderDetail() {
     }
   };
 
-
   const handleAssignSupplier = (statusId) => {
     // if (statusId === 1) {
     //   setModal({
@@ -238,36 +237,54 @@ export default function OrderDetail() {
   return data?.length ? (
     <Loader />
   ) : (
-    <div className="space-y-8">
-      <div className="flex flex-col md:flex-row md:items-center space-y-2 justify-between">
-        <div className="flex items-center gap-x-2">
-          <BackButton />
-          <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-            Order Details
-          </h2>
-        </div>
+    <div>
+      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
+        <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+           Order Details
+        </h2>
 
-        <div className="flex items-center gap-x-2 sm:gap-x-4 [&>button]:py-2 sm:[&>button]:py-3 [&>button]:px-2 sm:[&>button]:px-5 [&>button]:rounded-lg [&>button]:font-nunito [&>button]:font-medium max-sm:[&>button]:text-sm">
-          {/* <button
+        {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">
+          <li>Invoice</li>
+          <li>Quickbooks</li>
+          <li>Schedule</li>
+          <li>Bulk Modify</li>
+          <li>Export</li>
+        </ul> */}
+      </div>
+      <div className=" space-y-8 pb-6 pt-32 px-6 2xl:px-12">
+        <div className="flex flex-col md:flex-row md:items-center space-y-2 justify-between">
+          <div className="flex items-center gap-x-2">
+            <BackButton />
+            {/* <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+              Order Details
+            </h2> */}
+          </div>
+
+          <div className="flex items-center gap-x-2 sm:gap-x-4 [&>button]:py-2 sm:[&>button]:py-3 [&>button]:px-2 sm:[&>button]:px-5 [&>button]:rounded-lg [&>button]:font-nunito [&>button]:font-medium max-sm:[&>button]:text-sm">
+            {/* <button
             onClick={handleAddChequeModel}
             className="bg-black text-white disabled:cursor-not-allowed"
           >
             {data?.data?.order?.chequeDetail ? "Edit Cheque" : "Add Cheque"}
           </button> */}
 
-          <button
-            type="button"
-            className={`bg-black text-white disabled:cursor-not-allowed ${ data?.data?.order?.statusId === 2 ||  data?.data?.order?.statusId === 3 ? "block":"hidden"}`}
-            onClick={() => handleAssignSupplier(data?.data?.order?.statusId)}
-          >
-            {
-               data?.data?.order?.statusId === 2
-              ? "Acknowledge Supplier"
-              : data?.data?.order?.statusId === 3
-              ? "Dispatch Order"
-              : ""}
-          </button>
-          {/* <button
+            <button
+              type="button"
+              className={`bg-black text-white disabled:cursor-not-allowed ${
+                data?.data?.order?.statusId === 2 ||
+                data?.data?.order?.statusId === 3
+                  ? "block"
+                  : "hidden"
+              }`}
+              onClick={() => handleAssignSupplier(data?.data?.order?.statusId)}
+            >
+              {data?.data?.order?.statusId === 2
+                ? "Acknowledge Supplier"
+                : data?.data?.order?.statusId === 3
+                ? "Dispatch Order"
+                : ""}
+            </button>
+            {/* <button
             disabled={
               data?.data?.order?.statusId === 5 ||
               data?.data?.order?.statusId === 6
@@ -282,7 +299,7 @@ export default function OrderDetail() {
             Order Delivered
           </button> */}
 
-          {/* <button
+            {/* <button
             disabled={
               data?.data?.order?.statusId === 5 ||
               data?.data?.order?.statusId === 6
@@ -294,18 +311,18 @@ export default function OrderDetail() {
           >
             Cancel Order
           </button> */}
-          {/* <button className="border border-buttonBorderColor shadow-buttonShadow">
+            {/* <button className="border border-buttonBorderColor shadow-buttonShadow">
             Print Invoice
           </button> */}
+          </div>
         </div>
-      </div>
 
-      {loader === "acknowledgeSupplier" || loader === "orderDelivered" ? (
-        <MiniLoader />
-      ) : (
-        <div className="mx-auto w-2/4">
-          {/* Left side */}
-          {/* <div className="space-y-6">
+        {loader === "acknowledgeSupplier" || loader === "orderDelivered" ? (
+          <MiniLoader />
+        ) : (
+          <div className="mx-auto">
+            {/* Left side */}
+            {/* <div className="space-y-6">
             <CusSupInformationCard
               heading="Customer Information"
               image={data?.data?.order?.user?.image}
@@ -350,59 +367,59 @@ export default function OrderDetail() {
             )}
           </div> */}
 
-          {/* Right side */}
-          <div className="space-y-8 -order-last xl:-order-first">
-            <TrackOrder
-              orderHistories={data?.data?.order?.orderHistories}
-              statusId={data?.data?.order?.statusId}
-            />
-            <OrderCard
-              userType={userType}
-              reFetch={reFetch}
-              orderData={data?.data?.order}
-              modal={modal}
-              setModal={setModal}
-            />
+            {/* Right side */}
+            <div className="space-y-8 -order-last xl:-order-first">
+              <TrackOrder
+                orderHistories={data?.data?.order?.orderHistories}
+                statusId={data?.data?.order?.statusId}
+              />
+              <OrderCard
+                userType={userType}
+                reFetch={reFetch}
+                orderData={data?.data?.order}
+                modal={modal}
+                setModal={setModal}
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <Dialog
-        visible={
-          modal?.type === "cancelOrder" && modal?.status
-          // ||
-          // (modal?.type === "addCheque" && modal?.status) ||
-          // (modal?.type === "editCheque" && modal?.status)
-        }
-        style={{ width: "40vw" }}
-        className="font-nunito"
-        onHide={() =>
-          setModal({
-            type: "",
-            status: false,
-          })
-        }
-        header={
-          <div className="font-nunito font-bold text-2xl text-center">
-            {/* {modal?.type === "cancelOrder"
+        <Dialog
+          visible={
+            modal?.type === "cancelOrder" && modal?.status
+            // ||
+            // (modal?.type === "addCheque" && modal?.status) ||
+            // (modal?.type === "editCheque" && modal?.status)
+          }
+          style={{ width: "40vw" }}
+          className="font-nunito"
+          onHide={() =>
+            setModal({
+              type: "",
+              status: false,
+            })
+          }
+          header={
+            <div className="font-nunito font-bold text-2xl text-center">
+              {/* {modal?.type === "cancelOrder"
               ? "Cancel Order"
               : modal?.type === "addCheque"
               ? "Add Cheque"
               : "Edit Cheque"} */}
-            Cancel Order
-          </div>
-        }
-      >
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4 flex flex-col items-center"
+              Cancel Order
+            </div>
+          }
         >
-          {/* {loader === "cancelOrder" || loader === "addCheque" ? ( */}
-          {loader === "cancelOrder" ? (
-            <MiniLoader />
-          ) : (
-            <div className="w-full space-y-4">
-              {/* {modal?.type === "cancelOrder" ? (
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4 flex flex-col items-center"
+          >
+            {/* {loader === "cancelOrder" || loader === "addCheque" ? ( */}
+            {loader === "cancelOrder" ? (
+              <MiniLoader />
+            ) : (
+              <div className="w-full space-y-4">
+                {/* {modal?.type === "cancelOrder" ? (
                 <p className="text-labelColor font-nunito font-medium text-lg text-center">
                   Are you sure you want to cancel this Order ?
                 </p>
@@ -515,39 +532,40 @@ export default function OrderDetail() {
                   </div>
                 </div>
               )} */}
-              <p className="text-labelColor font-nunito font-medium text-lg text-center">
-                Are you sure you want to cancel this Order ?
-              </p>
+                <p className="text-labelColor font-nunito font-medium text-lg text-center">
+                  Are you sure you want to cancel this Order ?
+                </p>
 
-              <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setModal({
-                      type: "",
-                      status: false,
-                    })
-                  }
-                  className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow  px-6"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-lg border border-theme text-white px-10 bg-theme"
-                >
-                  {/* {modal?.type === "cancelOrder"
+                <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setModal({
+                        type: "",
+                        status: false,
+                      })
+                    }
+                    className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow  px-6"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="rounded-lg border border-theme text-white px-10 bg-theme"
+                  >
+                    {/* {modal?.type === "cancelOrder"
                     ? "Cancel Order"
                     : modal?.type === "addCheque"
                     ? "Add Cheque"
                     : "Update Cheque"} */}
-                  Cancel Order
-                </button>
+                    Cancel Order
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
-        </form>
-      </Dialog>
+            )}
+          </form>
+        </Dialog>
+      </div>
     </div>
   );
 }

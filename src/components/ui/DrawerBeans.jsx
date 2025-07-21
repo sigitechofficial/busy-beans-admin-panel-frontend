@@ -51,7 +51,6 @@ const DrawerBeans = ({
   const [counter, setCounter] = useState(null);
   const [render, setRender] = useState(false);
   const [email, setEmail] = useState("");
-  console.log("🚀 ~ email:", email);
   const [emailType, setEmailType] = useState(true);
   const [loader, setLoader] = useState(false);
   const [order, setOrder] = useState({

@@ -78,6 +78,11 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
     }
   };
 
+  const handleDueDate = (date) => {
+    const due = dayjs(date).add(30, "day");
+    return due.format("DD/MM/YYYY");
+  };
+
   useEffect(() => {
     if (invoiceData?.items) {
       const enrichedItems = invoiceData.items.map((item) => ({
@@ -134,6 +139,10 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
                 <div>{dayjs(invoiceData?.on).format("DD/MM/YYYY")}</div>
               </div>
               <div className="flex items-center text-sm font-semibold">
+                <div className="w-36">Due Date:</div>
+                <div>{handleDueDate(invoiceData?.on)}</div>
+              </div>
+              <div className="flex items-center text-sm font-semibold">
                 <div className="w-36">PO Number:</div>
                 {isPrint ? (
                   <div>{pdfData?.poNumber}</div>
@@ -155,15 +164,15 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
               {invoiceData?.salesRep ? (
                 <div>
                   <div className="font-bold">From</div>
-                  <div>{invoiceData?.salesRepName}</div>
-                  <div>{invoiceData?.salesRep?.territoryName}</div>
-                  <div>{invoiceData?.salesRep?.address}</div>
-                  <div>
+                  <div className="uppercase">{invoiceData?.salesRepName}</div>
+                  <div className="uppercase">{invoiceData?.salesRep?.territoryName}</div>
+                  <div className="uppercase">{invoiceData?.salesRep?.address}</div>
+                  <div className="uppercase">
                     {invoiceData?.salesRep?.city},{" "}
                     {invoiceData?.salesRep?.state}{" "}
                     {invoiceData?.salesRep?.zipCode}
                   </div>
-                  <div>{invoiceData?.salesRep?.country}</div>
+                  <div className="uppercase">{invoiceData?.salesRep?.country}</div>
                   <div>
                     {invoiceData?.salesRep?.countryCode}{" "}
                     {invoiceData?.salesRep?.phoneNumber}

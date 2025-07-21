@@ -9,15 +9,8 @@ export default function page() {
   if (typeof window !== "undefined") {
     var userID = localStorage.getItem("userID");
   }
-  const { data } = GetAPI(`api/v1/admin/sales-rep/sales/${userID}`);
-  console.log("🚀 ~ page ~ data:", data?.data);
 
-  //   creditLimit
-  // :
-  // 2000
-  // creditUsed
-  // :
-  // null
+  const { data } = GetAPI(`api/v1/admin/sales-rep/sales/${userID}`);
 
   return data?.length === 0 ? (
     <Loader />
@@ -27,7 +20,6 @@ export default function page() {
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
           Wallet Management
         </h2>
-
         {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">
           <li>Invoice</li>
           <li>Quickbooks</li>
@@ -196,4 +188,4 @@ export default function page() {
       </div>
     </div>
   );
-}
+} 

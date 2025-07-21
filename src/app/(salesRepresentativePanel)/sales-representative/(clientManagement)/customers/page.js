@@ -6,6 +6,10 @@ import selectStyles from "@/utilities/SelectStyle";
 import ManagementTab from "@/components/ui/ManagementTab";
 import MyDataTable from "@/components/ui/MyDataTable";
 import { useRouter } from "next/navigation";
+import Switch from "react-switch";
+import { success_toaster } from "@/utilities/Toaster";
+import { PatchAPI } from "@/utilities/PatchAPI";
+import ErrorHandler from "@/utilities/ErrorHandler";
 
 export default function SalesRepresentativeCustomers() {
   if (typeof window !== "undefined") {
@@ -13,21 +17,54 @@ export default function SalesRepresentativeCustomers() {
   }
 
   const router = useRouter();
-  const { data } = GetAPI(
+  const { data ,reFetch} = GetAPI(
     `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID} `
   );
-  console.log("🚀 ~ SalesRepresentativeCustomers ~ data:", data?.data?.data);
+ 
+
+    const handleStatus = async (id, status) => {
+      try {
+        const res = await PatchAPI(`api/v1/admin/customer-update/${id}`, {
+          status: !status,
+        });
+        if (res?.data?.status === "success") {
+          success_toaster("Status updated successfully");
+          reFetch();
+        } else {
+          throw new Error(res?.data?.message || "An unexpected error occurred.");
+        }
+      } catch (error) {
+        ErrorHandler(error);
+      }
+    };
 
   const columns = [
-    { field: "sl", header: "SL", sort: true },
+    // { field: "sl", header: "SL", sort: true },
     { field: "name", header: "Name", sort: true },
-    { field: "email", header: "Email", sort: true },
-    { field: "phoneNumber", header: "Phone Number", sort: true },
-    { field: "emailToSendInvoices", header: "Invoice Email", sort: true },
-    { field: "saleTaxNumber", header: "Sale Tax Number", sort: true },
-    { field: "totalOrderAmount", header: "Total Orders Amount", sort: true },
-    { field: "totalOrderPlaced", header: "No. of Orders Placed", sort: true },
-    { field: "status", header: "status", sort: true },
+    { field: "mainContact", header: "	Main Contact" },
+    // { field: "email", header: "Email", sort: true },
+    // { field: "phoneNumber", header: "Phone Number", sort: true },
+    // { field: "emailToSendInvoices", header: "Invoice Email", sort: true },
+    // { field: "saleTaxNumber", header: "Sale Tax Number", sort: true },
+    // { field: "totalOrderAmount", header: "Total Orders", sort: true },
+    // { field: "totalOrderPlaced", header: "Total Orders Placed", sort: true },
+    {
+      field: "salesRepName",
+      header: "Group",
+      minWidth: "14rem",
+    },
+    // {
+    //   field: "salesRepState",
+    //   header: "Sales Representative State",
+    //   minWidth: "14rem",
+    // },
+    // { field: "status", header: "Status" },
+    { field: "lastOrder", header: "Last Order" },
+    {
+      field: "changeStatus",
+      header: "Status",
+    },
+    // { field: "action", header: "Action" },  // pending to be done
   ];
 
   const datas = [];
@@ -36,6 +73,8 @@ export default function SalesRepresentativeCustomers() {
     datas.push({
       id: customer?.id,
       sl: i + 1,
+      name: customer?.addresses?.[0]?.companyaddress, //company name
+      mainContact: customer?.name, //Main contact name
       name: customer?.name,
       email: customer?.email,
       phoneNumber: customer?.phoneNumber,
@@ -43,19 +82,51 @@ export default function SalesRepresentativeCustomers() {
       saleTaxNumber: customer?.saleTaxNumber,
       totalOrderAmount: customer?.totalOrderAmount,
       totalOrderPlaced: customer?.totalOrderPlaced,
-      status: (
-        <div>
-          {customer?.status ? (
-            <div className="w-24 bg-theme text-white font-semibold p-2 rounded-md flex justify-center">
-              Active
-            </div>
-          ) : (
-            <div className="w-24 bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
-              Inactive
-            </div>
-          )}
-        </div>
+      salesRepName: customer?.salesRepName ?? (
+        <di className="w-max text-xs bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+          Not Assigned
+        </di>
       ),
+      lastOrder: "last order",
+     status: (
+            <div>
+              {customer?.status ? (
+                <div className="w-24 bg-themeGreen text-white font-semibold p-2 rounded-md flex justify-center">
+                  Active
+                </div>
+              ) : (
+                <div className="w-24 bg-themeGreen text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+                  Inactive
+                </div>
+              )}
+            </div>
+          ),
+          lastOrder: "last order",
+          changeStatus: (
+            <label className="flex gap-2 items-center">
+              {customer?.status ? (
+                <div className="w-max text-xs bg-themeGreen text-white font-semibold p-2 rounded-md flex justify-center">
+                  Active
+                </div>
+              ) : (
+                <div className="w-max text-xs bg-themeGreen text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+                  Inactive
+                </div>
+              )}
+              <Switch
+                onChange={() => {
+                  handleStatus(customer?.id, customer?.status);
+                }}
+                checked={customer?.status}
+                uncheckedIcon={false}
+                checkedIcon={false}
+                onColor="#86644c"
+                onHandleColor="#fff"
+                className="react-switch"
+                boxShadow="none"
+              />
+            </label>
+          ),
     });
   });
 
@@ -124,6 +195,9 @@ export default function SalesRepresentativeCustomers() {
             placeholder={"Search ..."}
             pagination={true}
             search={true}
+              onRowClick={(e) => {
+              router.push(`/customers/${e?.data?.id}`);
+            }}
           />
         </div>
       </div>

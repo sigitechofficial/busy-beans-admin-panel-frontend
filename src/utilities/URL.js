@@ -1,4 +1,4 @@
-// export const BASE_URL = "http://192.168.1.118:8011/";
+// export const BASE_URL = "https://929ff1ba51ff.ngrok-free.app/";
 
 export const BASE_URL = "https://backendbb.trimworldwide.com/";
 

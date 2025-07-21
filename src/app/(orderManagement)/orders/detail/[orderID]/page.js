@@ -19,6 +19,7 @@ import React, { useState } from "react";
 import Select from "react-select";
 import { CgNotes } from "react-icons/cg";
 import { LuClipboardList } from "react-icons/lu";
+import Link from "next/link";
 
 export default function OrderDetail() {
   if (typeof window !== "undefined") {
@@ -564,19 +565,35 @@ export default function OrderDetail() {
                   {data?.data?.order?.createdBy && (
                     <div className="flex items-center gap-5 border-b">
                       <p className="w-28">Created By</p>
-                      <p>{data?.data?.order?.createdBy}</p>
+                      <Link href={`/customers/${data?.data?.order?.user?.id}`}>
+                        <p className="text-blue-500">
+                          {data?.data?.order?.createdBy}
+                        </p>
+                      </Link>
                     </div>
                   )}
                   {data?.data?.order?.supplier?.supplierName && (
                     <div className="flex items-center gap-5 border-b">
                       <p className="w-28">Supplier</p>
-                      <p>{data?.data?.order?.supplier?.supplierName}</p>
+                      <Link
+                        href={`/suppliers/edit/${data?.data?.order?.supplier?.id}`}
+                      >
+                        <p className="text-blue-500">
+                          {data?.data?.order?.supplier?.supplierName}
+                        </p>
+                      </Link>
                     </div>
                   )}
                   {data?.data?.order?.salesRepName && (
                     <div className="flex items-center gap-5 border-b">
                       <p className="w-28">Local Partner</p>
-                      <p>{data?.data?.order?.salesRepName}</p>
+                      <Link
+                        href={`/sale-representative/edit/${data?.data?.order?.salesRep?.id}`}
+                      >
+                        <p className="text-blue-500">
+                          {data?.data?.order?.salesRepName}
+                        </p>
+                      </Link>
                     </div>
                   )}
                   {data?.data?.order?.poNumber && (
@@ -600,23 +617,28 @@ export default function OrderDetail() {
                 </div>
                 {/* ================ */}
                 <div className="w-full grid grid-cols-2 gap-10 text-sm">
+                  {/* Deliver To */}
                   <div>
-                    <h6>Deliver To</h6>
-
-                    <div className="flex gap-2 items-center">
-                      <p>{data?.data?.order?.address?.companyaddress}</p>
+                    <h6 className="font-semibold">Deliver To</h6>
+                    <div className="items-center">
+                      {data?.data?.order?.address?.companyaddress && (
+                        <p>{data.data.order.address.companyaddress}</p>
+                      )}
                       <p>{data?.data?.order?.address?.addressLineOne}</p>
                       <p>{data?.data?.order?.address?.addressLineTwo}</p>
+                      <p>
+                        {data?.data?.order?.address?.town},{" "}
+                        {data?.data?.order?.address?.state}{" "}
+                        {data?.data?.order?.address?.zipCode}
+                      </p>
+                      <p>{data?.data?.order?.address?.country}</p>
+                      {data?.data?.order?.user?.phoneNumber && (
+                        <p>
+                          Phone: {data?.data?.order?.user?.countryCode}{" "}
+                          {data?.data?.order?.user?.phoneNumber}
+                        </p>
+                      )}
                     </div>
-
-                    <div className="flex gap-2 items-center">
-                      <p>{data?.data?.order?.address?.town}</p>
-                      <p>{data?.data?.order?.address?.state}</p>
-                      <p>{data?.data?.order?.address?.zipCode}</p>
-                    </div>
-
-                    <p>{data?.data?.order?.address?.country}</p>
-                    <p>Phone: {data?.data?.order?.address?.phoneNum}</p>
                     <span
                       onClick={() => router.push(`${pathname}/edit`)}
                       className="text-blue-500 text-xs cursor-pointer"
@@ -624,25 +646,47 @@ export default function OrderDetail() {
                       Edit
                     </span>
                   </div>
+
+                  {/* Invoice To */}
                   <div>
-                    <h6>Invoice To</h6>
-                    <div className="flex gap-2 items-center">
-                      <p>{data?.data?.order?.user?.companyName}</p>
-                      <p>{data?.data?.order?.user?.billingAddress}</p>
-                      {/* <p>{data?.data?.order?.user?.addressLineTwo}</p> */}
+                    <h6 className="font-semibold">Invoice To</h6>
+                    <div className="items-center">
+                      {data?.data?.order?.user?.companyName && (
+                        <p>{data.data.order.user.companyName}</p>
+                      )}
+                      <p>
+                        {
+                          data?.data?.order?.user?.billingAddresses[0]
+                            ?.companyaddress
+                        }
+                      </p>
+                      <p>
+                        {
+                          data?.data?.order?.user?.billingAddresses[0]
+                            ?.addressLineOne
+                        }
+                      </p>
+                      <p>
+                        {
+                          data?.data?.order?.user?.billingAddresses[0]
+                            ?.addressLineTwo
+                        }
+                      </p>
+                      <p>
+                        {data?.data?.order?.user?.billingAddresses[0]?.town},{" "}
+                        {data?.data?.order?.user?.billingAddresses[0]?.state}{" "}
+                        {data?.data?.order?.user?.billingAddresses[0]?.zipCode}
+                      </p>
+                      <p>
+                        {data?.data?.order?.user?.billingAddresses[0]?.country}
+                      </p>
+                      {data?.data?.order?.user?.phoneNumber && (
+                        <p>
+                          Phone: {data?.data?.order?.user?.countryCode}{" "}
+                          {data?.data?.order?.user?.phoneNumber}
+                        </p>
+                      )}
                     </div>
-
-                    <div className="flex gap-2 items-center">
-                      <p>{data?.data?.order?.user?.town}</p>
-                      <p>{data?.data?.order?.user?.state}</p>
-                      <p>{data?.data?.order?.user?.zipCode}</p>
-                    </div>
-
-                    <p>{data?.data?.order?.user?.country}</p>
-                    <p>
-                      Phone: {data?.data?.order?.address?.countryCode}{" "}
-                      {data?.data?.order?.address?.phoneNumber}
-                    </p>
                     <span
                       onClick={() => router.push(`${pathname}/edit`)}
                       className="text-blue-500 text-xs cursor-pointer"

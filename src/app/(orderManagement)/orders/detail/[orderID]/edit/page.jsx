@@ -193,7 +193,7 @@ function EditPage() {
 
   const handleBillingToUpdate = async () => {
     let res = await PatchAPI(
-      `api/v1/admin/address-management/update-billing-address/${orderData?.data?.order?.user?.id}`,
+      `api/v1/admin/address-management/update-billing-address/${orderData?.data?.order?.user?.billingAddresses[0]?.id}`,
       {
         companyaddress: supplier?.billingcompanyaddress,
         addressLineOne: supplier?.billingaddressOne,
@@ -333,7 +333,18 @@ function EditPage() {
             <div className="w-full grid grid-cols-2 gap-5">
               <div className="w-full space-y-2">
                 <p>Town / City</p>
-                <Select
+                <input
+                  type="text"
+                  name=""
+                  id=""
+                  placeholder="Enter City"
+                  className="w-full h-12 bg-transparent outline-none border-2 px-4 border-gray-100 rounded-lg"
+                  value={supplier?.city}
+                  onChange={(e) =>
+                    setSupplier((prev) => ({ ...prev, city: e.target.value }))
+                  }
+                />
+                {/* <Select
                   placeholder="Select City"
                   className="w-full"
                   styles={drawerSelectStyles}
@@ -346,7 +357,7 @@ function EditPage() {
                   onChange={(e) =>
                     setSupplier((prev) => ({ ...prev, city: e.label }))
                   }
-                />
+                /> */}
               </div>
               <div className="w-full space-y-2">
                 <p>ZIP Code</p>
@@ -442,7 +453,21 @@ function EditPage() {
             <div className="w-full grid grid-cols-2 gap-5">
               <div className="w-full space-y-2">
                 <p>Town / City</p>
-                <Select
+                <input
+                  type="text"
+                  name=""
+                  id=""
+                  placeholder="Enter Billing City"
+                  className="w-full h-12 bg-transparent outline-none border-2 px-4 border-gray-100 rounded-lg"
+                  value={supplier?.billingcity}
+                  onChange={(e) =>
+                    setSupplier((prev) => ({
+                      ...prev,
+                      billingcity: e.target.value,
+                    }))
+                  }
+                />
+                {/* <Select
                   placeholder="Select City"
                   className="w-full"
                   styles={drawerSelectStyles}
@@ -458,7 +483,7 @@ function EditPage() {
                   onChange={(e) =>
                     setSupplier((prev) => ({ ...prev, billingcity: e.label }))
                   }
-                />
+                /> */}
               </div>
               <div className="w-full space-y-2">
                 <p>ZIP Code</p>

@@ -16,7 +16,7 @@ export default function OrderCard(props) {
   if (typeof window !== "undefined") {
     var userType = localStorage.getItem("userType");
   }
-  console.log("🚀 ~ OrderCard ~ props:", props?.orderData);
+  // console.log("🚀 ~ OrderCard ~ props:", props?.orderData);
   const router = useRouter();
   const [supplierID, setSupplierID] = useState("");
   const [loader, setLoader] = useState("");

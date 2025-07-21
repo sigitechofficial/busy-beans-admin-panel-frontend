@@ -550,10 +550,16 @@ export default function OrderDetail() {
                       <p>{data?.data?.order?.on}</p>
                     </div>
                   )}
-                  {data?.data?.order?.customerName && (
+                  {/* {data?.data?.order?.customerName && (
                     <div className="flex items-center gap-5 border-b">
                       <p className="w-28">Customer</p>
                       <p>{data?.data?.order?.customerName}</p>
+                    </div>
+                  )} */}
+                  {data?.data?.order?.customerName && (
+                    <div className="flex items-center gap-5 border-b capitalize">
+                      <p className="w-28">Company Name</p>
+                      <p>{data?.data?.order?.user?.companyName}</p>
                     </div>
                   )}
                   {data?.data?.order?.createdBy && (
@@ -583,7 +589,7 @@ export default function OrderDetail() {
                   {data?.data?.order?.invoiceId && (
                     <div className="flex items-center gap-5 border-b">
                       <p className="w-28">Invoice No </p>
-                      <p>{data?.data?.order?.invoiceId}</p>
+                      <p>INV-00{data?.data?.order?.id}</p>
                     </div>
                   )}
                   {data?.data?.order?.trackingNumber && (

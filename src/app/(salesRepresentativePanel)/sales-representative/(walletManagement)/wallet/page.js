@@ -83,7 +83,7 @@ export default function page() {
               desc={`$${data?.data?.credit?.creditUsed ?? 0}`}
             />
             <ManagementTab
-              title="Total Whole Sale Price"
+              title="Remaining Credit"
               desc={`$${
                 data?.data?.credit?.creditLimit -
                 Number(data?.data?.credit?.creditUsed?.replace(/,/g, ""))
@@ -188,4 +188,4 @@ export default function page() {
       </div>
     </div>
   );
-} 
+}

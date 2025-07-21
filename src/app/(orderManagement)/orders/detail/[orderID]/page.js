@@ -404,14 +404,14 @@ export default function OrderDetail() {
             ) : (
               <button
                 type="button"
-                disabled={
-                  data?.data?.order?.statusId === 2 ||
-                  data?.data?.order?.statusId === 3 ||
-                  data?.data?.order?.statusId === 5 ||
-                  data?.data?.order?.statusId === 6
-                    ? true
-                    : false
-                }
+                // disabled={
+                //   data?.data?.order?.statusId === 2 ||
+                //   data?.data?.order?.statusId === 3 ||
+                //   data?.data?.order?.statusId === 5 ||
+                //   data?.data?.order?.statusId === 6
+                //     ? true
+                //     : false
+                // }
                 className={`${
                   data?.data?.order?.statusId === 2 ||
                   data?.data?.order?.statusId === 3 ||

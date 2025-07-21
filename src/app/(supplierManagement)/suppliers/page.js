@@ -64,26 +64,26 @@ export default function Suppliers() {
     }
   };
   const columns = [
-    { field: "sl", header: "SL", sort: true },
+    // { field: "sl", header: "SL", sort: true },
     { field: "supplierName", header: "supplierName" },
     { field: "email", header: "email" },
     { field: "address", header: "Address" },
     { field: "phoneNum", header: "phoneNum" },
     // { field: "addressOne", header: "addressOne" },
     // { field: "addressTwo", header: "addressTwo" },
-    {
-      field: "businessRegistrationNumber",
-      header: "businessRegistrationNumber",
-    },
-    { field: "supplierType", header: "supplierType" },
-    { field: "registerDate", header: "registerDate" },
+    // {
+    //   field: "businessRegistrationNumber",
+    //   header: "businessRegistrationNumber",
+    // },
+    // { field: "supplierType", header: "supplierType" },
+    // { field: "registerDate", header: "registerDate" },
 
-    { field: "bankAccount", header: "bankAccount" },
-    { field: "registerBy", header: "registerBy" },
-    {
-      field: "currentStatus",
-      header: "Current Status",
-    },
+    // { field: "bankAccount", header: "bankAccount" },
+    // { field: "registerBy", header: "registerBy" },
+    // {
+    //   field: "currentStatus",
+    //   header: "Current Status",
+    // },
     {
       field: "changeStatus",
       header: "Change Status",
@@ -120,7 +120,19 @@ export default function Suppliers() {
         </div>
       ),
       changeStatus: (
-        <label>
+        <label className="flex items-center gap-2 ">
+
+            <div>
+          {supplier?.status ? (
+            <div className="w-max text-xs bg-theme text-white font-semibold p-2 rounded-md flex justify-center">
+              Active
+            </div>
+          ) : (
+            <div className="w-max text-xs bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+              Inactive
+            </div>
+          )}
+        </div>
           <Switch
             onChange={() => {
               handleStatus(supplier?.id, supplier?.status);

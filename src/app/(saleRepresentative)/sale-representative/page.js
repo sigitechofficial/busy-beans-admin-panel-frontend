@@ -67,20 +67,21 @@ export default function SaleRepresentative() {
   };
 
   const columns = [
-    { field: "sl", header: "SL", sort: true },
+    // { field: "sl", header: "SL", sort: true },
     { field: "srName", header: "Name" },
-    { field: "email", header: "email" },
-    { field: "address", header: "Address" },
-    { field: "phoneNum", header: "phoneNum" },
+    // { field: "email", header: "email" },
+    { field: "teritoryName", header: "Teritory" },
+    // { field: "address", header: "Address" },
+    // { field: "phoneNum", header: "phoneNum" },
 
-    { field: "registerDate", header: "registerDate" },
+    // { field: "registerDate", header: "registerDate" },
 
-    { field: "registerBy", header: "registerBy" },
-    { field: "creditLimit", header: "Credit Limit" },
-    {
-      field: "currentStatus",
-      header: "Current Status",
-    },
+    // { field: "registerBy", header: "registerBy" },
+    // { field: "creditLimit", header: "Credit Limit" },
+    // {
+    //   field: "currentStatus",
+    //   header: "Current Status",
+    // },
     {
       field: "changeStatus",
       header: "Change Status",
@@ -99,22 +100,34 @@ export default function SaleRepresentative() {
       sRType: sR?.sRType,
       registerDate: sR?.registerDate ?? "No date found",
       registerBy: sR?.registerBy,
+      teritoryName: sR?.territoryName,
       creditLimit: `$${sR?.creditLimit}`,
-      currentStatus: (
-        <div>
-          {sR?.status ? (
-            <div className="w-24 bg-theme text-white font-semibold p-2 rounded-md flex justify-center">
-              Active
-            </div>
-          ) : (
-            <div className="w-24 bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
-              Inactive
-            </div>
-          )}
-        </div>
-      ),
+      // currentStatus: (
+      //   <div>
+      //     {sR?.status ? (
+      //       <div className="w-24 bg-theme text-white font-semibold p-2 rounded-md flex justify-center">
+      //         Active
+      //       </div>
+      //     ) : (
+      //       <div className="w-24 bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+      //         Inactive
+      //       </div>
+      //     )}
+      //   </div>
+      // ),
       changeStatus: (
-        <label>
+        <label className="flex items-center gap-2">
+          <div>
+            {sR?.status ? (
+              <div className="w-max text-xs bg-theme text-white font-semibold p-2 rounded-md flex justify-center">
+                Active
+              </div>
+            ) : (
+              <div className="w-max text-xs bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+                Inactive
+              </div>
+            )}
+          </div>
           <Switch
             onChange={() => {
               handleStatus(sR?.id, sR?.status);

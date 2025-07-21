@@ -172,8 +172,8 @@ export default function OrderCard(props) {
     <div className="space-y-10 py-4 px-8 border border-borderColor shadow-tableShadow ">
       {/* Upper section */}
       <div className="space-y-4 font-inter">
-        <div className="flex justify-between items-start">
-          {/* <div className="space-y-0.5">
+        {/* <div className="flex justify-between items-start">
+          <div className="space-y-0.5">
             <p className="font-semibold text-3xl">
               Order# {props?.orderData?.id}
             </p>
@@ -185,17 +185,17 @@ export default function OrderCard(props) {
             >
               Tracking No: {props?.orderData?.trackingNumber}
             </p>
-          </div> */}
-          {/* <div className="space-y-1">
+          </div>
+          <div className="space-y-1">
             <p className="text-sm">Order Status</p>
             <div className="bg-themeGreen text-white rounded-lg py-2 px-4 font-medium">
               {props?.orderData?.orderCurrentStatus}
             </div>
-          </div> */}
+          </div>
 
           {(userType === "admin" || userType === "salesRepresentative") && (
             <div className="flex">
-              {/* <span className="text-black/60 w-2/4">Payment Status:</span> */}
+              <span className="text-black/60 w-2/4">Payment Status:</span>
 
               {userType === "supplier" ||
               (userType === "admin" &&
@@ -226,7 +226,7 @@ export default function OrderCard(props) {
               )}
             </div>
           )}
-        </div>
+        </div> */}
 
         <div className="w-full space-y-4">
           <div className="w-full space-y-2">

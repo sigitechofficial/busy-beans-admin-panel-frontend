@@ -17,6 +17,8 @@ import { useParams, usePathname, useRouter } from "next/navigation";
 import { Dialog } from "primereact/dialog";
 import React, { useState } from "react";
 import Select from "react-select";
+import { CgNotes } from "react-icons/cg";
+import { LuClipboardList } from "react-icons/lu";
 
 export default function OrderDetail() {
   if (typeof window !== "undefined") {
@@ -47,6 +49,11 @@ export default function OrderDetail() {
     },
     chequeReceiptDate: "",
   });
+
+  const paymentStausOptions = [
+    { value: "done", label: "Paid" },
+    { value: "pending", label: "Unpaid" },
+  ];
 
   const chequeStatusOptions = [
     { value: "Pending", label: "Pending" },
@@ -295,6 +302,26 @@ export default function OrderDetail() {
     }
   };
 
+
+    const handlePaymentStatus = async (status) => {
+      try {
+        const res = await PatchAPI("api/v1/admin/edit-order", {
+          orderId: orderID,
+          orderData: {
+            paymentStatus: status?.value, //"pending" , 'done'
+          },
+        });
+        if (res?.data?.status === "success") {
+          success_toaster("Status Updated successfully");
+          reFetch();
+        } else {
+          throw new Error(res?.data?.message || "An unexpected error occurred.");
+        }
+      } catch (error) {
+        ErrorHandler(error);
+      }
+    };
+
   return data?.length === 0 ? (
     <Loader />
   ) : (
@@ -460,6 +487,54 @@ export default function OrderDetail() {
                   ${data?.data?.order?.address?.country ?? ""}`,
               }}
             /> */}
+
+              <div className="bg-blue-50 rounded-md w-full p-6 flex gap-x-2">
+                <div >
+                  <LuClipboardList size={25} />
+                </div>
+                <div className="space-y-4">
+                  <p className="font-semibold">This order is fulfilled</p>
+                  <p>Optional actions:</p>
+
+                  <div className="flex gap-x-2 items-center">
+                    <p className="font-semibold">Record a payment:</p>
+                    {(userType === "admin" ||
+                      userType === "salesRepresentative") && (
+                      <div className="flex">
+                        {/* <span className="text-black/60 w-2/4">Payment Status:</span> */}
+
+                        {userType === "supplier" ||
+                        (userType === "admin" &&
+                          data?.data?.order?.paymentMethod === "card") ||
+                        data?.data?.order?.statusId === 6 ? (
+                          <div className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none">
+                            {data?.data?.order?.paymentStatus === "done"
+                              ? "Paid"
+                              : "Unpaid"}
+                          </div>
+                        ) : (
+                          <span className="w-40">
+                            <Select
+                              placeholder="Select Payment Status"
+                              className="w-full"
+                              value={
+                                data?.data?.order?.paymentStatus === "pending"
+                                  ? { value: "pending", label: "Unpaid" }
+                                  : { value: "done", label: "Paid" }
+                              }
+                              styles={selectStyles2}
+                              options={paymentStausOptions}
+                              onChange={(e) => {
+                                handlePaymentStatus(e);
+                              }}
+                            />
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
 
               <div className="w-full grid grid-cols-2 gap-20 py-4 px-8 space-y-4 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm">
                 <div className="w-full [&>div]:h-10 text-sm">

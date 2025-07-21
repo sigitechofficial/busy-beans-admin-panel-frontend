@@ -24,7 +24,8 @@ export default function DispatchedOrders() {
   const columns = [
     // { field: "sl", header: "SL", sort: true },
     { field: "id", header: "#", sort: true },
-    { field: "customerName", header: "Customer" },
+    // { field: "customerName", header: "Customer" },
+    { field: "companyName", header: "Company Name" },
     { field: "orderDate", header: "Order Date" },
     { field: "deliveredOn", header: "Deliver On" },
     // { field: "salesRepName", header: "Local Partner Name" },
@@ -53,6 +54,7 @@ export default function DispatchedOrders() {
       sl: i + 1,
       id: detail?.id,
       customerName: detail?.customerName,
+      companyName: detail?.companyName,
       totalBill: "$" + detail?.totalBill,
       subTotal: "$" + detail?.subTotal,
       discountPrice: "$" + detail?.discountPrice,

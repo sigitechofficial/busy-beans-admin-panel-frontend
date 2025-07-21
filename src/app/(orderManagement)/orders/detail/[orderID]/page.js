@@ -302,25 +302,24 @@ export default function OrderDetail() {
     }
   };
 
-
-    const handlePaymentStatus = async (status) => {
-      try {
-        const res = await PatchAPI("api/v1/admin/edit-order", {
-          orderId: orderID,
-          orderData: {
-            paymentStatus: status?.value, //"pending" , 'done'
-          },
-        });
-        if (res?.data?.status === "success") {
-          success_toaster("Status Updated successfully");
-          reFetch();
-        } else {
-          throw new Error(res?.data?.message || "An unexpected error occurred.");
-        }
-      } catch (error) {
-        ErrorHandler(error);
+  const handlePaymentStatus = async (status) => {
+    try {
+      const res = await PatchAPI("api/v1/admin/edit-order", {
+        orderId: orderID,
+        orderData: {
+          paymentStatus: status?.value, //"pending" , 'done'
+        },
+      });
+      if (res?.data?.status === "success") {
+        success_toaster("Status Updated successfully");
+        reFetch();
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
       }
-    };
+    } catch (error) {
+      ErrorHandler(error);
+    }
+  };
 
   return data?.length === 0 ? (
     <Loader />
@@ -495,7 +494,7 @@ export default function OrderDetail() {
             /> */}
 
               <div className="bg-blue-50 rounded-md w-full p-6 flex gap-x-2">
-                <div >
+                <div>
                   <LuClipboardList size={25} />
                 </div>
                 <div className="space-y-4">

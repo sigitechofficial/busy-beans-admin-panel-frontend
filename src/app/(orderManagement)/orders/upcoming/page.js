@@ -57,7 +57,8 @@ export default function UpcomingOrders() {
 
   const columns = [
     { field: "sl", header: "SL", sort: true },
-    { field: "customerName", header: "Customer Name" },
+    // { field: "customerName", header: "Customer Name" },
+    { field: "companyName", header: "Company Name" },
     { field: "email", header: "Email" },
     { field: "orderDate", header: "Order Date" },
     { field: "nextOrderDate", header: "Next Order Date" },
@@ -79,7 +80,8 @@ export default function UpcomingOrders() {
     return datas.push({
       id: detail?.id,
       sl: i + 1,
-      customerName: detail?.customerName,
+      // customerName: detail?.customerName,
+      companyName: detail?.companyName,
       email: detail?.email,
       orderDate: detail?.orderDate,
       nextOrderDate: detail?.nextOrderDate,

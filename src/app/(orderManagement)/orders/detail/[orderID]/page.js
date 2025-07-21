@@ -68,7 +68,7 @@ export default function OrderDetail() {
   ];
 
   const { data, reFetch } = GetAPI(`api/v1/admin/order-details/${orderID}`);
-  console.log("🚀 ~ OrderDetail ~ data:", data?.data?.order);
+
 
   const handleSupplierAcknowledgement = async () => {
     setLoader("acknowledgeSupplier");
@@ -341,6 +341,7 @@ export default function OrderDetail() {
         </h2>
 
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
+          <li onClick={()=>router.push(`${pathname}/add-invoice`)}>Add Invoice</li>
           <li>Edit Details</li>
           <li>Modify Items</li>
           <li>Convert to Standing Order</li>
@@ -586,10 +587,10 @@ export default function OrderDetail() {
                       <p>{data?.data?.order?.poNumber}</p>
                     </div>
                   )}
-                  {data?.data?.order?.invoiceId && (
+                  {data?.data?.order?.invoiceNumber && (
                     <div className="flex items-center gap-5 border-b">
                       <p className="w-28">Invoice No </p>
-                      <p>INV-00{data?.data?.order?.id}</p>
+                      <p>{data?.data?.order?.invoiceNumber}</p>
                     </div>
                   )}
                   {data?.data?.order?.trackingNumber && (

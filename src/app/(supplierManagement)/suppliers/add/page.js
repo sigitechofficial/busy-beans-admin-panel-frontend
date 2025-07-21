@@ -237,8 +237,8 @@ export default function AddNewSupplier() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div>
+      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <div className="flex items-center gap-x-2">
           <BackButton />
           <h2 className="text-xl lg:text-2xl font-inter font-semibold">
@@ -247,410 +247,424 @@ export default function AddNewSupplier() {
         </div>
       </div>
 
-      {loader ? (
-        <MiniLoader />
-      ) : (
-        <div className="space-y-6">
-          <div className="grid xl:grid-cols-2 gap-6">
-            {/* Basic Information */}
-            <div className="bg-white border border-borderColor rounded p-6 space-y-6 shadow-sm">
-              <h3 className="text-lg font-medium">1. Basic Information</h3>
-              <button
-                type="button"
-                onClick={handleSelectImage}
-                className="rounded-xl border border-tabBorderColor border-opacity-40 size-20 flex items-center justify-center"
-              >
-                <input
-                  type="file"
-                  className="hidden selectImage"
-                  onChange={handleImage}
-                />
-                {imagePreview ? (
-                  <img
-                    src={imagePreview}
-                    alt="supplier-image"
-                    className="object-cover object-center"
-                  />
-                ) : (
-                  <LuImageUp size={"60"} color="rgba(0, 0, 0, 0.6)" />
-                )}
-              </button>
-              <div className="flex flex-col gap-y-2">
-                <label className="text-labelColor font-medium font-satoshi">
-                  Supplier Name
-                </label>
-                <input
-                  type="text"
-                  name="supplierName"
-                  value={supplier?.supplierName}
-                  placeholder="Enter Supplier Name"
-                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="flex flex-col gap-y-2">
-                <label className="text-labelColor font-medium font-satoshi">
-                  Business website
-                </label>
-                <input
-                  type="text"
-                  name="businessWeb"
-                  value={supplier?.businessWeb}
-                  placeholder="Enter Business name"
-                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="flex flex-col gap-y-2 w-full">
-                <label className="text-labelColor font-medium font-satoshi">
-                  Supplier type
-                </label>
-                <Select
-                  placeholder="Select Supplier type"
-                  options={[{ label: "Whole Sale", value: "Wholesale" }]}
-                  onChange={(e) =>
-                    setSupplier({ ...supplier, supplierType: e.value })
-                  }
-                  className="w-full text-black"
-                  styles={selectStyles2}
-                />
-              </div>
-              <div className="flex flex-col gap-y-2 w-full">
-                <label className="text-labelColor font-medium font-satoshi">
-                  Status
-                </label>
-                <Select
-                  placeholder="Active/ InActive"
-                  options={[
-                    { label: "Active", value: true },
-                    { label: "InActive", value: false },
-                  ]}
-                  onChange={(e) =>
-                    setSupplier({ ...supplier, status: e.value })
-                  }
-                  className="w-full"
-                  styles={selectStyles2}
-                />
-              </div>
-              <div className="flex flex-col gap-y-2">
-                <label className="text-labelColor font-medium font-satoshi">
-                  Register Date
-                </label>
-                <input
-                  type="date"
-                  name="registerDate"
-                  value={supplier?.registerDate}
-                  placeholder="Select registration date"
-                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-8 pb-6 pt-32 px-6 2xl:px-12"
+      >
+        {/* <div className="flex items-center justify-between">
+        <div className="flex items-center gap-x-2">
+          <BackButton />
+          <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+            Add New Supplier
+          </h2>
+        </div>
+      </div> */}
 
-            {/* === Section 2: Contact Info === */}
-            <div className="bg-white border border-borderColor rounded p-6 space-y-6 shadow-sm">
-              <h3 className="text-lg font-medium">2. Contact Information</h3>
-              <div className="space-y-4">
-                <div className="grid md:grid-cols-2 max-md:gap-y-4 gap-x-6">
-                  <div className="flex flex-col gap-y-2 w-full">
-                    <label className="text-labelColor font-medium font-satoshi">
-                      Country
-                    </label>
-                    <Select
-                      placeholder="Select Country"
-                      className="w-full"
-                      styles={drawerSelectStyles}
-                      value={
-                        supplier?.country
-                          ? {
-                              value: supplier?.country,
-                              label: supplier?.country,
-                            }
-                          : null
-                      }
-                      options={allCountries ?? []}
-                      onChange={(e) => {
-                        setSupplier({
-                          ...supplier,
-                          country: e.label,
-                          state: "",
-                          city: "",
-                        });
-                        handleSelectedCountryStates(e.label);
-                      }}
+        {loader ? (
+          <MiniLoader />
+        ) : (
+          <div className="space-y-6">
+            <div className="grid xl:grid-cols-2 gap-6">
+              {/* Basic Information */}
+              <div className="bg-white border border-borderColor rounded p-6 space-y-6 shadow-sm">
+                <h3 className="text-lg font-medium">1. Basic Information</h3>
+                <button
+                  type="button"
+                  onClick={handleSelectImage}
+                  className="rounded-xl border border-tabBorderColor border-opacity-40 size-20 flex items-center justify-center"
+                >
+                  <input
+                    type="file"
+                    className="hidden selectImage"
+                    onChange={handleImage}
+                  />
+                  {imagePreview ? (
+                    <img
+                      src={imagePreview}
+                      alt="supplier-image"
+                      className="object-cover object-center"
                     />
-                  </div>
-                  <div className="flex flex-col gap-y-2 w-full">
-                    <label className="text-labelColor font-medium font-satoshi">
-                      State
-                    </label>
-                    <Select
-                      placeholder="Select State"
-                      className="w-full"
-                      styles={drawerSelectStyles}
-                      value={
-                        supplier?.state
-                          ? {
-                              value: supplier?.state,
-                              label: supplier?.state,
-                            }
-                          : null
-                      }
-                      options={allStates ?? []}
-                      onChange={(e) => {
-                        setSupplier({
-                          ...supplier,
-                          state: e?.label,
-                          city: "",
-                        });
-                        handleSelectedCountryStatesCities(e.value);
-                      }}
-                    />
-                  </div>
+                  ) : (
+                    <LuImageUp size={"60"} color="rgba(0, 0, 0, 0.6)" />
+                  )}
+                </button>
+                <div className="flex flex-col gap-y-2">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Supplier Name
+                  </label>
+                  <input
+                    type="text"
+                    name="supplierName"
+                    value={supplier?.supplierName}
+                    placeholder="Enter Supplier Name"
+                    className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    onChange={handleChange}
+                  />
                 </div>
-                <div className="grid md:grid-cols-2 max-md:gap-y-4 gap-x-6">
-                  <div className="flex flex-col gap-y-2 w-full">
-                    <label className="text-labelColor font-medium font-satoshi">
-                      City
-                    </label>
-                    {!customCityMode ? (
-                      <>
-                        <Select
-                          placeholder="Select City"
-                          className="w-full"
-                          styles={drawerSelectStyles}
-                          value={
-                            supplier?.city
-                              ? {
-                                  value: supplier?.city,
-                                  label: supplier?.city,
-                                }
-                              : null
-                          }
-                          options={allCities ?? []}
-                          onChange={(e) => {
-                            setSupplier({
-                              ...supplier,
-                              city: e.label,
-                            });
-                          }}
-                        />
-                        <button
-                          type="button"
-                          className="text-sm bg-theme text-white hover:text-theme hover:bg-white duration-150 rounded-sm border border-theme mt-1 px-2 self-end"
-                          onClick={() => {
-                            setSupplier({
-                              ...supplier,
-                              city: "",
-                            });
-                            setCustomCityMode(true);
-                          }}
-                        >
-                          Enter Custom City Name
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <input
-                          type="text"
-                          placeholder="Enter custom city"
-                          className="w-full px-3 py-3 border border-gray-300 rounded"
-                          value={supplier?.city}
-                          onChange={(e) =>
-                            setSupplier({
-                              ...supplier,
-                              city: e.target.value,
-                            })
-                          }
-                        />
-                        <button
-                          type="button"
-                          className="text-sm bg-theme text-white hover:text-theme hover:bg-white duration-150 rounded-sm border border-theme mt-1 px-2 self-end"
-                          onClick={() => {
-                            setSupplier({
-                              ...supplier,
-                              city: "",
-                            });
-                            setCustomCityMode(false);
-                          }}
-                        >
-                          Back to Select
-                        </button>
-                      </>
-                    )}
+                <div className="flex flex-col gap-y-2">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Business website
+                  </label>
+                  <input
+                    type="text"
+                    name="businessWeb"
+                    value={supplier?.businessWeb}
+                    placeholder="Enter Business name"
+                    className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="flex flex-col gap-y-2 w-full">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Supplier type
+                  </label>
+                  <Select
+                    placeholder="Select Supplier type"
+                    options={[{ label: "Whole Sale", value: "Wholesale" }]}
+                    onChange={(e) =>
+                      setSupplier({ ...supplier, supplierType: e.value })
+                    }
+                    className="w-full text-black"
+                    styles={selectStyles2}
+                  />
+                </div>
+                <div className="flex flex-col gap-y-2 w-full">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Status
+                  </label>
+                  <Select
+                    placeholder="Active/ InActive"
+                    options={[
+                      { label: "Active", value: true },
+                      { label: "InActive", value: false },
+                    ]}
+                    onChange={(e) =>
+                      setSupplier({ ...supplier, status: e.value })
+                    }
+                    className="w-full"
+                    styles={selectStyles2}
+                  />
+                </div>
+                <div className="flex flex-col gap-y-2">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Register Date
+                  </label>
+                  <input
+                    type="date"
+                    name="registerDate"
+                    value={supplier?.registerDate}
+                    placeholder="Select registration date"
+                    className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+
+              {/* === Section 2: Contact Info === */}
+              <div className="bg-white border border-borderColor rounded p-6 space-y-6 shadow-sm">
+                <h3 className="text-lg font-medium">2. Contact Information</h3>
+                <div className="space-y-4">
+                  <div className="grid md:grid-cols-2 max-md:gap-y-4 gap-x-6">
+                    <div className="flex flex-col gap-y-2 w-full">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Country
+                      </label>
+                      <Select
+                        placeholder="Select Country"
+                        className="w-full"
+                        styles={drawerSelectStyles}
+                        value={
+                          supplier?.country
+                            ? {
+                                value: supplier?.country,
+                                label: supplier?.country,
+                              }
+                            : null
+                        }
+                        options={allCountries ?? []}
+                        onChange={(e) => {
+                          setSupplier({
+                            ...supplier,
+                            country: e.label,
+                            state: "",
+                            city: "",
+                          });
+                          handleSelectedCountryStates(e.label);
+                        }}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-y-2 w-full">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        State
+                      </label>
+                      <Select
+                        placeholder="Select State"
+                        className="w-full"
+                        styles={drawerSelectStyles}
+                        value={
+                          supplier?.state
+                            ? {
+                                value: supplier?.state,
+                                label: supplier?.state,
+                              }
+                            : null
+                        }
+                        options={allStates ?? []}
+                        onChange={(e) => {
+                          setSupplier({
+                            ...supplier,
+                            state: e?.label,
+                            city: "",
+                          });
+                          handleSelectedCountryStatesCities(e.value);
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid md:grid-cols-2 max-md:gap-y-4 gap-x-6">
+                    <div className="flex flex-col gap-y-2 w-full">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        City
+                      </label>
+                      {!customCityMode ? (
+                        <>
+                          <Select
+                            placeholder="Select City"
+                            className="w-full"
+                            styles={drawerSelectStyles}
+                            value={
+                              supplier?.city
+                                ? {
+                                    value: supplier?.city,
+                                    label: supplier?.city,
+                                  }
+                                : null
+                            }
+                            options={allCities ?? []}
+                            onChange={(e) => {
+                              setSupplier({
+                                ...supplier,
+                                city: e.label,
+                              });
+                            }}
+                          />
+                          <button
+                            type="button"
+                            className="text-sm bg-theme text-white hover:text-theme hover:bg-white duration-150 rounded-sm border border-theme mt-1 px-2 self-end"
+                            onClick={() => {
+                              setSupplier({
+                                ...supplier,
+                                city: "",
+                              });
+                              setCustomCityMode(true);
+                            }}
+                          >
+                            Enter Custom City Name
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <input
+                            type="text"
+                            placeholder="Enter custom city"
+                            className="w-full px-3 py-3 border border-gray-300 rounded"
+                            value={supplier?.city}
+                            onChange={(e) =>
+                              setSupplier({
+                                ...supplier,
+                                city: e.target.value,
+                              })
+                            }
+                          />
+                          <button
+                            type="button"
+                            className="text-sm bg-theme text-white hover:text-theme hover:bg-white duration-150 rounded-sm border border-theme mt-1 px-2 self-end"
+                            onClick={() => {
+                              setSupplier({
+                                ...supplier,
+                                city: "",
+                              });
+                              setCustomCityMode(false);
+                            }}
+                          >
+                            Back to Select
+                          </button>
+                        </>
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-y-2">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Zip Code
+                      </label>
+                      <input
+                        type="text"
+                        name="zipCode"
+                        value={supplier?.zipCode}
+                        placeholder="Enter Zip code"
+                        className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        onChange={handleChange}
+                      />
+                    </div>
                   </div>
                   <div className="flex flex-col gap-y-2">
                     <label className="text-labelColor font-medium font-satoshi">
-                      Zip Code
+                      Address 1
                     </label>
                     <input
                       type="text"
-                      name="zipCode"
-                      value={supplier?.zipCode}
-                      placeholder="Enter Zip code"
+                      name="addressOne"
+                      value={supplier?.addressOne}
+                      placeholder="Enter Address 1"
                       className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       onChange={handleChange}
                     />
                   </div>
-                </div>
-                <div className="flex flex-col gap-y-2">
-                  <label className="text-labelColor font-medium font-satoshi">
-                    Address 1
-                  </label>
-                  <input
-                    type="text"
-                    name="addressOne"
-                    value={supplier?.addressOne}
-                    placeholder="Enter Address 1"
-                    className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="flex flex-col gap-y-2">
-                  <label className="text-labelColor font-medium font-satoshi">
-                    Address 2
-                  </label>
-                  <input
-                    type="text"
-                    name="addressTwo"
-                    value={supplier?.addressTwo}
-                    placeholder="Enter Address 2"
-                    className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="flex flex-col gap-y-2">
-                  <label className="text-labelColor font-medium font-satoshi">
-                    Phone number
-                  </label>
-                  <div className="grid grid-cols-10 gap-x-2">
-                    <PhoneInput
-                      focusBorderColor="none"
-                      borderWidth="none"
-                      className="chakra_input col-span-2"
-                      inputStyle={{
-                        width: "90px",
-                        height: "45px",
-                        borderRadius: "4px",
-                        border: "1px solid #00000033",
-                        backgroundColor: "#ffffff",
-                        color: "#6f4e37",
-                        opacity: "20",
-                      }}
-                      buttonStyle={{
-                        backgroundColor: "#ffffff",
-                        border: "1px solid #86644C",
-                      }}
-                      containerStyle={{
-                        borderRadius: "12px",
-                        // backgroundColor: "#6f4e37",
-                      }}
-                      dropdownStyle={{
-                        backgroundColor: "#86644C",
-                        borderRadius: "8px",
-                      }}
-                      country={"us"}
-                      onChange={(phone) =>
-                        setSupplier({
-                          ...supplier,
-                          countryCode: phone,
-                        })
-                      }
-                    />
+                  <div className="flex flex-col gap-y-2">
+                    <label className="text-labelColor font-medium font-satoshi">
+                      Address 2
+                    </label>
                     <input
-                      type="number"
-                      name="phoneNum"
-                      value={supplier?.phoneNum}
-                      placeholder="Enter Phone Number"
-                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5  w-full col-span-8"
+                      type="text"
+                      name="addressTwo"
+                      value={supplier?.addressTwo}
+                      placeholder="Enter Address 2"
+                      className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       onChange={handleChange}
                     />
                   </div>
-                </div>
-              </div>
-            </div>
-
-            {/* === Section 3: Bank & Login Details === */}
-            <div className="bg-white border border-borderColor rounded p-6 space-y-6 shadow-sm">
-              <h3 className="text-lg font-medium">3. Bank & Login Details</h3>
-              <div className="space-y-4">
-                <div className="flex flex-col gap-y-2">
-                  <label className="text-labelColor font-medium font-satoshi">
-                    Bank Account Detail
-                  </label>
-                  <input
-                    type="text"
-                    name="bankAccount"
-                    value={supplier?.bankAccount}
-                    placeholder="Enter Valid IBAN Number"
-                    className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="flex flex-col gap-y-2">
-                  <label className="text-labelColor font-medium font-satoshi">
-                    Login Email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    autoComplete="off"
-                    value={supplier?.email}
-                    placeholder="Enter Email"
-                    className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    onChange={handleChange}
-                  />
-                  <div
-                    className={`text-red-600 space-y-1 pb-1 ${
-                      supplier?.email.length > 0 &&
-                      !emailValidity.test(supplier?.email)
-                        ? "block"
-                        : "hidden"
-                    }`}
-                  >
-                    <hr className="border-none h-0.5 bg-white bg-opacity-20" />
-                    <p>Invalid Email Format</p>
+                  <div className="flex flex-col gap-y-2">
+                    <label className="text-labelColor font-medium font-satoshi">
+                      Phone number
+                    </label>
+                    <div className="grid grid-cols-10 gap-x-2">
+                      <PhoneInput
+                        focusBorderColor="none"
+                        borderWidth="none"
+                        className="chakra_input col-span-2"
+                        inputStyle={{
+                          width: "90px",
+                          height: "45px",
+                          borderRadius: "4px",
+                          border: "1px solid #00000033",
+                          backgroundColor: "#ffffff",
+                          color: "#6f4e37",
+                          opacity: "20",
+                        }}
+                        buttonStyle={{
+                          backgroundColor: "#ffffff",
+                          border: "1px solid #86644C",
+                        }}
+                        containerStyle={{
+                          borderRadius: "12px",
+                          // backgroundColor: "#6f4e37",
+                        }}
+                        dropdownStyle={{
+                          backgroundColor: "#86644C",
+                          borderRadius: "8px",
+                        }}
+                        country={"us"}
+                        onChange={(phone) =>
+                          setSupplier({
+                            ...supplier,
+                            countryCode: phone,
+                          })
+                        }
+                      />
+                      <input
+                        type="number"
+                        name="phoneNum"
+                        value={supplier?.phoneNum}
+                        placeholder="Enter Phone Number"
+                        className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5  w-full col-span-8"
+                        onChange={handleChange}
+                      />
+                    </div>
                   </div>
                 </div>
-                <div className="flex flex-col gap-y-2 relative">
-                  <label className="text-labelColor font-medium font-satoshi">
-                    Password
-                  </label>
-                  <input
-                    type={visible ? "text" : "password"}
-                    name="password"
-                    autoComplete="off"
-                    value={supplier?.password}
-                    placeholder="Enter password"
-                    className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none ps-2.5 pe-12 py-3"
-                    onChange={handleChange}
-                  />
-                  <button
-                    onClick={() => setVisible(!visible)}
-                    type="button"
-                    className="text-labelColor absolute right-4 top-11"
-                  >
-                    {visible ? (
-                      <AiOutlineEye size={24} color="#000000" />
-                    ) : (
-                      <AiOutlineEyeInvisible size={24} color="#64748b" />
-                    )}
-                  </button>
+              </div>
+
+              {/* === Section 3: Bank & Login Details === */}
+              <div className="bg-white border border-borderColor rounded p-6 space-y-6 shadow-sm">
+                <h3 className="text-lg font-medium">3. Bank & Login Details</h3>
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-y-2">
+                    <label className="text-labelColor font-medium font-satoshi">
+                      Bank Account Detail
+                    </label>
+                    <input
+                      type="text"
+                      name="bankAccount"
+                      value={supplier?.bankAccount}
+                      placeholder="Enter Valid IBAN Number"
+                      className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-y-2">
+                    <label className="text-labelColor font-medium font-satoshi">
+                      Login Email
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      autoComplete="off"
+                      value={supplier?.email}
+                      placeholder="Enter Email"
+                      className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      onChange={handleChange}
+                    />
+                    <div
+                      className={`text-red-600 space-y-1 pb-1 ${
+                        supplier?.email.length > 0 &&
+                        !emailValidity.test(supplier?.email)
+                          ? "block"
+                          : "hidden"
+                      }`}
+                    >
+                      <hr className="border-none h-0.5 bg-white bg-opacity-20" />
+                      <p>Invalid Email Format</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-y-2 relative">
+                    <label className="text-labelColor font-medium font-satoshi">
+                      Password
+                    </label>
+                    <input
+                      type={visible ? "text" : "password"}
+                      name="password"
+                      autoComplete="off"
+                      value={supplier?.password}
+                      placeholder="Enter password"
+                      className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none ps-2.5 pe-12 py-3"
+                      onChange={handleChange}
+                    />
+                    <button
+                      onClick={() => setVisible(!visible)}
+                      type="button"
+                      className="text-labelColor absolute right-4 top-11"
+                    >
+                      {visible ? (
+                        <AiOutlineEye size={24} color="#000000" />
+                      ) : (
+                        <AiOutlineEyeInvisible size={24} color="#64748b" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
+            <div>
+              <button
+                type="submit"
+                className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
+              >
+                Add Supplier
+              </button>
+            </div>
           </div>
-          <div>
-            <button
-              type="submit"
-              className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
-            >
-              Add Supplier
-            </button>
-          </div>
-        </div>
-      )}
-    </form>
+        )}
+      </form>
+    </div>
   );
 }
 

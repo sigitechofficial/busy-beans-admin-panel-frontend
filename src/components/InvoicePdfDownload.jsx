@@ -63,10 +63,10 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
       `api/v1/admin/order-management/update-order/${invoiceData?.id}`,
       {
         items: itemsForApi,
-        order: {
-          invoiceNumber: pdfData?.invNumber,
-          poNumber: pdfData?.poNumber,
-        },
+        // order: {
+        //   invoiceNumber: pdfData?.invNumber,
+        //   poNumber: pdfData?.poNumber,
+        // },
       }
     );
 

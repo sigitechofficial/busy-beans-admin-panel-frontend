@@ -277,10 +277,10 @@ export default function Stock() {
     { field: "sku", header: "SKU" },
     { field: "grind", header: "Grind" },
     { field: "image", header: "Image" },
-    {
-      field: "currentStatus",
-      header: "Current Status",
-    },
+    // {
+    //   field: "currentStatus",
+    //   header: "Current Status",
+    // },
     {
       field: "changeStatus",
       header: "Change Status",
@@ -307,21 +307,33 @@ export default function Stock() {
           className="w-20 h-12 object-contain"
         />
       ),
-      currentStatus: (
-        <div>
+      // currentStatus: (
+      //   <div>
+      //     {prod?.status ? (
+      //       <div className="w-24 bg-theme text-white font-semibold p-2 rounded-md flex justify-center">
+      //         Active
+      //       </div>
+      //     ) : (
+      //       <div className="w-24 bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+      //         Inactive
+      //       </div>
+      //     )}
+      //   </div>
+      // ),
+      changeStatus: (
+        <label className="flex items-center gap-2">
+
+          <div>
           {prod?.status ? (
-            <div className="w-24 bg-theme text-white font-semibold p-2 rounded-md flex justify-center">
+            <div className="w-max text-xs bg-theme text-white font-semibold p-2 rounded-md flex justify-center">
               Active
             </div>
           ) : (
-            <div className="w-24 bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+            <div className="w-max text-xs bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
               Inactive
             </div>
           )}
         </div>
-      ),
-      changeStatus: (
-        <label>
           <Switch
             onChange={() => {
               handleStatus(prod?.id, prod?.status);

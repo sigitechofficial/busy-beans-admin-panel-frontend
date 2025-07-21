@@ -12,20 +12,22 @@ export default function Invoices() {
   );
 
   const columns = [
-    { field: "sl", header: "SL", sort: true },
-    { field: "name", header: "Name" },
-    { field: "email", header: "Email" },
-    { field: "phoneNumber", header: "Phone Number" },
-    { field: "saleTaxNumber", header: "Sale Tax Number" },
+    // { field: "sl", header: "SL", sort: true },
+    // { field: "name", header: "Name" },
+    { field: "companyName", header: "Customer" },
+    // { field: "email", header: "Email" },
+    // { field: "phoneNumber", header: "Phone Number" },
+    // { field: "saleTaxNumber", header: "Sale Tax Number" },
     { field: "emailToSendInvoices", header: "Invoice Email" },
-    { field: "totalBalance", header: "Total Balance" },
+    { field: "totalBalance", header: "Total Balance" , sort: true },
   ];
 
   const datas = [];
   data?.data?.data?.map((invoice, i) => {
     return datas.push({
       sl: i + 1,
-      name: invoice?.name,
+      // name: invoice?.name,
+      companyName: invoice?.companyName,
       email: invoice?.email,
       image: invoice?.image,
       phoneNumber: invoice?.phoneNumber,
@@ -36,6 +38,8 @@ export default function Invoices() {
         : `$${0}`,
     });
   });
+
+  
 
   return data?.length === 0 ? (
     <Loader />

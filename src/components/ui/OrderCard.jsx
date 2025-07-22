@@ -116,6 +116,18 @@ export default function OrderCard(props) {
               shippingCompany: dispatchOrderData?.shippingCompany,
             },
           });
+          const res1 = await PatchAPI("api/v1/admin/order-deliver", {
+            orderId: props?.orderData?.id,
+            orderData: {
+              statusId: 5,
+              orderStatus: props?.orderData?.orderCurrentStatus,
+              paymentStaus: props?.orderData?.paymentStatus,
+            },
+          });
+
+          if (res1?.data?.status === "success") {
+            success_toaster("Order Delivered successfully");
+          }
           if (res?.data?.status === "success") {
             success_toaster("Order Shipped successfully");
             props?.reFetch();
@@ -574,9 +586,9 @@ export default function OrderCard(props) {
                   <Select
                     placeholder="Select dispatch order company"
                     className="w-full"
-                    defaultValue={{ value: "fedex", label: "FedEX" }}
+                    defaultValue={{ value: "fedex", label: "FedEx" }}
                     styles={selectStyles2}
-                    options={[{ value: "fedex", label: "FedEX" }]}
+                    options={[{ value: "fedex", label: "FedEx" }]}
                     onChange={(e) => {
                       setDispatchOrderData({
                         ...dispatchOrderData,

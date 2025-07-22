@@ -151,7 +151,7 @@ export default function page() {
               desc={`$${data?.data?.wholesalePriceOnline ?? 0}`}
             />
             <ManagementTab
-              title="Commission"
+              title="Partner Profit"
               desc={`$${data?.data?.salerCommissionOnline ?? 0}`}
             />
           </div>

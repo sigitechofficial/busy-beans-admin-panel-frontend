@@ -4,7 +4,7 @@ import TrackOrderTab from "./TrackOrderTab";
 export default function TrackOrder({ statusId, orderHistories }) {
   const handleTrackOrderTab = (statusId) => {
     const result = orderHistories?.find(
-      (history) => history?.statusId === statusId
+      (history) => history?.statusId == statusId
     );
     return {
       status: !!result,

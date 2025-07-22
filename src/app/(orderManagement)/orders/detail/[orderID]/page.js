@@ -417,13 +417,13 @@ export default function OrderDetail() {
                 //     : false
                 // }
                 className={`${
-                  data?.data?.order?.statusId === 2 ||
-                  data?.data?.order?.statusId === 3 ||
+                  // data?.data?.order?.statusId === 2 ||
+                  // data?.data?.order?.statusId === 3 ||
                   data?.data?.order?.statusId === 1
                     ? "block"
                     : "hidden"
                 } bg-black text-white disabled:cursor-not-allowed`}
-                onClick={() => handleAssignSupplier(4)}
+                onClick={() => handleAssignSupplier(data?.data?.order?.statusId)}
               >
                 {data?.data?.order?.statusId === 1
                 ? "Dispatch to Supplier"

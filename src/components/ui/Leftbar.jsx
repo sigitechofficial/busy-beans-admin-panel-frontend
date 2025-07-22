@@ -39,8 +39,13 @@ import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import axios from "axios";
 import { BASE_URL } from "@/utilities/URL";
 import ErrorHandler from "@/utilities/ErrorHandler";
+import { useCart } from "@/utilities/dataContext";
+import GetAPI from "@/utilities/GetAPI";
 
 export default function Leftbar(props) {
+  const overAllData = GetAPI("api/v1/admin/order-navigation-counts");
+
+
   if (typeof window !== "undefined") {
     var userType = localStorage.getItem("userType");
     var userID = localStorage.getItem("userID");
@@ -247,7 +252,10 @@ export default function Leftbar(props) {
   //     stripeAccountStatus();
   //   }
   // }, []);
-
+  const allOrder = overAllData?.data?.data?.reduce(
+    (sum, item) => sum + item?.count,
+    0
+  );
   return (
     <section
       className={`bg-white ${
@@ -317,10 +325,10 @@ export default function Leftbar(props) {
                   <ListItems title="Upcoming Orders" to="/orders/upcoming" />
                   <ListItems title="Assigned Orders" to="/orders/assigned" />
                   <ListItems
-                    title="Acknowledged Orders"
+                    title="Dispatched to Supplier"
                     to="/orders/acknowledged"
                   />
-                  <ListItems title="Shiped Orders" to="/orders/shiped" />
+                  <ListItems title="Shipped Orders" to="/orders/shiped" />
                   <ListItems
                     title="Dispatched Orders"
                     to="/orders/dispatched"
@@ -821,11 +829,11 @@ export default function Leftbar(props) {
                     to="/supplier/assigned-orders"
                   />
                   <ListItems
-                    title="Acknowledge Orders"
+                    title="Acknowledged Orders"
                     to="/supplier/acknowledge-orders"
                   />
                   <ListItems
-                    title="Shiped Orders"
+                    title="Shipped Orders"
                     to="/supplier/shiped-orders"
                   />
                   {/* <ListItems
@@ -961,24 +969,27 @@ export default function Leftbar(props) {
                     title="Create Orders"
                     to="/sales-representative/create-order"
                   />
-                  <ListItems title="All Orders" to="/orders" />
+                  <ListItems title="All Orders" to="/orders" count={allOrder} />
+                  <ListItems title="New Orders" to="/orders/new-orders" count={overAllData?.data?.data?.[0]?.count || ""} />
                   <ListItems
                     title="Upcoming Orders"
                     to="/sales-representative/upcoming-orders"
                   />
                   {/* <ListItems title="Assigned Orders" to="/orders/assigned" /> */}
                   <ListItems
-                    title="Acknowledged Orders"
+                    title="Dispatched to Supplier"
                     to="/orders/acknowledged"
+                    count={overAllData?.data?.data?.[1]?.count || ""}
                   />
                   <ListItems
-                    title="Shiped Orders"
+                    title="Shipped Orders"
                     to="/orders/shiped"
+                    count={overAllData?.data?.data?.[3]?.count || ""}
                   />
-                  <ListItems
+                  {/* <ListItems
                     title="Dispatched Orders"
                     to="/orders/dispatched"
-                  />
+                  /> */}
                   <ListItems title="Cancelled Orders" to="/orders/cancelled" />
                 </div>
                 <hr className="w-full" />

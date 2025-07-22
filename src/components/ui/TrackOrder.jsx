@@ -20,7 +20,7 @@ export default function TrackOrder({ statusId, orderHistories }) {
         time={handleTrackOrderTab(1)?.date}
       />
       <TrackOrderTab
-        heading="Order Confirmed"
+        heading="Dispatched to Supplier"
         status={handleTrackOrderTab(2)?.status}
         time={handleTrackOrderTab(2)?.date}
       />
@@ -31,11 +31,11 @@ export default function TrackOrder({ statusId, orderHistories }) {
       />
       <TrackOrderTab
         // heading="Dispatched Orders"
-        heading="Shiped Orders"
+        heading="Shipped Orders"
         status={handleTrackOrderTab(4)?.status}
         time={handleTrackOrderTab(4)?.date}
       />
-      <TrackOrderTab
+      {/* <TrackOrderTab
         // heading="Delivered Order"
         heading="Dispatched Order"
         status={handleTrackOrderTab(5)?.status}
@@ -45,7 +45,7 @@ export default function TrackOrder({ statusId, orderHistories }) {
         heading="Cancelled Order"
         status={handleTrackOrderTab(6)?.status}
         time={handleTrackOrderTab(6)?.date}
-      />
+      /> */}
     </div>
   );
 }

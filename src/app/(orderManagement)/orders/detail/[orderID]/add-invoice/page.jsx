@@ -1,16 +1,35 @@
 "use client";
+import MiniLoader from "@/components/ui/MiniLoader";
 import GetAPI from "@/utilities/GetAPI";
 import { PatchAPI } from "@/utilities/PatchAPI";
 import { selectStyles2 } from "@/utilities/SelectStyle";
 import { success_toaster } from "@/utilities/Toaster";
 import { useParams } from "next/navigation";
+import { Dialog } from "primereact/dialog";
 import React, { useEffect, useState } from "react";
-import { IoCardSharp } from "react-icons/io5";
+import { IoIosSearch } from "react-icons/io";
+import { IoCardSharp, IoSearch } from "react-icons/io5";
 import Select from "react-select";
 
 export default function AddInvoice() {
+  const [filterId, setFilterId] = useState("");
   const { orderID } = useParams();
   const { data, reFetch } = GetAPI(`api/v1/admin/order-details/${orderID}`);
+  const { data: category } = GetAPI(`api/v1/admin/category`);
+  const [modal, setModal] = useState(false);
+  const [search, setSearch] = useState("");
+  let categoryList = [{ value: "", label: "All" }];
+
+  if (category) {
+    category?.data?.data?.map((cat) => {
+      categoryList.push({ value: cat?.id, label: cat?.name });
+    });
+  }
+  const url = filterId
+    ? `api/v1/admin/product?categoryId=${filterId}`
+    : `api/v1/admin/product`;
+  const { data: ProductList, reFetch: ProductRefetch } = GetAPI(url);
+
   let userType = "admin";
 
   // States for invoice fields
@@ -19,7 +38,7 @@ export default function AddInvoice() {
     poNumber: "",
     invoiceDate: "",
     proforma: false,
-    terms: "",
+    terms: "30",
     dueDate: "",
     comments: "",
     otherPayment: "",
@@ -29,9 +48,10 @@ export default function AddInvoice() {
 
   // Items state (for main items)
   const [items, setItems] = useState([]);
-  console.log("🚀 ~ AddInvoice ~ items:", items);
+
   // Extra rows state (for added delivery/extra charges)
   const [extraRows, setExtraRows] = useState([]);
+  console.log("🚀 ~ AddInvoice ~ extraRows:", extraRows);
   const getToday = () => {
     const today = new Date();
     return today.toISOString().split("T")[0];
@@ -44,19 +64,28 @@ export default function AddInvoice() {
     return due.toISOString().split("T")[0];
   };
 
+  const handleFilter = () => {
+    const filteredData = ProductList?.data?.data?.filter((item) =>
+      item?.name?.toLowerCase().includes(search.toLowerCase() || "")
+    );
+
+    return filteredData;
+  };
+
   // On API data load, set invoice fields and items
   useEffect(() => {
     if (data?.data?.order) {
       setInvoiceFields((prev) => ({
         ...prev,
-        invoiceNumber: data.data.order.id || "",
-        poNumber: data.data.order.poNumber || "",
-        invoiceDate: prev.invoiceDate || getToday(),
-        dueDate: prev.dueDate || getDueDate(),
+        invoiceNumber: data?.data?.order?.id || "",
+        poNumber: data?.data?.order?.poNumber || "",
+        invoiceDate: prev?.invoiceDate || getToday(),
+        dueDate: prev?.dueDate || getDueDate(),
+        note: data?.data?.order?.note,
         // You can set invoiceDate, dueDate, terms, etc. from API if available
       }));
       setItems(
-        (data.data.order.items || []).map((item) => ({
+        (data?.data?.order?.items || []).map((item) => ({
           ...item,
           checked: true,
           qty: item.qty || 1,
@@ -101,18 +130,23 @@ export default function AddInvoice() {
   };
 
   // Add delivery/extra charges row (no category)
-  const handleAddExtra = () => {
+  const handleAddExtra = (prod) => {
+    console.log("🚀 ~ handleAddExtra ~ prod:", prod);
     setExtraRows((prev) => [
       ...prev,
       {
         id: `extra-${Date.now()}`,
+        // orderId:produ
+        productId: prod?.id,
         code: "",
-        name: "",
-        qty: 1,
-        unit: 0,
+        name: prod?.name,
+        qty: prod?.qty || 1,
+        unit: prod?.price,
         checked: true,
       },
     ]);
+
+    setModal(false);
   };
 
   // Handle input change for extra rows
@@ -370,7 +404,7 @@ export default function AddInvoice() {
           </div>
           <div className="flex flex-col gap-y-2 w-full">
             <label className="text-labelColor font-medium font-satoshi">
-              Terms
+              Terms (days)
             </label>
             <Select
               placeholder=""
@@ -572,8 +606,12 @@ export default function AddInvoice() {
               ))}
               <tr>
                 <td colSpan={6} className="py-2 px-2 border border-gray-200">
-                  <button className="border px-2 py-2" onClick={handleAddExtra}>
-                    Add a delivery or extra charges
+                  <button
+                    className="border px-2 py-2"
+                    // onClick={handleAddExtra}
+                    onClick={() => setModal(true)}
+                  >
+                    Add Item
                   </button>
                 </td>
               </tr>
@@ -662,6 +700,67 @@ export default function AddInvoice() {
           </div>
         </div>
       </div>
+
+      {/* Modal */}
+      <Dialog
+        visible={modal}
+        style={{ width: "40vw" }}
+        // breakpoints={{ "1496px": "40vw", "1024px": "70vw", "641px": "80vw" }}
+        className="font-nunito"
+        onHide={() => setModal(false)}
+        header={
+          <div className="font-nunito font-bold text-2xl text-center">
+            Add Items to Order
+          </div>
+        }
+      >
+        {ProductList?.length === 0 ? (
+          <MiniLoader />
+        ) : (
+          <div
+            // onSubmit={handleStock}
+            className="flex flex-col"
+          >
+            <div className="sticky top-0 space-y-2 bg-white pb-2">
+              <div className="w-full h-14 rounded-md border relative">
+                <div className="absolute top-1/2 -translate-y-1/2 left-2">
+                  <IoIosSearch size={25} color="gray" />
+                </div>
+                <input
+                  className="w-full h-full outline-none bg-transparent pl-10 pr-4"
+                  type="text"
+                  name=""
+                  id=""
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search Product..."
+                />
+              </div>
+              <div className="w-full">
+                <Select
+                  placeholder="Select Category"
+                  options={categoryList}
+                  className="w-full text-black"
+                  styles={selectStyles2}
+                  // value={ }
+                  onChange={(e) => setFilterId(e?.value)}
+                />
+              </div>
+            </div>
+
+            {handleFilter()?.map((item, idx) => {
+              return (
+                <div
+                  key={item.id || idx}
+                  onClick={() => handleAddExtra(item)}
+                  className="text-sm text-start text-gray-500 cursor-pointer h-12 border-b flex items-center hover:bg-gray-100 px-2 hover:text-black hover:font-semibold"
+                >
+                  <p>{item?.name}</p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Dialog>
     </div>
   );
 } // <-- This closing brace was missing

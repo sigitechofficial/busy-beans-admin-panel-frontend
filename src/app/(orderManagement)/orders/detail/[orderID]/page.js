@@ -322,6 +322,8 @@ export default function OrderDetail() {
       }
     };
 
+    console.log(data?.data?.order?.statusId,"data?.data?.order?.statusIddata?.data?.order?.statusId")
+
   return data?.length === 0 ? (
     <Loader />
   ) : (
@@ -385,7 +387,8 @@ export default function OrderDetail() {
                 type="button"
                 disabled={
                   data?.data?.order?.statusId === 5 ||
-                  data?.data?.order?.statusId === 6
+                  data?.data?.order?.statusId === 6 ||
+                  data?.data?.order?.statusId === 1
                     ? true
                     : false
                 }
@@ -395,7 +398,7 @@ export default function OrderDetail() {
                 }
               >
                 {data?.data?.order?.statusId === 1
-                  ? "Assign Supplier"
+                  ? "Dispatch to Supplier"
                   : data?.data?.order?.statusId === 2
                   ? "Acknowledge Supplier"
                   : data?.data?.order?.statusId === 3
@@ -416,18 +419,18 @@ export default function OrderDetail() {
                 className={`${
                   data?.data?.order?.statusId === 2 ||
                   data?.data?.order?.statusId === 3 ||
-                  data?.data?.order?.statusId === 4
+                  data?.data?.order?.statusId === 1
                     ? "block"
                     : "hidden"
                 } bg-black text-white disabled:cursor-not-allowed`}
                 onClick={() => handleAssignSupplier(4)}
               >
-                {/* {data?.data?.order?.statusId === 1
-                ? "Assign Supplier"
+                {data?.data?.order?.statusId === 1
+                ? "Dispatch to Supplier"
                 : data?.data?.order?.statusId === 2
                 ? "Acknowledge Supplier"
-                : ""} */}
-                Dispatch Order
+                : ""}
+                {/* Dispatch Order */}
               </button> // dispatch Order basically rpelaced with status 4 which is delivered Order beacuse dispatch is done by supplier so here we use only text dispatch but inside it hit status code of 4
             )}
 

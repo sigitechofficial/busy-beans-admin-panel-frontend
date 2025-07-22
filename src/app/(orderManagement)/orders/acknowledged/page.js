@@ -19,11 +19,13 @@ export default function AcknowledgedOrders() {
       ? `api/v1/admin/orders?salesRepId=${userID}&statusId=3`
       : "api/v1/admin/orders?statusId=3"
   );
+  console.log("🚀 ~ AcknowledgedOrders ~ data:", data?.data);
 
   const columns = [
     // { field: "sl", header: "SL", sort: true },
     { field: "id", header: "#", sort: true },
-    { field: "customerName", header: "Customer" },
+    { field: "companyName", header: "Company Name" },
+    // { field: "customerName", header: "Customer" },
     { field: "itemsPrice", header: "Items Price" },
     { field: "subTotal", header: "Sub Total" },
     { field: "totalBill", header: "Total" },
@@ -47,7 +49,8 @@ export default function AcknowledgedOrders() {
     return datas.push({
       sl: i + 1,
       id: detail?.id,
-      customerName: detail?.customerName,
+      // customerName: detail?.customerName,
+      companyName: detail?.companyName,
       totalBill: "$" + detail?.totalBill,
       subTotal: "$" + detail?.subTotal,
       discountPrice: "$" + detail?.discountPrice,

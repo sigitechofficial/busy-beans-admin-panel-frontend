@@ -31,8 +31,14 @@ export default function Orders() {
   const columns = [
     // { field: "sl", header: "SL", sort: true },
     { field: "id", header: "#", sort: true },
+<<<<<<< HEAD
+    // { field: "customerName", header: "Customer" },
+    { field: "companyName", header: "Company Name" },
+    { field: "orderDate", header: "Order Date" },
+=======
     { field: "customerName", header: "Customer" },
     { field: "orderDate", header: "Order Date",sort:true },
+>>>>>>> f632641d746a92082939a075537aaf874ddd5831
     { field: "deliveredOn", header: "Deliver On" },
     // { field: "salesRepName", header: "Local Partner Name" },
     // { field: "subTotal", header: "Sub Total" },
@@ -66,7 +72,8 @@ export default function Orders() {
       datas.push({
         sl: slCounter++,
         id: detail?.id,
-        customerName: detail?.customerName,
+        // customerName: detail?.customerName,
+        companyName: detail?.companyName,
         salesRepName: detail?.salesRepName,
         totalBill: "$" + detail?.totalBill,
         subTotal: "$" + detail?.subTotal,

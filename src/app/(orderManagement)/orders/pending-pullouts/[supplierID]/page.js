@@ -33,7 +33,8 @@ export default function PendingPulloutsOrders() {
   const columns = [
     { field: "sl", header: "SL", sort: true },
     { field: "id", header: "Order ID", sort: true },
-    { field: "customerName", header: "Customer Name" },
+    // { field: "customerName", header: "Customer Name" },
+    { field: "companyName", header: "Company Name" },
     { field: "adminReceivableAmount", header: "Admin Receivable Amount" },
     { field: "totalBill", header: "Total Bill" },
     { field: "localPatnerCommission", header: "Local Partner Commission" },
@@ -47,7 +48,8 @@ export default function PendingPulloutsOrders() {
     return datas.push({
       sl: i + 1,
       id: detail?.id,
-      customerName: detail?.customerName,
+      // customerName: detail?.customerName,
+      companyName: detail?.companyName,
       adminReceivableAmount: `$${detail?.adminReceivableAmount ?? 0}`,
       totalBill: `$${detail?.totalBill ?? 0}`,
       localPatnerCommission: `$${detail?.localPatnerCommission ?? 0}`,

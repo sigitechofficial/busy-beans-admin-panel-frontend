@@ -57,7 +57,8 @@ export default function UpcomingOrders() {
   const columns = [
     { field: "sl", header: "SL", sort: true },
     { field: "id", header: "Order ID", sort: true },
-    { field: "customerName", header: "Customer Name" },
+    // { field: "customerName", header: "Customer Name" },
+    { field: "companyName", header: "company Name" },
     { field: "email", header: "Email" },
     { field: "orderDate", header: "Order Date" },
     { field: "nextOrderDate", header: "Next Order Date" },
@@ -82,6 +83,7 @@ export default function UpcomingOrders() {
       sl: i + 1,
       id: detail?.id,
       customerName: detail?.customerName,
+      companyName: detail?.companyName,
       email: detail?.email,
       orderDate: detail?.orderDate,
       nextOrderDate: detail?.nextOrderDate,
@@ -115,13 +117,10 @@ export default function UpcomingOrders() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-
     <div>
-
-
-     <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
+      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-        Upcoming Orders
+          Upcoming Orders
         </h2>
 
         {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">
@@ -133,72 +132,73 @@ export default function UpcomingOrders() {
         </ul> */}
       </div>
       <div className="space-y-8 pb-6 pt-32 px-6 2xl:px-12">
-  
+        <div className="flex justify-end">
+          <button
+            onClick={handleRebookOrder}
+            className="rounded-lg font-inter font-medium text-white bg-theme hover:text-theme hover:bg-white border border-theme duration-150 px-5 py-3 sm:h-full"
+          >
+            Rebook Order
+          </button>
+        </div>
 
-      <div className="flex justify-end">
-        <button
-          onClick={handleRebookOrder}
-          className="rounded-lg font-inter font-medium text-white bg-theme hover:text-theme hover:bg-white border border-theme duration-150 px-5 py-3 sm:h-full"
-        >
-          Rebook Order
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-        <ManagementTab title="Total Orders" desc={data?.data?.order?.length} />
-        {/* <ManagementTab title="New Orders" desc="5%" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+          <ManagementTab
+            title="Total Orders"
+            desc={data?.data?.order?.length}
+          />
+          {/* <ManagementTab title="New Orders" desc="5%" />
         <ManagementTab title="Pending Orders" desc="5000" />
         <ManagementTab title="In progress Orders" desc="5,000" />
         <ManagementTab title="Cancelled Orders" desc="5,000" /> */}
-      </div>
+        </div>
 
-      <div>
-        <MyDataTable
-          columns={columns}
-          data={datas}
-          placeholder={"Search ..."}
-          pagination={true}
-          checkbox={true}
-          selectedRows={selectedRows}
-          setSelectedRows={setSelectedRows}
-          search={true}
-        />
-      </div>
-
-      <Dialog
-        visible={modal === "view"}
-        style={{ width: "60vw" }}
-        // breakpoints={{ "1496px": "40vw", "1024px": "70vw", "641px": "80vw" }}
-        className="font-nunito"
-        onHide={handleCancel}
-        header={
-          <div className="font-nunito font-bold text-2xl text-center">
-            Item Details
-          </div>
-        }
-      >
-        <div className="space-y-4">
+        <div>
           <MyDataTable
-            columns={columnsItems}
-            data={datasItems}
+            columns={columns}
+            data={datas}
             placeholder={"Search ..."}
             pagination={true}
-            hide={true}
+            checkbox={true}
+            selectedRows={selectedRows}
+            setSelectedRows={setSelectedRows}
             search={true}
           />
-          <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="rounded-lg border border-theme bg-theme text-white hover:bg-white hover:text-theme duration-150
-                       shadow-buttonShadow px-6 font-nunito py-3 font-medium"
-            >
-              Cancel
-            </button>
-          </div>
         </div>
-      </Dialog>
-    </div>
+
+        <Dialog
+          visible={modal === "view"}
+          style={{ width: "60vw" }}
+          // breakpoints={{ "1496px": "40vw", "1024px": "70vw", "641px": "80vw" }}
+          className="font-nunito"
+          onHide={handleCancel}
+          header={
+            <div className="font-nunito font-bold text-2xl text-center">
+              Item Details
+            </div>
+          }
+        >
+          <div className="space-y-4">
+            <MyDataTable
+              columns={columnsItems}
+              data={datasItems}
+              placeholder={"Search ..."}
+              pagination={true}
+              hide={true}
+              search={true}
+            />
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="rounded-lg border border-theme bg-theme text-white hover:bg-white hover:text-theme duration-150
+                       shadow-buttonShadow px-6 font-nunito py-3 font-medium"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </Dialog>
+      </div>
     </div>
   );
 }

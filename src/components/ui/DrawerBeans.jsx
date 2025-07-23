@@ -189,7 +189,7 @@ const DrawerBeans = ({
         try {
           const res = await PostAPI(
             userType === "admin"
-              ? `api/v1/admin/sales-rep/book-new-order`
+              ? `api/v1/admin/book-new-order`
               : `api/v1/admin/sales-rep/book-new-order/${userID}`,
             {
               //sales rep id in route

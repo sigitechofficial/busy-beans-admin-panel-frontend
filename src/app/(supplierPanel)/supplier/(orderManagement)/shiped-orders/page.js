@@ -14,7 +14,7 @@ export default function SupplierOrders() {
   }
   const router = useRouter();
   const { data } = GetAPI(
-    `api/v1/admin/orders?statusId=4&supplierId=${supplierId}`
+    `api/v1/admin/orders?statusId=5&supplierId=${supplierId}` //now we will display here delivered order because we are directky marking the order delivered when supplier ships the order
   );
 
   const columns = [
@@ -77,7 +77,7 @@ export default function SupplierOrders() {
     <div>
       <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-          Shiped Orders
+          Shipped Orders 
         </h2>
 
         {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">

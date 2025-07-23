@@ -45,7 +45,6 @@ import GetAPI from "@/utilities/GetAPI";
 export default function Leftbar(props) {
   const overAllData = GetAPI("api/v1/admin/order-navigation-counts");
 
-
   if (typeof window !== "undefined") {
     var userType = localStorage.getItem("userType");
     var userID = localStorage.getItem("userID");
@@ -253,9 +252,10 @@ export default function Leftbar(props) {
   //   }
   // }, []);
   const allOrder = overAllData?.data?.data?.reduce(
-    (sum, item) => sum + item?.count,
+    (sum, item) => (item?.id != 6 ? sum + item?.count : sum),
     0
   );
+
   return (
     <section
       className={`bg-white ${
@@ -321,19 +321,46 @@ export default function Leftbar(props) {
               <>
                 <div className="m-2 relative space-y-1">
                   <ListItems title="Create Order" to="/orders/create" />
-                  <ListItems title="All Orders" to="/orders" />
-                  <ListItems title="Upcoming Orders" to="/orders/upcoming" />
-                  <ListItems title="Assigned Orders" to="/orders/assigned" />
                   <ListItems
-                    title="Dispatched to Supplier"
-                    to="/orders/acknowledged"
+                    title="New Orders"
+                    to="/orders/new-orders"
+                    count={overAllData?.data?.data?.[0]?.count || ""}
                   />
-                  <ListItems title="Shipped Orders" to="/orders/shiped" />
+                  <ListItems
+                    title="All Orders"
+                    to="/orders"
+                    count={allOrder || ""}
+                  />
+
+                  <ListItems
+                    title="Upcoming Orders"
+                    to="/orders/upcoming"
+                    count={overAllData?.data?.data?.[6]?.count || ""}
+                  />
                   <ListItems
                     title="Dispatched Orders"
-                    to="/orders/dispatched"
+                    to="/orders/assigned"
+                    count={overAllData?.data?.data?.[1]?.count || ""}
                   />
-                  <ListItems title="Cancelled Orders" to="/orders/cancelled" />
+                  <ListItems
+                    title="Acknowledged Orders"
+                    to="/orders/acknowledged"
+                    count={overAllData?.data?.data?.[2]?.count || ""}
+                  />
+                  <ListItems
+                    title="Shipped Orders"
+                    to="/orders/shiped"
+                    count={overAllData?.data?.data?.[4]?.count || ""}
+                  />
+                  {/* <ListItems
+                    title="Dispatched Orders"
+                    to="/orders/dispatched"
+                  /> */}
+                  <ListItems
+                    title="Cancelled Orders"
+                    to="/orders/cancelled"
+                    count={overAllData?.data?.data?.[5]?.count || ""}
+                  />
                 </div>
                 <hr className="w-full" />
               </>
@@ -969,27 +996,35 @@ export default function Leftbar(props) {
                     title="Create Orders"
                     to="/sales-representative/create-order"
                   />
+                  <ListItems
+                    title="New Orders"
+                    to="/orders/new-orders"
+                    count={overAllData?.data?.data?.[0]?.count || ""}
+                  />
                   <ListItems title="All Orders" to="/orders" count={allOrder} />
-                  <ListItems title="New Orders" to="/orders/new-orders" count={overAllData?.data?.data?.[0]?.count || ""} />
+
                   <ListItems
                     title="Upcoming Orders"
                     to="/sales-representative/upcoming-orders"
+                    count={overAllData?.data?.data?.[6]?.count || ""}
                   />
                   {/* <ListItems title="Assigned Orders" to="/orders/assigned" /> */}
                   <ListItems
-                    title="Dispatched to Supplier"
-                    to="/orders/acknowledged"
+                    title="Dispatched Orders"
+                    to="/orders/assigned"
                     count={overAllData?.data?.data?.[1]?.count || ""}
+                  />
+
+                  <ListItems
+                    title="Acknowledged Orders"
+                    to="/orders/acknowledged"
+                    count={overAllData?.data?.data?.[2]?.count || ""}
                   />
                   <ListItems
                     title="Shipped Orders"
                     to="/orders/shiped"
-                    count={overAllData?.data?.data?.[3]?.count || ""}
+                    count={overAllData?.data?.data?.[4]?.count || ""}
                   />
-                  {/* <ListItems
-                    title="Dispatched Orders"
-                    to="/orders/dispatched"
-                  /> */}
                   <ListItems title="Cancelled Orders" to="/orders/cancelled" />
                 </div>
                 <hr className="w-full" />

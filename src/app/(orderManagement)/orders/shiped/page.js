@@ -16,9 +16,12 @@ export default function DispatchedOrders() {
   }
   const router = useRouter();
   const { data } = GetAPI(
+    // userType === "salesRepresentative"
+    //   ? `api/v1/admin/orders?salesRepId=${userID}&statusId=4`
+    //   : "api/v1/admin/orders?statusId=4"
     userType === "salesRepresentative"
-      ? `api/v1/admin/orders?salesRepId=${userID}&statusId=4`
-      : "api/v1/admin/orders?statusId=4"
+      ? `api/v1/admin/orders?salesRepId=${userID}&statusId=5`
+      : "api/v1/admin/orders?statusId=5"
   );
 
   const columns = [
@@ -26,7 +29,7 @@ export default function DispatchedOrders() {
     { field: "id", header: "#", sort: true },
     // { field: "customerName", header: "Customer" },
     { field: "companyName", header: "Company Name" },
-    { field: "orderDate", header: "Order Date" },
+    { field: "orderDate", header: "Order Date", sort: true },
     { field: "deliveredOn", header: "Deliver On" },
     // { field: "salesRepName", header: "Local Partner Name" },
     // { field: "subTotal", header: "Sub Total" },
@@ -41,10 +44,10 @@ export default function DispatchedOrders() {
     // { field: "poNumber", header: "Po Number" },
     // { field: "orderFrequency", header: "Order Frequency" },
 
-    { field: "totalBill", header: "Total" },
+    { field: "totalBill", header: "Total", sort: true },
     { field: "paymentStatus", header: "Invoice" },
     // { field: "createdBy", header: "Created By" },
-    { field: "orderCurrentStatus", header: "Status" },
+    // { field: "orderCurrentStatus", header: "Status" },
     // { field: "action", header: "Action" },
   ];
 
@@ -70,7 +73,7 @@ export default function DispatchedOrders() {
       orderCurrentStatus: detail?.orderCurrentStatus,
       paymentStatus: detail?.paymentStatus === "done" ? "Paid" : "Unpaid",
       createdBy: detail?.createdBy,
-      orderDate: dayjs(detail?.on).format("DD/MM/YYYY"),
+      orderDate: dayjs(detail?.on).format("MM/DD/YYYY"),
       action: (
         <button
           className="border border-yellow-400 rounded-md p-2 text-yellow-400"
@@ -90,10 +93,12 @@ export default function DispatchedOrders() {
     <div>
       <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-          Shiped Orders
+          Shipped Orders
         </h2>
       </div>
       <div className="space-y-8 pt-32 px-6 2xl:px-12 ">
+
+    
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
           <ManagementTab title="Total Orders" desc={data?.data?.data?.length} />
           {/* <ManagementTab title="New Orders" desc="5%" />

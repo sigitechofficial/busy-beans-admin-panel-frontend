@@ -387,8 +387,7 @@ export default function OrderDetail() {
                 type="button"
                 disabled={
                   data?.data?.order?.statusId === 5 ||
-                  data?.data?.order?.statusId === 6 ||
-                  data?.data?.order?.statusId === 1
+                  data?.data?.order?.statusId === 6
                     ? true
                     : false
                 }

@@ -116,18 +116,7 @@ export default function OrderCard(props) {
               shippingCompany: dispatchOrderData?.shippingCompany,
             },
           });
-          const res1 = await PatchAPI("api/v1/admin/order-deliver", {
-            orderId: props?.orderData?.id,
-            orderData: {
-              statusId: 5,
-              orderStatus: props?.orderData?.orderCurrentStatus,
-              paymentStaus: props?.orderData?.paymentStatus,
-            },
-          });
 
-          if (res1?.data?.status === "success") {
-            success_toaster("Order Delivered successfully");
-          }
           if (res?.data?.status === "success") {
             success_toaster("Order Shipped successfully");
             props?.reFetch();
@@ -144,6 +133,23 @@ export default function OrderCard(props) {
             setLoader("");
             throw new Error(
               res?.data?.message || "An unexpected error occurred."
+            );
+          }
+
+          const resDeliver = await PatchAPI("api/v1/admin/order-deliver", {
+            orderId: props?.orderData?.id,
+            orderData: {
+              statusId: 5,
+              orderStatus: props?.orderData?.orderCurrentStatus,
+              paymentStaus: props?.orderData?.paymentStatus,
+            },
+          });
+
+          if (resDeliver?.data?.status === "success") {
+            success_toaster("Order Delivered successfully");
+          } else {
+            throw new Error(
+              resDeliver?.data?.message || "Failed to deliver order."
             );
           }
         }

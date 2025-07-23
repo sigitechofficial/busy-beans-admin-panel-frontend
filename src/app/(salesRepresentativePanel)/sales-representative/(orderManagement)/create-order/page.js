@@ -20,12 +20,22 @@ export default function CreateOrder() {
     // var isAccountConnected = localStorage.getItem("isAccountConnected");
     // var url = window.location.href;
   }
-
+  const [filterId, setFilterId] = useState("");
   const [createOrderData, setCreateOrderData] = useState(createOrderDataList);
   const [visibleRight, setVisibleRight] = useState(false);
 
-  const { data, reFetch } = GetAPI("api/v1/admin/product");
-  console.log("🚀 ~ CreateOrder ~ data:", data?.data?.data);
+  const { data: category } = GetAPI(`api/v1/admin/category`);
+  let categoryList = [{ value: "", label: "All" }];
+  if (category) {
+    category?.data?.data?.map((cat) => {
+      categoryList.push({ value: cat?.id, label: cat?.name });
+    });
+  }
+  const url = filterId
+    ? `api/v1/admin/product?categoryId=${filterId}`
+    : `api/v1/admin/product`;
+
+  const { data, reFetch } = GetAPI(url);
 
   const handlePlus = (id, itemQuantity) => {
     const findItemIndex = createOrderData?.findIndex((item) => item?.id === id);
@@ -149,22 +159,28 @@ export default function CreateOrder() {
           Create Order
         </h2>
 
-        {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">
-          <li>Invoice</li>
-          <li>Quickbooks</li>
-          <li>Schedule</li>
-          <li>Bulk Modify</li>
-          <li>Export</li>
-        </ul> */}
+        <Select
+          onChange={(e) => setFilterId(e?.value)}
+          placeholder="Category"
+          options={categoryList}
+          className="w-40"
+          styles={selectStyles}
+        />
       </div>
       <div className="space-y-8 pb-6 pt-32 px-6 2xl:px-12">
-        <div className="flex items-center justify-end">
-          {/* <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+        {/* <div className="flex items-center justify-end"> */}
+        {/* <h2 className="text-xl lg:text-2xl font-inter font-semibold">
             Create Order
-          </h2> */} 
+          </h2> */}
 
-          {/* <Select placeholder="Filters" className="w-40" styles={selectStyles} /> */}
-          {/* <div className="flex items-center gap-x-4">
+        {/* <Select
+            onChange={(e) => setFilterId(e?.value)}
+            placeholder="Filters"
+            options={categoryList}
+            className="w-40"
+            styles={selectStyles}
+          /> */}
+        {/* <div className="flex items-center gap-x-4">
       <div>
         <button className="flex items-center gap-x-2 px-2 sm:px-5 md:px-8 py-2.5 md:py-3 rounded-lg shadow-buttonShadow border border-buttonBorderColor bg-white ">
           <RiFileDownloadLine size={24} />
@@ -172,7 +188,7 @@ export default function CreateOrder() {
         </button>
       </div>
     </div> */}
-        </div>
+        {/* </div> */}
         {/* <div
         className={`${
           connectAccountId !== "null" && isAccountConnected === "true"

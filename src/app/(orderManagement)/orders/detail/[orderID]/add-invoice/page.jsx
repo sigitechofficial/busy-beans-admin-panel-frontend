@@ -5,6 +5,7 @@ import { PatchAPI } from "@/utilities/PatchAPI";
 import { selectStyles2 } from "@/utilities/SelectStyle";
 import { success_toaster } from "@/utilities/Toaster";
 import { useParams } from "next/navigation";
+import { stringify } from "postcss";
 import { Dialog } from "primereact/dialog";
 import React, { useEffect, useState } from "react";
 import { IoIosSearch } from "react-icons/io";
@@ -15,6 +16,9 @@ export default function AddInvoice() {
   const [filterId, setFilterId] = useState("");
   const { orderID } = useParams();
   const { data, reFetch } = GetAPI(`api/v1/admin/order-details/${orderID}`);
+  const { data: shippingCharges } = GetAPI(
+    "api/v1/admin/shipping-charges-list"
+  );
   const { data: category } = GetAPI(`api/v1/admin/category`);
   const [modal, setModal] = useState(false);
   const [search, setSearch] = useState("");
@@ -51,7 +55,7 @@ export default function AddInvoice() {
 
   // Extra rows state (for added delivery/extra charges)
   const [extraRows, setExtraRows] = useState([]);
-  console.log("🚀 ~ AddInvoice ~ extraRows:", extraRows);
+
   const getToday = () => {
     const today = new Date();
     return today.toISOString().split("T")[0];
@@ -89,6 +93,7 @@ export default function AddInvoice() {
           ...item,
           checked: true,
           qty: item.qty || 1,
+          weight: item?.singleUnitWeight,
         }))
       );
     }
@@ -143,6 +148,7 @@ export default function AddInvoice() {
         qty: prod?.qty || 1,
         unit: prod?.price,
         checked: true,
+        weight: prod?.weight,
       },
     ]);
 
@@ -172,6 +178,29 @@ export default function AddInvoice() {
     }));
   };
 
+  //calculate total weight and shipping charges here
+  const totalWeight =
+    items
+      .filter((item) => item.checked)
+      .reduce(
+        (sum, item) => sum + (Number(item.weight) || 0) * (item.qty || 1),
+        0
+      ) +
+    extraRows
+      .filter((item) => item.checked)
+      .reduce(
+        (sum, item) => sum + (Number(item.weight) || 0) * (item.qty || 1),
+        0
+      );
+
+  // Find the shipping charge based on totalWeight
+  const shippingChargeObj = shippingCharges?.data?.data?.find(
+    (sc) => totalWeight >= sc.weightFrom && totalWeight <= sc.weightTo
+  );
+  const shippingCharge = shippingChargeObj
+    ? Number(shippingChargeObj.charges)
+    : 0;
+
   // Calculate total
   const total =
     items
@@ -189,54 +218,12 @@ export default function AddInvoice() {
       ) +
     extraRows
       .filter((item) => item.checked)
-      .reduce((sum, item) => sum + item.qty * item.unit, 0);
+      .reduce((sum, item) => sum + item.qty * item.unit, 0) + shippingCharge
 
   // Count checked items
   const checkedCount =
     items.filter((item) => item.checked).length +
     extraRows.filter((item) => item.checked).length;
-
-  // Handle Create Invoice button
-  //   const handleCreateInvoice = async () => {
-  //     // Compose payload
-  //     const payload = {
-  //       invoiceNumber: invoiceFields.invoiceNumber,
-  //       poNumber: invoiceFields.poNumber,
-  //       invoiceDate: invoiceFields.invoiceDate,
-  //       proforma: invoiceFields.proforma,
-  //       terms: invoiceFields.terms,
-  //       dueDate: invoiceFields.dueDate,
-  //       comments: invoiceFields.comments,
-  //       otherPayment: invoiceFields.otherPayment,
-  //       paymentOption: invoiceFields.paymentOption,
-  //       paymentOption2: invoiceFields.paymentOption2,
-  //       items: [
-  //         ...items
-  //           .filter((item) => item.checked)
-  //           .map((item) => ({
-  //             id: item.id,
-  //             code: item.productCode || item.code,
-  //             name: item.product || item.name,
-  //             qty: item.qty,
-  //             unit: item.unit !== undefined ? item.unit : item.price,
-  //           })),
-  //         ...extraRows
-  //           .filter((item) => item.checked)
-  //           .map((item) => ({
-  //             id: item.id,
-  //             code: item.code,
-  //             name: item.name,
-  //             qty: item.qty,
-  //             unit: item.unit,
-  //           })),
-  //       ],
-  //     };
-
-  //     // TODO: Replace with your API call
-  //     // await YourAPI(payload);
-  //     console.log("Invoice Payload:", payload);
-  //     // Optionally, call reFetch() or show a success message
-  //   };
 
   const handleCreateInvoice = async () => {
     // Prepare items for API
@@ -615,6 +602,28 @@ export default function AddInvoice() {
                   </button>
                 </td>
               </tr>
+
+              <tr>
+                <td colSpan={4} className="border border-gray-200"></td>
+                <td className="py-2 px-2 text-right font-bold border border-gray-200">
+                  Total weight
+                </td>
+                <td className="py-2 px-2 text-right font-bold border border-gray-200">
+                  {totalWeight}
+                </td>
+              </tr>
+
+              {(userType === "admin" || userType === "salesRepresentative") && (
+                <tr>
+                  <td colSpan={4} className="border border-gray-200"></td>
+                  <td className="py-2 px-2 text-right font-bold border border-gray-200">
+                    Shipping Charges
+                  </td>
+                  <td className="py-2 px-2 text-right font-bold border border-gray-200">
+                    {shippingCharge ? "$"+ parseFloat(shippingCharge)?.toFixed(2) :"Not dealing"}
+                  </td>
+                </tr>
+              )}
               {(userType === "admin" || userType === "salesRepresentative") && (
                 <tr>
                   <td colSpan={4} className="border border-gray-200"></td>
@@ -622,7 +631,7 @@ export default function AddInvoice() {
                     Total USD ({checkedCount} items)
                   </td>
                   <td className="py-2 px-2 text-right font-bold border border-gray-200">
-                    ${total}
+                    ${parseFloat(total)?.toFixed(2)}
                   </td>
                 </tr>
               )}
@@ -763,4 +772,4 @@ export default function AddInvoice() {
       </Dialog>
     </div>
   );
-} // <-- This closing brace was missing
+}

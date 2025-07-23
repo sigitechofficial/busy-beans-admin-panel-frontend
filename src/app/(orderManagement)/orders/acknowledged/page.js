@@ -19,7 +19,6 @@ export default function AcknowledgedOrders() {
       ? `api/v1/admin/orders?salesRepId=${userID}&statusId=3`
       : "api/v1/admin/orders?statusId=3"
   );
-  console.log("🚀 ~ AcknowledgedOrders ~ data:", data?.data);
 
   const columns = [
     // { field: "sl", header: "SL", sort: true },

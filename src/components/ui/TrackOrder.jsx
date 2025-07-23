@@ -8,7 +8,7 @@ export default function TrackOrder({ statusId, orderHistories }) {
     );
     return {
       status: !!result,
-      date: result ? dayjs(result.on)?.format("DD/MM/YYYY HH:mm") : null,
+      date: result ? dayjs(result.on)?.format("MM/DD/YYYY HH:mm") : null,
     };
   };
   return (

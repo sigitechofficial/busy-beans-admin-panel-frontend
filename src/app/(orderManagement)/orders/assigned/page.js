@@ -70,7 +70,7 @@ export default function AssignedOrders() {
       orderCurrentStatus: detail?.orderCurrentStatus,
       paymentStatus: detail?.paymentStatus === "done" ? "Paid" : "Unpaid",
       createdBy: detail?.createdBy,
-      orderDate: dayjs(detail?.on).format("DD/MM/YYYY"),
+      orderDate: dayjs(detail?.on).format("MM/DD/YYYY"),
       action: (
         <button
           className="border border-yellow-400 rounded-md p-2 text-yellow-400"
@@ -90,7 +90,7 @@ export default function AssignedOrders() {
     <div>
       <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-          Assigned Orders
+          Dispatched Orders
         </h2>
       </div>
       <div className="space-y-8 pt-32 px-6 2xl:px-12 ">

@@ -10,7 +10,6 @@ import { ToastContainer } from "react-toastify";
 import { useState } from "react";
 import ProtectedRoute from "@/utilities/ProtectedRoute";
 import { AuthCheck } from "@/utilities/AuthCheck";
-import { CartProvider } from "@/utilities/dataContext";
 
 const satoshi = localFont({
   src: [
@@ -135,9 +134,7 @@ export default function RootLayout({ children }) {
                 }`
           }
         >
-          <ProtectedRoute>
-            <CartProvider>{children}</CartProvider>
-          </ProtectedRoute>
+          <ProtectedRoute>{children}</ProtectedRoute>
         </section>
       </body>
     </html>

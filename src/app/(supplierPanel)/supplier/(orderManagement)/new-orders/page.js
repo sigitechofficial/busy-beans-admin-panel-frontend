@@ -13,12 +13,16 @@ export default function NewOrders() {
     var userID = localStorage.getItem("userID");
     var userType = localStorage.getItem("userType");
   }
+  
+  console.log("🚀 ~ NewOrders ~ userType:", userType,userID)
+  
   const router = useRouter();
   const { data } = GetAPI(
     userType === "salesRepresentative"
       ? `api/v1/admin/orders?salesRepId=${userID}&statusId=1`
       : "api/v1/admin/orders?statusId=1"
   );
+
 
   const columns = [
     // { field: "sl", header: "#", sort: true },

@@ -10,12 +10,20 @@ import { useRouter } from "next/navigation";
 
 export default function NewOrders() {
   if (typeof window !== "undefined") {
-    var supplierId = localStorage.getItem("userID");
+    var userID = localStorage.getItem("userID");
+    var userType = localStorage.getItem("userType");
   }
+
+  console.log("🚀 ~ NewOrders ~ userType:", userType, userID);
+
   const router = useRouter();
   const { data } = GetAPI(
-    `api/v1/admin/orders?statusId=1&supplierId=${supplierId}`
+    userType === "salesRepresentative"
+      ? `api/v1/admin/orders?salesRepId=${userID}&statusId=1`
+      : "api/v1/admin/orders?statusId=1"
   );
+
+  console.log("🚀 ~ NewOrders ~ dataNewOrders ~ dataNewOrders ~ data:", data);
 
   const columns = [
     // { field: "sl", header: "#", sort: true },
@@ -112,7 +120,7 @@ export default function NewOrders() {
             pagination={true}
             search={true}
             onRowClick={(e) => {
-              router.push(`/supplier/order-detail/${e?.data?.id}`);
+              router.push(`/orders/detail/${e?.data?.id}`);
             }}
           />
         </div>

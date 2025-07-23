@@ -70,7 +70,7 @@ export default function DeliveredOrders() {
       orderCurrentStatus: detail?.orderCurrentStatus,
       paymentStatus: detail?.paymentStatus === "done" ? "Paid" : "Unpaid",
       createdBy: detail?.createdBy,
-      orderDate: dayjs(detail?.on).format("DD/MM/YYYY"),
+      orderDate: dayjs(detail?.on).format("MM/DD/YYYY"),
       action: (
         <button
           className="border border-yellow-400 rounded-md p-2 text-yellow-400"

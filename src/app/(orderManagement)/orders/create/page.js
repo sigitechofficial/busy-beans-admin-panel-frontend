@@ -20,13 +20,21 @@ export default function CreateOrder() {
     // var isAccountConnected = localStorage.getItem("isAccountConnected");
     // var url = window.location.href;
   }
-
+  const [filterId, setFilterId] = useState("");
   const [createOrderData, setCreateOrderData] = useState(createOrderDataList);
   const [visibleRight, setVisibleRight] = useState(false);
+  const { data: category } = GetAPI(`api/v1/admin/category`);
+  let categoryList = [{ value: "", label: "All" }];
+  if (category) {
+    category?.data?.data?.map((cat) => {
+      categoryList.push({ value: cat?.id, label: cat?.name });
+    });
+  }
+  const url = filterId
+    ? `api/v1/admin/product?categoryId=${filterId}`
+    : `api/v1/admin/product`;
 
-  const { data, reFetch } = GetAPI("api/v1/admin/product");
-  console.log("🚀 ~ CreateOrder ~ data:", data?.data?.data);
-
+  const { data, reFetch } = GetAPI(url);
   const handlePlus = (id, itemQuantity) => {
     const findItemIndex = createOrderData?.findIndex((item) => item?.id === id);
     if (findItemIndex === -1) {
@@ -151,7 +159,13 @@ export default function CreateOrder() {
           Create Order
         </h2>
 
-        <Select placeholder="Filters" className="w-40" styles={selectStyles} />
+        <Select
+          onChange={(e) => setFilterId(e?.value)}
+          placeholder="Category"
+          options={categoryList}
+          className="w-40"
+          styles={selectStyles}
+        />
       </div>
 
       <div className="space-y-8 pt-32 px-6 2xl:px-12">

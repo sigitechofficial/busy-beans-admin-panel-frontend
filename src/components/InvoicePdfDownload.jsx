@@ -136,7 +136,7 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
               </div>
               <div className="flex items-center text-sm font-semibold">
                 <div className="w-36">Date of issue:</div>
-                <div>{dayjs(invoiceData?.on).format("DD/MM/YYYY")}</div>
+                <div>{dayjs(invoiceData?.on).format("MM/DD/YYYY")}</div>
               </div>
               <div className="flex items-center text-sm font-semibold">
                 <div className="w-36">Due Date:</div>

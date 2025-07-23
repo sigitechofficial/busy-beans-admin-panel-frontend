@@ -20,6 +20,7 @@ import Select from "react-select";
 import { CgNotes } from "react-icons/cg";
 import { LuClipboardList } from "react-icons/lu";
 import Link from "next/link";
+import dayjs from "dayjs";
 
 export default function OrderDetail() {
   if (typeof window !== "undefined") {
@@ -69,7 +70,6 @@ export default function OrderDetail() {
   ];
 
   const { data, reFetch } = GetAPI(`api/v1/admin/order-details/${orderID}`);
-
 
   const handleSupplierAcknowledgement = async () => {
     setLoader("acknowledgeSupplier");
@@ -322,7 +322,10 @@ export default function OrderDetail() {
     }
   };
 
-    console.log(data?.data?.order?.statusId,"data?.data?.order?.statusIddata?.data?.order?.statusId")
+  console.log(
+    data?.data?.order?.statusId,
+    "data?.data?.order?.statusIddata?.data?.order?.statusId"
+  );
 
   return data?.length === 0 ? (
     <Loader />
@@ -342,9 +345,13 @@ export default function OrderDetail() {
           </span>
         </h2>
 
-        <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
-          <li onClick={()=>router.push(`${pathname}/add-invoice`)}>Add Invoice</li>
-          <li>Edit Details</li>
+        <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative text-blue-500">
+          <li onClick={() => router.push(`${pathname}/add-invoice`)}>
+            {data?.data?.order?.invoiceNumber
+              ? "Update Invoice"
+              : "Add Invoice"}
+          </li>
+          {/* <li>Edit Details</li>
           <li>Modify Items</li>
           <li>Convert to Standing Order</li>
           <li className="group flex items-center">
@@ -355,7 +362,7 @@ export default function OrderDetail() {
               <li>Export</li>
               <li>Cancel Order</li>
             </ul>
-          </li>
+          </li> */}
         </ul>
       </div>
 
@@ -382,7 +389,7 @@ export default function OrderDetail() {
               ? "Edit Bank Check"
               : "Add Bank Check"}
           </button> */}
-            {userType === "admin" ? (
+            {userType === "admin" && data?.data?.order?.statusId !== 5 ? (
               <button
                 type="button"
                 disabled={
@@ -418,17 +425,17 @@ export default function OrderDetail() {
                 className={`${
                   // data?.data?.order?.statusId === 2 ||
                   // data?.data?.order?.statusId === 3 ||
-                  data?.data?.order?.statusId === 1
-                    ? "block"
-                    : "hidden"
+                  data?.data?.order?.statusId === 1 ? "block" : "hidden"
                 } bg-black text-white disabled:cursor-not-allowed`}
-                onClick={() => handleAssignSupplier(data?.data?.order?.statusId)}
+                onClick={() =>
+                  handleAssignSupplier(data?.data?.order?.statusId)
+                }
               >
                 {data?.data?.order?.statusId === 1
-                ? "Dispatch to Supplier"
-                : data?.data?.order?.statusId === 2
-                ? "Acknowledge Supplier"
-                : ""}
+                  ? "Dispatch to Supplier"
+                  : data?.data?.order?.statusId === 2
+                  ? "Acknowledge Supplier"
+                  : ""}
                 {/* Dispatch Order */}
               </button> // dispatch Order basically rpelaced with status 4 which is delivered Order beacuse dispatch is done by supplier so here we use only text dispatch but inside it hit status code of 4
             )}
@@ -439,7 +446,7 @@ export default function OrderDetail() {
               className="bg-black text-white disabled:cursor-not-allowed"
               onClick={() => handleSendInvoice(data?.data?.order?.statusId)}
             >
-              {data?.data?.order?.invoiceId
+              {data?.data?.order?.invoiceNumber
                 ? "Invoice reminder"
                 : "Send Invoice"}
             </button>
@@ -512,7 +519,7 @@ export default function OrderDetail() {
                       <div className="flex">
                         {/* <span className="text-black/60 w-2/4">Payment Status:</span> */}
 
-                        {userType === "supplier" ||
+                        {userType === "salesRepresentative" || 
                         (userType === "admin" &&
                           data?.data?.order?.paymentMethod === "card") ||
                         data?.data?.order?.statusId === 6 ? (
@@ -550,7 +557,7 @@ export default function OrderDetail() {
                   {data?.data?.order?.on && (
                     <div className="flex items-center gap-5 border-b">
                       <p className="w-28">Ordered On </p>
-                      <p>{data?.data?.order?.on}</p>
+                      <p>{dayjs(data?.data?.order?.on).format("MM/DD/YYYY")}</p>
                     </div>
                   )}
                   {/* {data?.data?.order?.customerName && (
@@ -623,7 +630,7 @@ export default function OrderDetail() {
                   {/* Deliver To */}
                   <div>
                     <h6 className="font-semibold">Deliver To</h6>
-                    <div className="items-center">
+                    <div className="items-center uppercase">
                       {data?.data?.order?.address?.companyaddress && (
                         <p>{data.data.order.address.companyaddress}</p>
                       )}
@@ -651,7 +658,8 @@ export default function OrderDetail() {
                   </div>
 
                   {/* Invoice To */}
-                  <div>
+                  {/* <div>
+                    
                     <h6 className="font-semibold">Invoice To</h6>
                     <div className="items-center">
                       {data?.data?.order?.user?.companyName && (
@@ -693,6 +701,95 @@ export default function OrderDetail() {
                     <span
                       onClick={() => router.push(`${pathname}/edit`)}
                       className="text-blue-500 text-xs cursor-pointer"
+                    >
+                      Edit
+                    </span>
+                  </div> */}
+
+                  {/* Bill To Section */}
+                  <div className="uppercase">
+                    <div className="font-bold capitalize">Invoice to</div>
+
+                    {/* Company address or name */}
+                    {data?.data?.order?.user?.billingAddresses?.[0]
+                      ?.companyaddress && (
+                      <div>
+                        {
+                          data?.data?.order?.user?.billingAddresses[0]
+                            .companyaddress
+                        }
+                      </div>
+                    )}
+
+                    {/* Company name if available */}
+                    {data?.data?.order?.user?.companyName && (
+                      <div>{data?.data?.order?.user?.companyName}</div>
+                    )}
+
+                    {/* Address lines */}
+                    {data?.data?.order?.user?.billingAddresses?.[0]
+                      ?.addressLineOne && (
+                      <div>
+                        {data?.data?.order?.user?.billingAddresses[0]
+                          .addressLineOne +
+                          ", " +
+                          data?.data?.order?.user?.billingAddresses?.[0]
+                            ?.addressLineTwo}
+                      </div>
+                    )}
+                    {/* {data?.data?.order?.user?.billingAddresses?.[0]?.addressLineTwo && (
+                  <div>
+                    {invoiceData.user.billingAddresses[0].addressLineTwo}
+                  </div>
+                )} */}
+
+                    {/* Town, State, Zip */}
+                    {(data?.data?.order?.user?.billingAddresses?.[0]?.town ||
+                      data?.data?.order?.user?.billingAddresses?.[0]?.state ||
+                      data?.data?.order?.user?.billingAddresses?.[0]
+                        ?.zipCode) && (
+                      <div>
+                        {[
+                          data?.data?.order?.user?.billingAddresses[0].town,
+                          data?.data?.order?.user?.billingAddresses[0].state,
+                          data?.data?.order?.user?.billingAddresses[0].zipCode,
+                        ]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </div>
+                    )}
+
+                    {/* Country */}
+                    {data?.data?.order?.user?.billingAddresses?.[0]
+                      ?.country && (
+                      <div>
+                        {data?.data?.order?.user?.billingAddresses[0].country}
+                      </div>
+                    )}
+
+                    {/* Phone */}
+                    {(data?.data?.order?.user?.countryCode ||
+                      data?.data?.order?.user?.phoneNumber) && (
+                      <div>
+                        {[
+                          data?.data?.order?.user?.countryCode,
+                          data?.data?.order?.user?.phoneNumber,
+                        ]
+                          .filter(Boolean)
+                          .join(" ")}
+                      </div>
+                    )}
+
+                    {/* Email */}
+                    {data?.data?.order?.user?.email && (
+                      <div className="lowercase">
+                        {data?.data?.order?.user?.email}
+                      </div>
+                    )}
+
+                    <span
+                      onClick={() => router.push(`${pathname}/edit`)}
+                      className="text-blue-500 text-xs cursor-pointer capitalize"
                     >
                       Edit
                     </span>

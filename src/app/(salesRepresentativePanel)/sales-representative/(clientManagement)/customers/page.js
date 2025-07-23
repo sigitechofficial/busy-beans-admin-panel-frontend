@@ -95,7 +95,7 @@ export default function SalesRepresentativeCustomers() {
                   Active
                 </div>
               ) : (
-                <div className="w-24 bg-themeGreen text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+                <div className="w-24 text-white bg-[#EE4A4A]  font-semibold p-2 rounded-md flex justify-center">
                   Inactive
                 </div>
               )}

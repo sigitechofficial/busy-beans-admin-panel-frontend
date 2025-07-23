@@ -184,7 +184,7 @@ export default function Customers() {
                   Active
                 </div>
               ) : (
-                <div className="w-max text-xs bg-themeGreen text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+                <div className="w-max text-xs text-white bg-[#EE4A4A]  font-semibold p-2 rounded-md flex justify-center">
                   Inactive
                 </div>
               )}
@@ -235,7 +235,7 @@ export default function Customers() {
                   Active
                 </div>
               ) : (
-                <div className="w-24 bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+                <div className="w-24 text-white bg-[#EE4A4A]  font-semibold p-2 rounded-md flex justify-center">
                   Inactive
                 </div>
               )}
@@ -280,7 +280,7 @@ export default function Customers() {
               Active
             </div>
           ) : (
-            <div className="w-24 bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+            <div className="w-24 text-white bg-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
               Inactive
             </div>
           )}

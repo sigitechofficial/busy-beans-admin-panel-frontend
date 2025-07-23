@@ -56,15 +56,30 @@ export default function UpcomingOrders() {
   };
 
   const columns = [
-    { field: "sl", header: "SL", sort: true },
-    // { field: "customerName", header: "Customer Name" },
+    // { field: "sl", header: "SL", sort: true },
+    { field: "id", header: "#", sort: true },
+    // { field: "customerName", header: "Customer" },
     { field: "companyName", header: "Company Name" },
-    { field: "email", header: "Email" },
-    { field: "orderDate", header: "Order Date" },
-    { field: "nextOrderDate", header: "Next Order Date" },
-    { field: "orderFrequency", header: "Order Frequency" },
-    { field: "createdBy", header: "Created By" },
-    { field: "action", header: "Action" },
+    { field: "orderDate", header: "Order Date", sort: true },
+    { field: "deliveredOn", header: "Deliver On" },
+    // { field: "salesRepName", header: "Local Partner Name" },
+    // { field: "subTotal", header: "Sub Total" },
+    // { field: "discountPrice", header: "Discount Price" },
+    // { field: "discountPercentage", header: "Discount Percentage" },
+    // { field: "itemsPrice", header: "Items Price" },
+    // { field: "vat", header: "Vat" },
+    // { field: "totalWeight", header: "Total Weight" },
+    // { field: "shippingCharges", header: "Shipping Charges" },
+    // { field: "note", header: "Note" },
+    // { field: "paymentMethod", header: "Payment Method" },
+    // { field: "poNumber", header: "Po Number" },
+    // { field: "orderFrequency", header: "Order Frequency" },
+
+    // { field: "totalBill", header: "Total", sort: true },
+    // { field: "paymentStatus", header: "Invoice", sort: true },
+    // { field: "createdBy", header: "Created By" },
+    // { field: "orderCurrentStatus", header: "Status" },
+    // { field: "action", header: "Action" },
   ];
 
   const columnsItems = [
@@ -84,7 +99,7 @@ export default function UpcomingOrders() {
       companyName: detail?.companyName,
       email: detail?.email,
       orderDate: detail?.orderDate,
-      nextOrderDate: detail?.nextOrderDate,
+      deliveredOn: detail?.nextOrderDate,
       orderFrequency: detail?.frequency,
       createdBy: detail?.createdBy,
       action: (

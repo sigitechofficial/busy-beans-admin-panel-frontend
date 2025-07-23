@@ -21,7 +21,7 @@ export default function SupplierOrders() {
   const columns = [
     // { field: "sl", header: "#", sort: true },
     { field: "id", header: "#", sort: true },
-    { field: "customerName", header: "Customer" },
+    { field: "companyName", header: "Company" },
     { field: "noOfItems", header: "No. of Items" },
     // { field: "itemsPrice", header: "Items Price" },
     // { field: "subTotal", header: "Sub Total" },
@@ -44,7 +44,7 @@ export default function SupplierOrders() {
     return datas.push({
       sl: i + 1,
       id: detail?.id,
-      customerName: detail?.customerName,
+      companyName: detail?.companyName,
       noOfItems: detail?.items?.length,
       totalBill: "$" + detail?.totalBill,
       subTotal: "$" + detail?.subTotal,

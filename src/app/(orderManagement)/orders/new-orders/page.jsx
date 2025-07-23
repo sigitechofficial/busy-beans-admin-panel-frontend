@@ -7,6 +7,7 @@ import GetAPI from "@/utilities/GetAPI";
 import Loader from "@/components/ui/Loader";
 import { FaEye } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import dayjs from "dayjs";
 
 export default function NewOrders() {
   if (typeof window !== "undefined") {
@@ -23,18 +24,18 @@ export default function NewOrders() {
       : "api/v1/admin/orders?statusId=1"
   );
 
-  console.log("🚀 ~ NewOrders ~ dataNewOrders ~ dataNewOrders ~ data:", data);
-
   const columns = [
-    // { field: "sl", header: "#", sort: true },
+    // { field: "sl", header: "SL", sort: true },
     { field: "id", header: "#", sort: true },
-    { field: "customerName", header: "Customer" },
-    { field: "noOfItems", header: "No. of Items" },
-    // { field: "itemsPrice", header: "Items Price" },
+    // { field: "customerName", header: "Customer" },
+    { field: "companyName", header: "Company Name" },
+    { field: "orderDate", header: "Order Date", sort: true },
+    { field: "deliveredOn", header: "Deliver On" },
+    // { field: "salesRepName", header: "Local Partner Name" },
     // { field: "subTotal", header: "Sub Total" },
-    // { field: "totalBill", header: "Total" },
     // { field: "discountPrice", header: "Discount Price" },
     // { field: "discountPercentage", header: "Discount Percentage" },
+    // { field: "itemsPrice", header: "Items Price" },
     // { field: "vat", header: "Vat" },
     // { field: "totalWeight", header: "Total Weight" },
     // { field: "shippingCharges", header: "Shipping Charges" },
@@ -42,6 +43,10 @@ export default function NewOrders() {
     // { field: "paymentMethod", header: "Payment Method" },
     // { field: "poNumber", header: "Po Number" },
     // { field: "orderFrequency", header: "Order Frequency" },
+
+    { field: "totalBill", header: "Total", sort: true },
+    { field: "paymentStatus", header: "Invoice", sort: true },
+    // { field: "createdBy", header: "Created By" },
     { field: "orderCurrentStatus", header: "Status" },
     // { field: "action", header: "Action" },
   ];
@@ -51,11 +56,11 @@ export default function NewOrders() {
     return datas.push({
       sl: i + 1,
       id: detail?.id,
-      customerName: detail?.customerName,
-      noOfItems: detail?.items?.length,
+      companyName: detail?.companyName,
+      orderDate: dayjs(detail?.on).format("MM/DD/YYYY"),
       totalBill: "$" + detail?.totalBill,
-      subTotal: "$" + detail?.subTotal,
-      discountPrice: "$" + detail?.discountPrice,
+      deliveredOn: "",
+      paymentStatus: detail?.paymentStatus === "pending" ? "Unpaid" : "Paid",
       discountPercentage: detail?.discountPercentage + "%",
       itemsPrice: "$" + detail?.itemsPrice,
       vat: detail?.vat,

@@ -14,6 +14,7 @@ import Select from "react-select";
 
 export default function AddInvoice() {
   const [filterId, setFilterId] = useState("");
+  const [loading, setLoading] = useState(false);
   const { orderID } = useParams();
   const { data, reFetch } = GetAPI(`api/v1/admin/order-details/${orderID}`);
   const { data: shippingCharges } = GetAPI(
@@ -94,6 +95,7 @@ export default function AddInvoice() {
           checked: true,
           qty: item.qty || 1,
           weight: item?.singleUnitWeight,
+          unit:item?.qty/item?.price
         }))
       );
     }
@@ -149,6 +151,7 @@ export default function AddInvoice() {
         unit: prod?.price,
         checked: true,
         weight: prod?.weight,
+        productCode: prod?.productCode,
       },
     ]);
 
@@ -218,7 +221,8 @@ export default function AddInvoice() {
       ) +
     extraRows
       .filter((item) => item.checked)
-      .reduce((sum, item) => sum + item.qty * item.unit, 0) + shippingCharge
+      .reduce((sum, item) => sum + item.qty * item.unit, 0) +
+    shippingCharge;
 
   // Count checked items
   const checkedCount =
@@ -226,6 +230,7 @@ export default function AddInvoice() {
     extraRows.filter((item) => item.checked).length;
 
   const handleCreateInvoice = async () => {
+    setLoading(true);
     // Prepare items for API
     const itemsForApi = [
       ...items
@@ -280,10 +285,13 @@ export default function AddInvoice() {
     );
 
     if (res?.data?.status === "success") {
+      setLoading(false);
+      setExtraRows([]);
       success_toaster("success");
       reFetch();
     } else {
       info_toaster("something went wrong");
+      setLoading(false);
     }
   };
 
@@ -375,7 +383,7 @@ export default function AddInvoice() {
               }
             />
           </div>
-          <div className="flex flex-col gap-y-2 items-start 2xl:col-span-2">
+          {/* <div className="flex flex-col gap-y-2 items-start 2xl:col-span-2">
             <label className="text-labelColor font-medium font-satoshi">
               Proforma
             </label>
@@ -388,7 +396,7 @@ export default function AddInvoice() {
                 handleInvoiceFieldChange("proforma", e.target.checked)
               }
             />
-          </div>
+          </div> */}
           <div className="flex flex-col gap-y-2 w-full">
             <label className="text-labelColor font-medium font-satoshi">
               Terms (days)
@@ -519,7 +527,8 @@ export default function AddInvoice() {
                           ? item.unit
                           : item.price !== undefined
                           ? item.price
-                          : 0)}
+                          : 0) +
+                        ".00"}
                     </td>
                   )}
                 </tr>
@@ -537,9 +546,10 @@ export default function AddInvoice() {
                   </td>
                   <td className="py-2 px-2 border border-gray-200">
                     <input
+                      disabled
                       type="text"
                       className="w-full border border-gray-200 rounded px-1 py-1"
-                      value={item.code}
+                      value={item.productCode}
                       onChange={(e) =>
                         handleExtraInputChange(idx, "code", e.target.value)
                       }
@@ -586,7 +596,7 @@ export default function AddInvoice() {
                   {(userType === "admin" ||
                     userType === "salesRepresentative") && (
                     <td className="py-2 px-2 border border-gray-200 text-right">
-                      ${item.qty * item.unit}
+                      ${(item.qty * item.unit).toFixed(2)}
                     </td>
                   )}
                 </tr>
@@ -606,10 +616,10 @@ export default function AddInvoice() {
               <tr>
                 <td colSpan={4} className="border border-gray-200"></td>
                 <td className="py-2 px-2 text-right font-bold border border-gray-200">
-                  Total weight
+                  Total weight (lbs)
                 </td>
                 <td className="py-2 px-2 text-right font-bold border border-gray-200">
-                  {totalWeight}
+                  {parseFloat(totalWeight).toFixed(2)}
                 </td>
               </tr>
 
@@ -620,7 +630,9 @@ export default function AddInvoice() {
                     Shipping Charges
                   </td>
                   <td className="py-2 px-2 text-right font-bold border border-gray-200">
-                    {shippingCharge ? "$"+ parseFloat(shippingCharge)?.toFixed(2) :"Not dealing"}
+                    {shippingCharge
+                      ? "$" + parseFloat(shippingCharge)?.toFixed(2)
+                      : "Not dealing"}
                   </td>
                 </tr>
               )}
@@ -639,11 +651,11 @@ export default function AddInvoice() {
           </table>
         </div>
 
-        <p className="text-sm text-gray-500">
+        {/* <p className="text-sm text-gray-500">
           All uninvoiced items on the order are added to this invoice by
           default. To invoice part of the order uncheck items that are not
           required or edit the quantities to be invoiced.
-        </p>
+        </p> */}
 
         <div className="w-full space-y-5">
           <div className="space-y-2">
@@ -701,6 +713,7 @@ export default function AddInvoice() {
 
           <div className="pt-10">
             <button
+            disabled={loading}
               className="rounded-lg font-inter font-medium text-white px-2 sm:px-3 py-2.5 sm:py-4 bg-theme"
               onClick={handleCreateInvoice}
             >

@@ -16,11 +16,21 @@ export default function SalesRepresentativeInventory() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [filter, setFilter] = useState("");
   const [quotationData, setQuotationData] = useState(quotationDataList);
-
+  const [filterId, setFilterId] = useState("");
   const [visibleRight, setVisibleRight] = useState(false);
 
-  const { data, reFetch } = GetAPI("api/v1/admin/product");
-  console.log("🚀 ~ SalesRepresentativeInventory ~ data:", data?.data?.data);
+  const { data: category } = GetAPI(`api/v1/admin/category`);
+  let categoryList = [{ value: "", label: "All" }];
+  if (category) {
+    category?.data?.data?.map((cat) => {
+      categoryList.push({ value: cat?.id, label: cat?.name });
+    });
+  }
+  const url = filterId
+    ? `api/v1/admin/product?categoryId=${filterId}`
+    : `api/v1/admin/product`;
+
+  const { data, reFetch } = GetAPI(url);
 
   const handleFilter = () => {
     const filteredData = data?.data?.data?.filter((item) =>
@@ -84,18 +94,16 @@ export default function SalesRepresentativeInventory() {
           Quotation Management
         </h2>
 
-        {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">
-          <li>Invoice</li>
-          <li>Quickbooks</li>
-          <li>Schedule</li>
-          <li>Bulk Modify</li>
-          <li>Export</li>
-        </ul> */}
+        <Select
+          onChange={(e) => setFilterId(e?.value)}
+          placeholder="Category"
+          options={categoryList}
+          className="w-40"
+          styles={selectStyles}
+        />
       </div>
       <div className="space-y-8 pb-6 pt-32 px-6 2xl:px-12">
         <div className="flex items-center justify-end">
-        
-
           <input
             type="text"
             name="name"

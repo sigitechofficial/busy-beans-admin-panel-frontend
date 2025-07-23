@@ -43,8 +43,6 @@ import { useCart } from "@/utilities/dataContext";
 import GetAPI from "@/utilities/GetAPI";
 
 export default function Leftbar(props) {
-  const overAllData = GetAPI("api/v1/admin/order-navigation-counts");
-
   if (typeof window !== "undefined") {
     var userType = localStorage.getItem("userType");
     var userID = localStorage.getItem("userID");
@@ -52,6 +50,11 @@ export default function Leftbar(props) {
     var isAccountConnected = localStorage.getItem("isAccountConnected");
     var url = window.location.href;
   }
+
+  const generateUrl =  userType === "admin"
+      ? "api/v1/admin/order-navigation-counts"
+      : `order-navigation-counts/sales-rep/${userID}`;
+  const overAllData = GetAPI(generateUrl);
 
   const pathname = usePathname();
   const router = useRouter();

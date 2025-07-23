@@ -37,7 +37,7 @@ const DrawerBeans = ({
   const companyNameOptions = [];
   const paymentMethodOptions = [
     // { label: "COD", value: "cod" },
-    { label: "Bank Check", value: "cheque" },
+    { label: "Bank Check", value: "bank check" },
     { label: "Card", value: "card" },
   ];
   const orderFrequencyOptions = [
@@ -304,7 +304,6 @@ const DrawerBeans = ({
     const selectedEmail = data?.data?.data?.find(
       (customer) => customer?.id === id
     );
-    console.log("🚀 ~ handleCompanyName ~ selectedEmail:", selectedEmail);
     // console.log("🚀 ~ handleEmail ~ selectedEmail:", selectedEmail);
     setOrder({
       ...order,

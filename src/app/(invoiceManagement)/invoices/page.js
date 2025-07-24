@@ -7,8 +7,15 @@ import selectStyles from "@/utilities/SelectStyle";
 import Select from "react-select";
 
 export default function Invoices() {
+  if (typeof window !== "undefined") {
+    var userID = localStorage.getItem("userID");
+    var userType = localStorage.getItem("userType");
+  }
+
   const { data } = GetAPI(
-    "api/v1/admin/customer-management/invoice-customers-balance"
+    userType === "salesRepresentative"
+      ? `api/v1/admin/customer-management/invoice-customers-balance/sales-rep/${userID}`
+      : "api/v1/admin/customer-management/invoice-customers-balance"
   );
 
   const columns = [
@@ -19,7 +26,7 @@ export default function Invoices() {
     // { field: "phoneNumber", header: "Phone Number" },
     // { field: "saleTaxNumber", header: "Sale Tax Number" },
     { field: "emailToSendInvoices", header: "Invoice Email" },
-    { field: "totalBalance", header: "Total Balance" , sort: true },
+    { field: "totalBalance", header: "Total Balance", sort: true },
   ];
 
   const datas = [];
@@ -39,15 +46,13 @@ export default function Invoices() {
     });
   });
 
-  
-
   return data?.length === 0 ? (
     <Loader />
   ) : (
     <div>
       <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-        Invoices Management
+          Invoices Management
         </h2>
       </div>
       <div className="space-y-8 pt-32 px-6 2xl:px-12 ">

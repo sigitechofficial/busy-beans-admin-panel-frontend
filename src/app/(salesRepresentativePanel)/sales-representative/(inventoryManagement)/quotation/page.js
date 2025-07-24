@@ -31,6 +31,7 @@ export default function SalesRepresentativeInventory() {
     : `api/v1/admin/product`;
 
   const { data, reFetch } = GetAPI(url);
+  console.log("🚀 ~ SalesRepresentativeInventory ~ data:", data?.data?.data)
 
   const handleFilter = () => {
     const filteredData = data?.data?.data?.filter((item) =>
@@ -131,6 +132,9 @@ export default function SalesRepresentativeInventory() {
               <StockCard
                 key={i}
                 id={item?.id}
+                productCode={item?.productCode}
+                sku={item?.sku}
+                grind={item?.grind}
                 itemName={item?.name}
                 quantity={item?.quantity}
                 price={item?.price}

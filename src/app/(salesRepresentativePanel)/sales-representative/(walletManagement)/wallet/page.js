@@ -55,6 +55,14 @@ export default function page() {
               Number(data?.data?.wholesalePriceOnline?.replace(/,/g, ""))
             }`}
           />
+          <ManagementTab
+            title="To be Paid to Admin"
+            desc={`$${data?.data?.toBePaid ?? 0}`}
+          />
+          <ManagementTab
+            title="Paid to Admin"
+            desc={`$${data?.data?.paidToAdmin ?? 0}`}
+          />
         </div>
       </div>
       <div className="space-y-8 pt-6 px-6 2xl:px-12">
@@ -110,14 +118,14 @@ export default function page() {
               title="Number of Sold Products"
               desc={data?.data?.numberOfSoldProducts ?? 0}
             />
-            <ManagementTab
+            {/* <ManagementTab
               title="To be Paid to Admin"
               desc={`$${data?.data?.toBePaid ?? 0}`}
             />
             <ManagementTab
               title="Paid to Admin"
               desc={`$${data?.data?.paidToAdmin ?? 0}`}
-            />
+            /> */}
           </div>
         </div>
       </div>

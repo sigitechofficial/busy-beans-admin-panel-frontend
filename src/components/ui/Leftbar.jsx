@@ -51,7 +51,8 @@ export default function Leftbar(props) {
     var url = window.location.href;
   }
 
-  const generateUrl =  userType === "admin"
+  const generateUrl =
+    userType === "admin"
       ? "api/v1/admin/order-navigation-counts"
       : `order-navigation-counts/sales-rep/${userID}`;
   const overAllData = GetAPI(generateUrl);
@@ -1029,6 +1030,33 @@ export default function Leftbar(props) {
                     count={overAllData?.data?.data?.[4]?.count || ""}
                   />
                   <ListItems title="Cancelled Orders" to="/orders/cancelled" />
+                </div>
+                <hr className="w-full" />
+              </>
+            )}
+
+          <ListHead
+            title="Invoice Management"
+            Icon={PiInvoiceBold}
+            Angle={
+              active?.invoiceManagement?.tab === "invoiceManagement" &&
+              active?.invoiceManagement?.status
+                ? FaAngleUp
+                : FaAngleDown
+            }
+            onClick={() =>
+              handleActive(
+                "invoiceManagement",
+                active?.invoiceManagement?.status
+              )
+            }
+            disabled={true}
+          />
+          {active?.invoiceManagement?.tab === "invoiceManagement" &&
+            active?.invoiceManagement?.status && (
+              <>
+                <div className="m-2 relative space-y-1">
+                  <ListItems title="All Invoices" to="/invoices" />
                 </div>
                 <hr className="w-full" />
               </>

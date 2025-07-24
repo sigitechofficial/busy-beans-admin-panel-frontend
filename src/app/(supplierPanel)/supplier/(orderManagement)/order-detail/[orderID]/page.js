@@ -300,7 +300,7 @@ export default function OrderDetail() {
               onClick={() => handleAssignSupplier(data?.data?.order?.statusId)}
             >
               {data?.data?.order?.statusId === 2
-                ? "Acknowledge Supplier"
+                ? "Acknowledge order"
                 : data?.data?.order?.statusId === 3
                 ? "Ship Order" // dispatch order text replaced with ship order
                 : ""}

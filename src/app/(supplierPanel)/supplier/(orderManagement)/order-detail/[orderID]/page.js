@@ -240,6 +240,9 @@ export default function OrderDetail() {
     <div>
       <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold flex items-center gap-2">
+          <div className="text-base">
+            <BackButton />
+          </div>
           Order / {orderID}{" "}
           <span
             className={` rounded-lg py-2 px-4 font-medium text-sm text-white ${
@@ -262,14 +265,14 @@ export default function OrderDetail() {
       </div>
       <div className=" space-y-8 pb-6 pt-32 px-6 2xl:px-12">
         <div className="flex flex-col md:flex-row md:items-center space-y-2 justify-between">
-          <div className="flex items-center gap-x-2">
+          {/* <div className="flex items-center gap-x-2">
             <BackButton />
-            {/* <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+            <h2 className="text-xl lg:text-2xl font-inter font-semibold">
               Order Details
-            </h2> */}
-          </div>
+            </h2>
+          </div> */}
 
-          <div className="flex items-center gap-x-2 sm:gap-x-4 [&>button]:py-2 sm:[&>button]:py-3 [&>button]:px-2 sm:[&>button]:px-5 [&>button]:rounded-lg [&>button]:font-nunito [&>button]:font-medium max-sm:[&>button]:text-sm">
+          <div className="flex items-center gap-x-2 ml-auto sm:gap-x-4 [&>button]:py-2 sm:[&>button]:py-3 [&>button]:px-2 sm:[&>button]:px-5 [&>button]:rounded-lg [&>button]:font-nunito [&>button]:font-medium max-sm:[&>button]:text-sm">
             {/* <button
             onClick={handleAddChequeModel}
             className="bg-black text-white disabled:cursor-not-allowed"

@@ -613,7 +613,7 @@ export default function OrderCard(props) {
                     value={dispatchOrderData?.trackingNumber}
                     onChange={handleChange}
                     placeholder="Enter Tracking number"
-                    className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                    className="border border-borderColor text-labelColor placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   />
                 </div>
               </div>

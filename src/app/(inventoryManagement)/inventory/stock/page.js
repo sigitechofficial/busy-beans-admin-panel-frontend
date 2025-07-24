@@ -101,6 +101,10 @@ export default function Stock() {
         info_toaster("Invalid Price");
       } else if (productDetail?.desc.trim() === 0) {
         info_toaster("Product description cannot be empty");
+      } else if (
+        productDetail?.wholesalePrice.trim() > productDetail?.price.trim()
+      ) {
+        info_toaster("Whole Sale Price cannot be greater than Actual Price");
       } else {
         const formData = new FormData();
         formData.append("name", productDetail?.name);
@@ -166,6 +170,10 @@ export default function Stock() {
         info_toaster("Invalid Price");
       } else if (productDetail?.desc.trim() === 0) {
         info_toaster("Product description cannot be empty");
+      } else if (
+        productDetail?.wholesalePrice.trim() > productDetail?.price.trim()
+      ) {
+        info_toaster("Whole Sale Price cannot be greater than Actual Price");
       } else {
         setLoader("edit");
         const formData = new FormData();

@@ -4,7 +4,7 @@ import GetAPI from "@/utilities/GetAPI";
 import { PatchAPI } from "@/utilities/PatchAPI";
 import { selectStyles2 } from "@/utilities/SelectStyle";
 import { success_toaster } from "@/utilities/Toaster";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { stringify } from "postcss";
 import { Dialog } from "primereact/dialog";
 import React, { useEffect, useState } from "react";
@@ -13,6 +13,7 @@ import { IoCardSharp, IoSearch } from "react-icons/io5";
 import Select from "react-select";
 
 export default function AddInvoice() {
+  const router = useRouter();
   const [filterId, setFilterId] = useState("");
   const [loading, setLoading] = useState(false);
   const { orderID } = useParams();
@@ -95,7 +96,7 @@ export default function AddInvoice() {
           checked: true,
           qty: item.qty || 1,
           weight: item?.singleUnitWeight,
-          unit:item?.qty/item?.price
+          unit: item?.price / item?.qty,
         }))
       );
     }
@@ -137,23 +138,66 @@ export default function AddInvoice() {
   };
 
   // Add delivery/extra charges row (no category)
+  // const handleAddExtra = (prod) => {
+
+  //   setExtraRows((prev) => [
+  //     ...prev,
+  //     {
+  //       id: `extra-${Date.now()}`,
+  //       // orderId:produ
+  //       productId: prod?.id,
+  //       code: "",
+  //       name: prod?.name,
+  //       qty: prod?.qty || 1,
+  //       unit: prod?.price,
+  //       checked: true,
+  //       weight: prod?.weight,
+  //       productCode: prod?.productCode,
+  //     },
+  //   ]);
+
+  //   setModal(false);
+  // };
+
+  // Add delivery/extra charges row (no category)
   const handleAddExtra = (prod) => {
-    console.log("🚀 ~ handleAddExtra ~ prod:", prod);
-    setExtraRows((prev) => [
-      ...prev,
-      {
-        id: `extra-${Date.now()}`,
-        // orderId:produ
-        productId: prod?.id,
-        code: "",
-        name: prod?.name,
-        qty: prod?.qty || 1,
-        unit: prod?.price,
-        checked: true,
-        weight: prod?.weight,
-        productCode: prod?.productCode,
-      },
-    ]);
+    // First, check in items
+    const itemIdx = items.findIndex((item) => item.productId == prod?.id);
+    if (itemIdx !== -1) {
+      setItems((prev) =>
+        prev.map((item, idx) =>
+          idx === itemIdx ? { ...item, qty: +item.qty + 1 } : item
+        )
+      );
+      setModal(false);
+      return;
+    }
+
+    setExtraRows((prev) => {
+      // Check if item already exists by productId (or use productCode if that's unique)
+      const existingIdx = prev.findIndex((item) => item.productId == prod?.id);
+      if (existingIdx !== -1) {
+        // If exists, increment qty
+        return prev.map((item, idx) =>
+          idx === existingIdx ? { ...item, qty: +item.qty + 1 } : item
+        );
+      }
+      // If not exists, add new
+      return [
+        ...prev,
+        {
+          id: `extra-${Date.now()}`,
+          productId: prod?.id,
+          code: "",
+          name: prod?.name,
+          qty: prod?.qty || 1,
+          unit: prod?.price,
+          checked: true,
+          weight: prod?.weight,
+          productCode: prod?.productCode,
+        },
+      ];
+    });
 
     setModal(false);
   };
@@ -299,7 +343,8 @@ export default function AddInvoice() {
     <div>
       <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-          Order / {orderID} / New Invoice
+          <span className="hover:text-blue-500 cursor-pointer" onClick={()=>router.push("/orders")}>Order</span> / {orderID} / New
+          Invoice
         </h2>
       </div>
 
@@ -662,10 +707,8 @@ export default function AddInvoice() {
             <p>Comments</p>
             <textarea
               className="w-full h-48 border resize-none border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-              value={invoiceFields.comments}
-              onChange={(e) =>
-                handleInvoiceFieldChange("comments", e.target.value)
-              }
+              value={invoiceFields.note}
+              onChange={(e) => handleInvoiceFieldChange("note", e.target.value)}
             ></textarea>
           </div>
 
@@ -713,7 +756,7 @@ export default function AddInvoice() {
 
           <div className="pt-10">
             <button
-            disabled={loading}
+              disabled={loading}
               className="rounded-lg font-inter font-medium text-white px-2 sm:px-3 py-2.5 sm:py-4 bg-theme"
               onClick={handleCreateInvoice}
             >

@@ -333,6 +333,9 @@ export default function OrderDetail() {
     <div>
       <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold flex items-center gap-2">
+          <div className="text-base">
+            <BackButton />
+          </div>
           Order / {data?.data?.order?.id}{" "}
           <span
             className={` rounded-lg py-2 px-4 font-medium text-sm text-white ${
@@ -519,8 +522,8 @@ export default function OrderDetail() {
                       <div className="flex">
                         {/* <span className="text-black/60 w-2/4">Payment Status:</span> */}
 
-                        {userType === "salesRepresentative" || 
-                        (userType === "admin" &&
+                        {((userType === "admin" ||
+                          userType === "salesRepresentative") &&
                           data?.data?.order?.paymentMethod === "card") ||
                         data?.data?.order?.statusId === 6 ? (
                           <div className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none">

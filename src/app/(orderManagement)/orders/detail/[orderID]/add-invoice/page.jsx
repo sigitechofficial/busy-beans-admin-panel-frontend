@@ -623,6 +623,7 @@ export default function AddInvoice() {
                       type="text"
                       className="w-full border border-gray-200 rounded px-1 py-1"
                       value={item.name}
+                      disabled
                       onChange={(e) =>
                         handleExtraInputChange(idx, "name", e.target.value)
                       }
@@ -687,16 +688,19 @@ export default function AddInvoice() {
 
               {(userType === "admin" || userType === "salesRepresentative") && (
                 <tr>
-                  <td colSpan={4} className="border border-gray-200 w-max">
+                  <td
+                    colSpan={4}
+                    className="border border-gray-200 w-max py-2 px-2 "
+                  >
                     {" "}
                     <button
-                      className="border px-2 py-2 ml-2"
+                      className="border px-2 py-2"
                       // onClick={handleAddExtra}
                       onClick={() =>
                         setManual({ ...manual, show: !manual.show })
                       }
                     >
-                      Auto Calculate
+                     {manual.show ? "Manual Calculate":"Auto Calculate"}
                     </button>
                   </td>
                   <td className="py-2 px-2 text-right font-bold border border-gray-200">

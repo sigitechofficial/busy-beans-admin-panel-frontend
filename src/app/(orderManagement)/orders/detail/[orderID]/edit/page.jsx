@@ -216,19 +216,26 @@ function EditPage() {
   useEffect(() => {
     setSupplier({
       supplierName: orderData?.data?.order?.salesRepName,
-      companyaddress: orderData?.data?.order?.address?.companyaddress,
+      // companyaddress: orderData?.data?.order?.address?.companyaddress,
+      companyaddress: "",
       country: orderData?.data?.order?.address?.country,
       city: orderData?.data?.order?.address?.town,
       state: orderData?.data?.order?.address?.state,
       zipCode: orderData?.data?.order?.address?.zipCode,
-      addressOne: orderData?.data?.order?.address?.addressLineOne,
+      addressOne:
+        orderData?.data?.order?.address?.companyaddress +
+        "" +
+        orderData?.data?.order?.address?.addressLineOne,
       addressTwo: orderData?.data?.order?.address?.addressLineTwo,
       status: orderData?.data?.order?.address?.status,
 
       //billing data here
-      billingcompanyaddress:
-        orderData?.data?.order?.user?.billingAddresses?.[0]?.companyaddress,
+      // billingcompanyaddress:
+      //   orderData?.data?.order?.user?.billingAddresses?.[0]?.companyaddress,
+      billingcompanyaddress: "",
       billingaddressOne:
+        orderData?.data?.order?.user?.billingAddresses?.[0]?.companyaddress +
+        "" +
         orderData?.data?.order?.user?.billingAddresses?.[0]?.addressLineOne,
       billingaddressTwo:
         orderData?.data?.order?.user?.billingAddresses?.[0]?.addressLineTwo,
@@ -268,7 +275,7 @@ function EditPage() {
           {/* Shipping Address */}
           <div className="w-full space-y-2">
             <h4 className="font-semibold">Shipping Address</h4>
-            <div className="w-full space-y-2 pt-8">
+            {/* <div className="w-full space-y-2 pt-8">
               <p>Company Address</p>
               <input
                 className="w-full h-12 bg-transparent outline-none border-2 px-4 border-gray-100 rounded-lg"
@@ -277,8 +284,8 @@ function EditPage() {
                 value={supplier?.companyaddress}
                 onChange={handleChange}
               />
-            </div>
-            <div className="w-full space-y-2">
+            </div> */}
+            <div className="w-full space-y-2 pt-8">
               <p>Address Line 1</p>
               <input
                 className="w-full h-12 bg-transparent outline-none border-2 px-4 border-gray-100 rounded-lg"
@@ -383,7 +390,7 @@ function EditPage() {
           {/* Billing Address */}
           <div className="w-full space-y-2">
             <h4 className="font-semibold">Billing Address</h4>
-            <div className="w-full space-y-2 pt-8">
+            {/* <div className="w-full space-y-2 pt-8">
               <p>Address</p>
               <input
                 className="w-full h-12 bg-transparent outline-none border-2 px-4 border-gray-100 rounded-lg"
@@ -392,8 +399,8 @@ function EditPage() {
                 value={supplier?.billingcompanyaddress}
                 onChange={handleChange}
               />
-            </div>
-            <div className="w-full space-y-2">
+            </div> */}
+            <div className="w-full space-y-2 pt-8">
               <p>Address Line 1</p>
               <input
                 className="w-full h-12 bg-transparent outline-none border-2 px-4 border-gray-100 rounded-lg"

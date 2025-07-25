@@ -319,14 +319,14 @@ export default function Customers() {
     <div>
       <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-          Customers
+          Customer Management
         </h2>
 
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
-          <li>New Customer</li>
-          <li>Groups</li>
+          <li onClick={()=>router.push("/customers/add")}>Add Customer</li>
+          {/* <li>Groups</li>
           <li>Nearby</li>
-          <li>Export</li>
+          <li>Export</li> */}
         </ul>
       </div>
       <div className="space-y-8 pb-6 pt-32 px-6 2xl:px-12">

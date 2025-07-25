@@ -14,6 +14,10 @@ import React, { useEffect, useState } from "react";
 function page() {
   const { userId } = useParams();
   const router = useRouter();
+  let userType = "";
+  if (typeof window !== "undefined") {
+    userType = localStorage.getItem("userType");
+  }
   const { data } = GetAPI(`api/v1/admin/view-customer-detail/${userId}`);
   const { data: userOrders } = GetAPI(`api/v1/admin/orders?userid=${userId}`);
 
@@ -58,8 +62,18 @@ function page() {
         </h2>
 
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
-          {/* <li>Edit Customer</li>
-          <li>Addresses</li>
+          <li
+            onClick={() => {
+              const url =
+                userType === "admin"
+                  ? `/customers/edit/${userId}`
+                  : `/sales-representative/customers/edit/${userId}`;
+              router.push(url);
+            }}
+          >
+            Edit Customer
+          </li>
+          {/* <li>Addresses</li>
           <li>Reset Password</li>
           <li>Export</li> */}
           <li onClick={() => setUserData({ ...userData, modal: true })}>
@@ -70,7 +84,7 @@ function page() {
 
       <div className="w-full pt-32 px-6 2xl:px-12 ">
         <div className="max-w-6xl mx-auto space-y-6 py-8 px-8 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div>
               <div className="flex items-center h-12 border-b [&>span]:w-44">
                 <span className="text-gray-500 font-medium">Contact</span>
@@ -249,60 +263,65 @@ function page() {
               <h2 className="text-lg font-semibold text-gray-800 mb-4">
                 Orders
               </h2>
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="text-sm font-semibold text-gray-600 border-b">
-                    <th className="py-2 px-3">#</th>
-                    <th className="py-2 px-3">Order Date</th>
-                    <th className="py-2 px-3">Deliver On</th>
-                    <th className="py-2 px-3">Total</th>
-                    <th className="py-2 px-3">Invoice</th>
-                    <th className="py-2 px-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {userOrders?.data?.data?.map((order) => (
-                    <tr
-                      key={order?.id}
-                      onClick={() => router.push(`/orders/detail/${order?.id}`)}
-                      className="text-sm border-b hover:bg-gray-50 transition cursor-pointer"
-                    >
-                      <td className="py-2 px-3">{order.id}</td>
-                      <td className="py-2 px-3">
-                        {dayjs(order?.on).format("MM/DD/YYYY")}
-                      </td>
-                      <td className="py-2 px-3">--</td>
-                      <td className="py-2 px-3">
-                        ${parseFloat(order?.totalBill)?.toFixed(2)}
-                      </td>
-                      <td className="py-2 px-3">
-                        <span
-                          className={`text-xs font-medium px-3 py-1 rounded-full text-white ${
-                            order?.paymentStatus !== "pending"
-                              ? "bg-green-600"
-                              : "bg-yellow-500"
-                          }`}
-                        >
-                          {order?.paymentStatus === "pending"
-                            ? "Unpaid"
-                            : "Paid"}
-                        </span>
-                      </td>
-                      <td className="py-2 px-3">
-                        <span
-                          className={`text-xs font-medium px-3 py-1 rounded-full text-white ${
-                            order?.orderCurrentStatus !== "Cancelled"
-                              ? "bg-green-600"
-                              : "bg-red-500"
-                          }`}
-                        >
-                          {order?.orderCurrentStatus}
-                        </span>
-                      </td>
+
+              <div className="bg-white overflow-x-auto">
+                <table className="w-full text-left border-collapse ">
+                  <thead>
+                    <tr className="text-sm font-semibold text-gray-600 border-b [&>th]:whitespace-nowrap">
+                      <th className="py-2 px-3">#</th>
+                      <th className="py-2 px-3">Order Date</th>
+                      <th className="py-2 px-3">Deliver On</th>
+                      <th className="py-2 px-3">Total</th>
+                      <th className="py-2 px-3">Invoice</th>
+                      <th className="py-2 px-3">Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {userOrders?.data?.data?.map((order) => (
+                      <tr
+                        key={order?.id}
+                        onClick={() =>
+                          router.push(`/orders/detail/${order?.id}`)
+                        }
+                        className="text-sm border-b hover:bg-gray-50 transition cursor-pointer"
+                      >
+                        <td className="py-2 px-3">{order.id}</td>
+                        <td className="py-2 px-3">
+                          {dayjs(order?.on).format("MM/DD/YYYY")}
+                        </td>
+                        <td className="py-2 px-3">--</td>
+                        <td className="py-2 px-3">
+                          ${parseFloat(order?.totalBill)?.toFixed(2)}
+                        </td>
+                        <td className="py-2 px-3">
+                          <span
+                            className={`text-xs font-medium px-3 py-1 rounded-full text-white ${
+                              order?.paymentStatus !== "pending"
+                                ? "bg-green-600"
+                                : "bg-yellow-500"
+                            }`}
+                          >
+                            {order?.paymentStatus === "pending"
+                              ? "Unpaid"
+                              : "Paid"}
+                          </span>
+                        </td>
+                        <td className="py-2 px-3">
+                          <span
+                            className={`text-xs font-medium px-3 py-1 rounded-full text-white whitespace-nowrap ${
+                              order?.orderCurrentStatus !== "Cancelled"
+                                ? "bg-green-600"
+                                : "bg-red-500"
+                            }`}
+                          >
+                            {order?.orderCurrentStatus}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
@@ -330,14 +349,14 @@ function page() {
                   )}
                 </div>
               </div>
-              <button
+              {/* <button
                 onClick={() =>
                   setUserData({ ...userData, edit: !userData.edit })
                 }
                 className="text-blue-600 hover:underline text-sm"
               >
                 {userData?.edit ? "Save" : "Edit"}
-              </button>
+              </button> */}
             </div>
           </div>
         </div>

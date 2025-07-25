@@ -143,7 +143,7 @@ export default function SalesRepresentativeCustomers() {
           <li
             onClick={() => router.push("/sales-representative/customers/add")}
           >
-            Add New Customer
+            Add Customer
           </li>
         </ul>
       </div>

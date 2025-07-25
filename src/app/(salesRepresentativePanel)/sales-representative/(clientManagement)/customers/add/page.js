@@ -18,9 +18,10 @@ import { FaLongArrowAltLeft } from "react-icons/fa";
 import PhoneInput from "react-phone-input-2";
 import Select from "react-select";
 
-export default function page() {
+export default function AddCustomer() {
   if (typeof window !== "undefined") {
     var userID = localStorage.getItem("userID");
+    var userType = localStorage.getItem("userType");
   }
   const allCountriesData = [];
   // const autocompleteRef = useRef();
@@ -200,8 +201,8 @@ export default function page() {
   const validateCustomerForm = (userData) => {
     // --- Shipping Address ---
     const address = userData.address;
-    if (!address.companyaddress?.trim())
-      return { error: true, message: "Company address cannot be empty" };
+    // if (!address.companyaddress?.trim())
+    //   return { error: true, message: "Company address cannot be empty" };
 
     if (!address.country?.trim())
       return { error: true, message: "Country cannot be empty" };
@@ -310,8 +311,9 @@ export default function page() {
       // if (cityStatus) {
       try {
         setLoader(true);
+        const url = userType==="admin" ? "api/v1/admin/add-customer":`api/v1/admin/add-customer/sales-rep/${userID}`
         const res = await PostAPI(
-          `api/v1/admin/add-customer/sales-rep/${userID}`,
+            url,
           {
             info: {
               name: userData?.info?.name,
@@ -645,7 +647,7 @@ export default function page() {
                         </LoadScript>
                       </div>
                     </div> */}
-                        <div className="flex flex-col gap-y-2">
+                        {/* <div className="flex flex-col gap-y-2">
                           <label className="text-labelColor font-medium font-satoshi">
                             Company Address{" "}
                           </label>
@@ -657,7 +659,7 @@ export default function page() {
                             className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                             onChange={handleAddress}
                           />
-                        </div>
+                        </div> */}
                         <div className="flex flex-col gap-y-2">
                           <label className="text-labelColor font-medium font-satoshi">
                             Address Line 1

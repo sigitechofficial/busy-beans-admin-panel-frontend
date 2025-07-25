@@ -390,6 +390,34 @@ export default function OrderDetail() {
 
             {/* Right side */}
             <div className="space-y-8 -order-last xl:-order-first">
+              <div className="ml-2">
+                <h6 className="font-semibold">Deliver To</h6>
+                <div className="items-center uppercase flex flex-wrap text-gray-500">
+                  {data?.data?.order?.address?.companyaddress && (
+                    <p>{data.data.order.address.companyaddress}</p>
+                  )}
+                  <p>{data?.data?.order?.address?.addressLineOne}</p>
+                  <p>{data?.data?.order?.address?.addressLineTwo}</p>
+                  <p>
+                    {data?.data?.order?.address?.town},{" "}
+                    {data?.data?.order?.address?.state}{" "}
+                    {data?.data?.order?.address?.zipCode}
+                  </p>
+                  <p>{data?.data?.order?.address?.country}</p>
+                  {data?.data?.order?.user?.phoneNumber && (
+                    <p>
+                      Phone: {data?.data?.order?.user?.countryCode}{" "}
+                      {data?.data?.order?.user?.phoneNumber}
+                    </p>
+                  )}
+                </div>
+                {/* <span
+                  onClick={() => router.push(`${pathname}/edit`)}
+                  className="text-blue-500 text-xs cursor-pointer"
+                >
+                  Edit
+                </span> */}
+              </div>
               <TrackOrder
                 orderHistories={data?.data?.order?.orderHistories}
                 statusId={data?.data?.order?.statusId}

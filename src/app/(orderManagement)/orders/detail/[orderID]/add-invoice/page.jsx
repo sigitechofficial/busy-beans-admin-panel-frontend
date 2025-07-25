@@ -16,6 +16,10 @@ export default function AddInvoice() {
   const router = useRouter();
   const [filterId, setFilterId] = useState("");
   const [loading, setLoading] = useState(false);
+  const [manual, setManual] = useState({
+    shippingCharge: "",
+    show: false,
+  });
   const { orderID } = useParams();
   const { data, reFetch } = GetAPI(`api/v1/admin/order-details/${orderID}`);
   const { data: shippingCharges } = GetAPI(
@@ -88,6 +92,7 @@ export default function AddInvoice() {
         invoiceDate: prev?.invoiceDate || getToday(),
         dueDate: prev?.dueDate || getDueDate(),
         note: data?.data?.order?.note,
+        shippingCharges: data?.data?.order?.shippingCharges,
         // You can set invoiceDate, dueDate, terms, etc. from API if available
       }));
       setItems(
@@ -244,7 +249,7 @@ export default function AddInvoice() {
   const shippingChargeObj = shippingCharges?.data?.data?.find(
     (sc) => totalWeight >= sc.weightFrom && totalWeight <= sc.weightTo
   );
-  const shippingCharge = shippingChargeObj
+  let shippingCharge = shippingChargeObj
     ? Number(shippingChargeObj.charges)
     : 0;
 
@@ -266,7 +271,9 @@ export default function AddInvoice() {
     extraRows
       .filter((item) => item.checked)
       .reduce((sum, item) => sum + item.qty * item.unit, 0) +
-    shippingCharge;
+    (manual.show
+      ? parseFloat(shippingCharge)
+      : parseFloat(invoiceFields?.shippingCharges) || 0);
 
   // Count checked items
   const checkedCount =
@@ -317,6 +324,10 @@ export default function AddInvoice() {
       otherPayment: invoiceFields.otherPayment,
       attemptImmediatePayment: invoiceFields.paymentOption,
       emailInvoiceToCustomer: invoiceFields.paymentOption2,
+      // shippingCharges: manual?.shippingCharge,
+      ...(manual?.show === false && {
+        shippingCharges: invoiceFields.shippingCharges,
+      }),
     };
 
     // API call
@@ -343,8 +354,13 @@ export default function AddInvoice() {
     <div>
       <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-          <span className="hover:text-blue-500 cursor-pointer" onClick={()=>router.push("/orders")}>Order</span> / {orderID} / New
-          Invoice
+          <span
+            className="hover:text-blue-500 cursor-pointer"
+            onClick={() => router.push("/orders")}
+          >
+            Order
+          </span>{" "}
+          / {orderID} / New Invoice
         </h2>
       </div>
 
@@ -567,13 +583,14 @@ export default function AddInvoice() {
                     userType === "salesRepresentative") && (
                     <td className="py-2 px-2 text-right border border-gray-200">
                       $
-                      {(item.qty || 1) *
+                      {(
+                        (item.qty || 1) *
                         (item.unit !== undefined
                           ? item.unit
                           : item.price !== undefined
                           ? item.price
-                          : 0) +
-                        ".00"}
+                          : 0)
+                      ).toFixed(2)}
                     </td>
                   )}
                 </tr>
@@ -670,14 +687,39 @@ export default function AddInvoice() {
 
               {(userType === "admin" || userType === "salesRepresentative") && (
                 <tr>
-                  <td colSpan={4} className="border border-gray-200"></td>
+                  <td colSpan={4} className="border border-gray-200 w-max">
+                    {" "}
+                    <button
+                      className="border px-2 py-2 ml-2"
+                      // onClick={handleAddExtra}
+                      onClick={() =>
+                        setManual({ ...manual, show: !manual.show })
+                      }
+                    >
+                      Auto Calculate
+                    </button>
+                  </td>
                   <td className="py-2 px-2 text-right font-bold border border-gray-200">
                     Shipping Charges
                   </td>
                   <td className="py-2 px-2 text-right font-bold border border-gray-200">
-                    {shippingCharge
-                      ? "$" + parseFloat(shippingCharge)?.toFixed(2)
-                      : "Not dealing"}
+                    {!manual?.show ? (
+                      <input
+                        className="w-20 border border-gray-200 rounded px-1 py-1 text-right"
+                        value={invoiceFields?.shippingCharges}
+                        type="text"
+                        onChange={(e) =>
+                          setInvoiceFields({
+                            ...invoiceFields,
+                            shippingCharges: e.target.value,
+                          })
+                        }
+                      />
+                    ) : shippingCharge ? (
+                      "$" + parseFloat(shippingCharge)?.toFixed(2)
+                    ) : (
+                      "Not dealing"
+                    )}
                   </td>
                 </tr>
               )}

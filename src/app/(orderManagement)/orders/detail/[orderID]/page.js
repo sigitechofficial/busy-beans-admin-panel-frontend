@@ -512,7 +512,19 @@ export default function OrderDetail() {
                   <LuClipboardList size={25} />
                 </div>
                 <div className="space-y-4">
-                  <p className="font-semibold">This order is fulfilled</p>
+                  <p className="font-semibold">
+                    This order is{" "}
+                    {data?.data?.order?.statusId == 4 ||
+                    data?.data?.order?.statusId == 5
+                      ? "Shipped"
+                      : data?.data?.order?.statusId == 1
+                      ? "New"
+                      : data?.data?.order?.statusId == 2
+                      ? "Dispatched to Supplier"
+                      : data?.data?.order?.statusId == 3
+                      ? "Acknowledged by Supplier"
+                      : data?.data?.order?.statusId == 6 ?"Cancelled" :"fulfilled"}
+                  </p>
                   <p>Optional actions:</p>
 
                   <div className="flex gap-x-2 items-center">
@@ -570,7 +582,12 @@ export default function OrderDetail() {
                     </div>
                   )} */}
                   {data?.data?.order?.customerName && (
-                    <div className="flex items-center gap-5 border-b capitalize">
+                    <div
+                      onClick={() =>
+                        router.push(`/customers/${data?.data?.order?.user?.id}`)
+                      }
+                      className="flex items-center gap-5 border-b capitalize cursor-pointer"
+                    >
                       <p className="w-28">Company Name</p>
                       <p>{data?.data?.order?.user?.companyName}</p>
                     </div>
@@ -625,6 +642,12 @@ export default function OrderDetail() {
                     <div className="flex items-center gap-5 border-b">
                       <p className="w-28">Tracking No: </p>
                       <p>{data?.data?.order?.trackingNumber}</p>
+                    </div>
+                  )}
+                  {data?.data?.order?.frequency && (
+                    <div className="flex items-center gap-5 border-b">
+                      <p className="w-28">Frequency: </p>
+                      <p>{data?.data?.order?.frequency}</p>
                     </div>
                   )}
                 </div>
@@ -829,6 +852,7 @@ export default function OrderDetail() {
                 orderHistories={data?.data?.order?.orderHistories}
                 statusId={data?.data?.order?.statusId}
               />
+
               <OrderCard
                 reFetch={reFetch}
                 orderData={data?.data?.order}

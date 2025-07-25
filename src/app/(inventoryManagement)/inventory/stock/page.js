@@ -37,7 +37,7 @@ export default function Stock() {
     "api/v1/admin/category"
   );
 
-  const catOptions = [{ value: "", label: "All" }];
+  const catOptions = [];
   category?.data?.data?.map((item) => {
     catOptions.push({ value: item?.id, label: item?.name });
   });

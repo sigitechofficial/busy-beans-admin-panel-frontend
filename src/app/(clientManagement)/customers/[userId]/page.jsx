@@ -2,7 +2,9 @@
 import BackButton from "@/components/ui/BackButton";
 import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
+import MyDataTable from "@/components/ui/MyDataTable";
 import { DeleteAPI } from "@/utilities/DeleteAPI";
+import ErrorHandler from "@/utilities/ErrorHandler";
 import GetAPI from "@/utilities/GetAPI";
 import { PatchAPI } from "@/utilities/PatchAPI";
 import { PostAPI } from "@/utilities/PostAPI";
@@ -19,6 +21,9 @@ function page() {
   if (typeof window !== "undefined") {
     userType = localStorage.getItem("userType");
   }
+  const { data: salesRepresentativeData, reFetch } = GetAPI(
+    "api/v1/admin/sales-rep"
+  );
   const { data } = GetAPI(`api/v1/admin/view-customer-detail/${userId}`);
   const { data: userOrders } = GetAPI(`api/v1/admin/orders?userid=${userId}`);
 
@@ -26,7 +31,73 @@ function page() {
     edit: false,
     email: "",
     modal: false,
+    type: "",
   });
+  const salesRepresentativeDatas = [
+    {
+      sl: "",
+      srName: "Admin",
+      territoryName: "Busy Bean Coffee Inc.",
+
+      action: (
+        <button
+          className="w-24 bg-theme text-white hover:bg-white hover:text-theme border border-theme duration-150 font-semibold p-2 rounded-md flex justify-center "
+          onClick={() => handleAssignSalesRepresentative(null)}
+        >
+          Assign
+        </button>
+      ),
+    },
+  ];
+  salesRepresentativeData?.data?.data?.map((sR, i) => {
+    salesRepresentativeDatas.push({
+      sl: i + 1,
+      srName: sR?.srName,
+      territoryName: sR?.territoryName,
+
+      action: (
+        <button
+          className="w-24 bg-theme text-white hover:bg-white hover:text-theme border border-theme duration-150 font-semibold p-2 rounded-md flex justify-center "
+          onClick={() => handleAssignSalesRepresentative(sR?.id)}
+        >
+          Assign
+        </button>
+      ),
+    });
+  });
+  const salesRepresentativeColumns = [
+    { field: "srName", header: "Name" },
+    { field: "territoryName", header: "Territory" },
+
+    {
+      field: "action",
+      header: "Action",
+    },
+  ];
+
+  const handleCancel = () => {
+    setUserData({ modal: false });
+  };
+
+  const handleAssignSalesRepresentative = async (id) => {
+    try {
+      const res = await PatchAPI(
+        `api/v1/admin/customer-management/assign-sale-rep/${id}`,
+        {
+          id: userId,
+        }
+      );
+      if (res?.data?.status === "success") {
+        success_toaster("Local Partner Assigned successfully");
+        setModal(false);
+        reFetch();
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
+    }
+  };
 
   const handleDelete = async () => {
     const res = await DeleteAPI(`api/v1/admin/delete-customer/${userId}`);
@@ -67,7 +138,14 @@ function page() {
           </span>
         </h2>
 
-        <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
+        <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative text-blue-500">
+          <li
+            onClick={() =>
+              setUserData({ ...userData, modal: true, type: "localPartner" })
+            }
+          >
+            Assign local Partner
+          </li>
           <li
             onClick={() => {
               const url =
@@ -132,8 +210,10 @@ function page() {
                 </div>
               </div>
               <div className="flex items-center h-12 border-b [&>span]:w-44">
-                <span className="text-gray-500 font-medium">Payment Terms</span>
-                <div>--</div>
+                <span className="text-gray-500 font-medium">Local Partner</span>
+                <div>
+                  {data?.data?.customer?.salesRepName ?? "Not Assigned"}
+                </div>
               </div>
               <div className="flex items-center h-12 border-b [&>span]:w-44">
                 <span className="text-gray-500 font-medium">Price List</span>
@@ -376,41 +456,71 @@ function page() {
 
       <Dialog
         visible={userData?.modal}
-        style={{ width: "90vw", maxWidth: "500px" }}
+        style={{
+          width: "90vw",
+          maxWidth: userData?.type === "localPartner" ? "" : "500px",
+        }}
         className="font-nunito"
         onHide={() => setUserData({ ...userData, modal: false })}
         header={
-          <div className="font-bold text-2xl text-center text-red-600">
-            Confirm Deletion
-          </div>
+          userData?.type === "localPartner" ? (
+            "Assign Local Partner"
+          ) : (
+            <div className="font-bold text-2xl text-center text-red-600">
+              Confirm Deletion
+            </div>
+          )
         }
       >
-        <div className="space-y-6 text-center px-4 pt-2">
-          <div className="text-lg text-gray-700">
-            Are you sure you want to delete this customer?
+        {userData?.type === "localPartner" ? (
+          <div className="space-y-4">
+            <MyDataTable
+              columns={salesRepresentativeColumns}
+              data={salesRepresentativeDatas}
+              placeholder={"Search ..."}
+              pagination={false}
+              hide={true}
+              search={true}
+            />
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="rounded-lg border border-theme bg-theme text-white hover:bg-white hover:text-theme duration-150
+                      shadow-buttonShadow px-6 font-nunito py-3 font-medium"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
-          <div className="text-sm text-gray-500">
-            This action cannot be undone. The customer’s account and related
-            data will be permanently removed.
-          </div>
+        ) : (
+          <div className="space-y-6 text-center px-4 pt-2">
+            <div className="text-lg text-gray-700">
+              Are you sure you want to delete this customer?
+            </div>
+            <div className="text-sm text-gray-500">
+              This action cannot be undone. The customer’s account and related
+              data will be permanently removed.
+            </div>
 
-          <div className="flex justify-end gap-3 pt-6">
-            <button
-              type="button"
-              onClick={() => setUserData({ ...userData, modal: false })}
-              className="rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 px-5 py-2 font-medium transition"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleDelete}
-              className="rounded-md bg-red-600 text-white hover:bg-red-700 px-5 py-2 font-medium transition shadow-md"
-            >
-              Delete
-            </button>
+            <div className="flex justify-end gap-3 pt-6">
+              <button
+                type="button"
+                onClick={() => setUserData({ ...userData, modal: false })}
+                className="rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 px-5 py-2 font-medium transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="rounded-md bg-red-600 text-white hover:bg-red-700 px-5 py-2 font-medium transition shadow-md"
+              >
+                Delete
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </Dialog>
     </div>
   );

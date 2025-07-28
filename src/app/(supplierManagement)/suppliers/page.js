@@ -95,6 +95,7 @@ export default function Suppliers() {
   data?.data?.data?.map((supplier, i) => {
     datas.push({
       sl: i + 1,
+      id: supplier?.id,
       supplierName: supplier?.supplierName,
       email: supplier?.email,
       address: `${supplier?.addressOne}, ${supplier?.addressTwo}, ${supplier?.city}, ${supplier?.state}, ${supplier?.zipCode}, ${supplier?.country}`,
@@ -121,18 +122,17 @@ export default function Suppliers() {
       ),
       changeStatus: (
         <label className="flex items-center gap-2 ">
-
-            <div>
-          {supplier?.status ? (
-            <div className="w-max text-xs bg-theme text-white font-semibold p-2 rounded-md flex justify-center">
-              Active
-            </div>
-          ) : (
-            <div className="w-max text-xs bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
-              Inactive
-            </div>
-          )}
-        </div>
+          <div>
+            {supplier?.status ? (
+              <div className="w-max text-xs bg-theme text-white font-semibold p-2 rounded-md flex justify-center">
+                Active
+              </div>
+            ) : (
+              <div className="w-max text-xs bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+                Inactive
+              </div>
+            )}
+          </div>
           <Switch
             onChange={() => {
               handleStatus(supplier?.id, supplier?.status);
@@ -253,6 +253,7 @@ export default function Suppliers() {
             placeholder={"Search ..."}
             pagination={true}
             search={true}
+            onRowClick={(e) => router.push(`/suppliers/details/${e?.data?.id}`)}
           />
         </div>
 

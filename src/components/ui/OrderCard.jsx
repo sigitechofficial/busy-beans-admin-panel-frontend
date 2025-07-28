@@ -189,7 +189,7 @@ export default function OrderCard(props) {
   return (
     <div className="space-y-10 py-4 px-8 border border-borderColor shadow-tableShadow ">
       {/* Upper section */}
-      <div className="space-y-4 font-inter">
+     {props?.orderData?.note&& <div className="space-y-4 font-inter">
         {/* <div className="flex justify-between items-start">
           <div className="space-y-0.5">
             <p className="font-semibold text-3xl">
@@ -312,7 +312,7 @@ export default function OrderCard(props) {
             </div> */}
           </div>
         </div>
-      </div>
+      </div>}
       {/* Lower section */}
       {/* <div>
         <MyDataTable
@@ -426,13 +426,13 @@ export default function OrderCard(props) {
                       {item?.qty}
                     </td>
                     <td className="py-2 px-2 text-center border border-gray-200">
-                      --
+                      {props?.orderData?.invoiceNumber ? "Yes":"Not Yet"}
                     </td>
                     <td className="py-2 px-2 text-center border border-gray-200">
-                      --
+                      {props?.orderData?.paymentStatus==="pending" ? "Unpaid" :"Paid"}
                     </td>
                     <td className="py-2 px-2 text-center border border-gray-200">
-                      --
+                      {props?.orderData?.statusId>="2" ? "Yes":"Not Yet"}
                     </td>
                     {(userType === "admin" ||
                       userType === "salesRepresentative") && (

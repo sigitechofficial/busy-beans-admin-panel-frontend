@@ -17,6 +17,7 @@ import { PatchAPI } from "@/utilities/PatchAPI";
 import PhoneInput from "react-phone-input-2";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import axios from "axios";
+import Loader from "@/components/ui/Loader";
 
 export default function EditsSalesRepresentative() {
   const { salesRepresentativeID } = useParams();
@@ -237,7 +238,9 @@ export default function EditsSalesRepresentative() {
     setImagePreview(data?.data?.data?.image);
   }, [data]);
 
-  return (
+  return data?.length === 0 ? (
+    <Loader />
+  ) : (
     <form onSubmit={handleSubmit} className="">
       {/* <div className="flex items-center justify-between">
         <div className="flex items-center gap-x-2">

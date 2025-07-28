@@ -13,6 +13,7 @@ import MiniLoader from "@/components/ui/MiniLoader";
 import { PostAPI } from "@/utilities/PostAPI";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import { info_toaster, success_toaster } from "@/utilities/Toaster";
+import dayjs from "dayjs";
 
 export default function UpcomingOrders() {
   const router = useRouter();
@@ -98,7 +99,7 @@ export default function UpcomingOrders() {
       // customerName: detail?.customerName,
       companyName: detail?.companyName,
       email: detail?.email,
-      orderDate: detail?.orderDate,
+      orderDate: dayjs(detail?.orderDate).format("MM/DD/YYYY"),
       deliveredOn: detail?.nextOrderDate,
       orderFrequency: detail?.frequency,
       createdBy: detail?.createdBy,

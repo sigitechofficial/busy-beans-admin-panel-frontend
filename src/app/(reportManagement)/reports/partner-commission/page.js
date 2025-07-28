@@ -93,12 +93,10 @@ export default function PartnerCommissionReport() {
         </h2>
       </div>
       <div className="space-y-8 pt-32 px-6 2xl:px-12 ">
-        <div className="flex items-center justify-between">
+        {/* to do this filters */}
+        {/* <div className="flex items-center justify-between">
           <div className="flex items-center gap-x-2">
             <BackButton />
-            {/* <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-              Partner Profits Report
-            </h2> */}
           </div>
 
           <div className="min-w-40">
@@ -160,7 +158,7 @@ export default function PartnerCommissionReport() {
               </div>
             )}
           </div>
-        </div>
+        </div> */}
 
         <div>
           <MyDataTable

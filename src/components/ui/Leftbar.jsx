@@ -39,7 +39,6 @@ import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import axios from "axios";
 import { BASE_URL } from "@/utilities/URL";
 import ErrorHandler from "@/utilities/ErrorHandler";
-import { useCart } from "@/utilities/dataContext";
 import GetAPI from "@/utilities/GetAPI";
 
 export default function Leftbar(props) {
@@ -54,7 +53,7 @@ export default function Leftbar(props) {
   const generateUrl =
     userType === "admin"
       ? "api/v1/admin/order-navigation-counts"
-      : `order-navigation-counts/sales-rep/${userID}`;
+      : `api/v1/admin/order-navigation-counts/sales-rep/${userID}`;
   const overAllData = GetAPI(generateUrl);
 
   const pathname = usePathname();

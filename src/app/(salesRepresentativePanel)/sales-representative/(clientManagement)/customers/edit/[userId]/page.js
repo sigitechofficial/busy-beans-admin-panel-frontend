@@ -1,4 +1,5 @@
 "use client";
+import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
 import { passwordStrength } from "@/utilities/AuthValidation";
 import ErrorHandler from "@/utilities/ErrorHandler";
@@ -72,7 +73,6 @@ export default function UpdateCustomer() {
 
   const [allStates, setAllStates] = useState([]);
   const [allCities, setAllCities] = useState([]);
-  const [isPassword, setIsPassword] = useState(false);
 
   // Fetch countries
   const { data: countriesData } = GetAPI(
@@ -106,12 +106,15 @@ export default function UpdateCustomer() {
           saleTaxNumber: c.saleTaxNumber || "",
           emailToSendInvoices: c.emailToSendInvoices || "",
           companyName: c.companyName || "",
-          companyInfo: c.companyInfo || "",
+          companyInfo: c.dispatchEmail || "",
           registerBy: c.registerBy || "email",
         },
         address: {
-          companyaddress: c.addresses?.[0]?.companyaddress || "",
-          addressLineOne: c.addresses?.[0]?.addressLineOne || "",
+          // companyaddress: c.addresses?.[0]?.companyaddress || "",
+          companyaddress: "",
+          addressLineOne:
+            (c.addresses?.[0]?.companyaddress || "") +
+              c.addresses?.[0]?.addressLineOne || "",
           addressLineTwo: c.addresses?.[0]?.addressLineTwo || "",
           town: c.addresses?.[0]?.town || "",
           country: c.addresses?.[0]?.country || "",
@@ -194,8 +197,6 @@ export default function UpdateCustomer() {
   const validateCustomerForm = (userData) => {
     // --- Shipping Address ---
     const address = userData.address;
-    if (!address.companyaddress?.trim())
-      return { error: true, message: "Company address cannot be empty" };
 
     if (!address.country?.trim())
       return { error: true, message: "Country cannot be empty" };
@@ -217,8 +218,8 @@ export default function UpdateCustomer() {
         }
       : userData.billingAddress;
 
-    if (!billing.companyaddress?.trim())
-      return { error: true, message: "Billing address cannot be empty" };
+    // if (!billing.companyaddress?.trim())
+    //   return { error: true, message: "Billing address cannot be empty" };
     if (!billing.town?.trim())
       return { error: true, message: "Billing town cannot be empty" };
     if (!billing.country?.trim())
@@ -308,14 +309,16 @@ export default function UpdateCustomer() {
           info: {
             name: userData?.info?.name,
             // email: userData?.info?.email,
-             ...(isPassword && { password: userData?.info?.password }),
+            ...(userData?.info?.password?.trim() && {
+              password: userData?.info?.password,
+            }),
             status: userData?.info?.status,
             phoneNumber: userData?.info?.phoneNumber,
             countryCode: userData?.info?.countryCode,
             saleTaxNumber: userData?.info?.saleTaxNumber,
             emailToSendInvoices: userData?.info?.emailToSendInvoices,
             companyName: userData?.info?.companyName,
-            companyInfo: userData?.info?.companyInfo,
+            dispatchEmail: userData?.info?.companyInfo,
             registerBy: userData?.info?.registerBy,
           },
           address: {
@@ -335,7 +338,11 @@ export default function UpdateCustomer() {
         if (res?.data?.status === "success") {
           setLoader(false);
           success_toaster("Customer updated successfully");
-          router.push("/sales-representative/customers");
+          router.push(
+            userType === "admin"
+              ? "/customers"
+              : "/sales-representative/customers"
+          );
         } else {
           throw new Error(
             res?.data?.message || "An unexpected error occurred."
@@ -397,7 +404,9 @@ export default function UpdateCustomer() {
     }
   };
 
-  return (
+  return customerData?.length === 0 ? (
+    <Loader />
+  ) : (
     <div>
       <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
@@ -432,7 +441,7 @@ export default function UpdateCustomer() {
                     </p>
                     <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
                       <div className="space-y-4">
-                        <div className="flex flex-col gap-y-2">
+                        {/* <div className="flex flex-col gap-y-2">
                           <label className="text-labelColor font-medium font-satoshi">
                             Company Address{" "}
                           </label>
@@ -444,7 +453,7 @@ export default function UpdateCustomer() {
                             className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                             onChange={handleAddress}
                           />
-                        </div>
+                        </div> */}
                         <div className="flex flex-col gap-y-2">
                           <label className="text-labelColor font-medium font-satoshi">
                             Address Line 1
@@ -887,7 +896,7 @@ export default function UpdateCustomer() {
                   </div>
 
                   <div className="flex flex-col justify-between gap-y-4">
-                    <div className="flex items-center gap-x-2">
+                    {/* <div className="flex items-center gap-x-2">
                       <input
                         type="checkbox"
                         checked={isPassword}
@@ -900,92 +909,85 @@ export default function UpdateCustomer() {
                       <label className="text-labelColor font-medium font-satoshi">
                         Password Change
                       </label>
-                    </div>
-                    {isPassword && (
-                      <div className="space-y-4">
-                        <div className="flex flex-col gap-y-2 relative">
-                          <label className="text-labelColor font-medium font-satoshi">
-                            Password
-                          </label>
-                          <input
-                            type={visibility?.pass ? "text" : "password"}
-                            name="password"
-                            onChange={handleInfo}
-                            value={userData?.info?.password}
-                            placeholder="Enter Password"
-                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                          />
-                          {userData?.info?.password.length > 0 && (
-                            <p className="text-red-700 text font-semibold text-sm">
-                              {!passwordStrength?.weak?.test(
-                                userData?.info?.password.trim()
-                              )
-                                ? "Password is too weak, contain atleat 6 characters consider adding more complexity"
-                                : !passwordStrength?.medium?.test(
-                                    userData?.info?.password.trim()
-                                  )
-                                ? "Password should include both uppercase and lowercase letters"
-                                : !passwordStrength?.strong.test(
-                                    userData?.info?.password.trim()
-                                  )
-                                ? "Password is strong! It should include at least one uppercase letter, one lowercase letter, one number, and one special character"
-                                : ""}
-                            </p>
+                    </div> */}
+
+                    <div className="space-y-4">
+                      <div className="flex flex-col gap-y-2 relative">
+                        <label className="text-labelColor font-medium font-satoshi">
+                          Password
+                        </label>
+                        <input
+                          type={visibility?.pass ? "text" : "password"}
+                          name="password"
+                          onChange={handleInfo}
+                          value={userData?.info?.password}
+                          placeholder="Enter Password"
+                          className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        />
+                        {userData?.info?.password.length > 0 && (
+                          <p className="text-red-700 text font-semibold text-sm">
+                            {!passwordStrength?.weak?.test(
+                              userData?.info?.password.trim()
+                            )
+                              ? "Password is too weak, contain atleat 6 characters consider adding more complexity"
+                              : !passwordStrength?.medium?.test(
+                                  userData?.info?.password.trim()
+                                )
+                              ? "Password should include both uppercase and lowercase letters"
+                              : !passwordStrength?.strong.test(
+                                  userData?.info?.password.trim()
+                                )
+                              ? "Password is strong! It should include at least one uppercase letter, one lowercase letter, one number, and one special character"
+                              : ""}
+                          </p>
+                        )}
+                        <button
+                          onClick={() =>
+                            setVisibility({
+                              ...visibility,
+                              pass: !visibility?.pass,
+                            })
+                          }
+                          type="button"
+                          className="text-black absolute right-4 top-11"
+                        >
+                          {visibility?.pass ? (
+                            <AiOutlineEye size={24} color="#000000" />
+                          ) : (
+                            <AiOutlineEyeInvisible size={24} color="#000000" />
                           )}
-                          <button
-                            onClick={() =>
-                              setVisibility({
-                                ...visibility,
-                                pass: !visibility?.pass,
-                              })
-                            }
-                            type="button"
-                            className="text-black absolute right-4 top-11"
-                          >
-                            {visibility?.pass ? (
-                              <AiOutlineEye size={24} color="#000000" />
-                            ) : (
-                              <AiOutlineEyeInvisible
-                                size={24}
-                                color="#000000"
-                              />
-                            )}
-                          </button>
-                        </div>
-                        <div className="flex flex-col gap-y-2 relative">
-                          <label className="text-labelColor font-medium font-satoshi">
-                            Confirm Password
-                          </label>
-                          <input
-                            type={visibility?.confirmPass ? "text" : "password"}
-                            name="confirmPassword"
-                            onChange={handleInfo}
-                            value={userData?.info?.confirmPassword}
-                            placeholder="Enter password again"
-                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                          />
-                          <button
-                            onClick={() =>
-                              setVisibility({
-                                ...visibility,
-                                confirmPass: !visibility?.confirmPass,
-                              })
-                            }
-                            type="button"
-                            className="text-black absolute right-4 top-11"
-                          >
-                            {visibility?.confirmPass ? (
-                              <AiOutlineEye size={24} color="#000000" />
-                            ) : (
-                              <AiOutlineEyeInvisible
-                                size={24}
-                                color="#000000"
-                              />
-                            )}
-                          </button>
-                        </div>
+                        </button>
                       </div>
-                    )}
+                      <div className="flex flex-col gap-y-2 relative">
+                        <label className="text-labelColor font-medium font-satoshi">
+                          Confirm Password
+                        </label>
+                        <input
+                          type={visibility?.confirmPass ? "text" : "password"}
+                          name="confirmPassword"
+                          onChange={handleInfo}
+                          value={userData?.info?.confirmPassword}
+                          placeholder="Enter password again"
+                          className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        />
+                        <button
+                          onClick={() =>
+                            setVisibility({
+                              ...visibility,
+                              confirmPass: !visibility?.confirmPass,
+                            })
+                          }
+                          type="button"
+                          className="text-black absolute right-4 top-11"
+                        >
+                          {visibility?.confirmPass ? (
+                            <AiOutlineEye size={24} color="#000000" />
+                          ) : (
+                            <AiOutlineEyeInvisible size={24} color="#000000" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="w-[399px] pt-5">

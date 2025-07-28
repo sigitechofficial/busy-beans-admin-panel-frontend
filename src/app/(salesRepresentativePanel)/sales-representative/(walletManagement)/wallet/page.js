@@ -20,13 +20,6 @@ export default function page() {
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
           Wallet Management
         </h2>
-        {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">
-          <li>Invoice</li>
-          <li>Quickbooks</li>
-          <li>Schedule</li>
-          <li>Bulk Modify</li>
-          <li>Export</li>
-        </ul> */}
       </div>
 
       <div className="space-y-8 pt-32 px-6 2xl:px-12">
@@ -37,22 +30,25 @@ export default function page() {
           <ManagementTab
             title="Total Number of Sold Products"
             desc={`${
-              Number(data?.data?.numberOfSoldProducts) +
-              Number(data?.data?.numberOfSoldProductsOnline)
+              Number(data?.data?.numberOfSoldProducts) ||
+              0 + Number(data?.data?.numberOfSoldProductsOnline) ||
+              0
             }`}
           />
           <ManagementTab
             title="Total Sales"
             desc={`$${
-              Number(data?.data?.totalSales.replace(/,/g, "")) +
-              Number(data?.data?.totalSalesOnline.replace(/,/g, ""))
+              Number(data?.data?.totalSales?.replace(/,/g, "")) ||
+              0 + Number(data?.data?.totalSalesOnline?.replace(/,/g, "")) ||
+              0
             }`}
           />
           <ManagementTab
             title="Total Whole Sale"
             desc={`$${
-              Number(data?.data?.wholesalePrice.replace(/,/g, "")) +
-              Number(data?.data?.wholesalePriceOnline?.replace(/,/g, ""))
+              Number(data?.data?.wholesalePrice?.replace(/,/g, "")) ||
+              0 + Number(data?.data?.wholesalePriceOnline?.replace(/,/g, "")) ||
+              0
             }`}
           />
           <ManagementTab
@@ -93,8 +89,9 @@ export default function page() {
             <ManagementTab
               title="Remaining Credit"
               desc={`$${
-                data?.data?.credit?.creditLimit -
-                Number(data?.data?.credit?.creditUsed?.replace(/,/g, ""))
+                parseFloat(data?.data?.credit?.creditLimit) ||
+                0 - Number(data?.data?.credit?.creditUsed?.replace(/,/g, "")) ||
+                0
               }`}
             />
           </div>

@@ -15,6 +15,7 @@ import { PatchAPI } from "@/utilities/PatchAPI";
 import { BASE_URL } from "@/utilities/URL";
 import PhoneInput from "react-phone-input-2";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import Loader from "@/components/ui/Loader";
 
 export default function EditSupplier() {
   const { supplierID } = useParams();
@@ -209,16 +210,18 @@ export default function EditSupplier() {
     setImagePreview(data?.data?.data?.image);
   }, [data]);
 
-  return (
+  return data?.length === 0 ? (
+    <Loader />
+  ) : (
     <form onSubmit={handleSubmit} className="">
-     <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
-          <div className="flex items-center gap-x-2">
-            <BackButton />
-            <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-              Update Supplier
-            </h2>
-          </div>
+      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
+        <div className="flex items-center gap-x-2">
+          <BackButton />
+          <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+            Update Supplier
+          </h2>
         </div>
+      </div>
 
       {loader ? (
         <MiniLoader />

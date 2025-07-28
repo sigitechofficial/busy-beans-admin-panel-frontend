@@ -107,13 +107,13 @@ export default function Orders() {
       <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">Orders</h2>
 
-        <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">
+        {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">
           <li>Invoice</li>
           <li>Quickbooks</li>
           <li>Schedule</li>
           <li>Bulk Modify</li>
           <li>Export</li>
-        </ul>
+        </ul> */}
       </div>
       <div className="space-y-8 pb-6 pt-32 px-6 2xl:px-12">
         <div>

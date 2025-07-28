@@ -89,7 +89,7 @@ export default function AddInvoice() {
     if (data?.data?.order) {
       setInvoiceFields((prev) => ({
         ...prev,
-        invoiceNumber: data?.data?.order?.id || "",
+        invoiceNumber: data?.data?.order?.invoiceNumber || "",
         poNumber: data?.data?.order?.poNumber || "",
         invoiceDate: prev?.invoiceDate || getToday(),
         dueDate: prev?.dueDate || getDueDate(),

@@ -93,17 +93,9 @@ export default function SalesRepresentativeInventory() {
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
           Quotation Management
         </h2>
-
-        <Select
-          onChange={(e) => setFilterId(e?.value)}
-          placeholder="Category"
-          options={categoryList}
-          className="w-40"
-          styles={selectStyles}
-        />
       </div>
       <div className="space-y-8 pb-6 pt-32 px-6 2xl:px-12">
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-end gap-x-3">
           <input
             type="text"
             name="name"
@@ -124,6 +116,14 @@ export default function SalesRepresentativeInventory() {
         </button>
       </div>
     </div> */}
+
+          <Select
+            onChange={(e) => setFilterId(e?.value)}
+            placeholder="Category"
+            options={categoryList}
+            className="w-40"
+            styles={selectStyles}
+          />
         </div>
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">

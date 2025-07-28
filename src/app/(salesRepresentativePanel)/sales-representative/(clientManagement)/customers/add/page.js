@@ -311,45 +311,46 @@ export default function AddCustomer() {
       // if (cityStatus) {
       try {
         setLoader(true);
-        const url = userType==="admin" ? "api/v1/admin/add-customer":`api/v1/admin/add-customer/sales-rep/${userID}`
-        const res = await PostAPI(
-            url,
-          {
-            info: {
-              name: userData?.info?.name,
-              email: userData?.info?.email,
-              password: userData?.info?.password,
-              status: true,
-              phoneNumber: userData?.info?.phoneNumber,
-              countryCode: userData?.info?.countryCode,
-              saleTaxNumber: userData?.info?.saleTaxNumber,
-              emailToSendInvoices: userData?.info?.emailToSendInvoices,
-              companyName: userData?.info?.companyName,
-              companyInfo: userData?.info?.companyInfo,
-            },
-            address: {
-              companyaddress: userData?.address?.companyaddress,
-              addressLineOne: userData?.address?.addressLineOne,
-              addressLineTwo: userData?.address?.addressLineTwo,
-              town: userData?.address?.town,
-              country: userData?.address?.country,
-              state: userData?.address?.state,
-              zipCode: userData?.address?.zipCode,
-              status: true,
-            },
-            billingAddress: {
-              ...finalBillingAddress,
-            },
-            // billingAddress: {
-            //   addressLineOne: userData?.billingAddress?.companyaddress,
-            //   town: userData?.billingAddress?.town,
-            //   country: userData?.billingAddress?.country,
-            //   state: userData?.billingAddress?.state,
-            //   zipCode: userData?.billingAddress?.zipCode,
-            //   status: true,
-            // },
-          }
-        );
+        const url =
+          userType === "admin"
+            ? "api/v1/admin/add-customer"
+            : `api/v1/admin/add-customer/sales-rep/${userID}`;
+        const res = await PostAPI(url, {
+          info: {
+            name: userData?.info?.name,
+            email: userData?.info?.email,
+            password: userData?.info?.password,
+            status: true,
+            phoneNumber: userData?.info?.phoneNumber,
+            countryCode: userData?.info?.countryCode,
+            saleTaxNumber: userData?.info?.saleTaxNumber,
+            emailToSendInvoices: userData?.info?.emailToSendInvoices,
+            companyName: userData?.info?.companyName,
+            // companyInfo: userData?.info?.companyInfo,
+            dispatchEmail: userData?.info?.companyInfo,
+          },
+          address: {
+            companyaddress: userData?.address?.companyaddress,
+            addressLineOne: userData?.address?.addressLineOne,
+            addressLineTwo: userData?.address?.addressLineTwo,
+            town: userData?.address?.town,
+            country: userData?.address?.country,
+            state: userData?.address?.state,
+            zipCode: userData?.address?.zipCode,
+            status: true,
+          },
+          billingAddress: {
+            ...finalBillingAddress,
+          },
+          // billingAddress: {
+          //   addressLineOne: userData?.billingAddress?.companyaddress,
+          //   town: userData?.billingAddress?.town,
+          //   country: userData?.billingAddress?.country,
+          //   state: userData?.billingAddress?.state,
+          //   zipCode: userData?.billingAddress?.zipCode,
+          //   status: true,
+          // },
+        });
         if (res?.data?.status === "success") {
           setStep(1);
           setUserData({
@@ -951,104 +952,108 @@ export default function AddCustomer() {
                         </LoadScript>
                       </div>
                     </div> */}
-                        <div className="flex flex-col gap-y-2">
-                          <label className="text-labelColor font-medium font-satoshi">
-                            Billing Address{" "}
-                          </label>
-                          <input
-                            type="text"
-                            name="companyaddress"
-                            value={userData?.billingAddress?.companyaddress}
-                            placeholder="Enter Address"
-                            className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                            onChange={handleBillingAddress}
-                          />
-                        </div>
-                        <div className="space-y-4">
-                          <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
-                            <div className="flex flex-col gap-y-2">
-                              <label className="text-labelColor font-medium font-satoshi">
-                                Country
-                              </label>
-                              <Select
-                                placeholder="Select Country"
-                                className="w-full"
-                                styles={drawerSelectStyles}
-                                options={allCountries ?? []}
-                                value={
-                                  userData?.billingAddress?.country
-                                    ? {
-                                        value: userData.billingAddress.country,
-                                        label: userData.billingAddress.country,
-                                      }
-                                    : null
-                                }
-                                onChange={(e) => {
-                                  setUserData({
-                                    ...userData,
-                                    billingAddress: {
-                                      ...userData?.billingAddress,
-                                      country: e.label,
-                                      state: "",
-                                      town: "",
-                                    },
-                                  });
-                                  handleSelectedCountryStates(e.label);
-                                }}
-                              />
-                            </div>
-                            <div className="flex flex-col gap-y-2">
-                              <label className="text-labelColor font-medium font-satoshi">
-                                State
-                              </label>
-                              <Select
-                                placeholder="Select State"
-                                className="w-full"
-                                styles={drawerSelectStyles}
-                                value={
-                                  userData?.billingAddress?.state
-                                    ? {
-                                        value: userData?.billingAddress?.state,
-                                        label: userData?.billingAddress?.state,
-                                      }
-                                    : null
-                                }
-                                options={allStates ?? []}
-                                onChange={(e) => {
-                                  setUserData({
-                                    ...userData,
-                                    billingAddress: {
-                                      ...userData?.billingAddress,
-                                      state: e.label,
-                                      town: "",
-                                    },
-                                  });
-                                  handleSelectedCountryStatesCities(e.value);
-                                }}
-                              />
-                            </div>
+                          <div className="flex flex-col gap-y-2">
+                            <label className="text-labelColor font-medium font-satoshi">
+                              Billing Address{" "}
+                            </label>
+                            <input
+                              type="text"
+                              name="companyaddress"
+                              value={userData?.billingAddress?.companyaddress}
+                              placeholder="Enter Address"
+                              className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                              onChange={handleBillingAddress}
+                            />
                           </div>
-                          <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
-                            <div className="flex flex-col gap-y-2">
-                              <label className="text-labelColor font-medium font-satoshi">
-                                Town / City
-                              </label>
-                              <input
-                                type="text"
-                                name="billingAddress"
-                                onChange={(e) => {
-                                  setUserData({
-                                    ...userData,
-                                    billingAddress: {
-                                      ...userData?.billingAddress,
-                                      town: e.target.value,
-                                    },
-                                  });
-                                }}
-                                placeholder="Enter town"
-                                className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                                value={userData?.billingAddress?.town}
-                              />
+                          <div className="space-y-4">
+                            <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
+                              <div className="flex flex-col gap-y-2">
+                                <label className="text-labelColor font-medium font-satoshi">
+                                  Country
+                                </label>
+                                <Select
+                                  placeholder="Select Country"
+                                  className="w-full"
+                                  styles={drawerSelectStyles}
+                                  options={allCountries ?? []}
+                                  value={
+                                    userData?.billingAddress?.country
+                                      ? {
+                                          value:
+                                            userData.billingAddress.country,
+                                          label:
+                                            userData.billingAddress.country,
+                                        }
+                                      : null
+                                  }
+                                  onChange={(e) => {
+                                    setUserData({
+                                      ...userData,
+                                      billingAddress: {
+                                        ...userData?.billingAddress,
+                                        country: e.label,
+                                        state: "",
+                                        town: "",
+                                      },
+                                    });
+                                    handleSelectedCountryStates(e.label);
+                                  }}
+                                />
+                              </div>
+                              <div className="flex flex-col gap-y-2">
+                                <label className="text-labelColor font-medium font-satoshi">
+                                  State
+                                </label>
+                                <Select
+                                  placeholder="Select State"
+                                  className="w-full"
+                                  styles={drawerSelectStyles}
+                                  value={
+                                    userData?.billingAddress?.state
+                                      ? {
+                                          value:
+                                            userData?.billingAddress?.state,
+                                          label:
+                                            userData?.billingAddress?.state,
+                                        }
+                                      : null
+                                  }
+                                  options={allStates ?? []}
+                                  onChange={(e) => {
+                                    setUserData({
+                                      ...userData,
+                                      billingAddress: {
+                                        ...userData?.billingAddress,
+                                        state: e.label,
+                                        town: "",
+                                      },
+                                    });
+                                    handleSelectedCountryStatesCities(e.value);
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
+                              <div className="flex flex-col gap-y-2">
+                                <label className="text-labelColor font-medium font-satoshi">
+                                  Town / City
+                                </label>
+                                <input
+                                  type="text"
+                                  name="billingAddress"
+                                  onChange={(e) => {
+                                    setUserData({
+                                      ...userData,
+                                      billingAddress: {
+                                        ...userData?.billingAddress,
+                                        town: e.target.value,
+                                      },
+                                    });
+                                  }}
+                                  placeholder="Enter town"
+                                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                                  value={userData?.billingAddress?.town}
+                                />
 
                                 {/* <Select
                               placeholder="Select City"

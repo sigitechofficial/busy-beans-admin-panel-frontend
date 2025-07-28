@@ -315,7 +315,7 @@ export default function UpdateCustomer() {
             saleTaxNumber: userData?.info?.saleTaxNumber,
             emailToSendInvoices: userData?.info?.emailToSendInvoices,
             companyName: userData?.info?.companyName,
-            companyInfo: userData?.info?.companyInfo,
+            dispatchEmail: userData?.info?.companyInfo,
             registerBy: userData?.info?.registerBy,
           },
           address: {

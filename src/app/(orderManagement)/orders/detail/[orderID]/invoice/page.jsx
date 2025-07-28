@@ -17,8 +17,8 @@ function Invoice() {
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
           Invoices / INV-00{data?.data?.order?.id}
         </h2>
-
-        <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
+        {/* to do this part */}
+        {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
           <li>Email</li>
 
           <li className="group flex items-center">
@@ -30,7 +30,7 @@ function Invoice() {
               <li>Delete</li>
             </ul>
           </li>
-        </ul>
+        </ul> */}
       </div>
       <InvoicePDFDownload invoiceData={data?.data?.order} reFetch={reFetch} />
     </div>

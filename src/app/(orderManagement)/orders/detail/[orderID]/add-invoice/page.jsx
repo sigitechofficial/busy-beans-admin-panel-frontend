@@ -50,7 +50,7 @@ export default function AddInvoice() {
     proforma: false,
     terms: "30",
     dueDate: "",
-    comments: "",
+    note: "",
     otherPayment: "",
     paymentOption: false,
     paymentOption2: false,
@@ -320,7 +320,7 @@ export default function AddInvoice() {
       proforma: invoiceFields.proforma,
       terms: invoiceFields.terms,
       dueDate: invoiceFields.dueDate,
-      note: invoiceFields.comments,
+      note: invoiceFields.note,
       otherPayment: invoiceFields.otherPayment,
       attemptImmediatePayment: invoiceFields.paymentOption,
       emailInvoiceToCustomer: invoiceFields.paymentOption2,
@@ -700,7 +700,7 @@ export default function AddInvoice() {
                         setManual({ ...manual, show: !manual.show })
                       }
                     >
-                     {manual.show ? "Manual Calculate":"Auto Calculate"}
+                      {manual.show ? "Manual Calculate" : "Auto Calculate"}
                     </button>
                   </td>
                   <td className="py-2 px-2 text-right font-bold border border-gray-200">

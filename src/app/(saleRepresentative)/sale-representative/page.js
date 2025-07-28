@@ -93,6 +93,7 @@ export default function SaleRepresentative() {
   data?.data?.data?.map((sR, i) => {
     datas.push({
       sl: i + 1,
+      id: sR?.id,
       srName: sR?.srName,
       email: sR?.email,
       address: `${sR?.address}, ${sR?.city}, ${sR?.state}, ${sR?.country}`,
@@ -145,14 +146,14 @@ export default function SaleRepresentative() {
       // /orders/pending-pullouts
       action: (
         <div className="flex gap-x-2">
-          <button
+          {/* <button
             className="border border-yellow-400 rounded-md p-2 text-yellow-400"
             onClick={() => {
               router.push(`/orders/pending-pullouts/${sR?.id}`);
             }}
           >
             <FaEye size={24} />
-          </button>
+          </button> */}
           <button
             className="border border-theme rounded-md p-2 text-theme"
             onClick={() => router.push(`/sale-representative/edit/${sR?.id}`)}
@@ -222,6 +223,9 @@ export default function SaleRepresentative() {
             placeholder={"Search ..."}
             pagination={true}
             search={true}
+            onRowClick={(e) =>
+              router.push(`/sale-representative/details/${e?.data?.id}`)
+            }
           />
         </div>
 

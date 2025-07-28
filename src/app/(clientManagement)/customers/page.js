@@ -147,7 +147,7 @@ export default function Customers() {
       ? datas.push({
           id: customer?.id,
           sl: i + 1,
-          name: customer?.addresses?.[0]?.companyaddress, //company name
+          name: customer?.companyName, //company name
           mainContact: customer?.name, //Main contact name
           email: customer?.email,
           phoneNumber: `${customer?.countryCode ?? ""} ${

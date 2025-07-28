@@ -51,7 +51,7 @@ function page() {
       <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold flex items-center gap-2">
           Customers /
-          <span className="text-theme">{data?.data?.customer?.name}</span>{" "}
+          <span className="text-theme">{data?.data?.customer?.companyName}</span>{" "}
           <span
             className={`rounded-full text-xs text-white font-normal p-1 ${
               data?.data?.customer?.status ? "bg-themeGreen " : "bg-red-500"
@@ -106,9 +106,9 @@ function page() {
               <div className="gap-3 flex items-center h-12 border-b [&>span]:w-44">
                 <span className="text-gray-500 font-medium">Last Seen</span>
                 <div>---</div>
-                <button className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded">
+                {/* <button className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded">
                   Re-send Invite
-                </button>
+                </button> */}
               </div>
 
               <div className="flex items-center h-12 border-b [&>span]:w-44">
@@ -361,6 +361,8 @@ function page() {
           </div>
         </div>
       </div>
+
+      
       <Dialog
         visible={userData?.modal}
         style={{ width: "90vw", maxWidth: "500px" }}

@@ -1,4 +1,5 @@
 "use client";
+import BackButton from "@/components/ui/BackButton";
 import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
 import { DeleteAPI } from "@/utilities/DeleteAPI";
@@ -50,8 +51,13 @@ function page() {
     <div className="w-full">
       <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold flex items-center gap-2">
+          <div className="text-base">
+            <BackButton />
+          </div>
           Customers /
-          <span className="text-theme">{data?.data?.customer?.companyName}</span>{" "}
+          <span className="text-theme">
+            {data?.data?.customer?.companyName}
+          </span>{" "}
           <span
             className={`rounded-full text-xs text-white font-normal p-1 ${
               data?.data?.customer?.status ? "bg-themeGreen " : "bg-red-500"
@@ -87,9 +93,15 @@ function page() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div>
               <div className="flex items-center h-12 border-b [&>span]:w-44">
-                <span className="text-gray-500 font-medium">Contact</span>
+                <span className="text-gray-500 font-medium">Company Name</span>
                 <div className="font-semibold">
                   {data?.data?.customer?.companyName}
+                </div>
+              </div>
+              <div className="flex items-center h-12 border-b [&>span]:w-44">
+                <span className="text-gray-500 font-medium">User Name</span>
+                <div className="font-semibold">
+                  {data?.data?.customer?.name}
                 </div>
               </div>
               <div className="flex items-center h-12 border-b [&>span]:w-44">
@@ -114,7 +126,7 @@ function page() {
               <div className="flex items-center h-12 border-b [&>span]:w-44">
                 <span className="text-gray-500 font-medium">Phone</span>
                 <div>
-                  {data?.data?.customer?.countryCode +
+                  {(data?.data?.customer?.countryCode || "+1") +
                     " " +
                     data?.data?.customer?.phoneNumber}
                 </div>
@@ -362,7 +374,6 @@ function page() {
         </div>
       </div>
 
-      
       <Dialog
         visible={userData?.modal}
         style={{ width: "90vw", maxWidth: "500px" }}

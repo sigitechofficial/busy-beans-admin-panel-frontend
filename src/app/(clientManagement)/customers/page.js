@@ -80,7 +80,7 @@ export default function Customers() {
   const handleStatus = async (id, status) => {
     try {
       const res = await PatchAPI(`api/v1/admin/customer-update/${id}`, {
-        status: !status,
+        info: { status: !status },
       });
       if (res?.data?.status === "success") {
         success_toaster("Status updated successfully");
@@ -323,7 +323,7 @@ export default function Customers() {
         </h2>
 
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
-          <li onClick={()=>router.push("/customers/add")}>Add Customer</li>
+          <li onClick={() => router.push("/customers/add")}>Add Customer</li>
           {/* <li>Groups</li>
           <li>Nearby</li>
           <li>Export</li> */}

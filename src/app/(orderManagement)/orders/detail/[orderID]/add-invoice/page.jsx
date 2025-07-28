@@ -1,4 +1,6 @@
 "use client";
+import BackButton from "@/components/ui/BackButton";
+import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
 import GetAPI from "@/utilities/GetAPI";
 import { PatchAPI } from "@/utilities/PatchAPI";
@@ -141,28 +143,6 @@ export default function AddInvoice() {
       prev.map((item, idx) => (idx === rowIdx ? { ...item, checked } : item))
     );
   };
-
-  // Add delivery/extra charges row (no category)
-  // const handleAddExtra = (prod) => {
-
-  //   setExtraRows((prev) => [
-  //     ...prev,
-  //     {
-  //       id: `extra-${Date.now()}`,
-  //       // orderId:produ
-  //       productId: prod?.id,
-  //       code: "",
-  //       name: prod?.name,
-  //       qty: prod?.qty || 1,
-  //       unit: prod?.price,
-  //       checked: true,
-  //       weight: prod?.weight,
-  //       productCode: prod?.productCode,
-  //     },
-  //   ]);
-
-  //   setModal(false);
-  // };
 
   // Add delivery/extra charges row (no category)
   const handleAddExtra = (prod) => {
@@ -350,10 +330,15 @@ export default function AddInvoice() {
     }
   };
 
-  return (
+  return data?.length === 0 ? (
+    <Loader />
+  ) : (
     <div>
       <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
-        <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+        <h2 className="text-xl lg:text-2xl font-inter font-semibold flex items-center gap-x-1">
+          <div className="text-base">
+            <BackButton />
+          </div>
           <span
             className="hover:text-blue-500 cursor-pointer"
             onClick={() => router.push("/orders")}

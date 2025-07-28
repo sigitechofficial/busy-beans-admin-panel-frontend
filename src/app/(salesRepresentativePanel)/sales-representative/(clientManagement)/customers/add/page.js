@@ -563,7 +563,13 @@ export default function AddCustomer() {
       <div className="space-y-8 pb-6 pt-32 px-6 2xl:px-12">
         <div className="flex items-center gap-x-2">
           <button
-            onClick={() => router.push("/sales-representative/customers")}
+            onClick={() =>
+              router.push(
+                userType === "admin"
+                  ? "/customers"
+                  : "/sales-representative/customers"
+              )
+            }
             className="size-8 text-theme rounded-full hover:bg-theme hover:text-white duration-200"
           >
             <FaLongArrowAltLeft size={30} />

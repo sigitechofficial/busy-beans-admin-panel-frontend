@@ -139,8 +139,8 @@ export default function LocalPartnerSupplierDetails() {
                     )}
 
                     {/* Country */}
-                    {data?.data?.data?.addresses?.[0].country?.trim() && (
-                      <div>{data?.data?.data?.addresses?.[0].country}</div>
+                    {data?.data?.data?.country?.trim() && (
+                      <div>{data?.data?.data?.country}</div>
                     )}
                   </div>
                 ) : (

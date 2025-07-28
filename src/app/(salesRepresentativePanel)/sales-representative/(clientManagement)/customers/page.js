@@ -17,26 +17,25 @@ export default function SalesRepresentativeCustomers() {
   }
 
   const router = useRouter();
-  const { data ,reFetch} = GetAPI(
+  const { data, reFetch } = GetAPI(
     `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID} `
   );
- 
 
-    const handleStatus = async (id, status) => {
-      try {
-        const res = await PatchAPI(`api/v1/admin/customer-update/${id}`, {
-          status: !status,
-        });
-        if (res?.data?.status === "success") {
-          success_toaster("Status updated successfully");
-          reFetch();
-        } else {
-          throw new Error(res?.data?.message || "An unexpected error occurred.");
-        }
-      } catch (error) {
-        ErrorHandler(error);
+  const handleStatus = async (id, status) => {
+    try {
+      const res = await PatchAPI(`api/v1/admin/customer-update/${id}`, {
+        status: !status,
+      });
+      if (res?.data?.status === "success") {
+        success_toaster("Status updated successfully");
+        reFetch();
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
       }
-    };
+    } catch (error) {
+      ErrorHandler(error);
+    }
+  };
 
   const columns = [
     // { field: "sl", header: "SL", sort: true },
@@ -73,9 +72,8 @@ export default function SalesRepresentativeCustomers() {
     datas.push({
       id: customer?.id,
       sl: i + 1,
-      name: customer?.addresses?.[0]?.companyaddress, //company name
+      name: customer?.companyName, //company name
       mainContact: customer?.name, //Main contact name
-      name: customer?.name,
       email: customer?.email,
       phoneNumber: customer?.phoneNumber,
       emailToSendInvoices: customer?.emailToSendInvoices,
@@ -88,45 +86,45 @@ export default function SalesRepresentativeCustomers() {
         </di>
       ),
       lastOrder: "last order",
-     status: (
-            <div>
-              {customer?.status ? (
-                <div className="w-24 bg-themeGreen text-white font-semibold p-2 rounded-md flex justify-center">
-                  Active
-                </div>
-              ) : (
-                <div className="w-24 text-white bg-[#EE4A4A]  font-semibold p-2 rounded-md flex justify-center">
-                  Inactive
-                </div>
-              )}
+      status: (
+        <div>
+          {customer?.status ? (
+            <div className="w-24 bg-themeGreen text-white font-semibold p-2 rounded-md flex justify-center">
+              Active
             </div>
-          ),
-          lastOrder: "last order",
-          changeStatus: (
-            <label className="flex gap-2 items-center">
-              {customer?.status ? (
-                <div className="w-max text-xs bg-themeGreen text-white font-semibold p-2 rounded-md flex justify-center">
-                  Active
-                </div>
-              ) : (
-                <div className="w-max text-xs text-white bg-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
-                  Inactive
-                </div>
-              )}
-              <Switch
-                onChange={() => {
-                  handleStatus(customer?.id, customer?.status);
-                }}
-                checked={customer?.status}
-                uncheckedIcon={false}
-                checkedIcon={false}
-                onColor="#86644c"
-                onHandleColor="#fff"
-                className="react-switch"
-                boxShadow="none"
-              />
-            </label>
-          ),
+          ) : (
+            <div className="w-24 text-white bg-[#EE4A4A]  font-semibold p-2 rounded-md flex justify-center">
+              Inactive
+            </div>
+          )}
+        </div>
+      ),
+      lastOrder: "last order",
+      changeStatus: (
+        <label className="flex gap-2 items-center">
+          {customer?.status ? (
+            <div className="w-max text-xs bg-themeGreen text-white font-semibold p-2 rounded-md flex justify-center">
+              Active
+            </div>
+          ) : (
+            <div className="w-max text-xs text-white bg-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+              Inactive
+            </div>
+          )}
+          <Switch
+            onChange={() => {
+              handleStatus(customer?.id, customer?.status);
+            }}
+            checked={customer?.status}
+            uncheckedIcon={false}
+            checkedIcon={false}
+            onColor="#86644c"
+            onHandleColor="#fff"
+            className="react-switch"
+            boxShadow="none"
+          />
+        </label>
+      ),
     });
   });
 
@@ -195,7 +193,7 @@ export default function SalesRepresentativeCustomers() {
             placeholder={"Search ..."}
             pagination={true}
             search={true}
-              onRowClick={(e) => {
+            onRowClick={(e) => {
               router.push(`/customers/${e?.data?.id}`);
             }}
           />

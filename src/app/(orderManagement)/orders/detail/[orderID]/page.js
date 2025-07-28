@@ -670,7 +670,7 @@ export default function OrderDetail() {
                       <p>{data?.data?.order?.address?.country}</p>
                       {data?.data?.order?.user?.phoneNumber && (
                         <p>
-                          Phone: {data?.data?.order?.user?.countryCode}{" "}
+                          Phone: {data?.data?.order?.user?.countryCode||"+1"}{" "}
                           {data?.data?.order?.user?.phoneNumber}
                         </p>
                       )}
@@ -798,7 +798,7 @@ export default function OrderDetail() {
                       data?.data?.order?.user?.phoneNumber) && (
                       <div>
                         {[
-                          data?.data?.order?.user?.countryCode,
+                          data?.data?.order?.user?.countryCode||"+1",
                           data?.data?.order?.user?.phoneNumber,
                         ]
                           .filter(Boolean)
@@ -808,7 +808,7 @@ export default function OrderDetail() {
 
                     {/* Email */}
                     {data?.data?.order?.user?.email && (
-                      <div className="lowercase">
+                      <div className="lowercase break-all">
                         {data?.data?.order?.user?.email}
                       </div>
                     )}

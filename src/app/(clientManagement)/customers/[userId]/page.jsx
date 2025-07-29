@@ -14,24 +14,79 @@ import { useParams, useRouter } from "next/navigation";
 import { Dialog } from "primereact/dialog";
 import React, { useEffect, useState } from "react";
 
-function page() {
+function CustomerDetails() {
   const { userId } = useParams();
   const router = useRouter();
-  let userType = "";
+
   if (typeof window !== "undefined") {
-    userType = localStorage.getItem("userType");
+    var userType = localStorage.getItem("userType");
+    var salesRepId = localStorage.getItem("userID");
   }
   const { data: salesRepresentativeData, reFetch } = GetAPI(
     "api/v1/admin/sales-rep"
   );
   const { data } = GetAPI(`api/v1/admin/view-customer-detail/${userId}`);
-  const { data: userOrders } = GetAPI(`api/v1/admin/orders?userid=${userId}`);
+  // const { data: userOrders } = GetAPI(`api/v1/admin/orders?userid=${userId}`);
+
+  //   const { data: userOrders } = GetAPI(
+  //   `api/v1/admin/orders?userid=${userId}&paymentStatus=pending&salesRepId=${data?.data?.customer?.salesRepId}&statusId[ne]=6`
+  // );
+
+  let url =
+    userType === "admin"
+      ? `api/v1/admin/orders?userid=${userId}&paymentStatus=pending&statusId[ne]=6`
+      : `api/v1/admin/orders?userid=${userId}&paymentStatus=pending&salesRepId=${salesRepId}&statusId[ne]=6`;
+  const { data: userOrders } = GetAPI(url);
+
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [isDisable, setIsDisable] = useState(false);
 
   const [userData, setUserData] = useState({
     edit: false,
     email: "",
     modal: false,
     type: "",
+  });
+  const orderColumn = [
+    { field: "sl", header: "#", minWidth: "5px" },
+    { field: "orderDate", header: "Order Date", minWidth: "6rem" },
+    { field: "deliverOn", header: "Deliver On", minWidth: "6rem" },
+    { field: "total", header: "Total", minWidth: "5rem" },
+    { field: "invoice", header: "Invoice", minWidth: "5rem" },
+    { field: "status", header: "Status", minWidth: "5rem" },
+    { field: "overdue", header: "Overdue", minWidth: "5rem" },
+  ];
+
+  const orderDatas = [];
+  userOrders?.data?.data?.map((elem, idx) => {
+    orderDatas.push({
+      sl: elem?.id,
+      id: elem?.id,
+      orderDate: dayjs(elem?.on).format("MM/DD/YYYY"),
+      deliverOn: "",
+      total: "$" + elem?.totalBill,
+      invoice: (
+        <span
+          className={`text-xs font-medium px-3 py-1 rounded-full text-white ${
+            elem?.paymentStatus !== "pending" ? "bg-green-600" : "bg-yellow-500"
+          }`}
+        >
+          {elem?.paymentStatus === "pending" ? "Unpaid" : "Paid"}
+        </span>
+      ),
+      status: (
+        <span
+          className={`text-xs font-medium px-3 py-1 rounded-full text-white whitespace-nowrap ${
+            elem?.orderCurrentStatus !== "Cancelled"
+              ? "bg-green-600"
+              : "bg-red-500"
+          }`}
+        >
+          {elem?.orderCurrentStatus}
+        </span>
+      ),
+      overdue: elem?.overdueInvoice ? "Yes" : "Not Yet",
+    });
   });
   const salesRepresentativeDatas = [
     {
@@ -109,12 +164,32 @@ function page() {
       throw new Error(res?.data?.message || "An unexpected error occurred.");
     }
   };
-  useEffect(() => {
-    setUserData({
-      ...userData,
-      email: data?.data?.customer?.emailToSendInvoices,
-    });
-  }, [data]);
+
+  const handleSendInvoice = async () => {
+    setIsDisable(true);
+    const selected = selectedRows?.map((el) => el.id);
+
+    try {
+      const res = await PostAPI(`api/v1/admin/order-management/send-invoice`, {
+        order: selected,
+        successUrl:
+          "https://main.d28wfx1ny3of09.amplifyapp.com/invoice-payment-success",
+        cancelUrl:
+          "https://main.d28wfx1ny3of09.amplifyapp.com/invoice-payment-failure",
+      });
+      if (res?.data?.status === "success") {
+        success_toaster("Invoice Send Successfully");
+        reFetch();
+        setSelectedRows([]);
+        setIsDisable(false);
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      setIsDisable(false);
+      ErrorHandler(error);
+    }
+  };
 
   return data?.length === 0 ? (
     <Loader />
@@ -139,13 +214,15 @@ function page() {
         </h2>
 
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative text-blue-500">
-          <li
-            onClick={() =>
-              setUserData({ ...userData, modal: true, type: "localPartner" })
-            }
-          >
-            Assign local Partner
-          </li>
+          {userType === "admin" && (
+            <li
+              onClick={() =>
+                setUserData({ ...userData, modal: true, type: "localPartner" })
+              }
+            >
+              Assign local Partner
+            </li>
+          )}
           <li
             onClick={() => {
               const url =
@@ -160,7 +237,11 @@ function page() {
           {/* <li>Addresses</li>
           <li>Reset Password</li>
           <li>Export</li> */}
-          <li onClick={() => setUserData({ ...userData, modal: true })}>
+          <li
+            onClick={() =>
+              setUserData({ ...userData, modal: true, type: "delete" })
+            }
+          >
             Delete Account
           </li>
         </ul>
@@ -184,9 +265,16 @@ function page() {
               </div>
               <div className="flex items-center h-12 border-b [&>span]:w-44">
                 <span className="text-gray-500 font-medium">Email</span>
-                <div className="text-blue-600">
+                {/* <div className="text-blue-600">
                   {data?.data?.customer?.email}
-                </div>
+                </div> */}
+
+                <a
+                  href={`mailto:${data?.data?.customer?.email}`}
+                  className="hover:underline text-blue-500"
+                >
+                  {data?.data?.customer?.email}
+                </a>
               </div>
               <div className="flex items-center h-12 border-b [&>span]:w-44">
                 <span className="text-gray-500 font-medium">Created On</span>
@@ -203,15 +291,35 @@ function page() {
 
               <div className="flex items-center h-12 border-b [&>span]:w-44">
                 <span className="text-gray-500 font-medium">Phone</span>
-                <div>
+                {/* <div>
                   {(data?.data?.customer?.countryCode || "+1") +
                     " " +
                     data?.data?.customer?.phoneNumber}
-                </div>
+                </div> */}
+
+                <a
+                  href={`tel:${data?.data?.customer?.countryCode || "+1"}${
+                    data?.data?.customer?.phoneNumber
+                  }`}
+                  className="hover:underline text-blue-500"
+                >
+                  {(data?.data?.customer?.countryCode || "+1") +
+                    " " +
+                    data?.data?.customer?.phoneNumber}
+                </a>
               </div>
               <div className="flex items-center h-12 border-b [&>span]:w-44">
                 <span className="text-gray-500 font-medium">Local Partner</span>
-                <div>
+                <div
+                  onClick={() => {
+                    if (userType === "admin") {
+                      router.push("/sale-representative");
+                    }
+                  }}
+                  className={` ${
+                    userType === "admin" && "text-blue-500"
+                  } cursor-pointer`}
+                >
                   {data?.data?.customer?.salesRepName ?? "Not Assigned"}
                 </div>
               </div>
@@ -223,7 +331,7 @@ function page() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3">
               <div>
                 <h3 className="text-sm font-bold text-gray-700 mb-1">
                   SHIPPING
@@ -352,12 +460,27 @@ function page() {
 
           {userOrders?.data?.data?.length > 0 && (
             <div className="bg-white">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">
-                Orders
-              </h2>
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-lg font-semibold text-gray-800">Orders</h2>
+                {selectedRows?.length > 0 && (
+                  <button
+                    disabled={isDisable}
+                    onClick={handleSendInvoice}
+                    type="button"
+                    className={`rounded-lg border border-theme bg-theme text-white hover:bg-white hover:text-theme duration-150
+                 shadow-buttonShadow px-6 font-nunito py-3 font-medium ${
+                   isDisable
+                     ? "cursor-not-allowed opacity-60"
+                     : "cursor-pointer"
+                 } `}
+                  >
+                    Invoice Reminder
+                  </button>
+                )}
+              </div>
 
               <div className="bg-white overflow-x-auto">
-                <table className="w-full text-left border-collapse ">
+                {/* <table className="w-full text-left border-collapse ">
                   <thead>
                     <tr className="text-sm font-semibold text-gray-600 border-b [&>th]:whitespace-nowrap">
                       <th className="py-2 px-3">#</th>
@@ -366,6 +489,7 @@ function page() {
                       <th className="py-2 px-3">Total</th>
                       <th className="py-2 px-3">Invoice</th>
                       <th className="py-2 px-3">Status</th>
+                      <th className="py-2 px-3">Overdue</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -409,10 +533,38 @@ function page() {
                             {order?.orderCurrentStatus}
                           </span>
                         </td>
+                        <td className="py-2 px-3 flex items-center gap-2">
+                          <span
+                            className={`text-xs font-medium px-3 py-1 rounded-full whitespace-nowrap `}
+                          >
+                            {order?.overdueOrder ? "OverDue" : "Not Yet"}
+                          </span>
+                          <span
+                            className={`text-xs font-medium px-3 py-1 rounded-full text-white whitespace-nowrap bg-green-600`}
+                          >
+                            invoice Reminder
+                          </span>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table> */}
+
+                <MyDataTable
+                  columns={orderColumn}
+                  data={orderDatas}
+                  placeholder={"Search ..."}
+                  pagination={false}
+                  checkbox={true}
+                  selectedRows={selectedRows}
+                  setSelectedRows={setSelectedRows}
+                  search={false}
+                  hide
+                  Styles
+                  onRowClick={(e) => {
+                    router.push(`/orders/detail/${e.data.id}`);
+                  }}
+                />
               </div>
             </div>
           )}
@@ -427,18 +579,7 @@ function page() {
                   Email to send invoices
                 </div>
                 <div className="text-gray-600 italic">
-                  {userData?.edit ? (
-                    <input
-                      className="rounded-lg border border-theme px-2 h-12 my-3 bg-transparent outline-none text-black"
-                      value={userData?.email}
-                      type="text"
-                      onChange={(e) =>
-                        setUserData({ ...userData, email: e.target.value })
-                      }
-                    />
-                  ) : (
-                    data?.data?.customer?.emailToSendInvoices
-                  )}
+                  {data?.data?.customer?.emailToSendInvoices}
                 </div>
               </div>
               {/* <button
@@ -458,31 +599,24 @@ function page() {
         visible={userData?.modal}
         style={{
           width: "90vw",
-          maxWidth: userData?.type === "localPartner" ? "" : "500px",
+          maxWidth: userData?.type === "localPartner" ? "1200px" : "500px",
         }}
         className="font-nunito"
         onHide={() => setUserData({ ...userData, modal: false })}
         header={
           userData?.type === "localPartner" ? (
             "Assign Local Partner"
-          ) : (
+          ) : userData?.type === "delete" ? (
             <div className="font-bold text-2xl text-center text-red-600">
               Confirm Deletion
             </div>
+          ) : (
+            ""
           )
         }
-      >
-        {userData?.type === "localPartner" ? (
-          <div className="space-y-4">
-            <MyDataTable
-              columns={salesRepresentativeColumns}
-              data={salesRepresentativeDatas}
-              placeholder={"Search ..."}
-              pagination={false}
-              hide={true}
-              search={true}
-            />
-            <div className="flex justify-end">
+        footer={
+          userData?.type === "localPartner" ? (
+            <div className="flex justify-end pt-4">
               <button
                 type="button"
                 onClick={handleCancel}
@@ -492,17 +626,7 @@ function page() {
                 Cancel
               </button>
             </div>
-          </div>
-        ) : (
-          <div className="space-y-6 text-center px-4 pt-2">
-            <div className="text-lg text-gray-700">
-              Are you sure you want to delete this customer?
-            </div>
-            <div className="text-sm text-gray-500">
-              This action cannot be undone. The customer’s account and related
-              data will be permanently removed.
-            </div>
-
+          ) : userData?.type === "delete" ? (
             <div className="flex justify-end gap-3 pt-6">
               <button
                 type="button"
@@ -519,11 +643,39 @@ function page() {
                 Delete
               </button>
             </div>
+          ) : (
+            ""
+          )
+        }
+      >
+        {userData?.type === "localPartner" ? (
+          <div className="space-y-4">
+            <MyDataTable
+              columns={salesRepresentativeColumns}
+              data={salesRepresentativeDatas}
+              placeholder={"Search ..."}
+              pagination={false}
+              hide={true}
+              search={true}
+              Styles={"space-y-4"}
+            />
           </div>
+        ) : userData?.type === "delete" ? (
+          <div className="space-y-6 text-center px-4 pt-2">
+            <div className="text-lg text-gray-700">
+              Are you sure you want to delete this customer?
+            </div>
+            <div className="text-sm text-gray-500">
+              This action cannot be undone. The customer’s account and related
+              data will be permanently removed.
+            </div>
+          </div>
+        ) : (
+          ""
         )}
       </Dialog>
     </div>
   );
 }
 
-export default page;
+export default CustomerDetails;

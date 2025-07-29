@@ -92,7 +92,7 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
       setData(enrichedItems);
     }
     setPdfData({
-      invNumber: invoiceData?.id,
+      invNumber: invoiceData?.invoiceNumber,
       poNumber: invoiceData?.poNumber,
     });
   }, [invoiceData]);
@@ -119,10 +119,9 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
                 <div className="w-36">Invoice number:</div>
 
                 {isPrint ? (
-                  <div>INV-00{pdfData?.invNumber}</div>
+                  <div>{pdfData?.invNumber}</div>
                 ) : (
                   <div className="flex items-center">
-                    INV-00
                     <input
                       className="text-start outline-none bg-transparent rounded  font-semibold"
                       type="text"
@@ -165,14 +164,20 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
                 <div>
                   <div className="font-bold">From</div>
                   <div className="uppercase">{invoiceData?.salesRepName}</div>
-                  <div className="uppercase">{invoiceData?.salesRep?.territoryName}</div>
-                  <div className="uppercase">{invoiceData?.salesRep?.address}</div>
+                  <div className="uppercase">
+                    {invoiceData?.salesRep?.territoryName}
+                  </div>
+                  <div className="uppercase">
+                    {invoiceData?.salesRep?.address}
+                  </div>
                   <div className="uppercase">
                     {invoiceData?.salesRep?.city},{" "}
                     {invoiceData?.salesRep?.state}{" "}
                     {invoiceData?.salesRep?.zipCode}
                   </div>
-                  <div className="uppercase">{invoiceData?.salesRep?.country}</div>
+                  <div className="uppercase">
+                    {invoiceData?.salesRep?.country}
+                  </div>
                   <div>
                     {invoiceData?.salesRep?.countryCode}{" "}
                     {invoiceData?.salesRep?.phoneNumber}

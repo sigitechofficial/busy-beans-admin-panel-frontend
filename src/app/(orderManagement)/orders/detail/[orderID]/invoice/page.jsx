@@ -15,7 +15,7 @@ function Invoice() {
     <div className="w-full">
       <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-          Invoices / INV-00{data?.data?.order?.id}
+          Invoices / {data?.data?.order?.invoiceNumber}
         </h2>
         {/* to do this part */}
         {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">

@@ -607,7 +607,7 @@ export default function Home() {
             />
             <HomeMiniCards
               title="Suppliers Earning"
-              total={`$${data?.data?.revenueSummary?.revenueCollected}`}
+              total={`$${data?.data?.revenueSummary?.revenueCollected||0}`}
               // Icon={LuPackageX}
             />
             {/* <HomeMiniCards

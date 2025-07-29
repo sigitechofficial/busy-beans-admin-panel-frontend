@@ -224,15 +224,15 @@ export default function AddCustomer() {
         }
       : userData.billingAddress;
 
-    if (!billing.companyaddress?.trim())
+    if (!userData.isChecked && !billing.companyaddress?.trim())
       return { error: true, message: "Billing address cannot be empty" };
-    if (!billing.town?.trim())
+    if (!userData.isChecked && !billing.town?.trim())
       return { error: true, message: "Billing town cannot be empty" };
-    if (!billing.country?.trim())
+    if (!userData.isChecked && !billing.country?.trim())
       return { error: true, message: "Billing country cannot be empty" };
-    if (!billing.state?.trim())
+    if (!userData.isChecked && !billing.state?.trim())
       return { error: true, message: "Billing state cannot be empty" };
-    if (!billing.zipCode?.trim())
+    if (!userData.isChecked && !billing.zipCode?.trim())
       return { error: true, message: "Billing zip code cannot be empty" };
 
     // --- Company Info ---
@@ -384,7 +384,7 @@ export default function AddCustomer() {
             },
           });
           setSelectedCountry({ label: "", value: "" });
-          router.push("/sales-representative/customers");
+          router.push(userType==="admin"?"/customers": "/sales-representative/customers");
           setLoader(false);
           success_toaster(res?.data?.data?.message);
         } else {

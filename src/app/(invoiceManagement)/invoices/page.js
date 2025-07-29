@@ -4,9 +4,11 @@ import ManagementTab from "@/components/ui/ManagementTab";
 import MyDataTable from "@/components/ui/MyDataTable";
 import GetAPI from "@/utilities/GetAPI";
 import selectStyles from "@/utilities/SelectStyle";
+import { useRouter } from "next/navigation";
 import Select from "react-select";
 
 export default function Invoices() {
+  const router = useRouter();
   if (typeof window !== "undefined") {
     var userID = localStorage.getItem("userID");
     var userType = localStorage.getItem("userType");
@@ -27,19 +29,21 @@ export default function Invoices() {
     // { field: "saleTaxNumber", header: "Sale Tax Number" },
     { field: "emailToSendInvoices", header: "Invoice Email" },
     { field: "totalBalance", header: "Total Balance", sort: true },
+    { field: "overdueOrders", header: "Overdue Orders" },
   ];
 
   const datas = [];
   data?.data?.data?.map((invoice, i) => {
     return datas.push({
       sl: i + 1,
-      // name: invoice?.name,
+      id: invoice?.id,
       companyName: invoice?.companyName,
       email: invoice?.email,
       image: invoice?.image,
       phoneNumber: invoice?.phoneNumber,
       saleTaxNumber: invoice?.saleTaxNumber,
       emailToSendInvoices: invoice?.emailToSendInvoices,
+      overdueOrders: invoice?.overDueOrders == 0 ? "No overdue" : "Overdue",
       totalBalance: invoice?.totalBalance
         ? `$${invoice?.totalBalance}`
         : `$${0}`,
@@ -77,6 +81,9 @@ export default function Invoices() {
             placeholder={"Search ..."}
             pagination={true}
             search={true}
+            sortField="totalBalance"
+            sortOrder={-1}
+            onRowClick={(e) => router.push(`/invoices/${e.data.id}`)}
           />
         </div>
       </div>

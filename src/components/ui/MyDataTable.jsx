@@ -69,7 +69,12 @@ export default function MyDataTable(props) {
   };
 
   return (
-    <div className="bg-white p-5 sm:p-8 rounded-xl border border-borderColor shadow-tableShadow space-y-6">
+    <div
+      className={
+        props?.Styles ??
+        `bg-white p-5 sm:p-8 rounded-xl border border-borderColor shadow-tableShadow space-y-6`
+      }
+    >
       <div className="flex justify-between items-end md:items-center flex-wrap gap-3">
         <div className={`${props?.search ? "relative" : "hidden"}`}>
           <input
@@ -117,7 +122,7 @@ export default function MyDataTable(props) {
           selectionMode="multiple" // Allow multiple row selection
           selection={selectedRows} // Bind the selected rows to the state
           onSelectionChange={props?.checkbox ? onSelectionChange : null} // Update selected rows when selection changes
-          // scrollable 
+          // scrollable
           // scrollHeight="500px"
           rows={10}
           rowsPerPageOptions={[10, 25, 50, 100]}
@@ -126,6 +131,8 @@ export default function MyDataTable(props) {
           emptyMessage="No Data Found"
           rowClassName={rowClassName} // Apply custom row class
           onRowClick={props.onRowClick}
+          sortField={props.sortField} 
+          sortOrder={props.sortOrder}
         >
           {/* Header column with checkbox to select all rows */}
           {props?.checkbox && (

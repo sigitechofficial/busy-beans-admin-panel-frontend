@@ -426,7 +426,7 @@ export default function OrderCard(props) {
                       {item?.qty}
                     </td>
                     <td className="py-2 px-2 text-center border border-gray-200">
-                      {props?.orderData?.invoiceNumber ? "Yes":"Not Yet"}
+                      {props?.orderData?.invoicePdf ? "Yes":"Not Yet"}
                     </td>
                     <td className="py-2 px-2 text-center border border-gray-200">
                       {props?.orderData?.paymentStatus==="pending" ? "Unpaid" :"Paid"}

@@ -349,10 +349,28 @@ export default function OrderDetail() {
         </h2>
 
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative text-blue-500">
-          <li onClick={() => router.push(`${pathname}/add-invoice`)}>
-            {data?.data?.order?.invoiceNumber
-              ? "Update Invoice"
-              : "Add Invoice"}
+          {/* <li onClick={() => router.push(`${pathname}/add-invoice`)}>
+            {data?.data?.order?.invoicePdf ? "Update Invoice" : "Add Invoice"}
+          </li> */}
+          <li>
+            <button
+              type="button"
+              disabled={data?.data?.order?.statusId === 6 ? true : false}
+              className="disabled:cursor-not-allowed"
+              onClick={() => handleSendInvoice(data?.data?.order?.statusId)}
+            >
+              {data?.data?.order?.invoicePdf
+                ? "Invoice reminder"
+                : "Send Invoice"}
+            </button>
+          </li>
+          <li>
+            <button
+              onClick={() => router.push(`${pathname}/invoice`)}
+              type="button"
+            >
+              View PDF
+            </button>
           </li>
           {/* <li>Edit Details</li>
           <li>Modify Items</li>
@@ -443,15 +461,23 @@ export default function OrderDetail() {
               </button> // dispatch Order basically rpelaced with status 4 which is delivered Order beacuse dispatch is done by supplier so here we use only text dispatch but inside it hit status code of 4
             )}
 
-            <button
+            {/* <button
               type="button"
               disabled={data?.data?.order?.statusId === 6 ? true : false}
               className="bg-black text-white disabled:cursor-not-allowed"
               onClick={() => handleSendInvoice(data?.data?.order?.statusId)}
             >
-              {data?.data?.order?.invoiceNumber
+              {data?.data?.order?.invoicePdf
                 ? "Invoice reminder"
                 : "Send Invoice"}
+            </button> */}
+
+            <button
+              type="button"
+              onClick={() => router.push(`${pathname}/add-invoice`)}
+              className="border border-buttonBorderColor shadow-buttonShadow"
+            >
+              {data?.data?.order?.invoicePdf ? "Update Invoice" : "Add Invoice"}
             </button>
 
             {userType === "admin" && (
@@ -470,13 +496,13 @@ export default function OrderDetail() {
               </button>
             )}
 
-            <button
+            {/* <button
               onClick={() => router.push(`${pathname}/invoice`)}
               type="button"
               className="border border-buttonBorderColor shadow-buttonShadow"
             >
               Edit Invoice
-            </button>
+            </button> */}
           </div>
         </div>
 
@@ -523,7 +549,9 @@ export default function OrderDetail() {
                       ? "Dispatched to Supplier"
                       : data?.data?.order?.statusId == 3
                       ? "Acknowledged by Supplier"
-                      : data?.data?.order?.statusId == 6 ?"Cancelled" :"fulfilled"}
+                      : data?.data?.order?.statusId == 6
+                      ? "Cancelled"
+                      : "fulfilled"}
                   </p>
                   <p>Optional actions:</p>
 
@@ -589,17 +617,16 @@ export default function OrderDetail() {
                       className="flex items-center gap-5 border-b capitalize cursor-pointer"
                     >
                       <p className="w-28">Company Name</p>
-                      <p>{data?.data?.order?.user?.companyName}</p>
+                      <p className="text-blue-500">
+                        {data?.data?.order?.user?.companyName}
+                      </p>
                     </div>
                   )}
                   {data?.data?.order?.createdBy && (
                     <div className="flex items-center gap-5 border-b">
                       <p className="w-28">Created By</p>
-                      <Link href={`/customers/${data?.data?.order?.user?.id}`}>
-                        <p className="text-blue-500">
-                          {data?.data?.order?.createdBy}
-                        </p>
-                      </Link>
+
+                      <p className="">{data?.data?.order?.createdBy}</p>
                     </div>
                   )}
                   {data?.data?.order?.supplier?.supplierName && (
@@ -618,7 +645,7 @@ export default function OrderDetail() {
                     <div className="flex items-center gap-5 border-b">
                       <p className="w-28">Local Partner</p>
                       <Link
-                        href={`/sale-representative/edit/${data?.data?.order?.salesRep?.id}`}
+                        href={`/sale-representative/details/${data?.data?.order?.salesRep?.id}`}
                       >
                         <p className="text-blue-500">
                           {data?.data?.order?.salesRepName}
@@ -670,7 +697,7 @@ export default function OrderDetail() {
                       <p>{data?.data?.order?.address?.country}</p>
                       {data?.data?.order?.user?.phoneNumber && (
                         <p>
-                          Phone: {data?.data?.order?.user?.countryCode||"+1"}{" "}
+                          Phone: {data?.data?.order?.user?.countryCode || "+1"}{" "}
                           {data?.data?.order?.user?.phoneNumber}
                         </p>
                       )}
@@ -798,7 +825,7 @@ export default function OrderDetail() {
                       data?.data?.order?.user?.phoneNumber) && (
                       <div>
                         {[
-                          data?.data?.order?.user?.countryCode||"+1",
+                          data?.data?.order?.user?.countryCode || "+1",
                           data?.data?.order?.user?.phoneNumber,
                         ]
                           .filter(Boolean)

@@ -8,7 +8,7 @@ import ErrorHandler from "@/utilities/ErrorHandler";
 import GetAPI from "@/utilities/GetAPI";
 import { PatchAPI } from "@/utilities/PatchAPI";
 import { PostAPI } from "@/utilities/PostAPI";
-import { success_toaster } from "@/utilities/Toaster";
+import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import dayjs from "dayjs";
 import { useParams, useRouter } from "next/navigation";
 import { Dialog } from "primereact/dialog";
@@ -85,7 +85,15 @@ function CustomerDetails() {
           {elem?.orderCurrentStatus}
         </span>
       ),
-      overdue: elem?.overdueInvoice ? "Yes" : "Not Yet",
+      overdue: (
+        <span
+          className={`text-xs font-medium px-3 py-1 rounded-full text-white whitespace-nowrap ${
+            !elem?.overdueInvoice ? "bg-green-600 hidden" : "bg-red-500"
+          }`}
+        >
+          {elem?.overdueInvoice ? "Yes" : ""}
+        </span>
+      ),
     });
   });
   const salesRepresentativeDatas = [
@@ -97,7 +105,7 @@ function CustomerDetails() {
       action: (
         <button
           className="w-24 bg-theme text-white hover:bg-white hover:text-theme border border-theme duration-150 font-semibold p-2 rounded-md flex justify-center "
-          onClick={() => handleAssignSalesRepresentative(null)}
+          onClick={() => handleAssignSalesRepresentative("remove")}
         >
           Assign
         </button>
@@ -144,7 +152,7 @@ function CustomerDetails() {
       );
       if (res?.data?.status === "success") {
         success_toaster("Local Partner Assigned successfully");
-        setModal(false);
+        handleCancel();
         reFetch();
       } else {
         throw new Error(res?.data?.message || "An unexpected error occurred.");
@@ -166,6 +174,10 @@ function CustomerDetails() {
   };
 
   const handleSendInvoice = async () => {
+    if (selectedRows?.length == 0) {
+      info_toaster("Select Order to send invoice reminder");
+      return;
+    }
     setIsDisable(true);
     const selected = selectedRows?.map((el) => el.id);
 
@@ -458,25 +470,28 @@ function CustomerDetails() {
             </div>
           </div>
 
-          {userOrders?.data?.data?.length > 0 && (
-            <div className="bg-white">
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-lg font-semibold text-gray-800">Orders</h2>
-                {selectedRows?.length > 0 && (
-                  <button
-                    disabled={isDisable}
-                    onClick={handleSendInvoice}
-                    type="button"
-                    className={`rounded-lg border border-theme bg-theme text-white hover:bg-white hover:text-theme duration-150
+          <div className="w-full flex justify-end">
+            {" "}
+            <button
+              disabled={isDisable}
+              onClick={handleSendInvoice}
+              type="button"
+              title={`Select Order to send invoice`}
+              className={`rounded-lg border border-theme bg-theme text-white hover:bg-white hover:text-theme duration-150
                  shadow-buttonShadow px-6 font-nunito py-3 font-medium ${
                    isDisable
                      ? "cursor-not-allowed opacity-60"
                      : "cursor-pointer"
                  } `}
-                  >
-                    Invoice Reminder
-                  </button>
-                )}
+            >
+              Invoice Reminder
+            </button>
+          </div>
+
+          {userOrders?.data?.data?.length > 0 && (
+            <div className="bg-white">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-lg font-semibold text-gray-800">Orders</h2>
               </div>
 
               <div className="bg-white overflow-x-auto">

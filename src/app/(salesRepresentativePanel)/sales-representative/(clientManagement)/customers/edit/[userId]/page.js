@@ -308,7 +308,7 @@ export default function UpdateCustomer() {
         const res = await PatchAPI(`api/v1/admin/customer-update/${userId}`, {
           info: {
             name: userData?.info?.name,
-            // email: userData?.info?.email,
+            email: userData?.info?.email,
             ...(userData?.info?.password?.trim() && {
               password: userData?.info?.password,
             }),
@@ -884,7 +884,6 @@ export default function UpdateCustomer() {
                         Login Email / Contact Email
                       </label>
                       <input
-                        disabled
                         type="email"
                         name="email"
                         onChange={handleInfo}

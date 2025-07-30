@@ -516,7 +516,7 @@ export default function OrderCard(props) {
       {/* Modal */}
       <Dialog
         visible={
-          (props?.modal?.type === "assignSupplier" && props?.modal?.status) ||
+          // (props?.modal?.type === "assignSupplier" && props?.modal?.status) ||
           (props?.modal?.type === "dispatchOrder" && props?.modal?.status)
         }
         style={{ width: "30vw" }}

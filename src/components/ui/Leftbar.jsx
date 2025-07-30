@@ -53,7 +53,9 @@ export default function Leftbar(props) {
   const generateUrl =
     userType === "admin"
       ? "api/v1/admin/order-navigation-counts"
-      : `api/v1/admin/order-navigation-counts/sales-rep/${userID}`;
+      : userType === "salesRepresentative"
+      ? `api/v1/admin/order-navigation-counts/sales-rep/${userID}`
+      : `api/v1/admin/order-navigation-counts/supplier/${userID}`;
   const overAllData = GetAPI(generateUrl);
 
   const pathname = usePathname();
@@ -857,14 +859,17 @@ export default function Leftbar(props) {
                     // title="Assigned Orders"
                     title="New Orders"
                     to="/supplier/assigned-orders"
+                    count={overAllData?.data?.data?.[0]?.count || ""}
                   />
                   <ListItems
                     title="Acknowledged Orders"
                     to="/supplier/acknowledge-orders"
+                    count={overAllData?.data?.data?.[2]?.count || ""}
                   />
                   <ListItems
                     title="Shipped Orders"
                     to="/supplier/shiped-orders"
+                    count={overAllData?.data?.data?.[3]?.count || ""}
                   />
                   {/* <ListItems
                     title="Dispatched Orders"

@@ -6,7 +6,8 @@ import { BASE_URL } from "./URL";
 export const DeleteAPI = async (url) => {
   let config = {
     headers: {
-      accessToken: localStorage.getItem("accessToken"),
+      // accessToken: localStorage.getItem("accessToken"),
+      Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
     },
   };
   try {

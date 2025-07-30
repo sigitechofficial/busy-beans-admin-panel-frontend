@@ -40,6 +40,10 @@ export default function EditsSalesRepresentative() {
     creditLimit: "",
     status: true,
   });
+  console.log(
+    "🚀 ~ EditsSalesRepresentative ~ saleRepresentative:",
+    saleRepresentative
+  );
   const [imagePreview, setImagePreview] = useState("");
   const [allStates, setAllStates] = useState([]);
   const [allCities, setAllCities] = useState([]);
@@ -179,6 +183,12 @@ export default function EditsSalesRepresentative() {
         formData.append("territoryName", saleRepresentative?.territory);
         formData.append("image", saleRepresentative?.image);
         formData.append("phoneNumber", saleRepresentative?.phoneNumber);
+        formData.append(
+          "countryCode",
+          saleRepresentative?.countryCode?.startsWith("+")
+            ? saleRepresentative?.countryCode
+            : `+${saleRepresentative?.countryCode || ""}`
+        );
         formData.append("status", saleRepresentative?.status);
 
         const res = await PatchAPI(
@@ -560,6 +570,7 @@ export default function EditsSalesRepresentative() {
                         borderRadius: "8px",
                       }}
                       country={"us"}
+                      value={saleRepresentative?.countryCode}
                       onChange={(phone) =>
                         setSaleRepresentative({
                           ...saleRepresentative,

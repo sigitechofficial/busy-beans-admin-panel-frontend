@@ -56,7 +56,10 @@ export default function AddInvoice() {
     otherPayment: "",
     paymentOption: false,
     paymentOption2: false,
+    invoiceDate: "",
+    invoicePdf: "",
   });
+
 
   // Items state (for main items)
   const [items, setItems] = useState([]);
@@ -95,6 +98,8 @@ export default function AddInvoice() {
         dueDate: prev?.dueDate || getDueDate(),
         note: data?.data?.order?.note,
         shippingCharges: data?.data?.order?.shippingCharges,
+        invoiceDate: data?.data?.order?.invoiceDate,
+        invoicePdf: data?.data?.order?.invoicePdf,
         // You can set invoiceDate, dueDate, terms, etc. from API if available
       }));
       setItems(
@@ -260,6 +265,7 @@ export default function AddInvoice() {
     items.filter((item) => item.checked).length +
     extraRows.filter((item) => item.checked).length;
 
+
   const handleCreateInvoice = async () => {
     setLoading(true);
     // Prepare items for API
@@ -298,12 +304,15 @@ export default function AddInvoice() {
       poNumber: invoiceFields.poNumber,
       invoiceDate: invoiceFields.invoiceDate,
       proforma: invoiceFields.proforma,
-      terms: invoiceFields.terms,
+      termDays: invoiceFields.terms,
       dueDate: invoiceFields.dueDate,
       note: invoiceFields.note,
       otherPayment: invoiceFields.otherPayment,
       attemptImmediatePayment: invoiceFields.paymentOption,
       emailInvoiceToCustomer: invoiceFields.paymentOption2,
+      reminder: invoiceFields?.invoicePdf ? true : false,
+      invoiceDate: invoiceFields?.invoiceDate ? undefined : Date.now(),
+      invoiceReminder: invoiceFields?.invoiceDate ? Date.now() : undefined,
       // shippingCharges: manual?.shippingCharge,
       ...(manual?.show === false && {
         shippingCharges: invoiceFields.shippingCharges,
@@ -345,7 +354,8 @@ export default function AddInvoice() {
           >
             Order
           </span>{" "}
-          / {orderID} / New Invoice
+          / {orderID} /{" "}
+          {data?.data?.order?.invoiceDate ? "Update Invoice" : "New Invoice"}
         </h2>
       </div>
 
@@ -450,7 +460,7 @@ export default function AddInvoice() {
             <Select
               placeholder=""
               options={[
-                { label: "immediate", value: "immediate payment" },
+                { label: "immediate", value: "1" },
                 { label: "15", value: "15" },
                 { label: "21", value: "21" },
                 { label: "30", value: "30" },
@@ -460,7 +470,7 @@ export default function AddInvoice() {
               value={
                 invoiceFields.terms
                   ? [
-                      { label: "immediate", value: "immediate payment" },
+                      { label: "immediate", value: "1" },
                       { label: "15", value: "15" },
                       { label: "21", value: "21" },
                       { label: "30", value: "30" },
@@ -632,6 +642,7 @@ export default function AddInvoice() {
                       <input
                         type="number"
                         min={0}
+                        disabled
                         step="0.01"
                         className="w-20 border border-gray-200 rounded px-1 py-1 text-right"
                         value={item.unit}
@@ -791,7 +802,9 @@ export default function AddInvoice() {
               className="rounded-lg font-inter font-medium text-white px-2 sm:px-3 py-2.5 sm:py-4 bg-theme"
               onClick={handleCreateInvoice}
             >
-              Create Invoice
+              {data?.data?.order?.invoiceDate
+                ? "Update Invoice"
+                : "Create Invoice"}
             </button>
           </div>
         </div>

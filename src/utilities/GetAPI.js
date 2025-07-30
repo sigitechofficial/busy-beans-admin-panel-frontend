@@ -9,7 +9,8 @@ const GetAPI = (url) => {
   useEffect(() => {
     var config = {
       headers: {
-        accessToken: localStorage.getItem("accessToken"),
+        // accessToken: localStorage.getItem("accessToken"),
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
       },
     };
     const fetchData = () => {

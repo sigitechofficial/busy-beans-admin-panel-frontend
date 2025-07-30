@@ -48,7 +48,6 @@ export default function EditSupplier() {
     registerDate: "",
     bankAccount: "",
   });
-  console.log("🚀 ~ EditSupplier ~ supplier:", supplier);
 
   const handleChange = (e) => {
     setSupplier({ ...supplier, [e.target.name]: e.target.value });
@@ -127,7 +126,12 @@ export default function EditSupplier() {
         formData.append("state", supplier?.state);
         formData.append("zipCode", supplier?.zipCode);
         formData.append("phoneNum", supplier?.phoneNum);
-        formData.append("countryCode", supplier?.countryCode);
+        formData.append(
+          "countryCode",
+          supplier?.countryCode?.startsWith("+")
+            ? supplier?.countryCode
+            : `+${supplier?.countryCode || ""}`
+        );
         formData.append("addressOne", supplier?.addressOne);
         formData.append("addressTwo", supplier?.addressTwo);
         formData.append("businessWeb", supplier?.businessWeb);
@@ -142,7 +146,6 @@ export default function EditSupplier() {
         formData.append("registerDate", supplier?.registerDate);
         formData.append("bankAccount", supplier?.bankAccount);
 
-        console.log("🚀 ~ handleSubmit ~ formData:", formData);
         const res = await PatchAPI(
           `api/v1/admin/supplier/${supplierID}`,
           formData
@@ -194,7 +197,9 @@ export default function EditSupplier() {
       state: data?.data?.data?.state ?? "",
       zipCode: data?.data?.data?.zipCode ?? "",
       phoneNum: data?.data?.data?.phoneNum ?? "",
-      countryCode: data?.data?.data?.countryCode ?? "+1",
+      countryCode: data?.data?.data?.countryCode?.startsWith("+")
+        ? data.data.data.countryCode
+        : `+${data?.data?.data?.countryCode || ""}`,
       addressOne: data?.data?.data?.addressOne ?? "",
       addressTwo: data?.data?.data?.addressTwo ?? "",
       businessWeb: data?.data?.data?.businessWeb ?? "",
@@ -454,6 +459,7 @@ export default function EditSupplier() {
                         borderRadius: "8px",
                       }}
                       country={"us"}
+                      value={supplier?.countryCode}
                       onChange={(phone) =>
                         setSupplier({
                           ...supplier,

@@ -34,8 +34,8 @@ function CustomerDetails() {
 
   let url =
     userType === "admin"
-      ? `api/v1/admin/orders?userid=${userId}&paymentStatus=pending&statusId[ne]=6`
-      : `api/v1/admin/orders?userid=${userId}&paymentStatus=pending&salesRepId=${salesRepId}&statusId[ne]=6`;
+      ? `api/v1/admin/orders?userid=${userId}`
+      : `api/v1/admin/orders?userid=${userId}&salesRepId=${salesRepId}`;
   const { data: userOrders } = GetAPI(url);
 
   const [selectedRows, setSelectedRows] = useState([]);
@@ -55,13 +55,22 @@ function CustomerDetails() {
     { field: "invoice", header: "Invoice", minWidth: "5rem" },
     { field: "status", header: "Status", minWidth: "5rem" },
     { field: "overdue", header: "Overdue", minWidth: "5rem" },
+    { field: "invSendDate", header: "Invoice Send", minWidth: "9rem" },
+    { field: "invPaidDate", header: "Invoice Paid", minWidth: "8rem" },
   ];
+
+  const getOrderPriority = (order) => {
+    if (order.overdueInvoice) return 1; // Overdue first
+    if (order.paymentStatus === "pending") return 2; // Unpaid next
+    return 3; // paid
+  };
 
   const orderDatas = [];
   userOrders?.data?.data?.map((elem, idx) => {
     orderDatas.push({
       sl: elem?.id,
       id: elem?.id,
+      invoicePdf: elem?.invoiceDate,
       orderDate: dayjs(elem?.on).format("MM/DD/YYYY"),
       deliverOn: "",
       total: "$" + elem?.totalBill,
@@ -94,7 +103,19 @@ function CustomerDetails() {
           {elem?.overdueInvoice ? "Yes" : ""}
         </span>
       ),
+      invSendDate: elem?.invoiceDate
+        ? dayjs(elem?.invoiceDate).format("MM/DD/YYYY")
+        : "",
+      invPaidDate: elem?.invoicePaidDate
+        ? dayjs(elem?.invoicePaidDate).format("MM/DD/YYYY")
+        : "",
     });
+  });
+
+  orderDatas?.sort((a, b) => {
+    const priorityA = getOrderPriority(a);
+    const priorityB = getOrderPriority(b);
+    return priorityA - priorityB;
   });
   const salesRepresentativeDatas = [
     {
@@ -178,8 +199,14 @@ function CustomerDetails() {
       info_toaster("Select Order to send invoice reminder");
       return;
     }
+
     setIsDisable(true);
-    const selected = selectedRows?.map((el) => el.id);
+    const selected = selectedRows?.map((el) => ({
+      orderId: el.id,
+      reminder: el?.invoicePdf ? true : false,
+      invoiceDate: el?.invoiceDate ? undefined : Date.now(),
+      invoiceReminder: el?.invoiceDate ? Date.now() : undefined,
+    }));
 
     try {
       const res = await PostAPI(`api/v1/admin/order-management/send-invoice`, {
@@ -208,22 +235,27 @@ function CustomerDetails() {
   ) : (
     <div className="w-full">
       <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
-        <h2 className="text-xl lg:text-2xl font-inter font-semibold flex items-center gap-2">
-          <div className="text-base">
-            <BackButton />
-          </div>
-          Customers /
-          <span className="text-theme">
-            {data?.data?.customer?.companyName}
-          </span>{" "}
-          <span
-            className={`rounded-full text-xs text-white font-normal p-1 ${
+        <div className="text-xl font-inter font-semibold flex items-center gap-2 [&>p]:cursor-pointer">
+          <p
+            onClick={() => {
+              router.push(
+                userType === "admin"
+                  ? "/customers"
+                  : "/sales-representative/customers"
+              );
+            }}
+          >
+            Customers
+          </p>{" "}
+          /<p className="text-theme">{data?.data?.customer?.name}</p>{" "}
+          <p
+            className={`text-xs font-medium px-3 py-1 rounded-full text-white whitespace-nowrap ${
               data?.data?.customer?.status ? "bg-themeGreen " : "bg-red-500"
             }`}
           >
             {data?.data?.customer?.status ? "Active" : "Inactive"}
-          </span>
-        </h2>
+          </p>
+        </div>
 
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative text-blue-500">
           {userType === "admin" && (
@@ -325,7 +357,9 @@ function CustomerDetails() {
                 <div
                   onClick={() => {
                     if (userType === "admin") {
-                      router.push("/sale-representative");
+                      router.push(
+                        `/sale-representative/details/${data?.data?.customer?.salesRepId}`
+                      );
                     }
                   }}
                   className={` ${

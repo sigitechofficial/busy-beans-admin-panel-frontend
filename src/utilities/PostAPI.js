@@ -6,7 +6,8 @@ import { error_toaster } from "./Toaster";
 export const PostAPI = async (url, postData) => {
   let config = {
     headers: {
-      accessToken: localStorage.getItem("accessToken"),
+      // accessToken: localStorage.getItem("accessToken"),
+      Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
     },
   };
 

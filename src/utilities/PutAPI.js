@@ -4,7 +4,8 @@ import { BASE_URL } from "./URL";
 export const PutAPI = async (url, postData) => {
   let config = {
     headers: {
-      accessToken: localStorage.getItem("accessToken"),
+      // accessToken: localStorage.getItem("accessToken"),
+      Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
     },
   };
   try {

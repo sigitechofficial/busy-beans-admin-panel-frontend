@@ -120,10 +120,11 @@ export default function OrderDetail() {
 
   const handleAssignSupplier = (statusId) => {
     if (statusId === 1) {
-      setModal({
-        type: "assignSupplier",
-        status: true,
-      });
+      AssignSupplierTravis();
+      // setModal({
+      //   type: "assignSupplier",
+      //   status: true,
+      // });
     } else if (statusId === 2) {
       handleSupplierAcknowledgement();
     } else if (statusId === 3) {
@@ -133,6 +134,26 @@ export default function OrderDetail() {
       });
     } else if (statusId === 4) {
       handleOrderDelivered();
+    }
+  };
+
+  const AssignSupplierTravis = async (e) => {
+    try {
+      const res = await PatchAPI("api/v1/admin/assign-supplier", {
+        orderId: orderID,
+        orderData: {
+          supplierId: 16, //Suppier name Travis
+          statusId: 2,
+        },
+      });
+      if (res?.data?.status === "success") {
+        success_toaster("Supplier assign successfully");
+        reFetch();
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
     }
   };
 
@@ -283,15 +304,24 @@ export default function OrderDetail() {
 
   const handleSendInvoice = async () => {
     try {
-      const res = await PostAPI(
-        `api/v1/admin/order-management/send-invoice/${orderID}`,
-        {
-          successUrl:
-            "https://main.d28wfx1ny3of09.amplifyapp.com/invoice-payment-success",
-          cancelUrl:
-            "https://main.d28wfx1ny3of09.amplifyapp.com/invoice-payment-failure",
-        }
-      );
+      const res = await PostAPI(`api/v1/admin/order-management/send-invoice`, {
+        order: [
+          {
+            orderId: orderID,
+            reminder: data?.data?.order?.invoicePdf ? true : false,
+            invoiceDate: data?.data?.order?.invoiceDate
+              ? undefined
+              : Date.now(),
+            invoiceReminder: data?.data?.order?.invoiceDate
+              ? Date.now()
+              : undefined,
+          },
+        ],
+        successUrl:
+          "https://main.d28wfx1ny3of09.amplifyapp.com/invoice-payment-success",
+        cancelUrl:
+          "https://main.d28wfx1ny3of09.amplifyapp.com/invoice-payment-failure",
+      });
       if (res?.data?.status === "success") {
         success_toaster("Invoice Send Successfully");
         reFetch();
@@ -322,31 +352,35 @@ export default function OrderDetail() {
     }
   };
 
-  console.log(
-    data?.data?.order?.statusId,
-    "data?.data?.order?.statusIddata?.data?.order?.statusId"
-  );
-
   return data?.length === 0 ? (
     <Loader />
   ) : (
     <div>
       <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
-        <h2 className="text-xl lg:text-2xl font-inter font-semibold flex items-center gap-2">
-          <div className="text-base">
-            <BackButton />
-          </div>
-          Order / {data?.data?.order?.id}{" "}
-          <span
-            className={` rounded-lg py-2 px-4 font-medium text-sm text-white ${
+        <div className="text-xl font-inter font-semibold flex items-center gap-2 [&>p]:cursor-pointer">
+          <p onClick={() => router.push("/orders")}>Order /</p>{" "}
+          {data?.data?.order?.id}{" "}
+          <p
+            className={`text-xs font-medium px-3 py-1 rounded-full text-white whitespace-nowrap ${
               data?.data?.order?.orderCurrentStatus?.includes("Cancelled")
                 ? "bg-red-500 "
                 : "bg-themeGreen "
             }`}
           >
-            {data?.data?.order?.orderCurrentStatus}
-          </span>
-        </h2>
+            {data?.data?.order?.statusId == 4 ||
+            data?.data?.order?.statusId == 5
+              ? "Shipped"
+              : data?.data?.order?.statusId == 1
+              ? "Order Placed"
+              : data?.data?.order?.statusId == 2
+              ? "Dispatched to Supplier"
+              : data?.data?.order?.statusId == 3
+              ? "Acknowledged by Supplier"
+              : data?.data?.order?.statusId == 6
+              ? "Cancelled"
+              : "fulfilled"}
+          </p>
+        </div>
 
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative text-blue-500">
           {/* <li onClick={() => router.push(`${pathname}/add-invoice`)}>
@@ -359,7 +393,7 @@ export default function OrderDetail() {
               className="disabled:cursor-not-allowed"
               onClick={() => handleSendInvoice(data?.data?.order?.statusId)}
             >
-              {data?.data?.order?.invoicePdf
+              {data?.data?.order?.invoiceDate
                 ? "Invoice reminder"
                 : "Send Invoice"}
             </button>
@@ -477,7 +511,9 @@ export default function OrderDetail() {
               onClick={() => router.push(`${pathname}/add-invoice`)}
               className="border border-buttonBorderColor shadow-buttonShadow"
             >
-              {data?.data?.order?.invoicePdf ? "Update Invoice" : "Add Invoice"}
+              {data?.data?.order?.invoiceDate
+                ? "Update Invoice"
+                : "Add Invoice"}
             </button>
 
             {userType === "admin" && (
@@ -633,9 +669,17 @@ export default function OrderDetail() {
                     <div className="flex items-center gap-5 border-b">
                       <p className="w-28">Supplier</p>
                       <Link
-                        href={`/suppliers/edit/${data?.data?.order?.supplier?.id}`}
+                        href={
+                          userType === "admin"
+                            ? `/suppliers/edit/${data?.data?.order?.supplier?.id}`
+                            : ""
+                        }
                       >
-                        <p className="text-blue-500">
+                        <p
+                          className={
+                            userType === "admin" ? `text-blue-500` : ""
+                          }
+                        >
                           {data?.data?.order?.supplier?.supplierName}
                         </p>
                       </Link>
@@ -645,9 +689,17 @@ export default function OrderDetail() {
                     <div className="flex items-center gap-5 border-b">
                       <p className="w-28">Local Partner</p>
                       <Link
-                        href={`/sale-representative/details/${data?.data?.order?.salesRep?.id}`}
+                        href={
+                          userType === "admin"
+                            ? `/sale-representative/details/${data?.data?.order?.salesRep?.id}`
+                            : ""
+                        }
                       >
-                        <p className="text-blue-500">
+                        <p
+                          className={
+                            userType === "admin" ? `text-blue-500` : ""
+                          }
+                        >
                           {data?.data?.order?.salesRepName}
                         </p>
                       </Link>
@@ -675,6 +727,30 @@ export default function OrderDetail() {
                     <div className="flex items-center gap-5 border-b">
                       <p className="w-28">Frequency: </p>
                       <p>{data?.data?.order?.frequency}</p>
+                    </div>
+                  )}
+                  {data?.data?.order?.invoiceDate && (
+                    <div className="flex items-center gap-5 border-b">
+                      <p className="w-28">Invoice Date: </p>
+                      <p>
+                        {data?.data?.order?.invoiceDate
+                          ? dayjs(data?.data?.order?.invoiceDate).format(
+                              "MM/DD/YYYY"
+                            )
+                          : ""}
+                      </p>
+                    </div>
+                  )}
+                  {data?.data?.order?.invoicePaidDate && (
+                    <div className="flex items-center gap-5 border-b">
+                      <p className="w-28">Invoice Paid Date: </p>
+                      <p>
+                        {data?.data?.order?.invoicePaidDate
+                          ? dayjs(data?.data?.order?.invoicePaidDate).format(
+                              "MM/DD/YYYY"
+                            )
+                          : ""}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -709,55 +785,6 @@ export default function OrderDetail() {
                       Edit
                     </span>
                   </div>
-
-                  {/* Invoice To */}
-                  {/* <div>
-                    
-                    <h6 className="font-semibold">Invoice To</h6>
-                    <div className="items-center">
-                      {data?.data?.order?.user?.companyName && (
-                        <p>{data.data.order.user.companyName}</p>
-                      )}
-                      <p>
-                        {
-                          data?.data?.order?.user?.billingAddresses[0]
-                            ?.companyaddress
-                        }
-                      </p>
-                      <p>
-                        {
-                          data?.data?.order?.user?.billingAddresses[0]
-                            ?.addressLineOne
-                        }
-                      </p>
-                      <p>
-                        {
-                          data?.data?.order?.user?.billingAddresses[0]
-                            ?.addressLineTwo
-                        }
-                      </p>
-                      <p>
-                        {data?.data?.order?.user?.billingAddresses[0]?.town},{" "}
-                        {data?.data?.order?.user?.billingAddresses[0]?.state}{" "}
-                        {data?.data?.order?.user?.billingAddresses[0]?.zipCode}
-                      </p>
-                      <p>
-                        {data?.data?.order?.user?.billingAddresses[0]?.country}
-                      </p>
-                      {data?.data?.order?.user?.phoneNumber && (
-                        <p>
-                          Phone: {data?.data?.order?.user?.countryCode}{" "}
-                          {data?.data?.order?.user?.phoneNumber}
-                        </p>
-                      )}
-                    </div>
-                    <span
-                      onClick={() => router.push(`${pathname}/edit`)}
-                      className="text-blue-500 text-xs cursor-pointer"
-                    >
-                      Edit
-                    </span>
-                  </div> */}
 
                   {/* Bill To Section */}
                   <div className="uppercase">
@@ -847,6 +874,44 @@ export default function OrderDetail() {
                       Edit
                     </span>
                   </div>
+
+                  {data?.data?.order?.invoiceDate && (
+                    <div
+                      onClick={() => router.push(`${pathname}/invoice`)}
+                      className="max-w-32 flex flex-col items-center text-xs text-gray-500"
+                    >
+                      <img
+                        src={
+                          data?.data?.order?.paymentStatus == "pending"
+                            ? "/images/invoice.png"
+                            : "/images/invoicePaid.png"
+                        }
+                        alt="invoice image"
+                      />
+                      <p> {data?.data?.order?.invoiceNumber}</p>
+                      <p>
+                        {data?.data?.order?.invoiceDate
+                          ? dayjs(data?.data?.order?.invoiceDate).format(
+                              "MM/DD/YYYY"
+                            )
+                          : ""}
+                      </p>
+                    </div>
+                  )}
+                  {data?.data?.order?.statusId == 5 && (
+                    <div className="max-w-32 flex flex-col items-center text-xs text-gray-500">
+                      <img src="/images/dispatch.png" alt="dispatch image" />
+                      <p>Dispatched</p>
+                      <p>
+                        {" "}
+                        {data?.data?.order?.orderHistories
+                          ? dayjs(
+                              data?.data?.order?.orderHistories?.[4]?.on
+                            ).format("MM/DD/YYYY")
+                          : ""}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
               {/* {data?.data?.order?.statusId >= 2 && (

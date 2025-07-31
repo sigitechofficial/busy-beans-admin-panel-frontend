@@ -60,7 +60,6 @@ export default function AddInvoice() {
     invoicePdf: "",
   });
 
-
   // Items state (for main items)
   const [items, setItems] = useState([]);
 
@@ -265,7 +264,6 @@ export default function AddInvoice() {
     items.filter((item) => item.checked).length +
     extraRows.filter((item) => item.checked).length;
 
-
   const handleCreateInvoice = async () => {
     setLoading(true);
     // Prepare items for API
@@ -344,19 +342,22 @@ export default function AddInvoice() {
   ) : (
     <div>
       <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
-        <h2 className="text-xl lg:text-2xl font-inter font-semibold flex items-center gap-x-1">
-          <div className="text-base">
-            <BackButton />
-          </div>
-          <span
+        <div className="text-xl font-inter font-semibold flex items-center gap-x-1">
+          <p
             className="hover:text-blue-500 cursor-pointer"
             onClick={() => router.push("/orders")}
           >
             Order
-          </span>{" "}
-          / {orderID} /{" "}
-          {data?.data?.order?.invoiceDate ? "Update Invoice" : "New Invoice"}
-        </h2>
+          </p>{" "}
+          /{" "}
+          <p
+            className="hover:text-blue-500 cursor-pointer"
+            onClick={() => window.history.back()}
+          >
+            {orderID}
+          </p>{" "}
+          / {data?.data?.order?.invoiceDate ? "Update Invoice" : "New Invoice"}
+        </div>
       </div>
 
       <div className="space-y-8 pb-6 pt-32 px-6 2xl:px-12">
@@ -401,6 +402,8 @@ export default function AddInvoice() {
             <input
               type="text"
               name="invoiceNumber"
+              minLength={3}
+              min={3}
               value={invoiceFields.invoiceNumber}
               placeholder="INV-000"
               className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"

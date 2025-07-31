@@ -230,7 +230,7 @@ export default function CreateOrder() {
                   ? setVisibleRight(true)
                   : info_toaster("No Item is Selected")
               }
-              className="rounded-lg font-inter font-medium text-white px-2 sm:px-4 py-2.5 sm:py-4 bg-theme"
+              className="text-xl rounded-lg font-inter font-medium text-white px-2 sm:px-4 py-2.5 sm:py-4 bg-theme"
             >
               Create Order
               <div className="absolute -right-3 -top-3 bg-black size-7 rounded-full text-lg">

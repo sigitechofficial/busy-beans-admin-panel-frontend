@@ -1,8 +1,14 @@
 "use client";
+import { getMessagingInstance, onMessage } from "@/utilities/firebase";
+import { requestDeviceToken } from "@/utilities/requestFCMToken";
+import { success_toaster } from "@/utilities/Toaster";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { PiUserBold } from "react-icons/pi";
+
+// import { onMessage } from "firebase/messaging";
 
 export default function Header(props) {
   if (typeof window !== "undefined") {
@@ -10,6 +16,21 @@ export default function Header(props) {
     var userType = localStorage.getItem("userType");
   }
   const pathname = usePathname();
+
+  useEffect(() => {
+    getMessagingInstance().then((messaging) => {
+      if (messaging) {
+        onMessage(messaging, (payload) => {
+          console.log("📩 Foreground message:", payload);
+
+          success_toaster("Firebase Notification here");
+        });
+      }
+    });
+
+    // Request Device Token
+    requestDeviceToken();
+  }, []);
 
   return (
     pathname === "/" && (

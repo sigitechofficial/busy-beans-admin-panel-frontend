@@ -237,7 +237,8 @@ const DrawerBeans = ({
       } else {
         setLoader(true);
         try {
-          const res = await PostAPI("api/v1/admin/send-quotation", {
+          // const res = await PostAPI("api/v1/admin/send-quotation", {
+          const res = await PostAPI(`api/v1/admin/send-quotation/sales-rep/${userID}`, {
             email: [email],
             order: {
               totalBill: totalPrice,
@@ -276,7 +277,7 @@ const DrawerBeans = ({
     const selectedEmail = data?.data?.data?.find(
       (customer) => customer?.email === email
     );
-    console.log("🚀 ~ handleEmail ~ selectedEmail:", selectedEmail);
+
     setOrder({
       ...order,
       userId: selectedEmail?.id,
@@ -659,8 +660,9 @@ const DrawerBeans = ({
             </div>
           )}
 
-          <div className="absolute bottom-0 left-[30px] py-5 flex justify-center bg-theme w-[452px]">
+          <div className={`absolute bottom-0 left-[30px] py-5 flex justify-center  w-[452px] ${loader ? "opacity-60":"bg-theme "} `}>
             <button
+              disabled={loader}
               className="bg-themeLight font-bold text-white rounded-[4px] px-5 min-h-14 w-full flex items-center justify-between"
               onClick={handleSendQuotation}
             >

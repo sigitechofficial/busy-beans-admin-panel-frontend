@@ -2,7 +2,10 @@
 import MiniLoader from "@/components/ui/MiniLoader";
 import { loginSchema } from "@/schema";
 import ErrorHandler from "@/utilities/ErrorHandler";
+import { getMessagingInstance,onMessage } from "@/utilities/firebase";
+// import { onMessage } from "firebase/messaging";
 import { loginAPI } from "@/utilities/PostAPI";
+import { requestDeviceToken } from "@/utilities/requestFCMToken";
 import {
   error_toaster,
   info_toaster,
@@ -14,7 +17,7 @@ import { useFormik } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Checkbox } from "primereact/checkbox";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function SignIn() {
   const router = useRouter();
@@ -24,6 +27,21 @@ export default function SignIn() {
     email: "",
     password: "",
   };
+
+  useEffect(() => {
+    getMessagingInstance().then((messaging) => {
+      if (messaging) {
+        onMessage(messaging, (payload) => {
+          console.log("📩 Foreground message:", payload);
+
+          success_toaster("Firebase Notification here");
+        });
+      }
+    });
+
+    // Request Device Token
+    requestDeviceToken();
+  }, []);
 
   // const handleConnectAccountID = (srId) => {
   //   try {
@@ -55,6 +73,7 @@ export default function SignIn() {
             {
               email: values.email,
               password: values.password,
+              deviceToken: localStorage.getItem("devToken"),
             }
           );
           if (res?.data?.status === "success") {

@@ -27,6 +27,7 @@ import { AiOutlineUnorderedList } from "react-icons/ai";
 import { MdPayment } from "react-icons/md";
 import { BsFillCollectionFill } from "react-icons/bs";
 import { IoNotifications } from "react-icons/io5";
+import { IoClose } from "react-icons/io5";
 import { MdManageAccounts } from "react-icons/md";
 import { TbReportAnalytics } from "react-icons/tb";
 import { GiHumanTarget } from "react-icons/gi";
@@ -299,7 +300,7 @@ export default function Leftbar(props) {
           className="sm:hidden"
           onClick={() => props?.setNavbarVis(!props?.navbarVis)}
         >
-          <ImCross size="25px" />
+          <IoClose size="25px" />
         </div>
       </div>
 

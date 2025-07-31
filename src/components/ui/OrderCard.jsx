@@ -119,7 +119,7 @@ export default function OrderCard(props) {
 
           if (res?.data?.status === "success") {
             success_toaster("Order Shipped successfully");
-            props?.reFetch();
+            // props?.reFetch();
             props?.setModal({
               type: "",
               status: false,
@@ -147,6 +147,7 @@ export default function OrderCard(props) {
 
           if (resDeliver?.data?.status === "success") {
             success_toaster("Order Delivered successfully");
+            props?.reFetch();
           } else {
             throw new Error(
               resDeliver?.data?.message || "Failed to deliver order."
@@ -189,8 +190,9 @@ export default function OrderCard(props) {
   return (
     <div className="space-y-10 py-4 px-8 border border-borderColor shadow-tableShadow ">
       {/* Upper section */}
-     {props?.orderData?.note&& <div className="space-y-4 font-inter">
-        {/* <div className="flex justify-between items-start">
+      {props?.orderData?.note && (
+        <div className="space-y-4 font-inter">
+          {/* <div className="flex justify-between items-start">
           <div className="space-y-0.5">
             <p className="font-semibold text-3xl">
               Order# {props?.orderData?.id}
@@ -246,17 +248,17 @@ export default function OrderCard(props) {
           )}
         </div> */}
 
-        <div className="w-full space-y-4">
-          <div className="w-full space-y-2">
-            {/* <p className="font-semibold text-lg underline">Order Information</p> */}
-            <div className="space-y-4 w-full">
-              {/* <p className="flex">
+          <div className="w-full space-y-4">
+            <div className="w-full space-y-2">
+              {/* <p className="font-semibold text-lg underline">Order Information</p> */}
+              <div className="space-y-4 w-full">
+                {/* <p className="flex">
                 <span className="text-black/60 w-2/4">Payment Method:</span>
                 <span className="font-medium uppercase">
                   {props?.orderData?.paymentMethod}
                 </span>
               </p> */}
-              {/* <div className="flex">
+                {/* <div className="flex">
                 <span className="text-black/60 w-2/4">Payment Status:</span>
 
                 {userType === "supplier" ||
@@ -287,13 +289,13 @@ export default function OrderCard(props) {
                   </span>
                 )}
               </div> */}
-              {/* <p className="flex">
+                {/* <p className="flex">
                 <span className="text-black/60 w-2/4">
                   Expected Delivery Time:
                 </span>
                 <span className="font-medium">17-02-2025</span>
               </p> */}
-              {/* <p
+                {/* <p
                 className={`${
                   props?.userType === "supplier" ? "hidden" : "flex"
                 }`}
@@ -303,16 +305,17 @@ export default function OrderCard(props) {
                   $ {props?.orderData?.totalBill}
                 </span>
               </p> */}
+              </div>
             </div>
-          </div>
-          <div className="bg-themeYellowDark text-black font-medium py-2 px-4 rounded-md flex gap-x-4">
-            <p>{props?.orderData?.note}</p>
-            {/* <div>
+            <div className="bg-themeYellowDark text-black font-medium py-2 px-4 rounded-md flex gap-x-4">
+              <p>{props?.orderData?.note}</p>
+              {/* <div>
               <FaEdit size={24} />
             </div> */}
+            </div>
           </div>
         </div>
-      </div>}
+      )}
       {/* Lower section */}
       {/* <div>
         <MyDataTable
@@ -426,13 +429,15 @@ export default function OrderCard(props) {
                       {item?.qty}
                     </td>
                     <td className="py-2 px-2 text-center border border-gray-200">
-                      {props?.orderData?.invoicePdf ? "Yes":"Not Yet"}
+                      {props?.orderData?.invoicePdf ? "Yes" : "Not Yet"}
                     </td>
                     <td className="py-2 px-2 text-center border border-gray-200">
-                      {props?.orderData?.paymentStatus==="pending" ? "Unpaid" :"Paid"}
+                      {props?.orderData?.paymentStatus === "pending"
+                        ? "Unpaid"
+                        : "Paid"}
                     </td>
                     <td className="py-2 px-2 text-center border border-gray-200">
-                      {props?.orderData?.statusId>="2" ? "Yes":"Not Yet"}
+                      {props?.orderData?.statusId >= "2" ? "Yes" : "Not Yet"}
                     </td>
                     {(userType === "admin" ||
                       userType === "salesRepresentative") && (
@@ -517,7 +522,7 @@ export default function OrderCard(props) {
       <Dialog
         visible={
           // (props?.modal?.type === "assignSupplier" && props?.modal?.status) ||
-          (props?.modal?.type === "dispatchOrder" && props?.modal?.status)
+          props?.modal?.type === "dispatchOrder" && props?.modal?.status
         }
         style={{ width: "30vw" }}
         className="font-nunito"

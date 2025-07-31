@@ -356,10 +356,19 @@ function CustomerDetails() {
                 <span className="text-gray-500 font-medium">Local Partner</span>
                 <div
                   onClick={() => {
-                    if (userType === "admin") {
+                    if (
+                      userType === "admin" &&
+                      data?.data?.customer?.salesRepId
+                    ) {
                       router.push(
                         `/sale-representative/details/${data?.data?.customer?.salesRepId}`
                       );
+                    } else {
+                      setUserData({
+                        ...userData,
+                        type: "localPartner",
+                        modal: true,
+                      });
                     }
                   }}
                   className={` ${

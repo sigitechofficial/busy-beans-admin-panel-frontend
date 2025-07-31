@@ -10,6 +10,7 @@ import { ToastContainer } from "react-toastify";
 import { useState } from "react";
 import ProtectedRoute from "@/utilities/ProtectedRoute";
 import { AuthCheck } from "@/utilities/AuthCheck";
+import { DataProvider } from "@/utilities/DataContext";
 
 const satoshi = localFont({
   src: [
@@ -103,7 +104,7 @@ export default function RootLayout({ children }) {
   // const [navbarVis, setNavbarVis] = useState(
   //   window.innerWidth < 640 ? false : true
   // );
-  const [navbarVis, setNavbarVis] = useState(true);
+  const [navbarVis, setNavbarVis] = useState(false);
 
   return (
     <html lang="en">
@@ -117,25 +118,27 @@ export default function RootLayout({ children }) {
         className={`${switzer.variable} ${satoshi.variable} ${inter.variable} ${nunito.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ToastContainer />
-        {!isLayoutDisplay && (
-          <Header navbarVis={navbarVis} setNavbarVis={setNavbarVis} />
-        )}
+        <DataProvider>
+          {!isLayoutDisplay && (
+            <Header navbarVis={navbarVis} setNavbarVis={setNavbarVis} />
+          )}
 
-        {!isLayoutDisplay && (
-          <Leftbar navbarVis={navbarVis} setNavbarVis={setNavbarVis} />
-        )}
+          {!isLayoutDisplay && (
+            <Leftbar navbarVis={navbarVis} setNavbarVis={setNavbarVis} />
+          )}
 
-        <section
-          className={
-            isLayoutDisplay
-              ? ""
-              : `w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] float-right clear-right relative  bg-white min-h-[calc(100vh-94px)] space-y-6 ${
-                  pathname !== "/" ? "pb-6" : "top-[94px]"
-                }`
-          }
-        >
-          <ProtectedRoute>{children}</ProtectedRoute>
-        </section>
+          <section
+            className={
+              isLayoutDisplay
+                ? ""
+                : `w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] float-right clear-right relative  bg-white min-h-[calc(100vh-94px)] space-y-6 ${
+                    pathname !== "/" ? "pb-6" : "top-[94px]"
+                  }`
+            }
+          >
+            <ProtectedRoute>{children}</ProtectedRoute>
+          </section>
+        </DataProvider>
       </body>
     </html>
   );

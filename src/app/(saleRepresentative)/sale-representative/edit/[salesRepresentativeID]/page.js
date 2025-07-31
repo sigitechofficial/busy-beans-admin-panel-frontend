@@ -261,10 +261,10 @@ export default function EditsSalesRepresentative() {
         </div>
       </div> */}
 
-      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
+      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <div className="flex items-center gap-x-2">
           <BackButton />
-          <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+          <h2 className="text-xl font-inter font-semibold">
             Update Local Partner
           </h2>
         </div>
@@ -273,7 +273,7 @@ export default function EditsSalesRepresentative() {
       {loader ? (
         <MiniLoader />
       ) : (
-        <div className="space-y-8 pb-6 pt-32 px-6 2xl:px-12">
+        <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
           <div className="grid xl:grid-cols-2 gap-6">
             {/* Basic Information */}
             <div className="bg-white border border-borderColor rounded p-6 space-y-6 shadow-sm">

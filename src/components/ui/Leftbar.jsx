@@ -266,11 +266,11 @@ export default function Leftbar(props) {
     <section
       className={`bg-white ${
         props?.navbarVis
-          ? "fixed w-full sm:max-w-[240px] lg:max-w-[288px]"
+          ? "fixed w-full md:max-w-[240px] lg:max-w-[288px]"
           : "hidden"
       } h-full sm:pb-5 sm:pl-2 border-r-2 z-50`}
     >
-      <div className="flex items-center justify-center font-bold text-4xl min-h-[70px] h-[94px] border-b max-sm:hidden">
+      <div className="flex items-center justify-center font-bold text-4xl 2xl:min-h-[70px] h-[70px] 2xl:h-[94px] border-b max-md:hidden">
         <Link href="/">
           <img
             src="/images/logocoffee.png"
@@ -280,7 +280,7 @@ export default function Leftbar(props) {
         </Link>
       </div>
 
-      <div className="sm:hidden flex justify-between items-center py-3 w-11/12 mx-auto">
+      <div className="md:hidden flex justify-between items-center py-3 w-11/12 mx-auto">
         <div>
           {" "}
           <Link
@@ -297,7 +297,7 @@ export default function Leftbar(props) {
           </Link>
         </div>
         <div
-          className="sm:hidden"
+          className="md:hidden"
           onClick={() => props?.setNavbarVis(!props?.navbarVis)}
         >
           <IoClose size="25px" />

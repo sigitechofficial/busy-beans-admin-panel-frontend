@@ -104,7 +104,7 @@ export default function RootLayout({ children }) {
   // const [navbarVis, setNavbarVis] = useState(
   //   window.innerWidth < 640 ? false : true
   // );
-  const [navbarVis, setNavbarVis] = useState(false);
+  const [navbarVis, setNavbarVis] = useState(true);
 
   return (
     <html lang="en">
@@ -131,8 +131,8 @@ export default function RootLayout({ children }) {
             className={
               isLayoutDisplay
                 ? ""
-                : `w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] float-right clear-right relative  bg-white min-h-[calc(100vh-94px)] space-y-6 ${
-                    pathname !== "/" ? "pb-6" : "top-[94px]"
+                : `w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] float-right clear-right relative  bg-white min-h-[calc(100vh-94px)] space-y-6 ${
+                    pathname !== "/" ? "pb-6" : "top-[70px] 2xl:top-[94px]"
                   }`
             }
           >

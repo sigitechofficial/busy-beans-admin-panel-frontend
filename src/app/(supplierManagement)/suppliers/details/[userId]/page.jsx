@@ -19,15 +19,15 @@ export default function LocalPartnerSupplierDetails() {
     <Loader />
   ) : (
     <div className="w-full">
-      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
-        <h2 className="text-xl lg:text-2xl font-inter font-semibold flex items-center gap-2">
+      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+        <h2 className="text-xl font-inter font-semibold flex items-center gap-2">
           <div className="text-base">
             <BackButton />
           </div>
           {pathname.includes("supplier") ? "Supplier" : "Local partner"} /
           <span className="text-theme">{data?.data?.data?.supplierName}</span>{" "}
           <span
-            className={`rounded-full text-xs text-white font-normal p-1 ${
+            className={`text-xs font-medium px-3 py-1 rounded-full text-white whitespace-nowrap ${
               data?.data?.data?.status ? "bg-themeGreen " : "bg-red-500"
             }`}
           >
@@ -52,7 +52,7 @@ export default function LocalPartnerSupplierDetails() {
         </ul>
       </div>
 
-      <div className="w-full pt-32 px-6 2xl:px-12 ">
+      <div className="w-full pt-28 2xl:pt-32 px-6 2xl:px-12 ">
         <div className="max-w-6xl mx-auto space-y-6 py-8 px-8 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div>

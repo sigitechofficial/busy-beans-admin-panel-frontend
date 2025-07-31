@@ -33,7 +33,7 @@ export default function Orders() {
     { field: "id", header: "#", sort: true },
     // { field: "customerName", header: "Customer" },
     { field: "companyName", header: "Company Name" },
-    { field: "orderDate", header: "Order Date",sort:true },
+    { field: "orderDate", header: "Order Date", sort: true },
     { field: "deliveredOn", header: "Deliver On" },
     // { field: "salesRepName", header: "Local Partner Name" },
     // { field: "subTotal", header: "Sub Total" },
@@ -48,8 +48,8 @@ export default function Orders() {
     // { field: "poNumber", header: "Po Number" },
     // { field: "orderFrequency", header: "Order Frequency" },
 
-    { field: "totalBill", header: "Total" ,sort:true},
-    { field: "paymentStatus", header: "Invoice",sort:true },
+    { field: "totalBill", header: "Total", sort: true },
+    { field: "paymentStatus", header: "Invoice", sort: true },
     // { field: "createdBy", header: "Created By" },
     { field: "orderCurrentStatus", header: "Status" },
     // { field: "action", header: "Action" },
@@ -104,8 +104,8 @@ export default function Orders() {
     <Loader />
   ) : (
     <div className="w-full">
-      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
-        <h2 className="text-xl lg:text-2xl font-inter font-semibold">Orders</h2>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+        <h2 className="text-xl font-inter font-semibold">Orders</h2>
 
         {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">
           <li>Invoice</li>
@@ -115,7 +115,7 @@ export default function Orders() {
           <li>Export</li>
         </ul> */}
       </div>
-      <div className="space-y-8 pb-6 pt-32 px-6 2xl:px-12">
+      <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
         <div>
           <button
             onClick={() => setType("all")}

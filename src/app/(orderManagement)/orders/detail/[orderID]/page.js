@@ -356,7 +356,7 @@ export default function OrderDetail() {
     <Loader />
   ) : (
     <div>
-      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
+      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <div className="text-xl font-inter font-semibold flex items-center gap-2 [&>p]:cursor-pointer">
           <p onClick={() => router.push("/orders")}>Order /</p>{" "}
           {data?.data?.order?.id}{" "}
@@ -421,7 +421,7 @@ export default function OrderDetail() {
         </ul>
       </div>
 
-      <div className="space-y-8 pb-6 pt-32 px-6 2xl:px-12">
+      <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
         <div className="flex flex-col md:flex-row md:items-center space-y-2 justify-end">
           {/* <div className="flex items-center gap-x-2">
             <BackButton />

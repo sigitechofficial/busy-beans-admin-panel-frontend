@@ -2,7 +2,7 @@
 import MiniLoader from "@/components/ui/MiniLoader";
 import { loginSchema } from "@/schema";
 import ErrorHandler from "@/utilities/ErrorHandler";
-import { getMessagingInstance,onMessage } from "@/utilities/firebase";
+import { getMessagingInstance, onMessage } from "@/utilities/firebase";
 // import { onMessage } from "firebase/messaging";
 import { loginAPI } from "@/utilities/PostAPI";
 import { requestDeviceToken } from "@/utilities/requestFCMToken";
@@ -121,17 +121,17 @@ export default function SignIn() {
     });
   return (
     <div className="bg-signInBackgroundImage bg-cover min-h-screen flex items-center justify-center">
-      <div className="grid grid-cols-2 w-3/5 backdrop-blur-md rounded-lg border border-theme [&>div]:px-14">
+      <div className="grid sm:grid-cols-2 w-[80%] xl:w-3/5 backdrop-blur-md rounded-lg border border-theme [&>div]:px-6 sm:[&>div]:px-10 xl:[&>div]:px-14">
         {/* left side */}
-        <div className=" flex flex-col justify-center">
-          <div className="h-4/5 w-full flex items-center justify-center">
+        <div className=" flex flex-col justify-center items-center">
+          <div className="w-40 sm:h-4/5 sm:w-full flex items-center justify-center">
             <img
               src="/images/logowhite.png"
               alt="logo_image"
-              className="object-contain w-full h-36"
+              className="object-contain w-full sm:h-36"
             />
           </div>
-          <p className="flex items-center justify-between font-switzer text-white text-sm font-normal">
+          <p className="hidden sm:flex items-center justify-between font-switzer text-white text-sm font-normal">
             <Link href="">Terms of Services</Link>
             <Link href="">Privacy Policy</Link>
             <Link href="">Help & Suppport</Link>
@@ -139,8 +139,8 @@ export default function SignIn() {
         </div>
 
         {/* Right side */}
-        <div className="flex flex-col py-16 border-l-2 border-theme gap-y-10">
-          <h1 className="font-satoshi font-black text-white text-3xl">
+        <div className="flex flex-col py-10 xl:py-16 border-l-2 border-theme gap-y-5 sm:gap-y-10">
+          <h1 className="font-satoshi font-black text-white text-xl lg:text-3xl">
             Sign In to Busy Bean
           </h1>
 

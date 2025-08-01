@@ -8,6 +8,8 @@ import Loader from "@/components/ui/Loader";
 import { FaEye } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import dayjs from "dayjs";
+import { CiMenuBurger } from "react-icons/ci";
+import { useDataContext } from "@/utilities/DataContext";
 
 export default function CancelledOrders() {
   if (typeof window !== "undefined") {
@@ -25,7 +27,7 @@ export default function CancelledOrders() {
     // { field: "sl", header: "SL", sort: true },
     { field: "id", header: "#", sort: true },
     // { field: "customerName", header: "Customer" },
-     { field: "companyName", header: "Company Name" },
+    { field: "companyName", header: "Company Name" },
     { field: "orderDate", header: "Order Date" },
     { field: "deliveredOn", header: "Deliver On" },
     // { field: "salesRepName", header: "Local Partner Name" },
@@ -83,15 +85,22 @@ export default function CancelledOrders() {
       ),
     });
   });
+  const { toggle, setToggle } = useDataContext();
 
   return data?.length === 0 ? (
     <Loader />
   ) : (
     <div>
-      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
-        <h2 className="text-xl font-inter font-semibold">
-          Cancelled Orders
-        </h2>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+        <div className="flex items-center gap-2">
+          <p
+            onClick={() => setToggle(!toggle)}
+            className="cursor-pointer md:hidden"
+          >
+            <CiMenuBurger size={20} />
+          </p>
+          <h2 className="text-xl font-inter font-semibold">Cancelled Orders</h2>
+        </div>
       </div>
       <div className="space-y-8 pt-28 2xl:pt-32 px-6 2xl:px-12 ">
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">

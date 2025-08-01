@@ -2,9 +2,11 @@
 import BackButton from "@/components/ui/BackButton";
 import Loader from "@/components/ui/Loader";
 import MyDataTable from "@/components/ui/MyDataTable";
+import { useDataContext } from "@/utilities/DataContext";
 import GetAPI from "@/utilities/GetAPI";
 import selectStyles, { drawerSelectStyles } from "@/utilities/SelectStyle";
 import { useState } from "react";
+import { CiMenuBurger } from "react-icons/ci";
 import { ImCross } from "react-icons/im";
 import Select from "react-select";
 
@@ -39,7 +41,11 @@ export default function PartnerCreditLimit() {
     { field: "srName", header: "Supplier Name" },
     { field: "creditLimit", header: "Credit Limit", sort: true },
     { field: "creditUsed", header: "Credit Used", sort: true },
-    { field: "creditUsedPercentage", header: "Credit Utilization (%)", sort: true },
+    {
+      field: "creditUsedPercentage",
+      header: "Credit Utilization (%)",
+      sort: true,
+    },
   ];
 
   const datas = [];
@@ -78,15 +84,24 @@ export default function PartnerCreditLimit() {
   const handleCustomDates = (e) => {
     setCustomDates({ ...customDates, [e.target.name]: e.target.value });
   };
+  const { toggle, setToggle } = useDataContext();
 
   return data?.length === 0 ? (
     <Loader />
   ) : (
     <div>
-      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
-        <h2 className="text-xl font-inter font-semibold">
-          Partner Credit Limit Report
-        </h2>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+        <div className="flex items-center gap-2">
+          <p
+            onClick={() => setToggle(!toggle)}
+            className="cursor-pointer md:hidden"
+          >
+            <CiMenuBurger size={20} />
+          </p>
+          <h2 className="text-xl font-inter font-semibold">
+            Partner Credit Limit Report
+          </h2>
+        </div>
       </div>
       <div className="space-y-8 pt-28 2xl:pt-32 px-6 2xl:px-12 ">
         <div className="flex items-center justify-between">

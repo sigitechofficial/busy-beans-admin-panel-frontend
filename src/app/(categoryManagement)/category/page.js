@@ -22,6 +22,8 @@ import { DeleteAPI } from "@/utilities/DeleteAPI";
 import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
 import ErrorHandler from "@/utilities/ErrorHandler";
+import { CiMenuBurger } from "react-icons/ci";
+import { useDataContext } from "@/utilities/DataContext";
 
 export default function Category() {
   const { data, reFetch } = GetAPI("api/v1/admin/category");
@@ -197,14 +199,22 @@ export default function Category() {
     });
   });
 
+  const { toggle, setToggle } = useDataContext();
+
   return data?.length === 0 ? (
     <Loader />
   ) : (
     <div>
-      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
-        <h2 className="text-xl font-inter font-semibold">
-          All Categories
-        </h2>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+        <div className="flex items-center gap-2">
+          <p
+            onClick={() => setToggle(!toggle)}
+            className="cursor-pointer md:hidden"
+          >
+            <CiMenuBurger size={20} />
+          </p>
+          <h2 className="text-xl font-inter font-semibold">All Categories</h2>
+        </div>
 
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
           <li
@@ -265,11 +275,11 @@ export default function Category() {
         {/* Modal */}
         <Dialog
           visible={modal === "add" || modal === "edit" || modal === "delete"}
-          style={{ width: "40vw" }}
-          className="font-nunito"
+          // style={{ width: "40vw" }}
+          className="font-nunito w-[80%] lg:w-[40vw]"
           onHide={handleModalClose}
           header={
-            <div className="font-nunito font-bold text-2xl text-center">
+            <div className="font-nunito font-bold text-sm lg:text-2xl text-center">
               {modal === "add"
                 ? "Add"
                 : modal === "edit"

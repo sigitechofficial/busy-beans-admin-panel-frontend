@@ -3,6 +3,7 @@ import BackButton from "@/components/ui/BackButton";
 import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
 import MyDataTable from "@/components/ui/MyDataTable";
+import { useDataContext } from "@/utilities/DataContext";
 import { DeleteAPI } from "@/utilities/DeleteAPI";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import GetAPI from "@/utilities/GetAPI";
@@ -13,6 +14,7 @@ import dayjs from "dayjs";
 import { useParams, useRouter } from "next/navigation";
 import { Dialog } from "primereact/dialog";
 import React, { useEffect, useState } from "react";
+import { CiMenuBurger } from "react-icons/ci";
 
 function CustomerDetails() {
   const { userId } = useParams();
@@ -22,10 +24,10 @@ function CustomerDetails() {
     var userType = localStorage.getItem("userType");
     var salesRepId = localStorage.getItem("userID");
   }
-  const { data: salesRepresentativeData, reFetch } = GetAPI(
-    "api/v1/admin/sales-rep"
+  const { data: salesRepresentativeData } = GetAPI("api/v1/admin/sales-rep");
+  const { data, reFetch } = GetAPI(
+    `api/v1/admin/view-customer-detail/${userId}`
   );
-  const { data } = GetAPI(`api/v1/admin/view-customer-detail/${userId}`);
   // const { data: userOrders } = GetAPI(`api/v1/admin/orders?userid=${userId}`);
 
   //   const { data: userOrders } = GetAPI(
@@ -34,8 +36,8 @@ function CustomerDetails() {
 
   let url =
     userType === "admin"
-      ? `api/v1/admin/orders?userid=${userId}`
-      : `api/v1/admin/orders?userid=${userId}&salesRepId=${salesRepId}`;
+      ? `api/v1/admin/orders?userid=${userId}&statusId[ne]=6`
+      : `api/v1/admin/orders?userid=${userId}&salesRepId=${salesRepId}&statusId[ne]=6`;
   const { data: userOrders } = GetAPI(url);
 
   const [selectedRows, setSelectedRows] = useState([]);
@@ -173,8 +175,8 @@ function CustomerDetails() {
       );
       if (res?.data?.status === "success") {
         success_toaster("Local Partner Assigned successfully");
-        handleCancel();
         reFetch();
+        handleCancel();
       } else {
         throw new Error(res?.data?.message || "An unexpected error occurred.");
       }
@@ -229,13 +231,20 @@ function CustomerDetails() {
       ErrorHandler(error);
     }
   };
+  const { toggle, setToggle } = useDataContext();
 
   return data?.length === 0 ? (
     <Loader />
   ) : (
     <div className="w-full">
-      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <div className="text-xl font-inter font-semibold flex items-center gap-2 [&>p]:cursor-pointer">
+          <p
+            onClick={() => setToggle(!toggle)}
+            className="cursor-pointer md:hidden"
+          >
+            <CiMenuBurger size={20} />
+          </p>
           <p
             onClick={() => {
               router.push(
@@ -435,6 +444,11 @@ function CustomerDetails() {
                     {data?.data?.customer?.addresses?.[0].country?.trim() && (
                       <div>{data?.data?.customer?.addresses?.[0].country}</div>
                     )}
+                    {data?.data?.customer?.dispatchEmail && (
+                      <div className="lowercase break-all">
+                        {data?.data?.customer?.dispatchEmail}
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="text-sm text-gray-500">
@@ -501,6 +515,11 @@ function CustomerDetails() {
                     {data?.data?.customer?.billingAddresses?.[0].country?.trim() && (
                       <div>
                         {data?.data?.customer?.billingAddresses?.[0].country}
+                      </div>
+                    )}
+                    {data?.data?.customer?.emailToSendInvoices && (
+                      <div className="lowercase break-all">
+                        {data?.data?.customer?.emailToSendInvoices}
                       </div>
                     )}
                   </div>

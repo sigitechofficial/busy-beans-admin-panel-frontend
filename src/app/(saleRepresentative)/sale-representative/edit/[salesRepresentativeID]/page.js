@@ -183,6 +183,7 @@ export default function EditsSalesRepresentative() {
         formData.append("territoryName", saleRepresentative?.territory);
         formData.append("image", saleRepresentative?.image);
         formData.append("phoneNumber", saleRepresentative?.phoneNumber);
+        formData.append("creditLimit", saleRepresentative?.creditLimit);
         formData.append(
           "countryCode",
           saleRepresentative?.countryCode?.startsWith("+")
@@ -214,7 +215,8 @@ export default function EditsSalesRepresentative() {
             status: true,
           });
           setImagePreview("");
-          router.push("/sale-representative");
+          // router.push("/sale-representative");
+          window.history.back()
         } else {
           throw new Error(
             res?.data?.message || "An unexpected error occurred."
@@ -261,7 +263,7 @@ export default function EditsSalesRepresentative() {
         </div>
       </div> */}
 
-      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <div className="flex items-center gap-x-2">
           <BackButton />
           <h2 className="text-xl font-inter font-semibold">
@@ -347,6 +349,7 @@ export default function EditsSalesRepresentative() {
                 <input
                   type="number"
                   name="creditLimit"
+                  onWheel={(e) => e.target.blur()}
                   value={saleRepresentative?.creditLimit}
                   placeholder="Enter Credit Limit"
                   className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
@@ -515,7 +518,7 @@ export default function EditsSalesRepresentative() {
                 </div>
                 <div className="flex flex-col gap-y-2">
                   <label className="text-labelColor font-medium font-satoshi">
-                    Title{" "}
+                    Title/Territory Name{" "}
                   </label>
                   <input
                     type="text"
@@ -541,7 +544,7 @@ export default function EditsSalesRepresentative() {
                 </div>
                 <div className="flex flex-col gap-y-2">
                   <label className="text-labelColor font-medium font-satoshi">
-                    Phone number
+                    Phone Number
                   </label>
                   <div className="grid grid-cols-10 gap-x-2">
                     <PhoneInput

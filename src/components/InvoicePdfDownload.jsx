@@ -80,7 +80,7 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
 
   const handleDueDate = (date) => {
     const due = dayjs(date).add(30, "day");
-    return due.format("DD/MM/YYYY");
+    return due.format("MM/DD/YYYY");
   };
 
   useEffect(() => {
@@ -98,12 +98,15 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
   }, [invoiceData]);
 
   return (
-    <div className="w-full max-w-[800px] mx-auto pt-32">
+    <div className="w-full max-w-[800px] mx-auto px-6 pt-28 2xl:pt-32 min-w-[700px] overflow-auto">
       <div ref={invoiceRef} className="w-full">
         <div className="w-full mx-auto bg-white pt-8 pb-14 font-satoshi">
           {/* Header */}
           <div className="flex items-center justify-between pb-4 mb-6">
-            <h1 className="text-3xl font-semibold uppercase">Invoice</h1>
+            <div className="flex items-center gap-x-10">
+              <h1 className="text-3xl font-semibold uppercase">Invoice</h1>
+            {invoiceData?.invoicePaidDate && <img className="w-36" src="/images/paidtag.png" alt="invoice paid logo" />}
+            </div>
             <img
               src="/images/logocoffee.png"
               alt="Busy Bean Coffee"
@@ -143,18 +146,19 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
               </div>
               <div className="flex items-center text-sm font-semibold">
                 <div className="w-36">PO Number:</div>
-                {isPrint ? (
+                <div>{pdfData?.poNumber}</div>
+                {/* {isPrint ? (
                   <div>{pdfData?.poNumber}</div>
                 ) : (
                   <input
-                    className="text-start outline-none bg-transparent rounded  font-semibold"
+                    className="overflow-x-visible text-start outline-none bg-transparent rounded  font-semibold"
                     type="text"
                     value={pdfData?.poNumber}
                     onChange={(e) =>
                       handleChange(0, e.target.value, "poNumber")
                     }
                   />
-                )}
+                )} */}
               </div>
             </div>
 
@@ -248,20 +252,25 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
 
                 {/* Phone */}
                 {(invoiceData?.user?.countryCode ||
+                  "+1" ||
                   invoiceData?.user?.phoneNumber) && (
                   <div>
-                    {[
+                    {invoiceData.user.countryCode ||
+                      "+1" + invoiceData.user.phoneNumber}
+                    {/* {[
                       invoiceData.user.countryCode,
                       invoiceData.user.phoneNumber,
                     ]
                       .filter(Boolean)
-                      .join(" ")}
+                      .join(" ")} */}
                   </div>
                 )}
 
                 {/* Email */}
                 {invoiceData?.user?.email && (
-                  <div className="lowercase">{invoiceData.user.email}</div>
+                  <div className="lowercase">
+                    {invoiceData.user.emailToSendInvoices}
+                  </div>
                 )}
               </div>
             </div>

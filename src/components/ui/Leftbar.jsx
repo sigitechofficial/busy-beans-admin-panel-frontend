@@ -41,6 +41,9 @@ import axios from "axios";
 import { BASE_URL } from "@/utilities/URL";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import GetAPI from "@/utilities/GetAPI";
+import { useDataContext } from "@/utilities/DataContext";
+import { getMessagingInstance, onMessage } from "@/utilities/firebase";
+import { requestDeviceToken } from "@/utilities/requestFCMToken";
 
 export default function Leftbar(props) {
   if (typeof window !== "undefined") {
@@ -148,7 +151,6 @@ export default function Leftbar(props) {
     if (typeof window === "undefined") return;
     const path = url.split("/");
     if (isAccountConnected === "false" && connectAccountId !== "null") {
-      console.log("1");
       try {
         const res = await axios.post(
           BASE_URL + `api/v1/admin/stripe-connect-account-url/${userID}`,
@@ -262,12 +264,27 @@ export default function Leftbar(props) {
     0
   );
 
+  useEffect(() => {
+    getMessagingInstance().then((messaging) => {
+      if (messaging) {
+        onMessage(messaging, (payload) => {
+          console.log("📩 Foreground message:", payload);
+
+          success_toaster("Firebase Notification here");
+        });
+      }
+    });
+
+    // Request Device Token
+    requestDeviceToken();
+  }, []);
+
+  const { toggle, setToggle } = useDataContext();
+
   return (
     <section
       className={`bg-white ${
-        props?.navbarVis
-          ? "fixed w-full md:max-w-[240px] lg:max-w-[288px]"
-          : "hidden"
+        !toggle ? "fixed w-full md:max-w-[240px] lg:max-w-[288px]" : "hidden"
       } h-full sm:pb-5 sm:pl-2 border-r-2 z-50`}
     >
       <div className="flex items-center justify-center font-bold text-4xl 2xl:min-h-[70px] h-[70px] 2xl:h-[94px] border-b max-md:hidden">
@@ -298,7 +315,10 @@ export default function Leftbar(props) {
         </div>
         <div
           className="md:hidden"
-          onClick={() => props?.setNavbarVis(!props?.navbarVis)}
+          onClick={() => {
+            // props?.setNavbarVis(!props?.navbarVis);
+            setToggle(!toggle);
+          }}
         >
           <IoClose size="25px" />
         </div>

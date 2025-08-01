@@ -1,19 +1,30 @@
 "use client";
 import ManagementTab from "@/components/ui/ManagementTab";
 import ReportCard from "@/components/ui/ReportCard";
+import { useDataContext } from "@/utilities/DataContext";
 import selectStyles from "@/utilities/SelectStyle";
 import React from "react";
 import { BsCardList } from "react-icons/bs";
+import { CiMenuBurger } from "react-icons/ci";
 import { TbReportAnalytics } from "react-icons/tb";
 import Select from "react-select";
 
 export default function page() {
+  const { toggle, setToggle } = useDataContext();
   return (
     <div>
-      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
-        <h2 className="text-xl font-inter font-semibold">
-          Report Management
-        </h2>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+        <div className="flex items-center gap-2">
+          <p
+            onClick={() => setToggle(!toggle)}
+            className="cursor-pointer md:hidden"
+          >
+            <CiMenuBurger size={20} />
+          </p>
+          <h2 className="text-xl font-inter font-semibold">
+            Report Management
+          </h2>
+        </div>
       </div>
       <div className="space-y-8 pt-28 2xl:pt-32 px-6 2xl:px-12 ">
         {/* <div className="flex items-center justify-between">

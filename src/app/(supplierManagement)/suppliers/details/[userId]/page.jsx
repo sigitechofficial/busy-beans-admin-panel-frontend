@@ -1,6 +1,7 @@
 "use client";
 import BackButton from "@/components/ui/BackButton";
 import Loader from "@/components/ui/Loader";
+import { useDataContext } from "@/utilities/DataContext";
 import GetAPI from "@/utilities/GetAPI";
 import dayjs from "dayjs";
 import { useParams, usePathname, useRouter } from "next/navigation";
@@ -14,12 +15,13 @@ export default function LocalPartnerSupplierDetails() {
   const pathname = usePathname();
   const router = useRouter();
   const { data, reFetch } = GetAPI(`api/v1/admin/supplier/${userId}`);
+  const { toggle, setToggle } = useDataContext();
 
   return data?.length === 0 ? (
     <Loader />
   ) : (
     <div className="w-full">
-      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl font-inter font-semibold flex items-center gap-2">
           <div className="text-base">
             <BackButton />

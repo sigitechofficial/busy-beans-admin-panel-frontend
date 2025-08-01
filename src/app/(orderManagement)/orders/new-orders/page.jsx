@@ -8,6 +8,8 @@ import Loader from "@/components/ui/Loader";
 import { FaEye } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import dayjs from "dayjs";
+import { useDataContext } from "@/utilities/DataContext";
+import { CiMenuBurger } from "react-icons/ci";
 
 export default function NewOrders() {
   if (typeof window !== "undefined") {
@@ -83,15 +85,22 @@ export default function NewOrders() {
       ),
     });
   });
+  const { toggle, setToggle } = useDataContext();
 
   return data?.length === 0 ? (
     <Loader />
   ) : (
     <div>
-      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
-        <h2 className="text-xl font-inter font-semibold">
-          New Orders
-        </h2>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+        <div className="flex items-center gap-2">
+          <p
+            onClick={() => setToggle(!toggle)}
+            className="cursor-pointer md:hidden"
+          >
+            <CiMenuBurger size={20} />
+          </p>
+          <h2 className="text-xl font-inter font-semibold">New Orders</h2>
+        </div>
 
         {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">
           <li>Invoice</li>

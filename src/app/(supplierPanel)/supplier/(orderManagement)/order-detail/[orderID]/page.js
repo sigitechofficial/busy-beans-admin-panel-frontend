@@ -6,6 +6,7 @@ import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
 import OrderCard from "@/components/ui/OrderCard";
 import TrackOrder from "@/components/ui/TrackOrder";
+import { useDataContext } from "@/utilities/DataContext";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import GetAPI from "@/utilities/GetAPI";
 import { PatchAPI } from "@/utilities/PatchAPI";
@@ -14,6 +15,7 @@ import { success_toaster } from "@/utilities/Toaster";
 import { useParams } from "next/navigation";
 import { Dialog } from "primereact/dialog";
 import React, { useState } from "react";
+import { CiMenuBurger } from "react-icons/ci";
 import Select from "react-select";
 
 export default function OrderDetail() {
@@ -233,19 +235,23 @@ export default function OrderDetail() {
   // const handleChange = (e) => {
   //   setAddCheque({ ...addCheque, [e.target.name]: e.target.value });
   // };
+  const { toggle, setToggle } = useDataContext();
 
   return data?.length ? (
     <Loader />
   ) : (
     <div>
-      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
-        <h2 className="text-xl lg:text-2xl font-inter font-semibold flex items-center gap-2">
-          <div className="text-base">
-            <BackButton />
-          </div>
-          Order / {orderID}{" "}
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+        <div className="text-xl font-inter font-semibold flex items-center gap-2 [&>p]:cursor-pointer">
+          <p
+            onClick={() => setToggle(!toggle)}
+            className="cursor-pointer md:hidden"
+          >
+            <CiMenuBurger size={20} />
+          </p>
+          <p onClick={() => window.history.back()}>Order </p>/ {orderID}{" "}
           <span
-            className={` rounded-lg py-2 px-4 font-medium text-sm text-white ${
+            className={`text-xs font-medium px-3 py-1 rounded-full text-white whitespace-nowrap ${
               data?.data?.order?.orderCurrentStatus?.includes("Cancelled")
                 ? "bg-red-500 "
                 : "bg-themeGreen "
@@ -253,7 +259,7 @@ export default function OrderDetail() {
           >
             {data?.data?.order?.orderCurrentStatus}
           </span>
-        </h2>
+        </div>
 
         {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">
           <li>Invoice</li>
@@ -263,7 +269,7 @@ export default function OrderDetail() {
           <li>Export</li>
         </ul> */}
       </div>
-      <div className=" space-y-8 pb-6 pt-32 px-6 2xl:px-12">
+      <div className=" space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
         <div className="flex flex-col md:flex-row md:items-center space-y-2 justify-between">
           {/* <div className="flex items-center gap-x-2">
             <BackButton />

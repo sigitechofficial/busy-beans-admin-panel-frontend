@@ -104,7 +104,7 @@ export default function RootLayout({ children }) {
   // const [navbarVis, setNavbarVis] = useState(
   //   window.innerWidth < 640 ? false : true
   // );
-  const [navbarVis, setNavbarVis] = useState(true);
+  // const [navbarVis, setNavbarVis] = useState(true);
 
   return (
     <html lang="en">
@@ -120,11 +120,16 @@ export default function RootLayout({ children }) {
         <ToastContainer />
         <DataProvider>
           {!isLayoutDisplay && (
-            <Header navbarVis={navbarVis} setNavbarVis={setNavbarVis} />
+            <Header
+
+             
+             />
           )}
 
           {!isLayoutDisplay && (
-            <Leftbar navbarVis={navbarVis} setNavbarVis={setNavbarVis} />
+            <Leftbar 
+
+             />
           )}
 
           <section

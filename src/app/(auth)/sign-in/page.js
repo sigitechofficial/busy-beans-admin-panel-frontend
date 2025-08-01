@@ -73,7 +73,7 @@ export default function SignIn() {
             {
               email: values.email,
               password: values.password,
-              deviceToken: localStorage.getItem("devToken"),
+              tokenId: localStorage.getItem("devToken"),
             }
           );
           if (res?.data?.status === "success") {

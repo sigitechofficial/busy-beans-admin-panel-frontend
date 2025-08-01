@@ -1,12 +1,14 @@
 "use client";
 import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
+import { useDataContext } from "@/utilities/DataContext";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import GetAPI from "@/utilities/GetAPI";
 import { PatchAPI } from "@/utilities/PatchAPI";
 import { success_toaster } from "@/utilities/Toaster";
 import { Dialog } from "primereact/dialog";
 import { useEffect, useState } from "react";
+import { CiMenuBurger } from "react-icons/ci";
 
 export default function ShippingChargesManagement() {
   const [rows, setRows] = useState([]);
@@ -136,99 +138,105 @@ export default function ShippingChargesManagement() {
   // const handleCancel = () => {
   //   setModal(false);
   // };
+  const { toggle, setToggle } = useDataContext();
 
   return data?.length === 0 ? (
     <Loader />
   ) : (
     <div>
-      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
-        <h2 className="text-xl font-inter font-semibold">
-          Shipping Charges Management
-        </h2>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+        <div className="flex items-center gap-2">
+          <p
+            onClick={() => setToggle(!toggle)}
+            className="cursor-pointer md:hidden"
+          >
+            <CiMenuBurger size={20} />
+          </p>
+          <h2 className="text-xl font-inter font-semibold">
+            Shipping Charges Management
+          </h2>
+        </div>
       </div>
- 
+
+      {/* <div className="flex items-center justify-between">
+          <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+            Shipping Charges Management
+          </h2>
+        </div> */}
+      <div className="space-y-8 pt-28 2xl:pt-32 px-6 2xl:px-12 ">
         {/* <div className="flex items-center justify-between">
           <h2 className="text-xl lg:text-2xl font-inter font-semibold">
             Shipping Charges Management
           </h2>
         </div> */}
-        <div className="space-y-8 pt-28 2xl:pt-32 px-6 2xl:px-12 ">
-          {/* <div className="flex items-center justify-between">
-          <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-            Shipping Charges Management
-          </h2>
-        </div> */}
 
-          {loader ? (
-            <MiniLoader />
-          ) : (
-            <div>
-              <div className="space-y-4" id="shipping-rows">
-                <div class="grid grid-cols-4 gap-4 items-center font-semibold text-gray-700 border-b pb-2 mb-4">
-                  <div>Min Range</div>
-                  <div>Max Range</div>
-                  <div>Charges($)</div>
-                  <div>Action</div>
-                </div>
+        {loader ? (
+          <MiniLoader />
+        ) : (
+          <div>
+            <div className="space-y-4" id="shipping-rows">
+              <div class="grid grid-cols-4 gap-4 items-center font-semibold text-gray-700 border-b pb-2 mb-4">
+                <div>Min Range</div>
+                <div>Max Range</div>
+                <div>Charges($)</div>
+                <div>Action</div>
+              </div>
 
-                {rows.map((row, index) => (
-                  <div
-                    key={index}
-                    className="grid grid-cols-4 gap-4 items-center"
-                  >
-                    <input
-                      type="number"
-                      placeholder="Min Range"
-                      className="w-full px-4 py-2 border rounded-md disabled:cursor-not-allowed"
-                      value={index === 0 ? 0 : row.min}
-                      onChange={(e) => updateRow(index, "min", e.target.value)}
-                      disabled={true}
-                      // disabled={index !== 0 || index === 0}
-                    />
-                    <input
-                      type="number"
-                      placeholder="Max Range"
-                      className="w-full px-4 py-2 border rounded-md"
-                      value={row.max}
-                      onChange={(e) => updateRow(index, "max", e.target.value)}
-                    />
-                    <input
-                      type="number"
-                      placeholder="Charges"
-                      className="w-full px-4 py-2 border rounded-md"
-                      value={row.charge}
-                      onChange={(e) =>
-                        updateRow(index, "charge", e.target.value)
-                      }
-                    />
-                    <button
-                      onClick={() => deleteRow(index)}
-                      className="text-red-600 font-semibold border border-red-600 w-20"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                ))}
-
-                <div className="flex justify-end gap-x-2">
+              {rows.map((row, index) => (
+                <div
+                  key={index}
+                  className="grid grid-cols-4 gap-4 items-center"
+                >
+                  <input
+                    type="number"
+                    placeholder="Min Range"
+                    className="w-full px-4 py-2 border rounded-md disabled:cursor-not-allowed"
+                    value={index === 0 ? 0 : row.min}
+                    onChange={(e) => updateRow(index, "min", e.target.value)}
+                    disabled={true}
+                    // disabled={index !== 0 || index === 0}
+                  />
+                  <input
+                    type="number"
+                    placeholder="Max Range"
+                    className="w-full px-4 py-2 border rounded-md"
+                    value={row.max}
+                    onChange={(e) => updateRow(index, "max", e.target.value)}
+                  />
+                  <input
+                    type="number"
+                    placeholder="Charges"
+                    className="w-full px-4 py-2 border rounded-md"
+                    value={row.charge}
+                    onChange={(e) => updateRow(index, "charge", e.target.value)}
+                  />
                   <button
-                    onClick={addRow}
-                    className="mt-6 px-6 py-2.5 bg-theme text-white font-semibold rounded hover:bg-white hover:text-theme border border-theme"
+                    onClick={() => deleteRow(index)}
+                    className="text-red-600 font-semibold border border-red-600 w-20"
                   >
-                    Add More Charges
-                  </button>
-                  <button
-                    onClick={handleSubmit}
-                    className="mt-6 px-6 py-2.5 bg-theme text-white font-semibold rounded hover:bg-white hover:text-theme border border-theme"
-                  >
-                    Save
+                    Delete
                   </button>
                 </div>
+              ))}
+
+              <div className="flex justify-end gap-x-2">
+                <button
+                  onClick={addRow}
+                  className="mt-6 px-6 py-2.5 bg-theme text-white font-semibold rounded hover:bg-white hover:text-theme border border-theme"
+                >
+                  Add More Charges
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  className="mt-6 px-6 py-2.5 bg-theme text-white font-semibold rounded hover:bg-white hover:text-theme border border-theme"
+                >
+                  Save
+                </button>
               </div>
             </div>
-          )}
-        </div>
-  
+          </div>
+        )}
+      </div>
     </div>
   );
 }

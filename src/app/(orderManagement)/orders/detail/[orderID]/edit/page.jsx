@@ -9,6 +9,7 @@ import ErrorHandler from "@/utilities/ErrorHandler";
 import { BASE_URL } from "@/utilities/URL";
 import { PatchAPI } from "@/utilities/PatchAPI";
 import { info_toaster, success_toaster } from "@/utilities/Toaster";
+import Loader from "@/components/ui/Loader";
 
 function EditPage() {
   const { orderID } = useParams();
@@ -223,9 +224,8 @@ function EditPage() {
       state: orderData?.data?.order?.address?.state,
       zipCode: orderData?.data?.order?.address?.zipCode,
       addressOne:
-        orderData?.data?.order?.address?.companyaddress +
-        "" +
-        orderData?.data?.order?.address?.addressLineOne,
+        orderData?.data?.order?.address?.companyaddress?.trim() +
+        orderData?.data?.order?.address?.addressLineOne?.trim(),
       addressTwo: orderData?.data?.order?.address?.addressLineTwo,
       status: orderData?.data?.order?.address?.status,
 
@@ -234,9 +234,8 @@ function EditPage() {
       //   orderData?.data?.order?.user?.billingAddresses?.[0]?.companyaddress,
       billingcompanyaddress: "",
       billingaddressOne:
-        orderData?.data?.order?.user?.billingAddresses?.[0]?.companyaddress +
-        "" +
-        orderData?.data?.order?.user?.billingAddresses?.[0]?.addressLineOne,
+        orderData?.data?.order?.user?.billingAddresses?.[0]?.companyaddress?.trim() +
+        orderData?.data?.order?.user?.billingAddresses?.[0]?.addressLineOne?.trim(),
       billingaddressTwo:
         orderData?.data?.order?.user?.billingAddresses?.[0]?.addressLineTwo,
       billingtown: orderData?.data?.order?.user?.billingAddresses?.[0]?.town,
@@ -263,14 +262,16 @@ function EditPage() {
     // eslint-disable-next-line
   }, [data]);
 
-  return (
+  return data?.length === 0 ? (
+    <Loader />
+  ) : (
     <div>
-      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
-        <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+        <h2 className="text-xl font-inter font-semibold">
           Orders / {orderID} / Addresses
         </h2>
       </div>
-      <div className="pt-32 px-6 2xl:px-12 ">
+      <div className="pt-28 2xl:pt-32 px-6 2xl:px-12 ">
         <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-10 py-8 px-8 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm">
           {/* Shipping Address */}
           <div className="w-full space-y-2">

@@ -16,6 +16,8 @@ import { DeleteAPI } from "@/utilities/DeleteAPI";
 import { Country, State, City } from "country-state-city";
 import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
+import { useDataContext } from "@/utilities/DataContext";
+import { CiMenuBurger } from "react-icons/ci";
 
 export default function Countries() {
   const countries = Country.getAllCountries();
@@ -104,15 +106,22 @@ export default function Countries() {
       }
     }
   };
+  const { toggle, setToggle } = useDataContext();
 
   return data?.length === 0 ? (
     <Loader />
   ) : (
     <div>
-      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
-        <h2 className="text-xl font-inter font-semibold">
-          All Countries
-        </h2>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+        <div className="flex items-center gap-2">
+          <p
+            onClick={() => setToggle(!toggle)}
+            className="cursor-pointer md:hidden"
+          >
+            <CiMenuBurger size={20} />
+          </p>
+          <h2 className="text-xl font-inter font-semibold">All Countries</h2>
+        </div>
       </div>
       <div className="space-y-8 pt-28 2xl:pt-32 px-6 2xl:px-12 ">
         <div className="space-y-4">
@@ -160,11 +169,11 @@ export default function Countries() {
         {/* Modal */}
         <Dialog
           visible={modal === "add" || modal === "delete"}
-          style={{ width: "40vw" }}
-          className="font-nunito"
+          // style={{ width: "40vw" }}
+          className="font-nunito w-[80%] lg:w-[40vw]"
           onHide={() => setModal(false)}
           header={
-            <div className="font-nunito font-bold text-2xl text-center">
+            <div className="font-nunito font-bold text-sm lg:text-2xl text-center">
               {modal === "add" ? "Add" : modal === "delete" ? "Delete" : ""}{" "}
               Country
             </div>

@@ -113,8 +113,8 @@ export default function UpdateCustomer() {
           // companyaddress: c.addresses?.[0]?.companyaddress || "",
           companyaddress: "",
           addressLineOne:
-            (c.addresses?.[0]?.companyaddress || "") +
-              c.addresses?.[0]?.addressLineOne || "",
+            (c.addresses?.[0]?.companyaddress || "")?.trim() +
+            (c.addresses?.[0]?.addressLineOne || "")?.trim(),
           addressLineTwo: c.addresses?.[0]?.addressLineTwo || "",
           town: c.addresses?.[0]?.town || "",
           country: c.addresses?.[0]?.country || "",
@@ -342,11 +342,12 @@ export default function UpdateCustomer() {
         if (res?.data?.status === "success") {
           setLoader(false);
           success_toaster("Customer updated successfully");
-          router.push(
-            userType === "admin"
-              ? "/customers"
-              : "/sales-representative/customers"
-          );
+          window.history.back()
+          // router.push(
+          //   userType === "admin"
+          //     ? "/customers"
+          //     : "/sales-representative/customers"
+          // );
         } else {
           throw new Error(
             res?.data?.message || "An unexpected error occurred."
@@ -412,10 +413,8 @@ export default function UpdateCustomer() {
     <Loader />
   ) : (
     <div>
-      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
-        <h2 className="text-xl font-inter font-semibold">
-          Update Customer
-        </h2>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+        <h2 className="text-xl font-inter font-semibold">Update Customer</h2>
       </div>
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
         <div className="flex items-center gap-x-2">

@@ -10,6 +10,8 @@ import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import { BASE_URL } from "@/utilities/URL";
 import axios from "axios";
+import { CiMenuBurger } from "react-icons/ci";
+import { useDataContext } from "@/utilities/DataContext";
 
 export default function CreateOrder() {
   if (typeof window !== "undefined") {
@@ -151,13 +153,20 @@ export default function CreateOrder() {
   //     }
   //   }
   // };
+  const { toggle, setToggle } = useDataContext();
 
   return (
     <div>
-      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
-        <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-          Create Order
-        </h2>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+        <div className="flex items-center gap-2">
+          <p
+            onClick={() => setToggle(!toggle)}
+            className="cursor-pointer md:hidden"
+          >
+            <CiMenuBurger size={20} />
+          </p>
+          <h2 className="text-xl font-inter font-semibold">Create Order</h2>
+        </div>
 
         <Select
           onChange={(e) => setFilterId(e?.value)}
@@ -167,7 +176,7 @@ export default function CreateOrder() {
           styles={selectStyles}
         />
       </div>
-      <div className="space-y-8 pb-6 pt-32 px-6 2xl:px-12">
+      <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
         {/* <div className="flex items-center justify-end"> */}
         {/* <h2 className="text-xl lg:text-2xl font-inter font-semibold">
             Create Order

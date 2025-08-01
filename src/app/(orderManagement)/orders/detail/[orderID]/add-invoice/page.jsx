@@ -2,6 +2,7 @@
 import BackButton from "@/components/ui/BackButton";
 import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
+import { useDataContext } from "@/utilities/DataContext";
 import GetAPI from "@/utilities/GetAPI";
 import { PatchAPI } from "@/utilities/PatchAPI";
 import { selectStyles2 } from "@/utilities/SelectStyle";
@@ -10,6 +11,7 @@ import { useParams, useRouter } from "next/navigation";
 import { stringify } from "postcss";
 import { Dialog } from "primereact/dialog";
 import React, { useEffect, useState } from "react";
+import { CiMenuBurger } from "react-icons/ci";
 import { IoIosSearch } from "react-icons/io";
 import { IoCardSharp, IoSearch } from "react-icons/io5";
 import Select from "react-select";
@@ -336,13 +338,20 @@ export default function AddInvoice() {
       setLoading(false);
     }
   };
+  const { toggle, setToggle } = useDataContext();
 
   return data?.length === 0 ? (
     <Loader />
   ) : (
     <div>
-      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <div className="text-xl font-inter font-semibold flex items-center gap-x-1">
+          <p
+            onClick={() => setToggle(!toggle)}
+            className="cursor-pointer md:hidden"
+          >
+            <CiMenuBurger size={20} />
+          </p>
           <p
             className="hover:text-blue-500 cursor-pointer"
             onClick={() => router.push("/orders")}

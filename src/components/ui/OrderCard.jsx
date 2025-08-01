@@ -188,7 +188,7 @@ export default function OrderCard(props) {
   });
 
   return (
-    <div className="space-y-10 py-4 px-8 border border-borderColor shadow-tableShadow ">
+    <div className="space-y-10 py-4 px-4 2xl:px-8 border border-borderColor shadow-tableShadow ">
       {/* Upper section */}
       {props?.orderData?.note && (
         <div className="space-y-4 font-inter">
@@ -370,8 +370,8 @@ export default function OrderCard(props) {
         </div>
       </div> */}
 
-      <div className="w-full">
-        <table className="w-full border border-gray-200 text-sm border-collapse">
+      <div className="w-full overflow-auto">
+        <table className="w-full border border-gray-200 text-sm border-collapse min-w-[750px]">
           <thead className="bg-gray-100">
             <tr>
               <th className="py-2 px-2 text-left border border-gray-200">

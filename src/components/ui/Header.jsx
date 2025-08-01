@@ -1,14 +1,8 @@
 "use client";
-import { getMessagingInstance, onMessage } from "@/utilities/firebase";
-import { requestDeviceToken } from "@/utilities/requestFCMToken";
-import { success_toaster } from "@/utilities/Toaster";
-import Link from "next/link";
+import { useDataContext } from "@/utilities/DataContext";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
-import { GiHamburgerMenu } from "react-icons/gi";
+import { CiMenuBurger } from "react-icons/ci";
 import { PiUserBold } from "react-icons/pi";
-
-// import { onMessage } from "firebase/messaging";
 
 export default function Header(props) {
   if (typeof window !== "undefined") {
@@ -16,21 +10,7 @@ export default function Header(props) {
     var userType = localStorage.getItem("userType");
   }
   const pathname = usePathname();
-
-  useEffect(() => {
-    getMessagingInstance().then((messaging) => {
-      if (messaging) {
-        onMessage(messaging, (payload) => {
-          console.log("📩 Foreground message:", payload);
-
-          success_toaster("Firebase Notification here");
-        });
-      }
-    });
-
-    // Request Device Token
-    requestDeviceToken();
-  }, []);
+  const { toggle, setToggle } = useDataContext();
 
   return (
     pathname === "/" && (
@@ -70,10 +50,10 @@ export default function Header(props) {
             </div>
           </div>
           <div
-            className="md:hidden"
-            onClick={() => props?.setNavbarVis(!props?.navbarVis)}
+            className="md:hidden cursor-pointer"
+            onClick={() => setToggle(!toggle)}
           >
-            <GiHamburgerMenu size="25px" />
+            <CiMenuBurger color="black" size={20} />
           </div>
         </nav>
       </header>

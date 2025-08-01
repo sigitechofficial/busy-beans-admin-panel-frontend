@@ -7,7 +7,7 @@ const DataContext = createContext();
 
 // 2. Create the provider component
 export const DataProvider = ({ children }) => {
-  const [toggle, setToggle] = useState(null);
+  const [toggle, setToggle] = useState(false);
 
   const value = {
     toggle,

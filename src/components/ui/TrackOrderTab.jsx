@@ -11,8 +11,8 @@ export default function TrackOrderTab(props) {
       > 
         <FaCheck color="#FFFFFF" size={20} />
       </div>
-      <p className="text-center">{heading}</p>
-      <p className="text-black text-opacity-40">{time}</p>
+      <p className="text-center text-sm lg:text-base">{heading}</p>
+      <p className="text-black text-opacity-40 text-xs lg:text-base">{time}</p>
     </div>
   );
 }

@@ -21,6 +21,8 @@ import { CgNotes } from "react-icons/cg";
 import { LuClipboardList } from "react-icons/lu";
 import Link from "next/link";
 import dayjs from "dayjs";
+import { CiMenuBurger } from "react-icons/ci";
+import { useDataContext } from "@/utilities/DataContext";
 
 export default function OrderDetail() {
   if (typeof window !== "undefined") {
@@ -351,13 +353,16 @@ export default function OrderDetail() {
       ErrorHandler(error);
     }
   };
-
+  const { toggle, setToggle } = useDataContext();
   return data?.length === 0 ? (
     <Loader />
   ) : (
     <div>
-      <div className="w-full sm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
-        <div className="text-xl font-inter font-semibold flex items-center gap-2 [&>p]:cursor-pointer">
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+        <div className="text-xl font-inter font-semibold flex items-center gap-2 [&>p]:cursor-pointer [&>p]:whitespace-nowrap">
+          <p onClick={() => setToggle(!toggle)} className="cursor-pointer">
+            <CiMenuBurger size={20} />
+          </p>
           <p onClick={() => router.push("/orders")}>Order /</p>{" "}
           {data?.data?.order?.id}{" "}
           <p
@@ -373,9 +378,9 @@ export default function OrderDetail() {
               : data?.data?.order?.statusId == 1
               ? "Order Placed"
               : data?.data?.order?.statusId == 2
-              ? "Dispatched to Supplier"
+              ? "Dispatched"
               : data?.data?.order?.statusId == 3
-              ? "Acknowledged by Supplier"
+              ? "Acknowledged"
               : data?.data?.order?.statusId == 6
               ? "Cancelled"
               : "fulfilled"}
@@ -422,7 +427,7 @@ export default function OrderDetail() {
       </div>
 
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
-        <div className="flex flex-col md:flex-row md:items-center space-y-2 justify-end">
+        <div className="flex justify-end">
           {/* <div className="flex items-center gap-x-2">
             <BackButton />
             <h2 className="text-xl lg:text-2xl font-inter font-semibold">
@@ -434,7 +439,7 @@ export default function OrderDetail() {
             </div>
           </div> */}
 
-          <div className="flex items-center gap-x-2 sm:gap-x-4 [&>button]:py-2 sm:[&>button]:py-3 [&>button]:px-2 sm:[&>button]:px-5 [&>button]:rounded-lg [&>button]:font-nunito [&>button]:font-medium max-sm:[&>button]:text-sm">
+          <div className="flex items-center gap-x-2 sm:gap-x-4 [&>button]:py-2 sm:[&>button]:py-3 [&>button]:px-2 sm:[&>button]:px-5 [&>button]:rounded-lg [&>button]:font-nunito [&>button]:font-medium [&>button]:text-xs lg:[&>button]:text-sm">
             {/* <button
             type="button"
             onClick={handleAddChequeModel}
@@ -569,7 +574,7 @@ export default function OrderDetail() {
               }}
             /> */}
 
-              <div className="bg-blue-50 rounded-md w-full p-6 flex gap-x-2">
+              <div className="bg-blue-50 rounded-md w-full px-4 lg:px-6 py-6 flex gap-x-2">
                 <div>
                   <LuClipboardList size={25} />
                 </div>
@@ -631,7 +636,7 @@ export default function OrderDetail() {
                 </div>
               </div>
 
-              <div className="w-full grid grid-cols-2 gap-20 py-4 px-8 space-y-4 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm">
+              <div className="w-full grid xl:grid-cols-2 gap-10 xl:gap-20 py-4 px-4 2xl:px-8 space-y-4 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm">
                 <div className="w-full [&>div]:h-10 text-sm">
                   {data?.data?.order?.on && (
                     <div className="flex items-center gap-5 border-b">
@@ -755,7 +760,7 @@ export default function OrderDetail() {
                   )}
                 </div>
                 {/* ================ */}
-                <div className="w-full grid grid-cols-2 gap-10 text-sm">
+                <div className="w-full grid grid-cols-2 gap-10 text-xs lg:text-sm">
                   {/* Deliver To */}
                   <div>
                     <h6 className="font-semibold">Deliver To</h6>
@@ -777,6 +782,9 @@ export default function OrderDetail() {
                           {data?.data?.order?.user?.phoneNumber}
                         </p>
                       )}
+                    </div>
+                    <div className="lowercase break-all">
+                      {data?.data?.order?.user?.dispatchEmail}
                     </div>
                     <span
                       onClick={() => router.push(`${pathname}/edit`)}
@@ -863,7 +871,7 @@ export default function OrderDetail() {
                     {/* Email */}
                     {data?.data?.order?.user?.email && (
                       <div className="lowercase break-all">
-                        {data?.data?.order?.user?.email}
+                        {data?.data?.order?.user?.emailToSendInvoices}
                       </div>
                     )}
 
@@ -939,7 +947,7 @@ export default function OrderDetail() {
             </div>
 
             {/* Right side */}
-            <div className="space-y-8 -order-last xl:-order-first">
+            <div className="space-y-8">
               <TrackOrder
                 orderHistories={data?.data?.order?.orderHistories}
                 statusId={data?.data?.order?.statusId}

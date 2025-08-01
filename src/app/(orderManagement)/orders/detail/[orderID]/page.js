@@ -360,7 +360,7 @@ export default function OrderDetail() {
     <div>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <div className="text-xl font-inter font-semibold flex items-center gap-2 [&>p]:cursor-pointer [&>p]:whitespace-nowrap">
-          <p onClick={() => setToggle(!toggle)} className="cursor-pointer">
+          <p onClick={() => setToggle(!toggle)} className="cursor-pointer md:hidden">
             <CiMenuBurger size={20} />
           </p>
           <p onClick={() => router.push("/orders")}>Order /</p>{" "}

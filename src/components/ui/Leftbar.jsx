@@ -263,23 +263,36 @@ export default function Leftbar(props) {
     (sum, item) => (item?.id != 6 ? sum + item?.count : sum),
     0
   );
-
   useEffect(() => {
+    let timeoutId = null;
+
     getMessagingInstance().then((messaging) => {
       if (messaging) {
         onMessage(messaging, (payload) => {
           console.log("📩 Foreground message:", payload);
+          setNewOrder(true);
+          success_toaster("Firebase notification Order placed");
 
-          success_toaster("Firebase Notification here");
+          setOrderData(payload);
+          clearTimeout(timeoutId);
+          timeoutId = setTimeout(() => {
+            setNewOrder(false);
+          }, 10000);
         });
       }
     });
 
     // Request Device Token
     requestDeviceToken();
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
   }, []);
 
-  const { toggle, setToggle } = useDataContext();
+  const { toggle, setToggle, setNewOrder, newOrder, orderData, setOrderData } =
+    useDataContext();
+  console.log("🚀 ~ Leftbar ~ orderData:", orderData);
 
   return (
     <section
@@ -1162,6 +1175,18 @@ export default function Leftbar(props) {
         </ul>
       ) : (
         handleInvalidUser()
+      )}
+
+      {newOrder && userType !== "supplier" && (
+        <div
+          onClick={() => {
+            router.push(`/orders/detail/${orderData?.data?.orderId}`);
+          }}
+          className="fixed bottom-5 right-2 w-72 px-4 rounded-md bg-theme text-white cursor-pointer p-2 "
+        >
+          <p>{orderData?.notification?.title}</p>
+          <p>{orderData?.notification?.body}</p>
+        </div>
       )}
     </section>
   );

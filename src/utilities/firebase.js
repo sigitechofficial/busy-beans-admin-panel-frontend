@@ -49,7 +49,6 @@ export {
   auth,
   googleProvider,
   facebookProvider,
-  messaging,
   getToken,
   onMessage,
   getMessagingInstance,

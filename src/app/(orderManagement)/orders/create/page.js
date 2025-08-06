@@ -11,6 +11,7 @@ import ErrorHandler from "@/utilities/ErrorHandler";
 import { BASE_URL } from "@/utilities/URL";
 import axios from "axios";
 import { CiMenuBurger } from "react-icons/ci";
+import { LuSearch } from "react-icons/lu"; 
 import { useDataContext } from "@/utilities/DataContext";
 
 export default function CreateOrder() {
@@ -25,6 +26,8 @@ export default function CreateOrder() {
   const [filterId, setFilterId] = useState("");
   const [createOrderData, setCreateOrderData] = useState(createOrderDataList);
   const [visibleRight, setVisibleRight] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
   const { data: category } = GetAPI(`api/v1/admin/category`);
   let categoryList = [{ value: "", label: "All" }];
   if (category) {
@@ -37,6 +40,7 @@ export default function CreateOrder() {
     : `api/v1/admin/product`;
 
   const { data, reFetch } = GetAPI(url);
+  
   const handlePlus = (id, itemQuantity) => {
     const findItemIndex = createOrderData?.findIndex((item) => item?.id === id);
     if (findItemIndex === -1) {
@@ -153,6 +157,18 @@ export default function CreateOrder() {
   // };
   const { toggle, setToggle } = useDataContext();
 
+  const filteredProducts = data?.data?.data?.filter((item) => {
+    const search = searchTerm.toLowerCase();
+    return (
+      item?.name?.toLowerCase().includes(search) ||
+      item?.sku?.toLowerCase().includes(search) ||
+      item?.productCode?.toLowerCase().includes(search) ||
+      String(item?.price).toLowerCase().includes(search) ||
+      String(item?.wholesalePrice).toLowerCase().includes(search) ||
+      String(item?.weight).toLowerCase().includes(search)
+    );
+  });
+
   return data?.length === 0 ? (
     <Loader />
   ) : (
@@ -162,16 +178,15 @@ export default function CreateOrder() {
           <p onClick={() => setToggle(!toggle)} className="cursor-pointer md:hidden">
             <CiMenuBurger size={20} />
           </p>
-
           <h2 className="text-xl font-inter font-semibold">Create Order</h2>
         </div>
-        <Select
-          onChange={(e) => setFilterId(e?.value)}
-          placeholder="Category"
-          options={categoryList}
-          className="w-40"
-          styles={selectStyles}
-        />
+          <Select
+            onChange={(e) => setFilterId(e?.value)}
+            placeholder="Category"
+            options={categoryList}
+            className="w-40"
+            styles={selectStyles}
+          />
       </div>
 
       <div className="space-y-8 pt-28 2xl:pt-32 px-6 2xl:px-12">
@@ -207,9 +222,19 @@ export default function CreateOrder() {
             : "Complete Account Registration"}
         </button>
       </div> */}
+        <div className="relative">
+          <input
+            type="search"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search products..."
+            className="w-[220px] sm:w-[300px] md:w-[360px] h-10 md:h-12 bg-themeGray rounded-lg ps-10 pe-5 outline-none placeholder:font-inter placeholder:font-medium focus:bg-gray-200"
+          />
+          <LuSearch size={20} color="#111827" className="absolute top-3.5 left-3" />
+        </div>
         <div className="space-y-4 relative">
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-            {data?.data?.data?.map((item, i) => (
+            {filteredProducts?.map((item, i) => (
               <StockCard
                 key={i}
                 id={item?.id}
@@ -229,6 +254,7 @@ export default function CreateOrder() {
               />
             ))}
           </div>
+
           <div className="fixed right-10 bottom-10">
             <button
               onClick={() =>
@@ -244,6 +270,7 @@ export default function CreateOrder() {
               </div>
             </button>
           </div>
+
           <DrawerBeans
             drawerOpen={visibleRight}
             setDrawerOpen={setVisibleRight}

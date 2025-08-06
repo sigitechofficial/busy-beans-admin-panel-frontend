@@ -68,7 +68,14 @@ function CustomerDetails() {
   };
 
   const orderDatas = [];
+
   userOrders?.data?.data?.map((elem, idx) => {
+    const today = dayjs();
+    const invoiceDate = dayjs(elem?.invoiceDate);
+    const daysSinceInvoice = invoiceDate.isValid() ? today.diff(invoiceDate, "day") : 0;
+    const termDays = elem?.termDays ?? 30;
+    const isOverdue = daysSinceInvoice > termDays;
+
     orderDatas.push({
       sl: elem?.id,
       id: elem?.id,
@@ -96,13 +103,22 @@ function CustomerDetails() {
           {elem?.orderCurrentStatus}
         </span>
       ),
+      // overdue: (
+      //   <span
+      //     className={`text-xs font-medium px-3 py-1 rounded-full text-white whitespace-nowrap ${
+      //       !elem?.overdueInvoice ? "bg-green-600 hidden" : "bg-red-500"
+      //     }`}
+      //   >
+      //     {elem?.overdueInvoice ? "Yes" : ""}
+      //   </span>
+      // ),
       overdue: (
         <span
           className={`text-xs font-medium px-3 py-1 rounded-full text-white whitespace-nowrap ${
-            !elem?.overdueInvoice ? "bg-green-600 hidden" : "bg-red-500"
+            isOverdue ? "bg-red-500" : "bg-green-600 hidden"
           }`}
         >
-          {elem?.overdueInvoice ? "Yes" : ""}
+          {isOverdue ? "Yes" : ""}
         </span>
       ),
       invSendDate: elem?.invoiceDate

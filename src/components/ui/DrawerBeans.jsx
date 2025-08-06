@@ -660,7 +660,7 @@ const DrawerBeans = ({
             </div>
           )}
 
-          <div className={`absolute bottom-0 left-[30px] py-5 flex justify-center  w-[452px] ${loader ? "opacity-60":"bg-theme "} `}>
+          <div className={`absolute bottom-0 left-0 py-5 flex justify-center w-full px-4 sm:px-0 sm:left-[30px] sm:w-[452px] ${loader ? "opacity-60" : "bg-theme"}`}>
             <button
               disabled={loader}
               className="bg-themeLight font-bold text-white rounded-[4px] px-5 min-h-14 w-full flex items-center justify-between"

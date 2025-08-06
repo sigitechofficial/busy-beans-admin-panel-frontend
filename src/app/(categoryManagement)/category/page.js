@@ -127,6 +127,7 @@ export default function Category() {
   const columns = [
     { field: "sl", header: "SL", sort: true },
     { field: "name", header: "Name" },
+    { field: "numberOfProducts", header: "No. of products" },
     {
       field: "currentStatus",
       header: "Current Status",
@@ -143,6 +144,7 @@ export default function Category() {
     return datas.push({
       sl: i + 1,
       name: cat?.name,
+      numberOfProducts: cat?.numberOfProducts,
       currentStatus: (
         <div>
           {cat?.status ? (
@@ -301,9 +303,19 @@ export default function Category() {
             ) : (
               <div className="w-full space-y-4">
                 {modal === "delete" ? (
-                  <p className="text-labelColor font-nunito font-medium text-lg text-center">
-                    Are you sure you want to delete this Category ?
-                  </p>
+                  // <p className="text-labelColor font-nunito font-medium text-lg text-center">
+                  //   Are you sure you want to delete this Category ?
+                  // </p>
+                      <p className="text-labelColor font-nunito font-medium text-lg text-center">
+                        Are you sure you want to delete this Category
+                        {data?.data?.data?.find((cat) => cat.id === categoryID)?.numberOfProducts > 0 && (
+                          <span className="text-red-600 font-bold">
+                            {" "}which has {
+                              data?.data?.data?.find((cat) => cat.id === categoryID)?.numberOfProducts
+                            } product(s)
+                          </span>
+                        )}?
+                      </p>
                 ) : (
                   <div className="flex flex-col gap-y-2">
                     <label className="text-labelColor font-medium font-satoshi">

@@ -1393,7 +1393,7 @@ export default function AddCustomer() {
                   </div>
                 </div>
 
-                <div className="w-[399px] pt-5">
+                <div className="w-full max-w-[399px] pt-5">
                   <button
                     type="submit"
                     className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"

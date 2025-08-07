@@ -175,13 +175,20 @@ export default function ShippingChargesManagement() {
         ) : (
           <div>
             <div className="space-y-4" id="shipping-rows">
-              <div class="grid grid-cols-4 gap-4 items-center font-semibold text-gray-700 border-b pb-2 mb-4">
-                <div>Min Range</div>
-                <div>Max Range</div>
-                <div>Charges($)</div>
-                <div>Action</div>
-              </div>
-
+                  <div className="grid grid-cols-4 gap-4 items-center font-semibold text-gray-700 border-b pb-2 mb-4 text-sm sm:text-base">
+                    <div className="truncate">
+                      Min Range
+                    </div>
+                    <div className="truncate">
+                      Max Range
+                    </div>
+                    <div className="truncate">
+                      Charges($)
+                    </div>
+                    <div className="truncate">
+                      Action
+                    </div>
+                  </div>
               {rows.map((row, index) => (
                 <div
                   key={index}

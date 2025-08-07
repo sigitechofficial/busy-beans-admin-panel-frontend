@@ -82,7 +82,6 @@ const DrawerBeans = ({
       ? `api/v1/admin/customer-management/customer-list/all`
       : `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}`
   );
-  // console.log("🚀 ~ data:", data?.data?.data);
 
   data?.data?.data?.map((user) =>
     options.push({ value: user?.email, label: user?.email })
@@ -305,7 +304,6 @@ const DrawerBeans = ({
     const selectedEmail = data?.data?.data?.find(
       (customer) => customer?.id === id
     );
-    // console.log("🚀 ~ handleEmail ~ selectedEmail:", selectedEmail);
     setOrder({
       ...order,
       userId: selectedEmail?.id,

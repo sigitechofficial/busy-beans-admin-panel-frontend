@@ -158,14 +158,11 @@ export default function CreateOrder() {
   const { toggle, setToggle } = useDataContext();
 
   const filteredProducts = data?.data?.data?.filter((item) => {
-    const search = searchTerm.toLowerCase();
+    const search = searchTerm.trim().toLowerCase();
     return (
-      item?.name?.toLowerCase().includes(search) ||
-      item?.sku?.toLowerCase().includes(search) ||
-      item?.productCode?.toLowerCase().includes(search) ||
-      String(item?.price).toLowerCase().includes(search) ||
-      String(item?.wholesalePrice).toLowerCase().includes(search) ||
-      String(item?.weight).toLowerCase().includes(search)
+      item?.name?.toLowerCase().trim().includes(search) ||
+      item?.sku?.toLowerCase().trim().includes(search) ||
+      item?.productCode?.toLowerCase().trim().includes(search)
     );
   });
 

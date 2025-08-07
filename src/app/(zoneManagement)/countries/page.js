@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-key */
 "use client";
 export const dynamic = "force-dynamic";
 import CountryCard from "@/components/ui/CountryCard";
@@ -216,17 +217,17 @@ export default function Countries() {
                     Are you sure you want to delete this Country ?
                   </p>
                 )}
-                <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
+                <div className="flex items-center justify-end gap-x-3 [&>button]:font-nunito [&>button]:text-sm sm:[&>button]:text-base [&>button]:py-2 sm:[&>button]:py-3 [&>button]:font-medium">
                   <button
                     type="button"
                     onClick={() => setModal("")}
-                    className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow  px-6"
+                    className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow px-4 sm:px-6"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="rounded-lg border border-theme text-white px-10 bg-theme hover:bg-white hover:text-theme duration-150"
+                    className="rounded-lg border border-theme text-white px-10 bg-theme hover:bg-white hover:text-theme duration-150 px-5 sm:px-10"
                   >
                     {modal === "add"
                       ? "Add"

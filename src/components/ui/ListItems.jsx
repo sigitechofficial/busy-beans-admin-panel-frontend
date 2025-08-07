@@ -5,9 +5,14 @@ import { usePathname } from "next/navigation";
 export default function ListItems(props) {
   const pathName = usePathname();
   const { toggle, setToggle } = useDataContext();
+
+  const handleLinkClick = () => {
+    setToggle(true);
+  };
+
   return (
     <Link
-      // onClick={() => setToggle(!toggle)}
+      onClick={handleLinkClick}
       className={`flex gap-x-2 justify-between items-center py-2 px-2 rounded-lg font-inter font-medium text-themeLightGray hover:bg-theme hover:text-white duration-200
     ${
       pathName === props.to || props.active

@@ -179,7 +179,6 @@ export default function Leftbar(props) {
       (connectAccountId === "null" || !connectAccountId) &&
       isAccountConnected === "false"
     ) {
-      console.log("2");
       try {
         const res = await axios.post(
           BASE_URL + `api/v1/admin/create-stripe-connect-account/${userID}`,
@@ -211,7 +210,6 @@ export default function Leftbar(props) {
       (connectAccountId !== "null" || !connectAccountId) &&
       isAccountConnected === "true"
     ) {
-      console.log("3");
       try {
         const res = await axios.get(
           BASE_URL + `api/v1/admin/stripe-connect-account-dashboard/${userID}`
@@ -269,7 +267,6 @@ export default function Leftbar(props) {
     getMessagingInstance().then((messaging) => {
       if (messaging) {
         onMessage(messaging, (payload) => {
-          console.log("📩 Foreground message:", payload);
           setNewOrder(true);
           success_toaster("Firebase notification Order placed");
 
@@ -291,14 +288,20 @@ export default function Leftbar(props) {
   }, []);
 
   const { toggle, setToggle, setNewOrder, newOrder, orderData, setOrderData } =
-    useDataContext();
-  console.log("🚀 ~ Leftbar ~ orderData:", orderData);
+    useDataContext();  
+  useEffect(() => {
+    if (
+      typeof window !== "undefined" &&
+      !["admin", "supplier", "salesRepresentative"].includes(userType)
+    ) {
+      router.push("/sign-in");
+    }
+  }, []);
 
   return (
     <section
-      className={`bg-white ${
-        !toggle ? "fixed w-full md:max-w-[240px] lg:max-w-[288px]" : "hidden"
-      } h-full sm:pb-5 sm:pl-2 border-r-2 z-50`}
+      className={`bg-white ${toggle ? "hidden" : "block"
+        } md:block fixed w-full md:max-w-[240px] lg:max-w-[288px] h-full sm:pb-5 sm:pl-2 border-r-2 z-50`}
     >
       <div className="flex items-center justify-center font-bold text-4xl 2xl:min-h-[70px] h-[70px] 2xl:h-[94px] border-b max-md:hidden">
         <Link href="/">
@@ -1173,9 +1176,7 @@ export default function Leftbar(props) {
             </button>
           </div>
         </ul>
-      ) : (
-        handleInvalidUser()
-      )}
+      ) : null}
 
       {newOrder && userType !== "supplier" && (
         <div

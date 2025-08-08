@@ -61,6 +61,7 @@ const DrawerBeans = ({
     addressId: "",
     userId: "",
     shippingCharges: "",
+    discountPercentage: 0,
   });
 
   if (typeof window !== "undefined") {
@@ -298,18 +299,45 @@ const DrawerBeans = ({
     });
     setAddressOptions([...addressList]);
   };
+  
+const fetchChargesForCustomer = async (customerId, weight) => {
+  if (!customerId || !weight) return;
+
+  try {
+    const res = await PostAPI(
+      `api/v1/admin/shipping-charges-on-weight/customer/${customerId}`,
+      { weight }
+    );
+
+    if (res?.data?.status === "success") {
+      const payload = res?.data?.data || {};
+
+      const shipping = Number(payload?.shippingCharges ?? payload?.charges ?? 0);
+      const discountPct = Number(payload?.discountPercentage ?? 0);
+
+      setOrder((prev) => ({
+        ...prev,
+        shippingCharges: shipping,
+        discountPercentage: discountPct,
+      }));
+    } else {
+      throw new Error(res?.data?.message || "Failed to fetch charges.");
+    }
+  } catch (err) {
+    ErrorHandler(err);
+  }
+};
 
   const handleCompanyName = (id) => {
-    // setEmail(email);
-    const selectedEmail = data?.data?.data?.find(
-      (customer) => customer?.id === id
-    );
-    setOrder({
-      ...order,
+    const selectedEmail = data?.data?.data?.find((customer) => customer?.id === id);
+
+    setOrder((prev) => ({
+      ...prev,
       userId: selectedEmail?.id,
       addressId: "",
-    });
+    }));
     setEmail(selectedEmail?.email);
+
     const addressList = (selectedEmail?.addresses ?? []).map((address) => {
       const parts = [
         address.companyaddress,
@@ -320,39 +348,53 @@ const DrawerBeans = ({
         address.zipCode,
         address.country,
       ].filter((part) => part && part.trim() !== "");
-      return {
-        value: address.id,
-        label: parts.length > 0 ? parts.join(", ") : "",
-      };
+      return { value: address.id, label: parts.length > 0 ? parts.join(", ") : "" };
     });
     setAddressOptions([...addressList]);
+
+    fetchChargesForCustomer(selectedEmail?.id, totalWeight);
   };
 
+  // useEffect(() => {
+  //   const fetchCharges = async () => {
+  //     try {
+  //       const res = await PostAPI("api/v1/admin/shipping-charges-on-weight", {
+  //         weight: totalWeight,
+  //       });
+  //       if (res?.data?.status === "success") {
+  //         success_toaster("Shipping Charges Added Successfully");
+  //         setOrder({ ...order, shippingCharges: res?.data?.data?.charges });
+  //       } else {
+  //         throw new Error(
+  //           res?.data?.message || "An unexpected error occurred."
+  //         );
+  //       }
+  //     } catch (error) {
+  //       ErrorHandler(error);
+  //     }
+  //   };
+  //   // if (type === "createOrder" && open) {
+  //   //   fetchCharges();
+  //   // }
+  //   if (open) {
+  //     fetchCharges();
+  //   }
+  // }, [open, quotationData]);
+
   useEffect(() => {
-    const fetchCharges = async () => {
-      try {
-        const res = await PostAPI("api/v1/admin/shipping-charges-on-weight", {
-          weight: totalWeight,
-        });
-        if (res?.data?.status === "success") {
-          success_toaster("Shipping Charges Added Successfully");
-          setOrder({ ...order, shippingCharges: res?.data?.data?.charges });
-        } else {
-          throw new Error(
-            res?.data?.message || "An unexpected error occurred."
-          );
-        }
-      } catch (error) {
-        ErrorHandler(error);
-      }
-    };
-    // if (type === "createOrder" && open) {
-    //   fetchCharges();
-    // }
-    if (open) {
-      fetchCharges();
+    if (open && order.userId) {
+      fetchChargesForCustomer(order.userId, totalWeight);
     }
-  }, [open, quotationData]);
+  }, [open, order.userId, totalWeight]);
+
+  const discountPercentage = Number(order?.discountPercentage ?? 0);
+  const discountAmount = (totalPrice * discountPercentage) / 100;
+
+  const finalTotal =
+    discountPercentage > 0
+      ? (totalPrice - discountAmount) + Number(order?.shippingCharges ?? 0)
+      : totalPrice + Number(order?.shippingCharges ?? 0);
+
 
   return (
     <div className="card relative">
@@ -648,6 +690,14 @@ const DrawerBeans = ({
                         <h6>$ {order?.shippingCharges}</h6>
                       </div>
                     </div>
+                      {discountPercentage > 0 && (
+    <div className="flex items-center justify-between gap-x-2">
+      <h5 className="text-base text-white">
+        Discount ({discountPercentage}%)
+      </h5>
+      <h6>- $ {discountAmount.toFixed(2)}</h6>
+    </div>
+  )}
                   </div>
                 ) : (
                   <p className="text-center text-red-500 ">
@@ -672,10 +722,12 @@ const DrawerBeans = ({
                   {type === "createOrder" ? "Create Order" : "Send Quotation"}
                 </p>
               </div>
-              ${" "}
+              {/* ${" "}
               {(
                 Number(totalPrice) + Number(order?.shippingCharges ?? 0)
-              )?.toFixed(2)}
+              )?.toFixed(2)} */}
+              ${" "}
+              {finalTotal.toFixed(2)}
             </button>
           </div>
         </div>

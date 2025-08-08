@@ -39,6 +39,26 @@ export default function Stock() {
     "api/v1/admin/category"
   );
 
+  const { data: suppliersRes, reFetch: reFetchSuppliers } = GetAPI(
+    "api/v1/admin/supplier?status=1"
+  );
+
+  const supplierList = suppliersRes?.data?.data ?? suppliersRes?.data ?? [];
+
+  const [supplierSkus, setSupplierSkus] = useState({});
+
+  const handleSupplierSkuChange = (supplierId, value) => {
+    setSupplierSkus((prev) => ({ ...prev, [supplierId]: value }));
+  };
+
+  const getSupplierAndSkusPayload = () =>
+    Object.entries(supplierSkus)
+      .filter(([, sku]) => (sku ?? "").trim().length)
+      .map(([supplierId, supplierSku]) => ({
+        supplierId: Number(supplierId),
+        supplierSku: supplierSku.trim(),
+      }));
+
   const catOptions = [];
   category?.data?.data?.map((item) => {
     catOptions.push({ value: item?.id, label: item?.name });
@@ -121,6 +141,8 @@ export default function Stock() {
         formData.append("productCode", productDetail?.productCode);
         formData.append("sku", productDetail?.sku);
         formData.append("grind", productDetail?.grind);
+        const supplierPayload = getSupplierAndSkusPayload();
+        formData.append("supplierAndSkus", JSON.stringify(supplierPayload));
         setLoader("add");
         try {
           const res = await PostAPI("api/v1/admin/product", formData);
@@ -141,6 +163,7 @@ export default function Stock() {
             setLoader("");
             reFetch();
             setImagePreview("");
+            setSupplierSkus({});
           } else {
             throw new Error(
               res?.data?.message || "An unexpected error occurred."
@@ -191,6 +214,8 @@ export default function Stock() {
         formData.append("productCode", productDetail?.productCode);
         formData.append("sku", productDetail?.sku);
         formData.append("grind", productDetail?.grind);
+        const supplierPayload = getSupplierAndSkusPayload();
+        formData.append("supplierAndSkus", JSON.stringify(supplierPayload));
         try {
           const res = await PatchAPI(
             `api/v1/admin/product/${productID}`,
@@ -212,6 +237,7 @@ export default function Stock() {
             setLoader("");
             reFetch();
             setImagePreview("");
+            setSupplierSkus({});
           } else {
             throw new Error(
               res?.data?.message || "An unexpected error occurred."
@@ -257,6 +283,7 @@ export default function Stock() {
       grind: "",
     });
     setModal("");
+    setSupplierSkus({});
     setImagePreview("");
   };
 
@@ -303,6 +330,67 @@ export default function Stock() {
     { field: "action", header: "Action" },
   ];
 
+  const openEditModal = async (id) => {
+    try {
+      setLoader("prefill");
+      const res = await fetch(`${BASE_URL}api/v1/admin/product/${id}`, {
+        method: "GET",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+      const json = await res.json();
+
+      if (json?.status !== "success") {
+        throw new Error(json?.message || "Failed to load product");
+      }
+
+      const p = json?.data?.product;
+
+      const catVal =
+        handleCategory(p?.categoryId)?.value
+          ? handleCategory(p?.categoryId)
+          : { value: p?.categoryId, label: "" };
+
+      setProductDetail({
+        name: p?.name ?? "",
+        category: catVal,
+        quantity: p?.quantity ?? "",
+        unit:
+          p?.unit === "lbs"
+            ? { value: "lbs", label: "LBS" }
+            : p?.unit
+              ? { value: p?.unit, label: p?.unit }
+              : "",
+        image: p?.image ?? "",
+        price: p?.price ?? "",
+        weight: p?.weight ?? "",
+        wholesalePrice: p?.wholesalePrice ?? "",
+        desc: p?.desc ?? "",
+        productCode: p?.productCode ?? "",
+        sku: p?.sku ?? "",
+        grind: p?.grind && p?.grind !== "null" ? p?.grind : "",
+      });
+
+      setProductID(p?.id);
+      setImagePreview(p?.image ? BASE_URL + p.image : "");
+
+      setSupplierSkus(
+        Array.isArray(p?.skuSuppliers)
+          ? p.skuSuppliers.reduce((acc, s) => {
+            if (s?.supplierId) acc[s.supplierId] = s?.supplierSku ?? "";
+            return acc;
+          }, {})
+          : {}
+      );
+
+      setModal("edit");
+    } catch (err) {
+      ErrorHandler(err);
+    } finally {
+      setLoader("");
+    }
+  };
+
   const datas = [];
   data?.data?.data?.map((prod, i) => {
     return datas.push({
@@ -314,7 +402,7 @@ export default function Stock() {
       wholesalePrice: "$" + prod?.wholesalePrice ?? "",
       productCode: prod?.productCode ?? "",
       sku: prod?.sku ?? "",
-      grind: prod?.grind ?? "",
+      grind: prod?.grind && prod?.grind !== "null" ? prod?.grind : "", 
       image: (
         <img
           src={BASE_URL + prod?.image}
@@ -366,32 +454,7 @@ export default function Stock() {
         <div className="flex gap-x-2">
           <button
             className="border border-theme rounded-md p-2 text-theme"
-            onClick={() => {
-              setProductDetail({
-                name: prod?.name,
-                category: handleCategory(prod?.categoryId),
-                quantity: prod?.quantity,
-                unit:
-                  prod?.unit === "lbs"
-                    ? { value: "lbs", label: "LBS" }
-                    : prod?.unit === "kg"
-                    ? { value: "kg", label: "Kilogram (kg)" }
-                    : prod?.unit === "g"
-                    ? { value: "g", label: "Gram (g)" }
-                    : { value: "pounds", label: "pounds" },
-                image: prod?.image,
-                price: prod?.price,
-                weight: prod?.weight,
-                wholesalePrice: prod?.wholesalePrice,
-                desc: prod?.desc,
-                productCode: prod?.productCode,
-                sku: prod?.sku,
-                grind: prod?.grind,
-              });
-              setProductID(prod?.id);
-              setImagePreview(BASE_URL + prod?.image);
-              setModal("edit");
-            }}
+            onClick={() => openEditModal(prod?.id)}
           >
             <FaEdit size={24} />
           </button>
@@ -428,7 +491,13 @@ export default function Stock() {
         </div>
 
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
-          <li onClick={() => setModal("add")}>New Product</li>
+          {/* <li onClick={() => setModal("add")}>New Product</li> */}
+            <li onClick={() => {
+              setSupplierSkus({});
+              setModal("add");
+            }}>
+              New Product
+            </li>
           <li>Import</li>
           <li>Export</li>
         </ul>
@@ -524,7 +593,7 @@ export default function Stock() {
             </div>
           }
         >
-          {loader === "add" || loader === "edit" || loader === "delete" ? (
+          {loader === "add" || loader === "edit" || loader === "delete" || loader === "prefill" ? (
             <MiniLoader />
           ) : (
             <form
@@ -789,7 +858,44 @@ export default function Stock() {
                         />
                       </div>
                     </div>
+                          {/* Supplier SKUs */}
+                          <div className="space-y-2 mt-4">
+                            <label className="text-labelColor font-medium font-satoshi">
+                              Supplier SKUs
+                            </label>
+
+                            <div className="border border-borderColor rounded-md p-3 max-h-64 overflow-y-auto space-y-3">
+                              {supplierList?.length ? (
+                                supplierList.map((sup) => (
+                                  <div
+                                    key={sup.id}
+                                    className="grid gap-3 sm:grid-cols-2 items-center"
+                                  >
+                                    {/* Read-only supplier name */}
+                                    <input
+                                      type="text"
+                                      readOnly
+                                      value={sup.supplierName ?? ""}
+                                      className="border border-borderColor rounded-[4px] px-2.5 py-3 bg-gray-50 text-black"
+                                    />
+
+                                    {/* SKU input for this supplier */}
+                                    <input
+                                      type="text"
+                                      placeholder={`Enter SKU for ${sup.supplierName ?? "supplier"}`}
+                                      value={supplierSkus[sup.id] ?? ""}
+                                      onChange={(e) => handleSupplierSkuChange(sup.id, e.target.value)}
+                                      className="border border-borderColor rounded-[4px] px-2.5 py-3 text-black placeholder:text-secondary"
+                                    />
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="text-sm text-gray-500">No suppliers found.</div>
+                              )}
+                            </div>
+                          </div>
                   </div>
+                  
                 )}
                 <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
                   <button

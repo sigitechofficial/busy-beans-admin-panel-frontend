@@ -378,6 +378,9 @@ export default function OrderCard(props) {
                 Code
               </th>
               <th className="py-2 px-2 text-left border border-gray-200">
+                SKU
+              </th>
+              <th className="py-2 px-2 text-left border border-gray-200">
                 Name
               </th>
               <th className="py-2 px-2 text-center border border-gray-200">
@@ -421,6 +424,9 @@ export default function OrderCard(props) {
                   <tr>
                     <td className="py-2 px-2 border border-gray-200">
                       {item?.productCode}
+                    </td>
+                    <td className="py-2 px-2 border border-gray-200">
+                      {item?.supplierSku}
                     </td>
                     <td className="py-2 px-2 font-semibold border border-gray-200">
                       {item?.product}

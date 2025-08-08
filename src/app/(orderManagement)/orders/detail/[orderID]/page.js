@@ -165,12 +165,6 @@ export default function OrderDetail() {
       status: true,
     });
   };
-  
-  const [discountModal, setDiscountModal] = useState(false);
-  const [discountPercentage, setDiscountPercentage] = useState(
-    data?.data?.order?.discountPercentage || ""
-  );
-  const [discountLoader, setDiscountLoader] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -397,16 +391,6 @@ export default function OrderDetail() {
           {/* <li onClick={() => router.push(`${pathname}/add-invoice`)}>
             {data?.data?.order?.invoicePdf ? "Update Invoice" : "Add Invoice"}
           </li> */}
-            <li>
-              <button
-                type="button"
-                onClick={() => setDiscountModal(true)}
-                disabled={data?.data?.order?.statusId === 6}
-                className="disabled:cursor-not-allowed"
-              >
-                Add Discount
-              </button>
-            </li>
           <li>
             <button
               type="button"
@@ -1167,73 +1151,6 @@ export default function OrderDetail() {
             )}
           </form>
         </Dialog>
-
-          <Dialog
-            visible={discountModal}
-            style={{ width: "30vw" }}
-            onHide={() => setDiscountModal(false)}
-            header={<div className="font-nunito font-bold text-2xl text-center">Add Discount</div>}
-          >
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                setDiscountLoader(true);
-                try {
-                  const res = await PatchAPI("api/v1/admin/edit-order", {
-                    orderId: orderID,
-                    orderData: {
-                     discountPercentage: parseFloat(discountPercentage), 
-                    },
-                  });
-
-                  if (res?.data?.status === "success") {
-                    success_toaster("Discount saved successfully");
-                    reFetch();
-                    setDiscountModal(false);
-                  } else {
-                    throw new Error(res?.data?.message || "Failed to apply discount");
-                  }
-                } catch (error) {
-                  ErrorHandler(error);
-                }
-                setDiscountLoader(false);
-              }}
-              className="space-y-4"
-            >
-              <div className="flex flex-col gap-y-2">
-                <label className="text-labelColor font-medium font-satoshi">Discount (%)</label>
-                <input
-                  type="number"
-                  value={discountPercentage}
-                  min={0}
-                  max={100}
-                  step={0.1}
-                  onChange={(e) => setDiscountPercentage(e.target.value)}
-                  placeholder="Enter discount"
-                  required
-                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
-                <button
-                  type="button"
-                  onClick={() => setDiscountModal(false)}
-                  className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow  px-6"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={discountLoader}
-                  className="rounded-lg border border-theme text-white px-10 bg-theme"
-                >
-                  {discountLoader ? "Saving..." : "Save"}
-                </button>
-              </div>
-            </form>
-          </Dialog>
-
       </div>
     </div>
   );

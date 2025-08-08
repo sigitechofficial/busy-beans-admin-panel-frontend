@@ -54,7 +54,6 @@ export default function AddInvoice() {
     proforma: false,
     terms: "30",
     dueDate: "",
-    discountPercentage: 0,
     note: "",
     otherPayment: "",
     paymentOption: false,
@@ -102,7 +101,6 @@ export default function AddInvoice() {
         shippingCharges: data?.data?.order?.shippingCharges,
         invoiceDate: data?.data?.order?.invoiceDate,
         invoicePdf: data?.data?.order?.invoicePdf,
-        discountPercentage: Number(data?.data?.order?.discountPercentage ?? 0),
         // You can set invoiceDate, dueDate, terms, etc. from API if available
       }));
       setItems(
@@ -315,7 +313,6 @@ export default function AddInvoice() {
       reminder: invoiceFields?.invoicePdf ? true : false,
       invoiceDate: invoiceFields?.invoiceDate ? undefined : Date.now(),
       invoiceReminder: invoiceFields?.invoiceDate ? Date.now() : undefined,
-      discountPercentage: Number(invoiceFields.discountPercentage || 0),
       // shippingCharges: manual?.shippingCharge,
       ...(manual?.show === false && {
         shippingCharges: invoiceFields.shippingCharges,
@@ -513,22 +510,6 @@ export default function AddInvoice() {
               }
             />
           </div>
-
-            <div className="flex flex-col gap-y-2">
-              <label className="text-labelColor font-medium font-satoshi">Discount (%)</label>
-              <input
-                type="number"
-                value={invoiceFields.discountPercentage}
-                min={0}
-                max={100}
-                step={0.1}
-                onChange={(e) => handleInvoiceFieldChange("discountPercentage", e.target.value)}
-                placeholder="Enter discount"
-                required
-                className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-              />
-            </div>
-
         </div>
 
         <div className="w-full overflow-x-auto">

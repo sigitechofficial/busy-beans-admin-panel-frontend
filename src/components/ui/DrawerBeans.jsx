@@ -424,6 +424,9 @@ const DrawerBeans = ({
   const priceGap = Math.max(0, Number(totalPrice || 0) - Number(totalWholesale || 0));
   const maxDiscountPct = Number(totalPrice || 0) > 0 ? (priceGap / Number(totalPrice)) * 100 : 0;
 
+  const selectedCustomer = data?.data?.data?.find(c => c?.id === order?.userId);
+  const bypassDiscountCap = !!selectedCustomer?.salesRepName;
+
   return (
     <div className="card relative">
       <Sidebar
@@ -555,17 +558,18 @@ const DrawerBeans = ({
 
                           let next = Math.max(0, Math.min(100, v));
 
-                          const absDiscount = (Number(totalPrice || 0) * next) / 100;
-                          if (absDiscount > priceGap) {
-                            next = Number(((priceGap / Number(totalPrice || 0)) * 100).toFixed(2));
-                            info_toaster(
-                              `Discount exceeds margin. Max allowed is ${next}% ($${priceGap.toFixed(2)}).`
-                            );
+                          if (!bypassDiscountCap) {
+                            const absDiscount = (Number(totalPrice || 0) * next) / 100;
+                            if (absDiscount > priceGap) {
+                              next = Number(((priceGap / Number(totalPrice || 0)) * 100).toFixed(2));
+                              info_toaster(
+                                `Discount exceeds margin. Max allowed is ${next}% ($${priceGap.toFixed(2)}).`
+                              );
+                            }
                           }
-
                           setOrder((prev) => ({ ...prev, discountPercentage: next }));
                         }}
-                        placeholder={`Max ${maxDiscountPct.toFixed(2)}%`}
+                        placeholder={bypassDiscountCap ? "Enter discount" : `Max ${maxDiscountPct.toFixed(2)}%`}
                         className="w-full bg-white text-black rounded px-3 py-3 outline-none font-satoshi placeholder-theme focus:ring-0 focus:border-theme"
                       />
                     </div>

@@ -474,6 +474,18 @@ export default function OrderCard(props) {
                 </td>
               </tr>
             )}
+            {/* Percentage Row */}
+            {(userType === "admin" || userType === "salesRepresentative") && (
+              <tr>
+                <td colSpan={6} className="border border-gray-200"></td>
+                <td className="py-2 px-2 text-right font-semibold border border-gray-200">
+                  Discount %
+                </td>
+                <td className="py-2 px-2 text-right font-semibold border border-gray-200">
+                  {props?.orderData?.discountPercentage}
+                </td>
+              </tr>
+            )}
             {/* Shipping Row */}
             {(userType === "admin" || userType === "salesRepresentative") && (
               <tr>

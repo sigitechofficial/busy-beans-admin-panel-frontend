@@ -1,8 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { error_toaster, info_toaster } from "./Toaster";
-import axios from "axios";
-import { BASE_URL } from "./URL";
+import api from "./StatusErrorHandler";
 
 const GetAPI = (url) => {
   const [data, setData] = useState([]);
@@ -15,7 +14,7 @@ const GetAPI = (url) => {
     };
     const fetchData = () => {
       try {
-        axios.get(BASE_URL + url, config).then((dat) => {
+        api.get(url, config).then((dat) => {
           setData(dat.data);
         });
       } catch (error) {
@@ -44,7 +43,7 @@ const GetAPI = (url) => {
       },
     };
     try {
-      axios.get(BASE_URL + url, config).then((dat) => {
+      api.get(url, config).then((dat) => {
         setData(dat.data);
       });
     } catch (error) {
@@ -71,7 +70,7 @@ export const GetPackages = (url) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(BASE_URL + url, {
+        const response = await api.get(url, {
           headers: {
             accessToken: localStorage.getItem("accessToken"),
           },

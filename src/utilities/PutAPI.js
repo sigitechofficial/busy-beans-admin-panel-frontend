@@ -1,5 +1,5 @@
 "use client";
-import { BASE_URL } from "./URL";
+import api from "./StatusErrorHandler";
 
 export const PutAPI = async (url, postData) => {
   let config = {
@@ -9,7 +9,7 @@ export const PutAPI = async (url, postData) => {
     },
   };
   try {
-    let response = await axios.put(BASE_URL + url, postData, config);
+    let response = await api.put(url, postData, config);
     if (!response) {
       throw new Error("No response from server.");
     } else if (response?.status == "error") {

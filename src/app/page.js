@@ -11,8 +11,10 @@ import { useEffect, useState } from "react";
 import { BsCardList } from "react-icons/bs";
 import { FaChartLine } from "react-icons/fa";
 import { PiHandbagFill, PiUsersThreeBold } from "react-icons/pi";
+import { MdCancel } from 'react-icons/md'; 
 import { loadStripe } from "@stripe/stripe-js";
 import Loader from "@/components/ui/Loader";
+import api from "@/utilities/StatusErrorHandler";
 // ✅ Required since PrimeReact requires Client Components
 
 export default function Home() {
@@ -27,15 +29,20 @@ export default function Home() {
   }
 
   const [showBankRetry, setShowBankRetry] = useState(false);
-  console.log("🚀 ~ Home ~ showBankRetry:", showBankRetry);
 
   const { data } = GetAPI(
     userType === "admin"
       ? "api/v1/admin/dashboard"
       : userType === "salesRepresentative"
       ? `api/v1/admin/sales-rep-dashboard/${userID}`
-      : `api/v1/admin/sales-rep-dashboard/${userID}`
+      : `api/v1/admin/supplier-dashboard/${userID}`
   );
+  
+  const supplierDashboard = data?.data?.dashboard || {}; 
+  const { totalOrders, dispatchedToSupplierOrders, acknowledgedOrders, shippedOrders, deliveredOrders, cancelledOrders } = supplierDashboard;
+
+  const topProducts = data?.data?.topProducts || []; 
+  console.log("Top Products:", topProducts);
 
   const handleConnectAccount = async () => {
     const path = url.split("/");
@@ -262,7 +269,7 @@ export default function Home() {
   const handleFinancialConnection = async () => {
     try {
       // Step 1: Create SetupIntent via your backend
-      const res = await axios.post(
+      const res = await api.post(
         BASE_URL + `api/v1/admin/create-bank-setup-intent/sales-rep/${userID}`
       );
       console.log("🚀 ~ handleFinancialConnection ~ res:", res);
@@ -364,7 +371,7 @@ export default function Home() {
   useEffect(() => {
     const stripeAccountStatus = async () => {
       try {
-        const res = await axios.get(
+        const res = await api.get(
           BASE_URL + `api/v1/admin/stripe-connect-account-retrieve/${userID}`
         );
         if (res?.data?.status === "success") {
@@ -893,7 +900,84 @@ export default function Home() {
         </div>
       </div>
     </div>
-  ) : (
+  ) : userType === "supplier" ? (
+      <div className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain">
+      <div className="relative z-30 py-5 px-6 2xl:px-12">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-white text-xl lg:text-3xl font-inter font-semibold">
+              Welcome, {userName}.
+            </h1>
+            <p className="text-white font-inter">
+              Monitor your business analytics and statistics
+            </p>
+          </div>
+        </div>
+
+        {/* Dashboard Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mt-5">
+          <HomeCards
+            title="Total Orders"
+            total={totalOrders}
+            Icon={BsCardList}
+            bgColor="bg-homeCards"
+            iconBg="bg-white"
+          />
+          <HomeCards
+            title="Shipped Orders"
+            total={shippedOrders}
+            Icon={FaChartLine}
+            bgColor="bg-homeCards"
+            iconBg="bg-white"
+          />
+          <HomeCards
+            title="Acknowledged Orders"
+            total={acknowledgedOrders}
+            Icon={PiUsersThreeBold}
+            bgColor="bg-homeCards"
+            iconBg="bg-white"
+          />
+          <HomeCards
+            title="Dispatched To Suppliers"
+            total={dispatchedToSupplierOrders}
+            Icon={FaChartLine}
+            bgColor="bg-homeCards"
+            iconBg="bg-white"
+          />
+          <HomeCards
+            title="Delivered Orders"
+            total={deliveredOrders}
+            Icon={PiHandbagFill}
+            bgColor="bg-homeCards"
+            iconBg="bg-white"
+          />
+          <HomeCards
+            title="Cancelled Orders"
+            total={cancelledOrders}
+            Icon={MdCancel}
+            bgColor="bg-homeCards"
+            iconBg="bg-white"
+          />
+        </div>
+        <div className="mt-8">
+          <h2 className="text-black text-lg font-semibold mb-4">Top Products</h2>
+          {topProducts.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+              {topProducts.map((product) => (
+                <HomeMiniCards
+                  key={product.productId}
+                  title={product.productName}
+                  total={`Total Sold: ${product.totalSold}`}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="text-white">No products available.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  ): (
     <div>Dashboard In progress</div>
   );
 }

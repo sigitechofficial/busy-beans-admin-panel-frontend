@@ -1,7 +1,5 @@
 "use client";
-
-import axios from "axios";
-import { BASE_URL } from "./URL";
+import api from "./StatusErrorHandler";
 
 export const DeleteAPI = async (url) => {
   let config = {
@@ -11,7 +9,7 @@ export const DeleteAPI = async (url) => {
     },
   };
   try {
-    let response = await axios.delete(BASE_URL + `${url}`, config);
+    let response = await api.delete(`${url}`, config);
     if (!response) {
       throw new Error("No response from server.");
     } else if (response?.status == "error") {

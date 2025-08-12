@@ -1,6 +1,5 @@
-import axios from "axios";
-import { BASE_URL } from "./URL";
 import { info_toaster } from "./Toaster";
+import api from "./StatusErrorHandler";
 
 export const PatchAPI = async (url, postData) => {
   let config = {
@@ -10,7 +9,7 @@ export const PatchAPI = async (url, postData) => {
     },
   };
   try {
-    let response = await axios.patch(BASE_URL + url, postData, config);
+    let response = await api.patch(url, postData, config);
     if (!response) {
       throw new Error("No response from server.");
     } else if (response?.status == "error") {

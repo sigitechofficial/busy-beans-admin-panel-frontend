@@ -873,7 +873,6 @@ export default function UpdateCustomer() {
                               max={100}
                               step={0.1}
                               placeholder="Enter discount"
-                              className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                               onChange={(e) => {
                                 let val = e.target.value;
 
@@ -895,6 +894,8 @@ export default function UpdateCustomer() {
                                   info: { ...prev.info, defaultDiscount: num },
                                 }));
                               }}
+                              onWheel={(e) => e.target.blur()}
+                              className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                             />
                           </div>
                     </div>

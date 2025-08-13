@@ -1299,6 +1299,7 @@ export default function AddCustomer() {
                                 info: { ...prev.info, defaultDiscount: num },
                               }));
                             }}
+                            onWheel={(e) => e.target.blur()}
                             className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                           />
                         </div>

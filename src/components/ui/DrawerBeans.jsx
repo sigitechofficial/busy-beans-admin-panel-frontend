@@ -569,6 +569,7 @@ const DrawerBeans = ({
                           }
                           setOrder((prev) => ({ ...prev, discountPercentage: next }));
                         }}
+                        onWheel={(e) => e.target.blur()}
                         placeholder={bypassDiscountCap ? "Enter discount" : `Max ${maxDiscountPct.toFixed(2)}%`}
                         className="w-full bg-white text-black rounded px-3 py-3 outline-none font-satoshi placeholder-theme focus:ring-0 focus:border-theme"
                       />

@@ -960,14 +960,15 @@ export default function Home() {
           />
         </div>
         <div className="mt-8">
-          <h2 className="text-black text-lg font-semibold mb-4">Top Products</h2>
+          <h2 className="text-black text-lg font-semibold mb-4">Top Products Sold</h2>
           {topProducts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
               {topProducts.map((product) => (
                 <HomeMiniCards
                   key={product.productId}
                   title={product.productName}
-                  total={`Total Sold: ${product.totalSold}`}
+                  // total={`Total Sold: ${product.totalSold}`}
+                  total={product.totalSold}
                 />
               ))}
             </div>

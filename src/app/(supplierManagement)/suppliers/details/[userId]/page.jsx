@@ -5,7 +5,10 @@ import { useDataContext } from "@/utilities/DataContext";
 import GetAPI from "@/utilities/GetAPI";
 import dayjs from "dayjs";
 import { useParams, usePathname, useRouter } from "next/navigation";
-import React from "react";
+import { React, useState } from "react";
+import { DeleteAPI } from "@/utilities/DeleteAPI";
+import ErrorHandler from "@/utilities/ErrorHandler";
+import { success_toaster } from "@/utilities/Toaster";
 
 export default function LocalPartnerSupplierDetails() {
   if (typeof window !== "undefined") {
@@ -16,6 +19,25 @@ export default function LocalPartnerSupplierDetails() {
   const router = useRouter();
   const { data, reFetch } = GetAPI(`api/v1/admin/supplier/${userId}`);
   const { toggle, setToggle } = useDataContext();
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [loader, setLoader] = useState("");
+
+  const handleDelete = async (e) => {
+    e.preventDefault();
+    setLoader("delete");
+    try {
+      const res = await DeleteAPI(`api/v1/admin/supplier/${userId}`);
+      if (res?.data?.status === "success") {
+        success_toaster("Supplier Deleted Successfully");
+        setIsDeleteOpen(false);
+        setLoader("");
+        router.push("/suppliers"); 
+      }
+    } catch (error) {
+      ErrorHandler(error);
+      setLoader("");
+    }
+  };
 
   return data?.length === 0 ? (
     <Loader />
@@ -47,10 +69,8 @@ export default function LocalPartnerSupplierDetails() {
           </li>
           {/* <li>Addresses</li>
             <li>Reset Password</li>
-            <li>Export</li> */}
-          {/* <li onClick={() => setUserData({ ...userData, modal: true })}>
-            Delete Account
-          </li> */}
+            <li>Export</li> */}          
+            <li onClick={() => setIsDeleteOpen(true)}>Delete Account</li>
         </ul>
       </div>
 
@@ -229,6 +249,48 @@ export default function LocalPartnerSupplierDetails() {
           </div> */}
         </div>
       </div>
+        {isDeleteOpen && (
+          <div
+            className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40"
+            onClick={() => (loader ? null : setIsDeleteOpen(false))}
+          >
+            <div
+              className="w-[90%] max-w-md rounded-md bg-white p-6 shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="delete-title"
+            >
+              <h3 id="delete-title" className="text-lg font-semibold">
+                Delete Supplier Account
+              </h3>
+              <p className="mt-2 text-sm text-gray-600">
+                Are you sure you want to delete{" "}
+                <span className="font-medium">{data?.data?.data?.supplierName}</span>?
+              </p>
+
+              <div className="mt-6 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded border"
+                  onClick={() => setIsDeleteOpen(false)}
+                  disabled={loader === "delete"}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className={`px-4 py-2 rounded text-white ${loader === "delete" ? "bg-red-400 cursor-not-allowed" : "bg-red-600 hover:bg-red-700"
+                    }`}
+                  onClick={handleDelete}
+                  disabled={loader === "delete"}
+                >
+                  {loader === "delete" ? "Deleting..." : "Delete"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   );
 }

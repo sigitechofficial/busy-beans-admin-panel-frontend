@@ -113,6 +113,10 @@ export default function Leftbar(props) {
       tab: "",
       status: false,
     },
+    employees: {
+      tab: "",
+      status: false,
+    },
     employeeManagement: {
       tab: "",
       status: false,
@@ -737,6 +741,34 @@ export default function Leftbar(props) {
               </>
             )}
 
+          <ListHead
+            title="Employee Management"
+            active={pathname === "/employee"}
+            Icon={GiHumanTarget}
+            Angle={
+              active?.employees?.tab === "employees" &&
+              active?.employees?.status
+                ? FaAngleUp
+                : FaAngleDown
+            }
+            onClick={() =>
+              handleActive(
+                "employees",
+                active?.employees?.status
+              )
+            }
+          />
+
+          {active?.employees?.tab === "employees" &&
+            active?.employees?.status && (
+              <>
+                <div className="m-2 relative space-y-1">
+                  <ListItems title="Employee" to="/employee" />
+                </div>
+                <hr className="w-full" />
+              </>
+            )}
+
           {/* <ListHead
             title="Employee Management"
             // to="/inventory/stock"
@@ -1098,6 +1130,34 @@ export default function Leftbar(props) {
               <>
                 <div className="m-2 relative space-y-1">
                   <ListItems title="All Invoices" to="/invoices" />
+                </div>
+                <hr className="w-full" />
+              </>
+            )}
+
+          <ListHead
+            title="Employee Management"
+            active={pathname === "/employee"}
+            Icon={GiHumanTarget}
+            Angle={
+              active?.employees?.tab === "employees" &&
+              active?.employees?.status
+                ? FaAngleUp
+                : FaAngleDown
+            }
+            onClick={() =>
+              handleActive(
+                "employees",
+                active?.employees?.status
+              )
+            }
+          />
+
+          {active?.employees?.tab === "employees" &&
+            active?.employees?.status && (
+              <>
+                <div className="m-2 relative space-y-1">
+                  <ListItems title="Employee" to="/employee" />
                 </div>
                 <hr className="w-full" />
               </>

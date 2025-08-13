@@ -90,7 +90,7 @@ export default function Suppliers() {
       field: "changeStatus",
       header: "Change Status",
     },
-    { field: "action", header: "Action" },
+    // { field: "action", header: "Action" },
   ];
 
   const datas = [];
@@ -149,31 +149,31 @@ export default function Suppliers() {
           />
         </label>
       ),
-      action: (
-        <div className="flex gap-x-2">
-          <button
-            too
-            className="border border-theme rounded-md p-2 text-theme"
-            // onClick={() => {
-            //   setName(cat?.name);
-            //   setModal("edit");
-            //   setCategoryID(cat?.id);
-            // }}
-            onClick={() => router.push(`/suppliers/edit/${supplier?.id}`)}
-          >
-            <FaEdit size={24} />
-          </button>
-          <button
-            className="border border-red-400 rounded-md p-2 text-red-400"
-            onClick={() => {
-              setModal("delete");
-              setSupplierID(supplier?.id);
-            }}
-          >
-            <MdDelete size={24} />
-          </button>
-        </div>
-      ),
+      // action: (
+      //   <div className="flex gap-x-2">
+      //     <button
+      //       too
+      //       className="border border-theme rounded-md p-2 text-theme"
+      //       // onClick={() => {
+      //       //   setName(cat?.name);
+      //       //   setModal("edit");
+      //       //   setCategoryID(cat?.id);
+      //       // }}
+      //       onClick={() => router.push(`/suppliers/edit/${supplier?.id}`)}
+      //     >
+      //       <FaEdit size={24} />
+      //     </button>
+      //     <button
+      //       className="border border-red-400 rounded-md p-2 text-red-400"
+      //       onClick={() => {
+      //         setModal("delete");
+      //         setSupplierID(supplier?.id);
+      //       }}
+      //     >
+      //       <MdDelete size={24} />
+      //     </button>
+      //   </div>
+      // ),
     });
   });
   const { toggle, setToggle } = useDataContext();

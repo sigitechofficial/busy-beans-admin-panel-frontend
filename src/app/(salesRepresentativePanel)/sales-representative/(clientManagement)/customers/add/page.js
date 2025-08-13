@@ -51,7 +51,7 @@ export default function AddCustomer() {
       saleTaxNumber: "",
       emailToSendInvoices: "",
       registerBy: "email",
-      defaultDiscount: "",
+      defaultDiscount: null,
     },
     address: {
       companyaddress: "",
@@ -329,7 +329,7 @@ export default function AddCustomer() {
             companyName: userData?.info?.companyName,
             // companyInfo: userData?.info?.companyInfo,
             dispatchEmail: userData?.info?.companyInfo,
-            defaultDiscount: Number(userData?.info?.defaultDiscount) || 0,
+            defaultDiscount: userData?.info?.defaultDiscount,
           },
           address: {
             companyaddress: userData?.address?.companyaddress,
@@ -1266,40 +1266,42 @@ export default function AddCustomer() {
                           className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                         />
                       </div>
-                       <div className="flex flex-col gap-y-2">
-                        <label className="text-labelColor font-medium font-satoshi">
-                          Discount (%)
-                        </label>
-                        <input
-                          type="number"
-                          name="defaultDiscount"
-                          min={0}
-                          max={100}
-                          step={0.1}
-                          placeholder="Enter discount"
-                          required
-                          value={userData?.info?.defaultDiscount}
-                          onChange={(e) => {
-                            let val = e.target.value;
-                            if (val === "") {
+                        <div className="flex flex-col gap-y-2">
+                          <label className="text-labelColor font-medium font-satoshi">
+                            Discount (%)
+                          </label>
+                          <input
+                            type="number"
+                            name="defaultDiscount"
+                            min={0}
+                            max={100}
+                            step={0.1}
+                            placeholder="Enter discount"
+                            value={userData?.info?.defaultDiscount ?? ""}
+                            onChange={(e) => {
+                              let val = e.target.value;
+
+                              if (val === "") {
+                                setUserData((prev) => ({
+                                  ...prev,
+                                  info: { ...prev.info, defaultDiscount: null },
+                                }));
+                                return;
+                              }
+
+                              let num = parseFloat(val);
+                              if (isNaN(num)) return;
+                              if (num < 0) num = 0;
+                              if (num > 100) num = 100;
+
                               setUserData((prev) => ({
                                 ...prev,
-                                info: { ...prev.info, defaultDiscount: "" },
+                                info: { ...prev.info, defaultDiscount: num },
                               }));
-                              return;
-                            }
-                            let num = Number(val);
-                            if (isNaN(num)) return;
-                            if (num < 0) num = 0;
-                            if (num > 100) num = 100;
-                            setUserData((prev) => ({
-                              ...prev,
-                              info: { ...prev.info, defaultDiscount: num },
-                            }));
-                          }}
-                          className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                        />
-                      </div>
+                            }}
+                            className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                          />
+                        </div>
                     </div>
                     {/* <div>
                         <button

@@ -47,7 +47,7 @@ export default function UpdateCustomer() {
       emailToSendInvoices: "",
       companyName: "",
       companyInfo: "",
-      defaultDiscount: "",
+      defaultDiscount: null,
       registerBy: "email",
     },
     address: {
@@ -109,7 +109,7 @@ export default function UpdateCustomer() {
           companyName: c.companyName || "",
           companyInfo: c.dispatchEmail || "",
           registerBy: c.registerBy || "email",
-          defaultDiscount: c.defaultDiscount || "",
+          defaultDiscount: c.defaultDiscount != null ? Number(c.defaultDiscount) : null,
         },
         address: {
           // companyaddress: c.addresses?.[0]?.companyaddress || "",
@@ -326,7 +326,7 @@ export default function UpdateCustomer() {
             companyName: userData?.info?.companyName,
             dispatchEmail: userData?.info?.companyInfo,
             registerBy: userData?.info?.registerBy,
-            defaultDiscount: userData?.info?.defaultDiscount,
+            defaultDiscount: userData?.info?.defaultDiscount ?? null,
           },
           address: {
             companyaddress: userData?.address?.companyaddress,
@@ -868,26 +868,28 @@ export default function UpdateCustomer() {
                             <input
                               type="number"
                               name="defaultDiscount"
-                              value={userData?.info?.defaultDiscount}
+                              value={userData?.info?.defaultDiscount ?? ""}
                               min={0}
                               max={100}
                               step={0.1}
                               placeholder="Enter discount"
-                              required
                               className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                               onChange={(e) => {
                                 let val = e.target.value;
+
                                 if (val === "") {
                                   setUserData((prev) => ({
                                     ...prev,
-                                    info: { ...prev.info, defaultDiscount: "" },
+                                    info: { ...prev.info, defaultDiscount: null },
                                   }));
                                   return;
                                 }
-                                let num = Number(val);
+
+                                let num = parseFloat(val);
                                 if (isNaN(num)) return;
                                 if (num < 0) num = 0;
                                 if (num > 100) num = 100;
+
                                 setUserData((prev) => ({
                                   ...prev,
                                   info: { ...prev.info, defaultDiscount: num },

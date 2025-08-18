@@ -161,6 +161,7 @@ export default function SignIn() {
                     onBlur={handleBlur}
                     placeholder="Email"
                     className="border border-inputBorder rounded-lg outline-none px-3 py-2"
+                    data-testid="login-email-input"
                   />
                   <div className={errors.email && touched.email}>
                     {errors.email && touched.email && (
@@ -182,6 +183,7 @@ export default function SignIn() {
                     onBlur={handleBlur}
                     placeholder="password"
                     className="border border-inputBorder rounded-lg outline-none px-3 py-2"
+                    data-testid="login-password-input"
                   />
                   <div className={errors.password && touched.password}>
                     {" "}
@@ -193,7 +195,10 @@ export default function SignIn() {
                     )}
                   </div>
                   <p className="text-white text-sm text-end font-normal">
-                    <Link href={"/forgot-password"}>Forgot Password?</Link>
+                    <Link 
+                      href={"/forgot-password"}
+                      data-testid="login-forgot-password-link"
+                    > Forgot Password?</Link>
                   </p>
                 </div>
                 <div className="flex flex-col  gap-2 text-white font-inter font-normal">
@@ -204,6 +209,7 @@ export default function SignIn() {
                       value="admin"
                       checked={type === "admin" ?? false}
                       onClick={() => setType("admin")}
+                      data-testid="login-admin-chk"
                     />
                     <label htmlFor="admin" className="ml-2 font-inter">
                       Admin
@@ -216,6 +222,7 @@ export default function SignIn() {
                       value="supplier"
                       checked={type === "supplier" ?? false}
                       onClick={() => setType("supplier")}
+                      data-testid="login-supplier-chk"
                     />
                     <label htmlFor="supplier" className="ml-2 font-inter">
                       Supplier
@@ -228,6 +235,7 @@ export default function SignIn() {
                       value="sales-rep"
                       checked={type === "sales-rep" ?? false}
                       onClick={() => setType("sales-rep")}
+                      data-testid="login-sales-rep-chk"
                     />
                     <label htmlFor="sales-rep" className="ml-2 font-inter">
                       Local Partner
@@ -239,6 +247,7 @@ export default function SignIn() {
                 <button
                   type="submit"
                   className="bg-theme text-white hover:bg-white hover:text-theme border border-theme outline-none duration-150 font-satoshi py-2 rounded-lg w-full font-medium"
+                  data-testid="login-submit-btn"
                 >
                   Sign In
                 </button>

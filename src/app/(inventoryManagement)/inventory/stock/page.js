@@ -76,11 +76,54 @@ export default function Stock() {
     productCode: "",
     sku: "",
     grind: "",
+    weight: "",
   });
   const [productID, setProductID] = useState("");
   const [imagePreview, setImagePreview] = useState("");
   const [modal, setModal] = useState("");
   const [loader, setLoader] = useState("");
+
+  const parseNum = (v) => {
+    if (v === null || v === undefined) return NaN;
+    if (typeof v === "number") return v;
+    const s = String(v).replace(/[^\d.-]/g, "").trim();
+    if (s === "" || s === "." || s === "-" || s === "-.") return NaN;
+    const n = Number(s);
+    return Number.isFinite(n) ? n : NaN;
+  };
+
+  const validateProduct = (mode) => {
+    const name = (productDetail?.name ?? "").trim();
+    const quantityNum = parseNum(productDetail?.quantity);
+    const unit = productDetail?.unit;
+    const priceNum = parseNum(productDetail?.price);
+    const weightNum = parseNum(productDetail?.weight);
+    const wholesaleNum = parseNum(productDetail?.wholesalePrice);
+    const desc = (productDetail?.desc ?? "").trim();
+    const categoryVal = productDetail?.category?.value;
+
+    if (name === "") return "Product Name cannot be empty";
+
+    if (!Number.isFinite(quantityNum)) return "Invalid Product quantity";
+    if (!unit) return "Product unit cannot be empty";
+
+    if (!Number.isFinite(priceNum)) return "Invalid Product price";
+    if (!Number.isFinite(weightNum)) return "Invalid Product weight";
+    if (!Number.isFinite(wholesaleNum)) return "Invalid whole sale price";
+
+    if (desc.length === 0) return "Product description cannot be empty";
+    if (!categoryVal) return "Please select a category";
+
+    if (wholesaleNum > priceNum) {
+      return "Whole Sale Price cannot be greater than Actual Price";
+    }
+
+    if (mode === "add" && !productDetail?.image) {
+      return "Product image cannot be empty";
+    }
+
+    return null;
+  };
 
   const handleChange = (e) => {
     setProductDetail({ ...productDetail, [e.target.name]: e.target.value });
@@ -100,153 +143,112 @@ export default function Stock() {
     }
   };
 
+  const buildFormData = () => {
+    const formData = new FormData();
+    formData.append("name", productDetail?.name);
+    formData.append("quantity", String(parseNum(productDetail?.quantity) ?? ""));
+    formData.append("unit", productDetail?.unit?.value);
+    formData.append("price", String(parseNum(productDetail?.price) ?? ""));
+    formData.append("weight", String(parseNum(productDetail?.weight) ?? ""));
+    formData.append(
+      "wholesalePrice",
+      String(parseNum(productDetail?.wholesalePrice) ?? "")
+    );
+    formData.append("desc", productDetail?.desc);
+    if (productDetail?.image instanceof File) {
+      formData.append("image", productDetail?.image);
+    }
+    formData.append("categoryId", productDetail?.category?.value);
+    formData.append("productCode", productDetail?.productCode ?? "");
+    formData.append("sku", productDetail?.sku ?? "");
+    formData.append("grind", productDetail?.grind ?? "");
+    const supplierPayload = getSupplierAndSkusPayload();
+    formData.append("supplierAndSkus", JSON.stringify(supplierPayload));
+    return formData;
+  };
+
   const handleStock = async (e) => {
     e.preventDefault();
+
     if (modal === "add") {
-      if (productDetail?.image === "") {
-        info_toaster("Product image cannot be empty");
-      } else if (productDetail?.name.trim() === "") {
-        info_toaster("Product Name cannot be empty");
-      } else if (productDetail?.quantity.trim() === "") {
-        info_toaster("Invalid Product Price");
-      } else if (!/^\d*\.?\d*$/?.test(productDetail?.quantity)) {
-        info_toaster("Invalid Product Price");
-      } else if (productDetail?.unit === "") {
-        info_toaster("Product unit cannot be empty");
-      } else if (productDetail?.price.trim() === "") {
-        info_toaster("Invalid Product price");
-      } else if (productDetail?.weight.trim() === "") {
-        info_toaster("Invalid Product weight");
-      } else if (productDetail?.wholesalePrice.trim() === "") {
-        info_toaster("Invalid whole sale price");
-      } else if (!/^\d*\.?\d*$/?.test(productDetail?.price)) {
-        info_toaster("Invalid Price");
-      } else if (productDetail?.desc.trim() === 0) {
-        info_toaster("Product description cannot be empty");
-      } else if (
-        productDetail?.wholesalePrice.trim() > productDetail?.price.trim()
-      ) {
-        info_toaster("Whole Sale Price cannot be greater than Actual Price");
-      } else {
-        const formData = new FormData();
-        formData.append("name", productDetail?.name);
-        formData.append("quantity", productDetail?.quantity);
-        formData.append("unit", productDetail?.unit?.value);
-        formData.append("price", productDetail?.price);
-        formData.append("weight", productDetail?.weight);
-        formData.append("wholesalePrice", productDetail?.wholesalePrice);
-        formData.append("desc", productDetail?.desc);
-        formData.append("image", productDetail?.image);
-        formData.append("categoryId", productDetail?.category?.value);
-        formData.append("productCode", productDetail?.productCode);
-        formData.append("sku", productDetail?.sku);
-        formData.append("grind", productDetail?.grind);
-        const supplierPayload = getSupplierAndSkusPayload();
-        formData.append("supplierAndSkus", JSON.stringify(supplierPayload));
-        setLoader("add");
-        try {
-          const res = await PostAPI("api/v1/admin/product", formData);
-          if (res?.data?.status === "success") {
-            success_toaster("Product Added Successfully");
-            setProductDetail({
-              name: "",
-              quantity: "",
-              unit: "",
-              image: "",
-              category: "",
-              weight: "",
-              productCode: "",
-              sku: "",
-              grind: "",
-            });
-            setModal("");
-            setLoader("");
-            reFetch();
-            setImagePreview("");
-            setSupplierSkus({});
-          } else {
-            throw new Error(
-              res?.data?.message || "An unexpected error occurred."
-            );
-          }
-        } catch (error) {
-          ErrorHandler(error);
+      const err = validateProduct("add");
+      if (err) {
+        info_toaster(err);
+        return;
+      }
+      const formData = buildFormData();
+      setLoader("add");
+      try {
+        const res = await PostAPI("api/v1/admin/product", formData);
+        if (res?.data?.status === "success") {
+          success_toaster("Product Added Successfully");
+          setProductDetail({
+            name: "",
+            quantity: "",
+            unit: "",
+            image: "",
+            category: "",
+            weight: "",
+            productCode: "",
+            sku: "",
+            grind: "",
+            price: "",
+            wholesalePrice: "",
+            desc: "",
+          });
+          setModal("");
           setLoader("");
+          reFetch();
+          setImagePreview("");
+          setSupplierSkus({});
+        } else {
+          throw new Error(
+            res?.data?.message || "An unexpected error occurred."
+          );
         }
+      } catch (error) {
+        ErrorHandler(error);
+        setLoader("");
       }
     } else if (modal === "edit") {
-      if (productDetail?.image === "") {
-        info_toaster("Product image cannot be empty");
-      } else if (productDetail?.name.trim() === "") {
-        info_toaster("Product Name cannot be empty");
-      } else if (productDetail?.quantity.trim() === "") {
-        info_toaster("Invalid Product quantity");
-      } else if (!/^\d*\.?\d*$/?.test(productDetail?.quantity)) {
-        info_toaster("Invalid Product Quanity");
-      } else if (productDetail?.unit === "") {
-        info_toaster("Product unit cannot be empty");
-      } else if (productDetail?.price.trim() === "") {
-        info_toaster("Invalid Product price");
-      } else if (productDetail?.weight.trim() === "") {
-        info_toaster("Invalid Product weight");
-      } else if (productDetail?.wholesalePrice.trim() === "") {
-        info_toaster("Invalid whole sale price");
-      } else if (!/^\d*\.?\d*$/?.test(productDetail?.price)) {
-        info_toaster("Invalid Price");
-      } else if (productDetail?.desc.trim() === 0) {
-        info_toaster("Product description cannot be empty");
-      } else if (
-        productDetail?.wholesalePrice.trim() > productDetail?.price.trim()
-      ) {
-        info_toaster("Whole Sale Price cannot be greater than Actual Price");
-      } else {
-        setLoader("edit");
-        const formData = new FormData();
-        formData.append("name", productDetail?.name);
-        formData.append("quantity", productDetail?.quantity);
-        formData.append("unit", productDetail?.unit?.value);
-        formData.append("price", productDetail?.price);
-        formData.append("weight", productDetail?.weight);
-        formData.append("wholesalePrice", productDetail?.wholesalePrice);
-        formData.append("desc", productDetail?.desc);
-        formData.append("image", productDetail?.image);
-        formData.append("categoryId", productDetail?.category?.value);
-        formData.append("productCode", productDetail?.productCode);
-        formData.append("sku", productDetail?.sku);
-        formData.append("grind", productDetail?.grind);
-        const supplierPayload = getSupplierAndSkusPayload();
-        formData.append("supplierAndSkus", JSON.stringify(supplierPayload));
-        try {
-          const res = await PatchAPI(
-            `api/v1/admin/product/${productID}`,
-            formData
-          );
-          if (res?.data?.status === "success") {
-            success_toaster("Product Updated Successfully");
-            setProductDetail({
-              name: "",
-              quantity: "",
-              unit: "",
-              image: "",
-              weight: "",
-              productCode: "",
-              sku: "",
-              grind: "",
-            });
-            setModal("");
-            setLoader("");
-            reFetch();
-            setImagePreview("");
-            setSupplierSkus({});
-          } else {
-            throw new Error(
-              res?.data?.message || "An unexpected error occurred."
-            );
-          }
-        } catch (error) {
-          ErrorHandler(error);
+      const err = validateProduct("edit");
+      if (err) {
+        info_toaster(err);
+        return;
+      }
+      setLoader("edit");
+      const formData = buildFormData();
+      try {
+        const res = await PatchAPI(`api/v1/admin/product/${productID}`, formData);
+        if (res?.data?.status === "success") {
+          success_toaster("Product Updated Successfully");
+          setProductDetail({
+            name: "",
+            quantity: "",
+            unit: "",
+            image: "",
+            weight: "",
+            productCode: "",
+            sku: "",
+            grind: "",
+            price: "",
+            wholesalePrice: "",
+            desc: "",
+            category: "",
+          });
+          setModal("");
           setLoader("");
+          reFetch();
+          setImagePreview("");
+          setSupplierSkus({});
+        } else {
+          throw new Error(
+            res?.data?.message || "An unexpected error occurred."
+          );
         }
+      } catch (error) {
+        ErrorHandler(error);
+        setLoader("");
       }
     } else {
       setLoader("delete");
@@ -281,6 +283,8 @@ export default function Stock() {
       productCode: "",
       sku: "",
       grind: "",
+      wholesalePrice: "",
+      category: "",
     });
     setModal("");
     setSupplierSkus({});
@@ -304,7 +308,7 @@ export default function Stock() {
   };
 
   const handleCategory = (id) => {
-    const categoryData = category?.data?.data.find((cat, i) => cat?.id === id);
+    const categoryData = category?.data?.data.find((cat) => cat?.id === id);
     return { value: categoryData?.id ?? "", label: categoryData?.name ?? "" };
   };
 
@@ -346,10 +350,9 @@ export default function Stock() {
 
       const p = json?.data?.product;
 
-      const catVal =
-        handleCategory(p?.categoryId)?.value
-          ? handleCategory(p?.categoryId)
-          : { value: p?.categoryId, label: "" };
+      const catVal = handleCategory(p?.categoryId)?.value
+        ? handleCategory(p?.categoryId)
+        : { value: p?.categoryId, label: "" };
 
       setProductDetail({
         name: p?.name ?? "",
@@ -359,8 +362,8 @@ export default function Stock() {
           p?.unit === "lbs"
             ? { value: "lbs", label: "LBS" }
             : p?.unit
-              ? { value: p?.unit, label: p?.unit }
-              : "",
+            ? { value: p?.unit, label: p?.unit }
+            : "",
         image: p?.image ?? "",
         price: p?.price ?? "",
         weight: p?.weight ?? "",
@@ -377,9 +380,9 @@ export default function Stock() {
       setSupplierSkus(
         Array.isArray(p?.skuSuppliers)
           ? p.skuSuppliers.reduce((acc, s) => {
-            if (s?.supplierId) acc[s.supplierId] = s?.supplierSku ?? "";
-            return acc;
-          }, {})
+              if (s?.supplierId) acc[s.supplierId] = s?.supplierSku ?? "";
+              return acc;
+            }, {})
           : {}
       );
 
@@ -399,10 +402,10 @@ export default function Stock() {
       quantity: prod?.quantity,
       price: "$" + prod?.price,
       weight: prod?.weight ? prod.weight + " lbs" : "",
-      wholesalePrice: "$" + prod?.wholesalePrice ?? "",
+      wholesalePrice: "$" + (prod?.wholesalePrice ?? ""),
       productCode: prod?.productCode ?? "",
       sku: prod?.sku ?? "",
-      grind: prod?.grind && prod?.grind !== "null" ? prod?.grind : "", 
+      grind: prod?.grind && prod?.grind !== "null" ? prod?.grind : "",
       image: (
         <img
           src={BASE_URL + prod?.image}
@@ -477,7 +480,7 @@ export default function Stock() {
     <Loader />
   ) : (
     <div>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+      <div className="w-full md:w=[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <div className="flex items-center gap-2">
           <p
             onClick={() => setToggle(!toggle)}
@@ -491,13 +494,14 @@ export default function Stock() {
         </div>
 
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
-          {/* <li onClick={() => setModal("add")}>New Product</li> */}
-            <li onClick={() => {
+          <li
+            onClick={() => {
               setSupplierSkus({});
               setModal("add");
-            }}>
-              New Product
-            </li>
+            }}
+          >
+            New Product
+          </li>
           <li>Import</li>
           <li>Export</li>
         </ul>
@@ -532,14 +536,12 @@ export default function Stock() {
             </button>
           </div> */}
         {/* </div> */}
-
         <div className="w-72 ml-auto">
           <Select
             placeholder="Select Category"
             options={catOptions}
             className="w-full text-black"
             styles={selectStyles2}
-            // value={ }
             onChange={(e) => setFilterId(e?.value)}
           />
         </div>
@@ -562,7 +564,7 @@ export default function Stock() {
           />
         </div>
 
-        {/* <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+         {/* <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
         {data?.data?.data?.map((item, i) => (
           <StockCard
             key={i}
@@ -673,7 +675,6 @@ export default function Stock() {
                         placeholder="Enter unit"
                         className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       /> */}
-
                       <Select
                         placeholder="Category"
                         className="w-full"
@@ -702,7 +703,7 @@ export default function Stock() {
                         />
                         <div
                           className={`text-red-600 space-y-1 pb-1 ${
-                            !/^\d*\.?\d*$/.test(productDetail?.price)
+                            !/^\d*\.?\d*$/.test(productDetail?.price ?? "")
                               ? "block"
                               : "hidden"
                           }`}
@@ -726,7 +727,9 @@ export default function Stock() {
                         />
                         <div
                           className={`text-red-600 space-y-1 pb-1 ${
-                            !/^\d*\.?\d*$/.test(productDetail?.wholesalePrice)
+                            !/^\d*\.?\d*$/.test(
+                              productDetail?.wholesalePrice ?? ""
+                            )
                               ? "block"
                               : "hidden"
                           }`}
@@ -803,7 +806,7 @@ export default function Stock() {
                         />
                         <div
                           className={`text-red-600 space-y-1 pb-1 ${
-                            !/^\d*\.?\d*$/?.test(productDetail?.quantity)
+                            !/^\d*\.?\d*$/.test(productDetail?.quantity ?? "")
                               ? "block"
                               : "hidden"
                           }`}
@@ -847,9 +850,6 @@ export default function Stock() {
                           styles={selectStyles2}
                           options={[
                             { value: "lbs", label: "Pounds (lbs)" },
-                            // { value: "kg", label: "Kilogram (kg)" },
-                            // { value: "g", label: "Gram (g)" },
-                            // { value: "pounds", label: "pounds" },
                           ]}
                           value={productDetail?.unit}
                           onChange={(e) => {
@@ -858,44 +858,50 @@ export default function Stock() {
                         />
                       </div>
                     </div>
-                          {/* Supplier SKUs */}
-                          <div className="space-y-2 mt-4">
-                            <label className="text-labelColor font-medium font-satoshi">
-                              Supplier SKUs
-                            </label>
 
-                            <div className="border border-borderColor rounded-md p-3 max-h-64 overflow-y-auto space-y-3">
-                              {supplierList?.length ? (
-                                supplierList.map((sup) => (
-                                  <div
-                                    key={sup.id}
-                                    className="grid gap-3 sm:grid-cols-2 items-center"
-                                  >
-                                    {/* Read-only supplier name */}
-                                    <input
-                                      type="text"
-                                      readOnly
-                                      value={sup.supplierName ?? ""}
-                                      className="border border-borderColor rounded-[4px] px-2.5 py-3 bg-gray-50 text-black"
-                                    />
+                    {/* Supplier SKUs */}
+                    <div className="space-y-2 mt-4">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Supplier SKUs
+                      </label>
 
-                                    {/* SKU input for this supplier */}
-                                    <input
-                                      type="text"
-                                      placeholder={`Enter SKU for ${sup.supplierName ?? "supplier"}`}
-                                      value={supplierSkus[sup.id] ?? ""}
-                                      onChange={(e) => handleSupplierSkuChange(sup.id, e.target.value)}
-                                      className="border border-borderColor rounded-[4px] px-2.5 py-3 text-black placeholder:text-secondary"
-                                    />
-                                  </div>
-                                ))
-                              ) : (
-                                <div className="text-sm text-gray-500">No suppliers found.</div>
-                              )}
+                      <div className="border border-borderColor rounded-md p-3 max-h-64 overflow-y-auto space-y-3">
+                        {supplierList?.length ? (
+                          supplierList.map((sup) => (
+                            <div
+                              key={sup.id}
+                              className="grid gap-3 sm:grid-cols-2 items-center"
+                            >
+                              <input
+                                type="text"
+                                readOnly
+                                value={sup.supplierName ?? ""}
+                                className="border border-borderColor rounded-[4px] px-2.5 py-3 bg-gray-50 text-black"
+                              />
+                              <input
+                                type="text"
+                                placeholder={`Enter SKU for ${
+                                  sup.supplierName ?? "supplier"
+                                }`}
+                                value={supplierSkus[sup.id] ?? ""}
+                                onChange={(e) =>
+                                  handleSupplierSkuChange(
+                                    sup.id,
+                                    e.target.value
+                                  )
+                                }
+                                className="border border-borderColor rounded-[4px] px-2.5 py-3 text-black placeholder:text-secondary"
+                              />
                             </div>
+                          ))
+                        ) : (
+                          <div className="text-sm text-gray-500">
+                            No suppliers found.
                           </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  
                 )}
                 <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
                   <button

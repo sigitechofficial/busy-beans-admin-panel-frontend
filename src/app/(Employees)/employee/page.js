@@ -28,7 +28,6 @@ export default function Employee() {
     name: "",
     email: "",
     password: "",
-    // employeeOf: "Admin",
     phoneNumber: "",
     countryCode: "",
   });
@@ -44,7 +43,6 @@ export default function Employee() {
       name: "",
       email: "",
       password: "",
-      // employeeOf: "Admin",
       phoneNumber: "",
       countryCode: "",
     });
@@ -103,11 +101,9 @@ export default function Employee() {
       if (!formData.name.trim() || !formData.email.trim()) {
         return info_toaster("Name and email are required");
       }
-      // Build payload (include password only if checkbox is enabled)
       const payload = {
         name: formData.name,
         email: formData.email,
-        // employeeOf: formData.employeeOf,
         phoneNumber: formData.phoneNumber,
         countryCode: formData.countryCode,
       };
@@ -160,7 +156,6 @@ export default function Employee() {
     { field: "sl", header: "SL", sort: true },
     { field: "name", header: "Name" },
     { field: "email", header: "Email" },
-    // { field: "employeeOf", header: "Employee Of" },
     { field: "phoneNumber", header: "Phone Number" },
     { field: "countryCode", header: "Country Code" },
     { field: "currentStatus", header: "Current Status" },
@@ -174,7 +169,6 @@ export default function Employee() {
       sl: i + 1,
       name: cat?.name,
       email: cat?.email,
-      // employeeOf: cat?.employeeOf,
       phoneNumber: cat?.phoneNumber || "-",
       countryCode: cat?.countryCode || "-",
       currentStatus: (
@@ -213,7 +207,6 @@ export default function Employee() {
                 name: cat?.name,
                 email: cat?.email,
                 password: "",
-                // employeeOf: cat?.employeeOf,
                 phoneNumber: cat?.phoneNumber || "",
                 countryCode: cat?.countryCode || "",
               });
@@ -259,7 +252,6 @@ export default function Employee() {
                 name: "",
                 email: "",
                 password: "",
-                // employeeOf: "Admin",
                 phoneNumber: "",
                 countryCode: "",
               });

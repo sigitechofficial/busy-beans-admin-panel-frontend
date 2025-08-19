@@ -12,6 +12,7 @@ import {
   FaAngleUp,
   FaShippingFast,
 } from "react-icons/fa";
+import { SlDrawer } from "react-icons/sl";
 import { RiCouponLine } from "react-icons/ri";
 import { MdOutlineSubscriptions } from "react-icons/md";
 import { FaRegBell } from "react-icons/fa";
@@ -126,6 +127,10 @@ export default function Leftbar(props) {
       status: false,
     },
     promotionManagement: {
+      tab: "",
+      status: false,
+    },
+    pullouts: {
       tab: "",
       status: false,
     },
@@ -524,6 +529,34 @@ export default function Leftbar(props) {
               <>
                 <div className="m-2 relative space-y-1">
                   <ListItems title="All Invoices" to="/invoices" />
+                </div>
+                <hr className="w-full" />
+              </>
+            )}
+
+          <ListHead
+            title="Payment Pullouts"
+            active={pathname === "/pullouts"}
+            Icon={SlDrawer}
+            Angle={
+              active?.pullouts?.tab === "pullouts" &&
+              active?.pullouts?.status
+                ? FaAngleUp
+                : FaAngleDown
+            }
+            onClick={() =>
+              handleActive(
+                "pullouts",
+                active?.pullouts?.status
+              )
+            }
+          />
+
+          {active?.pullouts?.tab === "pullouts" &&
+            active?.pullouts?.status && (
+              <>
+                <div className="m-2 relative space-y-1">
+                  <ListItems title="Pullouts" to="/pullouts" />
                 </div>
                 <hr className="w-full" />
               </>
@@ -1130,6 +1163,34 @@ export default function Leftbar(props) {
               <>
                 <div className="m-2 relative space-y-1">
                   <ListItems title="All Invoices" to="/invoices" />
+                </div>
+                <hr className="w-full" />
+              </>
+            )}
+          
+          <ListHead
+            title="Payment Pullouts"
+            active={pathname === "/pullouts"}
+            Icon={SlDrawer}
+            Angle={
+              active?.pullouts?.tab === "pullouts" &&
+              active?.pullouts?.status
+                ? FaAngleUp
+                : FaAngleDown
+            }
+            onClick={() =>
+              handleActive(
+                "pullouts",
+                active?.pullouts?.status
+              )
+            }
+          />
+
+          {active?.pullouts?.tab === "pullouts" &&
+            active?.pullouts?.status && (
+              <>
+                <div className="m-2 relative space-y-1">
+                  <ListItems title="Pullouts" to="/pullouts" />
                 </div>
                 <hr className="w-full" />
               </>

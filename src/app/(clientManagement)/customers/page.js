@@ -412,7 +412,7 @@ export default function Customers() {
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
           <ManagementTab
             title="Total Customer"
-            desc={dashboardCards?.data?.data?.totalCustomer}
+            desc={data?.data?.data?.length}
           />
           {/* <ManagementTab
           title="New Customer"

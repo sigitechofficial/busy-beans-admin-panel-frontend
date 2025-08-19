@@ -7,7 +7,7 @@ import GetAPI from "@/utilities/GetAPI";
 import { error_toaster, success_toaster } from "@/utilities/Toaster";
 import { BASE_URL } from "@/utilities/URL";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { BsCardList } from "react-icons/bs";
 import { FaChartLine } from "react-icons/fa";
 import { PiHandbagFill, PiUsersThreeBold } from "react-icons/pi";
@@ -29,20 +29,30 @@ export default function Home() {
   }
 
   const [showBankRetry, setShowBankRetry] = useState(false);
+  const didInitRef = useRef(false);
+  const [linking, setLinking] = useState(false);
 
-  const { data } = GetAPI(
-    userType === "admin"
-      ? "api/v1/admin/dashboard"
-      : userType === "salesRepresentative"
-      ? `api/v1/admin/sales-rep-dashboard/${userID}`
-      : `api/v1/admin/supplier-dashboard/${userID}`
-  );
+  // const { data } = GetAPI(
+  //   userType === "admin"
+  //     ? "api/v1/admin/dashboard"
+  //     : userType === "salesRepresentative"
+  //     ? `api/v1/admin/sales-rep-dashboard/${userID}`
+  //     : `api/v1/admin/supplier-dashboard/${userID}`
+  // );
+
+  const dashboardEndpoint = useMemo(() => {
+    if (userType === "admin") return "api/v1/admin/dashboard";
+    if (userType === "salesRepresentative") return `api/v1/admin/sales-rep-dashboard/${userID}`;
+    return `api/v1/admin/supplier-dashboard/${userID}`;
+  }, [userType, userID]);
+
+  const { data } = GetAPI(dashboardEndpoint);
   
   const supplierDashboard = data?.data?.dashboard || {}; 
   const { totalOrders, dispatchedToSupplierOrders, acknowledgedOrders, shippedOrders, deliveredOrders, cancelledOrders } = supplierDashboard;
 
   const topProducts = data?.data?.topProducts || []; 
-  console.log("Top Products:", topProducts);
+  // console.log("Top Products:", topProducts);
 
   const handleConnectAccount = async () => {
     const path = url.split("/");
@@ -267,12 +277,14 @@ export default function Home() {
   // };
 
   const handleFinancialConnection = async () => {
+    if (linking) return; 
+    setLinking(true);
     try {
       // Step 1: Create SetupIntent via your backend
       const res = await api.post(
         BASE_URL + `api/v1/admin/create-bank-setup-intent/sales-rep/${userID}`
       );
-      console.log("🚀 ~ handleFinancialConnection ~ res:", res);
+      // console.log("🚀 ~ handleFinancialConnection ~ res:", res);
       const clientSecret = res?.data?.data?.clientSecret;
 
       if (!clientSecret) {
@@ -314,7 +326,7 @@ export default function Home() {
       //   ErrorHandler(error);
       // }
 
-      console.log("Stripe collect result:", result);
+      // console.log("Stripe collect result:", result);
 
       if (result.setupIntent.status === "requires_confirmation") {
         const confirmedIntent = await stripe.confirmSetup({
@@ -351,7 +363,7 @@ export default function Home() {
           paymentMethodId: result?.setupIntent?.payment_method,
         }
       );
-      console.log("🚀 attachRes:", attachRes?.data);
+      // console.log("🚀 attachRes:", attachRes?.data);
 
       // ✅ Only show retry modal if the attach failed
       if (attachRes?.data?.status === "success") {
@@ -365,10 +377,14 @@ export default function Home() {
       ErrorHandler(err);
       // console.error("handleFinancialConnection error:", err);
       // error_toaster("An error occurred while linking your bank account.");
+    } finally {
+    setLinking(false);
     }
   };
 
   useEffect(() => {
+    if (didInitRef.current) return; 
+    didInitRef.current = true;
     const stripeAccountStatus = async () => {
       try {
         const res = await api.get(
@@ -383,7 +399,7 @@ export default function Home() {
         //   );
         // }
       } catch (error) {
-        console.log("🚀 ~ stripeAccountStatus ~ error:", error);
+        // console.log("🚀 ~ stripeAccountStatus ~ error:", error);
         // ErrorHandler("Connect Stripe Account");
       }
     };
@@ -447,7 +463,7 @@ export default function Home() {
       stripeAccountStatus();
       handleFinancialConnection();
     }
-  }, []);
+  }, [userType, userID]);
 
   return data?.length === 0 ? (
     <Loader />

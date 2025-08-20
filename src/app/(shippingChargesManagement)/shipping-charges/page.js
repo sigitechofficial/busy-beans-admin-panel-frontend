@@ -26,7 +26,7 @@ export default function ShippingChargesManagement() {
           charge: item.charges,
           id: item.id,
         }))
-        .reverse(); // Reverse the mapped array
+        // .reverse(); // Reverse the mapped array
       setRows(formattedRows);
     }
   }, [data]);

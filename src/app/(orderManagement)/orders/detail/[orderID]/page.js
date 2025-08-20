@@ -11,6 +11,7 @@ import ErrorHandler from "@/utilities/ErrorHandler";
 import GetAPI from "@/utilities/GetAPI";
 import { PatchAPI } from "@/utilities/PatchAPI";
 import { PostAPI } from "@/utilities/PostAPI";
+import { DeleteAPI } from "@/utilities/DeleteAPI";
 import { selectStyles2 } from "@/utilities/SelectStyle";
 import { success_toaster } from "@/utilities/Toaster";
 import { useParams, usePathname, useRouter } from "next/navigation";
@@ -166,6 +167,13 @@ export default function OrderDetail() {
     });
   };
 
+  const handleDeleteOrder = () => {
+    setModal({
+      type: "deleteOrder",
+      status: true,
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (modal?.type === "addCheque" && modal.status) {
@@ -238,6 +246,24 @@ export default function OrderDetail() {
         setLoader("");
         ErrorHandler(error);
       }
+    } else if (modal?.type === "deleteOrder" && modal.status) {
+      setLoader("deleteOrder");
+      try {
+        const res = await DeleteAPI(`api/v1/admin/order-management/delete-order/${orderID}`);
+
+        if (res?.data?.status === "success") {
+          success_toaster("Order deleted successfully");
+          setModal({ type: "", status: false });
+          setLoader("");
+          router.push("/orders");
+        } else {
+          setLoader("");
+          throw new Error(res?.data?.message || "An unexpected error occurred.");
+        }
+      } catch (error) {
+        setLoader("");
+        // ErrorHandler(error);
+      } 
     } else {
       setLoader("cancelOrder");
       try {
@@ -536,6 +562,23 @@ export default function OrderDetail() {
                 Cancel Order
               </button>
             )}
+              {userType === "admin" && (
+                <button
+                  type="button"
+                  onClick={handleDeleteOrder}
+                  disabled={
+                    data?.data?.order?.statusId === 4 || data?.data?.order?.statusId === 5
+                  }
+                  className="bg-red-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  title={
+                    data?.data?.order?.statusId === 4 || data?.data?.order?.statusId === 5
+                      ? "Shipped orders cannot be deleted"
+                      : ""
+                  }
+                >
+                  Delete Order
+                </button>
+              )}
 
             {/* <button
               onClick={() => router.push(`${pathname}/invoice`)}
@@ -967,7 +1010,8 @@ export default function OrderDetail() {
           visible={
             (modal?.type === "cancelOrder" && modal?.status) ||
             (modal?.type === "addCheque" && modal?.status) ||
-            (modal?.type === "editCheque" && modal?.status)
+            (modal?.type === "editCheque" && modal?.status) ||
+            (modal?.type === "deleteOrder" && modal?.status)
           }
           style={{ width: "40vw" }}
           className="font-nunito"
@@ -977,21 +1021,24 @@ export default function OrderDetail() {
               status: false,
             })
           }
-          header={
-            <div className="font-nunito font-bold text-2xl text-center">
-              {modal?.type === "cancelOrder"
-                ? "Cancel Order"
-                : modal?.type === "addCheque"
-                ? "Add Bank Check"
-                : "Edit Bank Check"}
-            </div>
-          }
+            header={
+              <div className="font-nunito font-bold text-2xl text-center">
+                {modal?.type === "cancelOrder"
+                  ? "Cancel Order"
+                  : modal?.type === "addCheque"
+                    ? "Add Bank Check"
+                    : modal?.type === "editCheque"
+                      ? "Edit Bank Check"
+                      : "Delete Order"
+                }
+              </div>
+            }
         >
           <form
             onSubmit={handleSubmit}
             className="space-y-4 flex flex-col items-center"
           >
-            {loader === "cancelOrder" || loader === "addCheque" ? (
+            {loader === "cancelOrder" || loader === "addCheque" || loader === "deleteOrder" ? (
               <MiniLoader />
             ) : (
               <div className="w-full space-y-4">
@@ -999,6 +1046,13 @@ export default function OrderDetail() {
                   <p className="text-labelColor font-nunito font-medium text-lg text-center">
                     Are you sure you want to cancel this Order ?
                   </p>
+                ) : modal?.type === "deleteOrder" ? ( 
+                  <div className="space-y-3">
+                    <p className="text-red-600 font-semibold text-center">This action is permanent.</p>
+                    <p className="text-labelColor font-nunito font-medium text-lg text-center">
+                      Are you sure you want to permanently delete this Order?
+                    </p>
+                  </div>
                 ) : (
                   <div className="w-full space-y-4">
                     <div className="flex flex-col gap-y-2">
@@ -1140,11 +1194,13 @@ export default function OrderDetail() {
                     type="submit"
                     className="rounded-lg border border-theme text-white px-10 bg-theme"
                   >
-                    {modal?.type === "cancelOrder"
-                      ? "Cancel Order"
-                      : modal?.type === "addCheque"
-                      ? "Add Bank Check"
-                      : "Update Bank Check"}
+                  {modal?.type === "cancelOrder"
+                    ? "Cancel Order"
+                    : modal?.type === "addCheque"
+                    ? "Add Bank Check"
+                    : modal?.type === "editCheque"
+                    ? "Update Bank Check"
+                    : "Delete Order"}
                   </button>
                 </div>
               </div>
@@ -1155,3 +1211,4 @@ export default function OrderDetail() {
     </div>
   );
 }
+

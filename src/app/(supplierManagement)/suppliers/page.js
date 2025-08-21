@@ -26,13 +26,13 @@ export default function Suppliers() {
   const [loader, setLoader] = useState("");
   const [modal, setModal] = useState("");
 
-  const { data, reFetch } = GetAPI("api/v1/admin/supplier/?sort=-createdAt");
+  const { data, reFetch } = GetAPI("api/v1/admin/supplier/?sort=-createdAt", "supplier");
 
   const handleStatus = async (id, status) => {
     try {
       const res = await PatchAPI(`api/v1/admin/supplier/${id}`, {
         status: !status,
-      });
+      }, "supplier");
       if (res?.data?.status === "success") {
         success_toaster("Status updated successfully");
         reFetch();
@@ -53,7 +53,7 @@ export default function Suppliers() {
     e.preventDefault();
     setLoader("delete");
     try {
-      const res = await DeleteAPI(`api/v1/admin/supplier/${supplierID}`);
+      const res = await DeleteAPI(`api/v1/admin/supplier/${supplierID}`, "supplier");
       if (res?.data?.status === "success") {
         success_toaster("Supplier Deleted Successfully");
         reFetch();

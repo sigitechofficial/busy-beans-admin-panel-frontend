@@ -55,7 +55,7 @@ export default function EditsSalesRepresentative() {
     "api/v1/admin/address-management/country"
   );
 
-  const { data } = GetAPI(`api/v1/admin/sales-rep/${salesRepresentativeID}`);
+  const { data } = GetAPI(`api/v1/admin/sales-rep/${salesRepresentativeID}`, "sales-rep");
 
   const allCountries = [];
   countriesData?.data?.data?.map((country) =>
@@ -194,7 +194,8 @@ export default function EditsSalesRepresentative() {
 
         const res = await PatchAPI(
           `api/v1/admin/sales-rep/${salesRepresentativeID}`,
-          formData
+          formData,
+          "sales-rep"
         );
         if (res?.data?.status === "success") {
           success_toaster("Local Partner Updated successfully");

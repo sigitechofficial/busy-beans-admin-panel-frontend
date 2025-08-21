@@ -50,7 +50,7 @@ export default function Countries() {
     })
   );
 
-  const { data, reFetch } = GetAPI("api/v1/admin/address-management/country");
+  const { data, reFetch } = GetAPI("api/v1/admin/address-management/country", "country");
 
   const handleAddCountry = async (e) => {
     e.preventDefault();
@@ -63,7 +63,7 @@ export default function Countries() {
           const res = await PostAPI("api/v1/admin/address-management/country", {
             name: countryName?.label,
             isoCode: countryName?.value,
-          });
+          }, "country");
           if (res?.data?.status === "success") {
             success_toaster("Country Added Successfully");
             reFetch();
@@ -88,7 +88,7 @@ export default function Countries() {
       setLoading(true);
       try {
         const res = await DeleteAPI(
-          `api/v1/admin/address-management/country/${countryID}`
+          `api/v1/admin/address-management/country/${countryID}`, "country"
         );
         if (res?.data?.status === "success") {
           success_toaster("Country Delete Successfully");

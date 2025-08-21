@@ -194,7 +194,7 @@ export default function AddSaleRepresentative() {
         formData.append("countryCode", saleRepresentative?.countryCode);
         formData.append("status", saleRepresentative?.status);
 
-        const res = await PostAPI("api/v1/admin/sales-rep", formData);
+        const res = await PostAPI("api/v1/admin/sales-rep", formData, "sales-rep");
         if (res?.data?.status === "success") {
           success_toaster("Local Partner added successfully");
           setLoader(false);

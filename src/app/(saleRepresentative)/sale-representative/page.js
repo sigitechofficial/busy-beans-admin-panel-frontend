@@ -26,13 +26,13 @@ export default function SaleRepresentative() {
   const [saleRepresentativeID, setSaleRepresentativeID] = useState("");
   const [loader, setLoader] = useState("");
 
-  const { data, reFetch } = GetAPI("api/v1/admin/sales-rep");
+  const { data, reFetch } = GetAPI("api/v1/admin/sales-rep", "sales-rep");
 
   const handleStatus = async (id, status) => {
     try {
       const res = await PatchAPI(`api/v1/admin/sales-rep/${id}`, {
         status: !status,
-      });
+      }, "sales-rep");
       if (res?.data?.status === "success") {
         success_toaster("Status updated successfully");
         reFetch();
@@ -54,7 +54,7 @@ export default function SaleRepresentative() {
     setLoader("delete");
     try {
       const res = await DeleteAPI(
-        `api/v1/admin/sales-rep/${saleRepresentativeID}`
+        `api/v1/admin/sales-rep/${saleRepresentativeID}`, "sales-rep"
       );
       if (res?.data?.status === "success") {
         success_toaster("Supplier Deleted Successfully");

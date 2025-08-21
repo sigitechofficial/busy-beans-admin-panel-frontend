@@ -5,6 +5,7 @@ import { Dialog } from "primereact/dialog";
 import { useState } from "react";
 import { PostAPI } from "@/utilities/PostAPI";
 import { info_toaster, success_toaster } from "@/utilities/Toaster";
+import { BASE_URL } from "@/utilities/URL";
 import GetAPI from "@/utilities/GetAPI";
 import { MdDelete } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
@@ -21,7 +22,7 @@ import "react-phone-input-2/lib/style.css";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
 export default function Employee() {
-  const { data, reFetch } = GetAPI("api/v1/admin/employees");
+  const { data, reFetch } = GetAPI("api/v1/admin/employees", "employees");
 
   const [modal, setModal] = useState("");
   const [formData, setFormData] = useState({
@@ -30,6 +31,7 @@ export default function Employee() {
     password: "",
     phoneNumber: "",
     countryCode: "",
+    features: [], 
   });
   const [categoryID, setCategoryID] = useState("");
   const [loader, setLoader] = useState("");
@@ -45,6 +47,7 @@ export default function Employee() {
       password: "",
       phoneNumber: "",
       countryCode: "",
+      features: [], 
     });
     setVisible(false);
     setChangePasswordStatus(false);
@@ -54,7 +57,7 @@ export default function Employee() {
     try {
       const res = await PatchAPI(`api/v1/admin/employee/${id}`, {
         status: !status,
-      });
+      }, "employees");
       if (res?.data?.status === "success") {
         success_toaster("Status updated successfully");
         reFetch();
@@ -83,7 +86,7 @@ export default function Employee() {
       }
       setLoader("add");
       try {
-        const res = await PostAPI("api/v1/admin/employee", formData);
+        const res = await PostAPI("api/v1/admin/employee", formData, "employees");
         if (res?.data?.status === "success") {
           handleModalClose();
           setLoader("");
@@ -106,6 +109,7 @@ export default function Employee() {
         email: formData.email,
         phoneNumber: formData.phoneNumber,
         countryCode: formData.countryCode,
+        features: formData.features, 
       };
       if (changePasswordStatus) {
         if (!formData.password.trim()) {
@@ -120,7 +124,8 @@ export default function Employee() {
       try {
         const res = await PatchAPI(
           `api/v1/admin/employee/${categoryID}`,
-          payload
+          payload,
+          "employees"
         );
         if (res?.data?.status === "success") {
           handleModalClose();
@@ -138,7 +143,7 @@ export default function Employee() {
     } else {
       setLoader("delete");
       try {
-        const res = await DeleteAPI(`api/v1/admin/employee/${categoryID}`);
+        const res = await DeleteAPI(`api/v1/admin/employee/${categoryID}`, "employees");
         if (res?.data?.status === "success") {
           success_toaster("Employee Deleted Successfully");
           reFetch();
@@ -149,6 +154,75 @@ export default function Employee() {
         ErrorHandler(error);
         setLoader("");
       }
+    }
+  };
+  
+  const handleEditClick = async (id) => {
+    try {
+      setLoader("prefill");
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("token") || localStorage.getItem("accessToken")
+          : "";
+
+      const res = await fetch(`${BASE_URL}api/v1/admin/employee/${id}`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "feature": "employees",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      const json = await res.json();
+      if (res.ok && json?.status === "success") {
+        const emp = json?.data || {};
+        const permissions = Array.isArray(emp?.permissions) ? emp.permissions : [];
+
+        const featuresMap = {};
+        const validActions = new Set(["create", "view", "update", "delete"]);
+
+        permissions.forEach((perm) => {
+          if (!perm || typeof perm.key !== "string") return;
+          const [feature, action] = perm.key.split("_");
+          if (!feature || !validActions.has(action)) return;
+
+          if (!featuresMap[feature]) {
+            featuresMap[feature] = {
+              feature,
+              create: false,
+              view: false,
+              update: false,
+              delete: false,
+            };
+          }
+          featuresMap[feature][action] = true;
+        });
+
+        const mappedFeatures = Object.values(featuresMap);
+        setFormData({
+          name: emp?.name || "",
+          email: emp?.email || "",
+          password: "",
+          phoneNumber: emp?.phoneNumber || "",
+          countryCode: emp?.countryCode || "",
+          features:
+            mappedFeatures.length
+              ? mappedFeatures
+              : Array.isArray(emp?.features) ? emp.features : [],
+        });
+        setVisible(false);
+        setChangePasswordStatus(false);
+        setCategoryID(String(id));
+        setModal("edit");
+      } else {
+        throw new Error(json?.message || "Failed to load employee.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
+    } finally {
+      setLoader("");
     }
   };
 
@@ -202,19 +276,21 @@ export default function Employee() {
         <div className="flex gap-x-2">
           <button
             className="border border-theme rounded-md p-2 text-theme"
-            onClick={() => {
-              setFormData({
-                name: cat?.name,
-                email: cat?.email,
-                password: "",
-                phoneNumber: cat?.phoneNumber || "",
-                countryCode: cat?.countryCode || "",
-              });
-              setVisible(false);
-              setChangePasswordStatus(false);
-              setModal("edit");
-              setCategoryID(cat?.id);
-            }}
+            // onClick={() => {
+            //   setFormData({
+            //     name: cat?.name,
+            //     email: cat?.email,
+            //     password: "",
+            //     phoneNumber: cat?.phoneNumber || "",
+            //     countryCode: cat?.countryCode || "",
+            //     features: cat?.features || [],
+            //   });
+            //   setVisible(false);
+            //   setChangePasswordStatus(false);
+            //   setModal("edit");
+            //   setCategoryID(cat?.id);
+            // }}
+            onClick={() => handleEditClick(cat?.id)}
           >
             <FaEdit size={24} />
           </button>
@@ -254,6 +330,7 @@ export default function Employee() {
                 password: "",
                 phoneNumber: "",
                 countryCode: "",
+                features: [],
               });
               setVisible(false);
               setChangePasswordStatus(false);
@@ -452,6 +529,67 @@ export default function Employee() {
                           />
                         </div>
                       </div>
+                    </div>
+
+                    {/* Features */}
+                    <div className="flex flex-col gap-y-2">
+                      <div className="flex justify-between items-center">
+                        <label className="text-labelColor font-bold">Features</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={
+                              formData.features.length === 10 &&
+                              formData.features.every(f =>
+                                ["create", "view", "update", "delete"].every(action => f[action])
+                              )
+                            }
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              const newFeatures = ["dashboard", "orders", "supplier", "customer", "sales-rep", "product", "category", "employees", "country", "charges"].map(feature => ({
+                                feature,
+                                create: checked,
+                                view: checked,
+                                update: checked,
+                                delete: checked
+                              }));
+                              setFormData({ ...formData, features: newFeatures });
+                            }}
+                            className="form-checkbox"
+                          />
+                          <label className="font-medium">Select All</label>
+                        </div>
+                      </div>
+
+                      {["dashboard", "orders", "supplier", "customer", "sales-rep", "product", "category", "employees", "country", "charges"].map((feature) => {
+                        const existingFeature = formData.features.find(f => f.feature === feature) || {};
+                        return (
+                          <div key={feature} className="flex items-center gap-6 mb-2">
+                            <span className="font-bold w-32">{feature}</span>
+                            {["create", "view", "update", "delete"].map((action) => (
+                              <div key={`${feature}-${action}`} className="flex items-center gap-2">
+                                <input
+                                  type="checkbox"
+                                  checked={!!existingFeature[action]}
+                                  onChange={(e) => {
+                                    const checked = e.target.checked;
+                                    const newFeatures = [...formData.features];
+                                    const featureIndex = newFeatures.findIndex(f => f.feature === feature);
+                                    if (featureIndex !== -1) {
+                                      newFeatures[featureIndex] = { ...newFeatures[featureIndex], [action]: checked };
+                                    } else {
+                                      newFeatures.push({ feature, [action]: checked });
+                                    }
+                                    setFormData({ ...formData, features: newFeatures });
+                                  }}
+                                  className="form-checkbox"
+                                />
+                                <label className="font-medium capitalize">{action}</label>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })}
                     </div>
                   </>
                 )}

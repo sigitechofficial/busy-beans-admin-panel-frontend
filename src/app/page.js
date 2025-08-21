@@ -46,7 +46,7 @@ export default function Home() {
     return `api/v1/admin/supplier-dashboard/${userID}`;
   }, [userType, userID]);
 
-  const { data } = GetAPI(dashboardEndpoint);
+  const { data } = GetAPI(dashboardEndpoint, 'dashboard');
   
   const supplierDashboard = data?.data?.dashboard || {}; 
   const { totalOrders, dispatchedToSupplierOrders, acknowledgedOrders, shippedOrders, deliveredOrders, cancelledOrders } = supplierDashboard;

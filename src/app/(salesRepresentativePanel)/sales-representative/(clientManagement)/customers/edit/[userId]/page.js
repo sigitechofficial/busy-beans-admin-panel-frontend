@@ -92,7 +92,7 @@ export default function UpdateCustomer() {
 
   // Fetch customer details and prefill
   const { data: customerData } = GetAPI(
-    `api/v1/admin/view-customer-detail/${userId}`
+    `api/v1/admin/view-customer-detail/${userId}`, "customer"
   );
 
   useEffect(() => {
@@ -377,7 +377,7 @@ export default function UpdateCustomer() {
           billingAddress: {
             ...finalBillingAddress,
           },
-        });
+        }, "customer");
         if (res?.data?.status === "success") {
           setLoader(false);
           success_toaster("Customer updated successfully");

@@ -394,7 +394,7 @@ export default function AddCustomer() {
           //   zipCode: userData?.billingAddress?.zipCode,
           //   status: true,
           // },
-        });
+        }, "customer");
         if (res?.data?.status === "success") {
           setStep(1);
           setUserData({

@@ -26,7 +26,8 @@ export default function Orders() {
   const { data } = GetAPI(
     userType === "salesRepresentative"
       ? `api/v1/admin/orders?salesRepId=${userID}`
-      : "api/v1/admin/orders"
+      : "api/v1/admin/orders",
+    "orders"
   );
   console.log("🚀 ~ Orders ~ data:", data?.data?.data);
 

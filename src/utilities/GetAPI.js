@@ -3,12 +3,13 @@ import { useEffect, useState } from "react";
 import { error_toaster, info_toaster } from "./Toaster";
 import api from "./StatusErrorHandler";
 
-const GetAPI = (url) => {
+const GetAPI = (url, feature='') => {
   const [data, setData] = useState([]);
   useEffect(() => {
     var config = {
       headers: {
         // accessToken: localStorage.getItem("accessToken"),
+        feature,
         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
       },
     };

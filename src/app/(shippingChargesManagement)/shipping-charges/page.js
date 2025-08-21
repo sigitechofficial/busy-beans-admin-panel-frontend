@@ -15,7 +15,7 @@ export default function ShippingChargesManagement() {
   const [loader, setLoader] = useState(false);
   const [modal, setModal] = useState(false);
 
-  const { data, reFetch } = GetAPI("api/v1/admin/shipping-charges-list");
+  const { data, reFetch } = GetAPI("api/v1/admin/shipping-charges-list", "charges");
 
   useEffect(() => {
     if (data?.data?.data?.length > 0) {
@@ -97,7 +97,7 @@ export default function ShippingChargesManagement() {
     try {
       const res = await PatchAPI("api/v1/admin/shipping-charges-update", {
         ranges: [...payload?.ranges],
-      });
+      }, "charges");
       if (res?.data?.status === "success") {
         success_toaster("Shipping Ranges updated successfully");
         reFetch();

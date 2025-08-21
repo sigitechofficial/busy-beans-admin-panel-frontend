@@ -198,7 +198,7 @@ export default function AddNewSupplier() {
         formData.append("deleted", supplier?.deleted);
         formData.append("registerDate", supplier?.registerDate);
         formData.append("bankAccount", supplier?.bankAccount);
-        const res = await PostAPI("api/v1/admin/supplier", formData);
+        const res = await PostAPI("api/v1/admin/supplier", formData, "supplier");
         console.log("🚀 ~ handleSubmit ~ res:", res);
         if (res?.data?.status === "success") {
           success_toaster("Supplier added successfully");

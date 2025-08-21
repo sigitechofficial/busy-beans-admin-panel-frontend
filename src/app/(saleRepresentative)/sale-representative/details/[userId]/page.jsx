@@ -15,7 +15,7 @@ export default function SalesRepDetails() {
   const { userId } = useParams();
   const pathname = usePathname();
   const router = useRouter();
-  const { data, reFetch } = GetAPI(`api/v1/admin/sales-rep/${userId}`);
+  const { data, reFetch } = GetAPI(`api/v1/admin/sales-rep/${userId}`, "sales-rep");
   const { toggle, setToggle } = useDataContext();
 
   return data?.length === 0 ? (

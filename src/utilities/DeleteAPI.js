@@ -1,10 +1,11 @@
 "use client";
 import api from "./StatusErrorHandler";
 
-export const DeleteAPI = async (url) => {
+export const DeleteAPI = async (url, feature='') => {
   let config = {
     headers: {
       // accessToken: localStorage.getItem("accessToken"),
+      feature,
       Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
     },
   };

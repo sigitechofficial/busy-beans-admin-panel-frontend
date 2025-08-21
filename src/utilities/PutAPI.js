@@ -1,10 +1,11 @@
 "use client";
 import api from "./StatusErrorHandler";
 
-export const PutAPI = async (url, postData) => {
+export const PutAPI = async (url, postData, feature='') => {
   let config = {
     headers: {
       // accessToken: localStorage.getItem("accessToken"),
+      feature,
       Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
     },
   };

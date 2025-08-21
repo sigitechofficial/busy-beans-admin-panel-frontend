@@ -26,7 +26,7 @@ function CustomerDetails() {
   }
   const { data: salesRepresentativeData } = GetAPI("api/v1/admin/sales-rep");
   const { data, reFetch } = GetAPI(
-    `api/v1/admin/view-customer-detail/${userId}`
+    `api/v1/admin/view-customer-detail/${userId}`, "customer"
   );
   // const { data: userOrders } = GetAPI(`api/v1/admin/orders?userid=${userId}`);
 

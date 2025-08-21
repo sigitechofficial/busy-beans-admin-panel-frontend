@@ -81,7 +81,8 @@ const DrawerBeans = ({
   const { data } = GetAPI(
     userType === "admin"
       ? `api/v1/admin/customer-management/customer-list/all`
-      : `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}`
+      : `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}`,
+    "customer"
   );
 
   data?.data?.data?.map((user) =>
@@ -215,7 +216,7 @@ const DrawerBeans = ({
                 shippingCharges: Number(order?.shippingCharges || 0).toFixed(2),
               },
               items: handleCreateOrderData(createOrderData),
-            }
+            }, "orders"
           );
           if (res?.data?.status === "success") {
             success_toaster("order Created successfully");

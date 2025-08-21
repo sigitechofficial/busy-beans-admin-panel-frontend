@@ -83,7 +83,7 @@ export default function Customers() {
     try {
       const res = await PatchAPI(`api/v1/admin/customer-update/${id}`, {
         info: { status: !status },
-      });
+      }, "customer");
       if (res?.data?.status === "success") {
         success_toaster("Status updated successfully");
         reFetch();

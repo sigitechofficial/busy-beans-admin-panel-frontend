@@ -2,10 +2,11 @@
 import api from "./StatusErrorHandler";
 import { error_toaster } from "./Toaster";
 
-export const PostAPI = async (url, postData) => {
+export const PostAPI = async (url, postData, feature='') => {
   let config = {
     headers: {
       // accessToken: localStorage.getItem("accessToken"),
+      feature,
       Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
     },
   };

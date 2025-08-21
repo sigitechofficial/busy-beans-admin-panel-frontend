@@ -17,7 +17,7 @@ export default function LocalPartnerSupplierDetails() {
   const { userId } = useParams();
   const pathname = usePathname();
   const router = useRouter();
-  const { data, reFetch } = GetAPI(`api/v1/admin/supplier/${userId}`);
+  const { data, reFetch } = GetAPI(`api/v1/admin/supplier/${userId}`, "supplier");
   const { toggle, setToggle } = useDataContext();
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [loader, setLoader] = useState("");

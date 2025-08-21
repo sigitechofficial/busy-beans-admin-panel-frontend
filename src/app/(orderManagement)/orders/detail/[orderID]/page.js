@@ -72,7 +72,7 @@ export default function OrderDetail() {
     { value: "cashier's check", label: "Cashier's check" },
   ];
 
-  const { data, reFetch } = GetAPI(`api/v1/admin/order-details/${orderID}`);
+  const { data, reFetch } = GetAPI(`api/v1/admin/order-details/${orderID}`, "orders");
 
   const handleSupplierAcknowledgement = async () => {
     setLoader("acknowledgeSupplier");
@@ -249,7 +249,7 @@ export default function OrderDetail() {
     } else if (modal?.type === "deleteOrder" && modal.status) {
       setLoader("deleteOrder");
       try {
-        const res = await DeleteAPI(`api/v1/admin/order-management/delete-order/${orderID}`);
+        const res = await DeleteAPI(`api/v1/admin/order-management/delete-order/${orderID}`, "orders");
 
         if (res?.data?.status === "success") {
           success_toaster("Order deleted successfully");

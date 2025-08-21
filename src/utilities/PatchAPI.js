@@ -1,10 +1,11 @@
 import { info_toaster } from "./Toaster";
 import api from "./StatusErrorHandler";
 
-export const PatchAPI = async (url, postData) => {
+export const PatchAPI = async (url, postData, feature='') => {
   let config = {
     headers: {
       // accessToken: localStorage.getItem("accessToken"),
+      feature,
       Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
     },
   };

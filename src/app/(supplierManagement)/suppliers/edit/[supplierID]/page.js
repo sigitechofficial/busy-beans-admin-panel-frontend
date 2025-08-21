@@ -25,7 +25,7 @@ export default function EditSupplier() {
   const [visible, setVisible] = useState(false);
   const [changePasswordStatus, setChangePasswordStatus] = useState(false);
 
-  const { data } = GetAPI(`api/v1/admin/supplier/${supplierID}`);
+  const { data } = GetAPI(`api/v1/admin/supplier/${supplierID}`, "supplier");
 
   const [supplier, setSupplier] = useState({
     supplierName: "",
@@ -148,7 +148,8 @@ export default function EditSupplier() {
 
         const res = await PatchAPI(
           `api/v1/admin/supplier/${supplierID}`,
-          formData
+          formData,
+          "supplier"
         );
         if (res?.data?.status === "success") {
           success_toaster("Supplier Updated successfully");

@@ -26,7 +26,7 @@ import { CiMenuBurger } from "react-icons/ci";
 import { useDataContext } from "@/utilities/DataContext";
 
 export default function Category() {
-  const { data, reFetch } = GetAPI("api/v1/admin/category");
+  const { data, reFetch } = GetAPI("api/v1/admin/category", "category");
 
   const [modal, setModal] = useState("");
   const [name, setName] = useState("");
@@ -42,7 +42,7 @@ export default function Category() {
     try {
       const res = await PatchAPI(`api/v1/admin/category/${id}`, {
         status: !status,
-      });
+      }, "category");
       if (res?.data?.status === "success") {
         success_toaster("Status updated successfully");
         reFetch();
@@ -65,7 +65,7 @@ export default function Category() {
         try {
           const res = await PostAPI("api/v1/admin/category", {
             name: name,
-          });
+          }, "category");
           if (res?.data?.status === "success") {
             setModal("");
             setLoader("");
@@ -90,7 +90,7 @@ export default function Category() {
         try {
           const res = await PatchAPI(`api/v1/admin/category/${categoryID}`, {
             name: name,
-          });
+          }, "category");
           if (res?.data?.status === "success") {
             setModal("");
             setLoader("");
@@ -110,7 +110,7 @@ export default function Category() {
     } else {
       setLoader("delete");
       try {
-        const res = await DeleteAPI(`api/v1/admin/category/${categoryID}`);
+        const res = await DeleteAPI(`api/v1/admin/category/${categoryID}`, "category");
         if (res?.data?.status === "success") {
           success_toaster("Category Deleted Successfully");
           reFetch();

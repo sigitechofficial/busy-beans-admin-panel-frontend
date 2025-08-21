@@ -33,7 +33,7 @@ export default function Stock() {
   const url = filterId
     ? `api/v1/admin/product?categoryId=${filterId}`
     : `api/v1/admin/product`;
-  const { data, reFetch } = GetAPI(url);
+  const { data, reFetch } = GetAPI(url, "product");
 
   const { data: category, reFetch: categoryRefetch } = GetAPI(
     "api/v1/admin/category"
@@ -179,7 +179,7 @@ export default function Stock() {
       const formData = buildFormData();
       setLoader("add");
       try {
-        const res = await PostAPI("api/v1/admin/product", formData);
+        const res = await PostAPI("api/v1/admin/product", formData, "product");
         if (res?.data?.status === "success") {
           success_toaster("Product Added Successfully");
           setProductDetail({
@@ -219,7 +219,7 @@ export default function Stock() {
       setLoader("edit");
       const formData = buildFormData();
       try {
-        const res = await PatchAPI(`api/v1/admin/product/${productID}`, formData);
+        const res = await PatchAPI(`api/v1/admin/product/${productID}`, formData, "product");
         if (res?.data?.status === "success") {
           success_toaster("Product Updated Successfully");
           setProductDetail({
@@ -253,7 +253,7 @@ export default function Stock() {
     } else {
       setLoader("delete");
       try {
-        const res = await DeleteAPI(`api/v1/admin/product/${productID}`);
+        const res = await DeleteAPI(`api/v1/admin/product/${productID}`, "product");
         if (res?.data?.status === "success") {
           success_toaster("Product Deleted Successfully");
           reFetch();
@@ -295,7 +295,7 @@ export default function Stock() {
     try {
       const res = await PatchAPI(`api/v1/admin/product/${id}`, {
         status: !status,
-      });
+      }, "product");
       if (res?.data?.status === "success") {
         success_toaster("Status updated successfully");
         reFetch();
@@ -340,7 +340,7 @@ export default function Stock() {
       const res = await fetch(`${BASE_URL}api/v1/admin/product/${id}`, {
         method: "GET",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "feature": "product" },
       });
       const json = await res.json();
 

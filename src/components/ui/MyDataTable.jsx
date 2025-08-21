@@ -9,63 +9,104 @@ import { Checkbox } from "primereact/checkbox";
 
 export default function MyDataTable(props) {
   const { selectedRows, setSelectedRows } = props;
+  const [internalSelectedRows, setInternalSelectedRows] = useState([]);
+  const selected = selectedRows ?? internalSelectedRows;
+  const updateSelected = setSelectedRows ?? setInternalSelectedRows;
+
   const [globalFilter, setGlobalFilter] = useState("");
 
   const onGlobalFilterChange = (event) => {
-    setGlobalFilter(event?.target?.value);
+    setGlobalFilter(event?.target?.value ?? "");
   };
 
   const onSelectionChange = (e) => {
-    setSelectedRows(e.value);
+    updateSelected(e.value || []);
   };
 
-  const filteredData = props?.data?.filter((item) =>
+  const data = Array.isArray(props?.data) ? props.data : [];
+  const columns = Array.isArray(props?.columns) ? props.columns : [];
+
+  const filteredData = data.filter((item) =>
     Object.entries(item).some(([key, val]) =>
       key === "statusText"
-        ? val.toLowerCase().includes(globalFilter.toLowerCase())
+        ? String(val ?? "")
+            .toLowerCase()
+            .includes(globalFilter.toLowerCase())
         : val &&
-          val.toString().toLowerCase().includes(globalFilter.toLowerCase())
+          String(val).toLowerCase().includes(globalFilter.toLowerCase())
     )
   );
 
   const headerCheckbox = (
     <Checkbox
-      checked={selectedRows?.length === filteredData?.length}
+      checked={selected?.length > 0 && selected?.length === filteredData?.length}
+      indeterminate={
+        selected?.length > 0 && selected?.length !== filteredData?.length
+      }
       onChange={(e) => {
         if (e.checked) {
-          setSelectedRows(filteredData);
+          updateSelected(filteredData);
         } else {
-          setSelectedRows([]);
+          updateSelected([]);
         }
       }}
     />
   );
 
   const checkboxBody = (rowData) => {
+    const isChecked = selected?.some((row) => row?.id === rowData?.id);
     return (
       <Checkbox
-        checked={selectedRows?.some((row) => row?.id === rowData?.id)}
+        checked={!!isChecked}
         onChange={() => {
-          let _selectedRows = [...selectedRows];
-          const index = _selectedRows.findIndex(
-            (row) => row?.id === rowData?.id
-          );
-          if (index === -1) {
-            _selectedRows.push(rowData);
-          } else {
-            _selectedRows.splice(index, 1);
-          }
-          setSelectedRows(_selectedRows);
+          const copy = [...(selected || [])];
+          const idx = copy.findIndex((row) => row?.id === rowData?.id);
+          if (idx === -1) copy.push(rowData);
+          else copy.splice(idx, 1);
+          updateSelected(copy);
         }}
         className="custom-checkbox"
       />
     );
   };
 
-  const rowClassName = (rowData) => {
-    return selectedRows?.some((row) => row?.id === rowData?.id)
-      ? "selected-row"
-      : "";
+  const rowClassName = (rowData) =>
+    selected?.some((row) => row?.id === rowData?.id) ? "selected-row" : "";
+
+  // ===== CSV Download (built-in) =====
+  const handleDownloadCsv = () => {
+    const rowsToExport =
+      selected && selected.length > 0 ? selected : filteredData;
+
+    if (!rowsToExport?.length || !columns?.length) return;
+
+    const headers = columns.map((c) => c.header ?? c.field ?? "").join(",");
+
+    const escapeCsv = (v) => {
+      const s = v == null ? "" : String(v);
+      const needsQuotes = /[",\n]/.test(s);
+      const safe = s.replace(/"/g, '""');
+      return needsQuotes ? `"${safe}"` : safe;
+    };
+
+    const body = rowsToExport
+      .map((row) =>
+        columns
+          .map((c) => escapeCsv(row?.[c.field]))
+          .join(",")
+      )
+      .join("\n");
+
+    const csv = [headers, body].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = props?.csvFileName || "export.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -97,14 +138,14 @@ export default function MyDataTable(props) {
               options={props?.options}
               defaultValue={props?.selectedOption}
               onChange={(val) => {
-                getSalonReport(salonID, val?.value);
-                props?.setSelectedOption(val);
+                props?.onOptionChange?.(val); 
+                props?.setSelectedOption?.(val);
               }}
               styles={selectStyles}
             />
           </div>
           <button
-            onClick={props?.handleDownload}
+            onClick={props?.handleDownload ?? handleDownloadCsv}
             className="flex items-center gap-x-2 px-5 md:px-8 py-1.5 md:py-3 rounded-lg border border-black text-white bg-black hover:text-black hover:bg-white duration-200 group"
           >
             <RiFileDownloadLine size={24} />
@@ -120,8 +161,8 @@ export default function MyDataTable(props) {
           value={filteredData}
           paginator={props.pagination}
           selectionMode="multiple" // Allow multiple row selection
-          selection={selectedRows} // Bind the selected rows to the state
-          onSelectionChange={props?.checkbox ? onSelectionChange : null} // Update selected rows when selection changes
+          selection={selected}
+          onSelectionChange={props?.checkbox ? onSelectionChange : null}
           // scrollable
           // scrollHeight="500px"
           rows={10}
@@ -129,9 +170,9 @@ export default function MyDataTable(props) {
           removableSort
           dataKey="id"
           emptyMessage="No Data Found"
-          rowClassName={rowClassName} // Apply custom row class
+          rowClassName={rowClassName}
           onRowClick={props.onRowClick}
-          sortField={props.sortField} 
+          sortField={props.sortField}
           sortOrder={props.sortOrder}
         >
           {/* Header column with checkbox to select all rows */}
@@ -144,7 +185,7 @@ export default function MyDataTable(props) {
           )}
 
           {/* Other columns */}
-          {props.columns?.map((col, ind) =>
+          {columns?.map((col, ind) =>
             col?.filter ? (
               <Column
                 key={ind}

@@ -1,23 +1,25 @@
 "use client";
 import { useEffect, useState } from "react";
-import { error_toaster, info_toaster } from "./Toaster";
+import { error_toaster } from "./Toaster";
 import api from "./StatusErrorHandler";
 
-const GetAPI = (url, feature='') => {
+const GetAPI = (url, feature = "") => {
   const [data, setData] = useState([]);
+
   useEffect(() => {
-    var config = {
+    if (!url) return; 
+
+    const config = {
       headers: {
-        // accessToken: localStorage.getItem("accessToken"),
         feature,
         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
       },
     };
-    const fetchData = () => {
+
+    const fetchData = async () => {
       try {
-        api.get(url, config).then((dat) => {
-          setData(dat.data);
-        });
+        const dat = await api.get(url, config);
+        setData(dat.data);
       } catch (error) {
         if (error.response) {
           const errorMessage =
@@ -34,19 +36,22 @@ const GetAPI = (url, feature='') => {
         }
       }
     };
+
     fetchData();
-  }, [url]);
+  }, [url, feature]);
 
   const reFetch = async () => {
-    var config = {
+    if (!url) return; 
+
+    const config = {
       headers: {
-        accessToken: localStorage.getItem("accessToken"),
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
       },
     };
+
     try {
-      api.get(url, config).then((dat) => {
-        setData(dat.data);
-      });
+      const dat = await api.get(url, config);
+      setData(dat.data);
     } catch (error) {
       if (error.response) {
         const errorMessage =
@@ -69,11 +74,13 @@ export const GetPackages = (url) => {
   const [data, setData] = useState([]);
 
   useEffect(() => {
+    if (!url) return; 
+
     const fetchData = async () => {
       try {
         const response = await api.get(url, {
           headers: {
-            accessToken: localStorage.getItem("accessToken"),
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
         });
         setData(response.data);
@@ -96,6 +103,8 @@ export const GetPackages = (url) => {
 
     fetchData();
   }, [url]);
+
   return data;
 };
+
 export default GetAPI;

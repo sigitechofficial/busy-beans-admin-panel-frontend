@@ -39,6 +39,55 @@ function CustomerDetails() {
       ? `api/v1/admin/orders?userid=${userId}&statusId[ne]=6`
       : `api/v1/admin/orders?userid=${userId}&salesRepId=${salesRepId}&statusId[ne]=6`;
   const { data: userOrders } = GetAPI(url);
+  
+  const { data: employeesData } = GetAPI("api/v1/admin/employees", "employee");
+
+  const employeesDatas = [];
+  employeesData?.data?.data?.map((emp, i) => {
+    const empName =
+      emp?.name ||
+      emp?.fullName ||
+      [emp?.firstName, emp?.lastName].filter(Boolean).join(" ") ||
+      emp?.email ||
+      `Employee #${i + 1}`;
+
+    employeesDatas.push({
+      sl: i + 1,
+      name: empName,
+      email: emp?.email ?? "-",
+      action: (
+        <button
+          className="w-24 bg-theme text-white hover:bg-white hover:text-theme border border-theme duration-150 font-semibold p-2 rounded-md flex justify-center"
+          onClick={() => handleAssignEmployee(emp?.id)}
+        >
+          Assign
+        </button>
+      ),
+    });
+  });
+
+  const employeesColumns = [
+    { field: "name", header: "Name" },
+    { field: "email", header: "Email" },
+    { field: "action", header: "Action" },
+  ];
+
+  const handleAssignEmployee = async (employeeId) => {
+    try {
+      const res = await PatchAPI(`api/v1/admin/customer-update/${userId}`, {
+        info: { employeeId },
+      });
+      if (res?.data?.status === "success") {
+        success_toaster("Employee assigned successfully");
+        reFetch();
+        handleCancel();
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
+    }
+  };
 
   const [selectedRows, setSelectedRows] = useState([]);
   const [isDisable, setIsDisable] = useState(false);
@@ -283,6 +332,16 @@ function CustomerDetails() {
         </div>
 
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative text-blue-500">
+            {(userType === "admin" && !data?.data?.customer?.salesRepName) ||
+              userType === "salesRepresentative" ? (
+              <li
+                onClick={() =>
+                  setUserData({ ...userData, modal: true, type: "employee" })
+                }
+              >
+                Assign Employee
+              </li>
+            ) : null}
           {userType === "admin" && (
             <li
               onClick={() =>
@@ -692,23 +751,25 @@ function CustomerDetails() {
         visible={userData?.modal}
         style={{
           width: "90vw",
-          maxWidth: userData?.type === "localPartner" ? "1200px" : "500px",
+          maxWidth: userData?.type === "localPartner" || userData?.type === "employee" ? "1200px" : "500px",
         }}
         className="font-nunito"
         onHide={() => setUserData({ ...userData, modal: false })}
         header={
-          userData?.type === "localPartner" ? (
-            "Assign Local Partner"
-          ) : userData?.type === "delete" ? (
+        userData?.type === "localPartner"
+          ? "Assign Local Partner"
+          : userData?.type === "employee"
+          ? "Assign Employee"
+          : userData?.type === "delete"
+          ? (
             <div className="font-bold text-2xl text-center text-red-600">
               Confirm Deletion
             </div>
-          ) : (
-            ""
           )
+          : ""
         }
         footer={
-          userData?.type === "localPartner" ? (
+          userData?.type === "localPartner" || userData?.type === "employee" ? (
             <div className="flex justify-end pt-4">
               <button
                 type="button"
@@ -753,7 +814,19 @@ function CustomerDetails() {
               Styles={"space-y-4"}
             />
           </div>
-        ) : userData?.type === "delete" ? (
+        ) : userData?.type === "employee" ? (
+    <div className="space-y-4">
+      <MyDataTable
+        columns={employeesColumns}
+        data={employeesDatas}
+        placeholder={"Search ..."}
+        pagination={false}
+        hide={true}
+        search={true}
+        Styles={"space-y-4"}
+      />
+    </div>
+  ): userData?.type === "delete" ? (
           <div className="space-y-6 text-center px-4 pt-2">
             <div className="text-lg text-gray-700">
               Are you sure you want to delete this customer?

@@ -533,9 +533,10 @@ export default function Employee() {
 
                     {/* Features */}
                     <div className="flex flex-col gap-y-2">
-                      <div className="flex justify-between items-center">
-                        <label className="text-labelColor font-bold">Features</label>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="text-labelColor font-medium font-satoshi">Features</label>
                         <div className="flex items-center gap-2">
+                          <label className="text-black font-medium font-satoshi">Select All</label>
                           <input
                             type="checkbox"
                             checked={
@@ -557,14 +558,13 @@ export default function Employee() {
                             }}
                             className="form-checkbox"
                           />
-                          <label className="font-medium">Select All</label>
                         </div>
                       </div>
 
                       {["dashboard", "orders", "supplier", "customer", "sales-rep", "product", "category", "employees", "country", "charges"].map((feature) => {
                         const existingFeature = formData.features.find(f => f.feature === feature) || {};
                         return (
-                          <div key={feature} className="flex items-center gap-6 mb-2">
+                          <div key={feature} className="flex justify-between items-center gap-6 mb-2">
                             <span className="font-bold w-32">{feature}</span>
                             {["create", "view", "update", "delete"].map((action) => (
                               <div key={`${feature}-${action}`} className="flex items-center gap-2">

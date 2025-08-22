@@ -337,10 +337,18 @@ export default function Stock() {
   const openEditModal = async (id) => {
     try {
       setLoader("prefill");
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("token") || localStorage.getItem("accessToken")
+          : "";
       const res = await fetch(`${BASE_URL}api/v1/admin/product/${id}`, {
         method: "GET",
         credentials: "include",
-        headers: { "Content-Type": "application/json", "feature": "product" },
+        headers: { 
+          "Content-Type": "application/json", 
+          "feature": "product", 
+          ...(token ? { Authorization: `Bearer ${token}` } : {}), 
+        },
       });
       const json = await res.json();
 

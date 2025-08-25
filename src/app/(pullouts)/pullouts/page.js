@@ -29,6 +29,7 @@ export default function Pullouts() {
   const columns = [
     { field: "id", header: "#", sort: true },
     { field: "companyName", header: "Company Name" },
+    { field: "invoiceNumber", header: "Invoice Number" },
     { field: "orderDate", header: "Order Date", sort: true },
     { field: "deliveredOn", header: "Deliver On" },
     { field: "totalBill", header: "Total", sort: true },
@@ -44,6 +45,7 @@ export default function Pullouts() {
         sl: slCounter++,
         id: detail?.id,
         companyName: detail?.companyName,
+        invoiceNumber: detail?.invoiceNumber,
         totalBill: "$" + detail?.totalBill,
         paymentStatus: detail?.paymentStatus === "done" ? "Paid" : "Unpaid",
         orderDate: dayjs(detail?.on).format("MM/DD/YYYY"),

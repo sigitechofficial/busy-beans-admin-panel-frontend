@@ -1,4 +1,5 @@
-export const BASE_URL = "https://backendbb.trimworldwide.com/";
+// export const BASE_URL = "https://backendbb.trimworldwide.com/";
+export const BASE_URL = "https://testingbb.trimworldwide.com/";
 // export const BASE_URL = "https://297a89fecdc1.ngrok-free.app/";
 // export const BASE_URL = "http://192.168.18.34:8011/";
 

@@ -532,6 +532,7 @@ export default function Leftbar(props) {
               <>
                 <div className="m-2 relative space-y-1">
                   <ListItems title="All Invoices" to="/invoices" />
+                  <ListItems title="Individual Invoices" to="/individual-invoices" />
                 </div>
                 <hr className="w-full" />
               </>
@@ -1173,6 +1174,7 @@ export default function Leftbar(props) {
               <>
                 <div className="m-2 relative space-y-1">
                   <ListItems title="All Invoices" to="/invoices" />
+                  <ListItems title="Individual Invoices" to="/individual-invoices" />
                 </div>
                 <hr className="w-full" />
               </>

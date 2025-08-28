@@ -623,6 +623,7 @@ export default function AddInvoice() {
                 onChange={(e) => handleInvoiceFieldChange("discountPercentage", e.target.value)}
                 placeholder="Enter discount"
                 required
+                onWheel={(e) => e.currentTarget.blur()}
                 className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
               />
             </div>

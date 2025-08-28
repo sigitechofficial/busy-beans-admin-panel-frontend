@@ -38,7 +38,6 @@ export default function AddInvoice() {
   const { data: category } = GetAPI(`api/v1/admin/category`);
   const [modal, setModal] = useState(false);
   const [search, setSearch] = useState("");
-  const [chargesRows, setChargesRows] = useState([]);
   let categoryList = [{ value: "", label: "All" }];
 
   if (category) {
@@ -50,7 +49,6 @@ export default function AddInvoice() {
     ? `api/v1/admin/product?categoryId=${filterId}`
     : `api/v1/admin/product`;
   const { data: ProductList, reFetch: ProductRefetch } = GetAPI(url);
-  
   const savedCards =
   paymentCardsRes?.data?.data?.cards ??
   paymentCardsRes?.data?.cards ??
@@ -126,7 +124,9 @@ export default function AddInvoice() {
         // You can set invoiceDate, dueDate, terms, etc. from API if available
       }));
       setItems(
-        (data?.data?.order?.items || []).map((item) => ({
+        (data?.data?.order?.items || [])
+        .filter((item) => item.type === "product")
+        .map((item) => ({
           ...item,
           checked: true,
           qty: item.qty || 1,
@@ -134,31 +134,43 @@ export default function AddInvoice() {
           unit: item?.price / item?.qty,
         }))
       );
+      const chargesFromItems = (data?.data?.order?.items || [])
+        .filter((item) => item.type === "charges")
+        .map((ch) => ({
+          ...ch,
+          type: "charges",
+          code: ch.productCode || ch.code || "",
+          name: ch.product || ch.productName || ch.name || "",
+          qty: ch.qty || 1,
+          unit: Number(ch.unit ?? ch.price) || 0,
+          checked: true,
+        }));
+
+      const chargesFromTypeCharges = (data?.data?.order?.typeCharges || [])
+        .map((ch) => ({
+          ...ch,
+          type: "charges",
+          code: ch.code || "",
+          name: ch.name || "",
+          qty: ch.qty || 1,
+          unit: Number(ch.price) || 0,
+          checked: true,
+        }));
+
+      setExtraCharges([...chargesFromItems, ...chargesFromTypeCharges]);
     }
   }, [data]);
 
   // Calculate if all items are checked
-  // const allChecked =
-  //   items.length > 0 &&
-  //   items.every((item) => item.checked) &&
-  //   (extraRows.length === 0 || extraRows.every((item) => item.checked));
-
   const allChecked =
-  items.length > 0 &&
-  items.every((item) => item.checked) &&
-  (extraRows.length === 0 || extraRows.every((item) => item.checked)) &&
-  (chargesRows.length === 0 || chargesRows.every((item) => item.checked));
+    items.length > 0 &&
+    items.every((item) => item.checked) &&
+    (extraRows.length === 0 || extraRows.every((item) => item.checked));
 
   // Master checkbox handler
-  // const handleCheckAll = (checked) => {
-  //   setItems((prev) => prev.map((item) => ({ ...item, checked })));
-  //   setExtraRows((prev) => prev.map((item) => ({ ...item, checked })));
-  // };
-
   const handleCheckAll = (checked) => {
     setItems((prev) => prev.map((item) => ({ ...item, checked })));
     setExtraRows((prev) => prev.map((item) => ({ ...item, checked })));
-    setChargesRows((prev) => prev.map((item) => ({ ...item, checked })));
   };
 
   // Item checkbox handler
@@ -242,35 +254,6 @@ export default function AddInvoice() {
     );
   };
 
-  // NEW: add a blank charge row
-const handleAddChargeRow = () => {
-  setChargesRows(prev => [
-    ...prev,
-    { id: `charge-${Date.now()}`, code: "", name: "", qty: 1, unit: 0, checked: true }
-  ]);
-};
-
-// NEW: toggle checkbox for a charge row
-const handleChargeRowCheck = (rowIdx, checked) => {
-  setChargesRows(prev =>
-    prev.map((row, idx) => (idx === rowIdx ? { ...row, checked } : row))
-  );
-};
-
-// NEW: edit inputs for a charge row
-const handleChargeInputChange = (rowIdx, field, value) => {
-  setChargesRows(prev =>
-    prev.map((row, idx) =>
-      idx === rowIdx
-        ? {
-            ...row,
-            [field]: field === "qty" || field === "unit" ? Number(value) : value,
-          }
-        : row
-    )
-  );
-};
-
   // Invoice fields change handler
   const handleInvoiceFieldChange = (field, value) => {
     setInvoiceFields((prev) => ({
@@ -278,6 +261,54 @@ const handleChargeInputChange = (rowIdx, field, value) => {
       [field]: value,
     }));
   };
+
+  // Extra Charge Rows
+  const [extraCharges, setExtraCharges] = useState([]);
+
+  const handleAddChargeRow = () => {
+    setExtraCharges((prev) => [
+      ...prev,
+      {
+        type: "charges",
+        code: "",
+        name: "",
+        qty: 1,
+        unit: 0,
+        checked: true,
+      },
+    ]);
+  };
+
+  const handleChargeInputChange = (rowIdx, field, value) => {
+    setExtraCharges((prev) =>
+      prev.map((item, idx) =>
+        idx === rowIdx
+          ? {
+            ...item,
+            [field]:
+              field === "qty" || field === "unit" ? Number(value) : value,
+          }
+          : item
+      )
+    );
+  };
+
+  const handleChargeRowCheck = (rowIdx, checked) => {
+    setExtraCharges((prev) =>
+      prev.map((item, idx) => (idx === rowIdx ? { ...item, checked } : item))
+    );
+  };
+
+  const chargesForApi = (extraCharges || [])
+    .filter((item) => item.checked)
+    .map((item) => ({
+      type: "charges",
+      code: item.code,
+      name: item.name,
+      qty: item.qty,
+      price: String(item.unit),
+      total: item.qty * item.unit,
+    }));
 
   //calculate total weight and shipping charges here
   const totalWeight =
@@ -303,70 +334,35 @@ const handleChargeInputChange = (rowIdx, field, value) => {
     : 0;
 
   // Calculate total
-  // const total =
-  //   items
-  //     .filter((item) => item.checked)
-  //     .reduce(
-  //       (sum, item) =>
-  //         sum +
-  //         (item.qty || 1) *
-  //           (item.unit !== undefined
-  //             ? item.unit
-  //             : item.price !== undefined
-  //             ? item.price
-  //             : 0),
-  //       0
-  //     ) +
-  //   extraRows
-  //     .filter((item) => item.checked)
-  //     .reduce((sum, item) => sum + item.qty * item.unit, 0) +
-  //   (manual.show
-  //     ? parseFloat(shippingCharge)
-  //     : parseFloat(invoiceFields?.shippingCharges) || 0);
-
   const total =
-  items
-    .filter((item) => item.checked)
-    .reduce(
-      (sum, item) =>
-        sum +
-        (item.qty || 1) *
-          (item.unit !== undefined
-            ? item.unit
-            : item.price !== undefined
-            ? item.price
-            : 0),
-      0
-    ) +
-  extraRows
+    items
+      .filter((item) => item.checked)
+      .reduce(
+        (sum, item) =>
+          sum +
+          (item.qty || 1) *
+            (item.unit !== undefined
+              ? item.unit
+              : item.price !== undefined
+              ? item.price
+              : 0),
+        0
+      ) +
+    extraRows
+      .filter((item) => item.checked)
+      .reduce((sum, item) => sum + item.qty * item.unit, 0) +
+    extraCharges
     .filter((item) => item.checked)
     .reduce((sum, item) => sum + item.qty * item.unit, 0) +
-  chargesRows
-    .filter((item) => item.checked)
-    .reduce((sum, item) => sum + (item.qty || 0) * (item.unit || 0), 0) +
-  (manual.show
-    ? parseFloat(shippingCharge)
-    : parseFloat(invoiceFields?.shippingCharges) || 0);
+    (manual.show
+      ? parseFloat(shippingCharge)
+      : parseFloat(invoiceFields?.shippingCharges) || 0);
 
   // Count checked items
-  // const checkedCount =
-  //   items.filter((item) => item.checked).length +
-  //   extraRows.filter((item) => item.checked).length;
-
   const checkedCount =
-  items.filter((item) => item.checked).length +
-  extraRows.filter((item) => item.checked).length +
-  chargesRows.filter((item) => item.checked).length;
-
-  const typeCharges = chargesRows
-  .filter((row) => row.checked)
-  .map((row) => ({
-    code: row.code,
-    name: row.name,
-    qty: row.qty,
-    unit: row.unit,
-    total: Number(row.qty || 0) * Number(row.unit || 0),
-  }));
+    items.filter((item) => item.checked).length +
+    extraRows.filter((item) => item.checked).length +
+    extraCharges.filter((item) => item.checked).length;
 
   const handleCreateInvoice = async () => {
     setLoading(true);
@@ -391,15 +387,15 @@ const handleChargeInputChange = (rowIdx, field, value) => {
           //   id: item.id,
           orderId: item.orderId,
           productId: item.productId,
-          product: item.name,
-          productCode: item.code,
+          product: item.product ?? item.productName ?? item.name,      
+          productCode: item.productCode ?? item.code, 
           qty: item.qty,
           price: String(item.unit),
           discount: item.discount,
           wholesalePrice: item.wholesalePrice,
         })),
     ];
-
+    const paymentCardId = invoiceFields.paymentOption ? selectedCardId : null;
     // Prepare order object
     const orderObj = {
       invoiceNumber: invoiceFields.invoiceNumber,
@@ -420,6 +416,7 @@ const handleChargeInputChange = (rowIdx, field, value) => {
       ...(manual?.show === false && {
         shippingCharges: invoiceFields.shippingCharges,
       }),
+      paymentCardId: paymentCardId,
     };
 
     // API call
@@ -428,9 +425,8 @@ const handleChargeInputChange = (rowIdx, field, value) => {
       {
         items: itemsForApi,
         order: orderObj,
-        typeCharges,
-      },
-      "orders"
+        typeCharges: chargesForApi,
+      }
     );
 
     if (res?.data?.status === "success") {
@@ -683,7 +679,7 @@ const handleChargeInputChange = (rowIdx, field, value) => {
                     {item.productCode || item.code}
                   </td>
                   <td className="py-2 px-2 font-semibold border border-gray-200">
-                    {item.product || item.name}
+                    {item.product || item.productName || item.name}
                   </td>
                   <td className="py-2 px-2 text-center border border-gray-200">
                     <input
@@ -793,8 +789,8 @@ const handleChargeInputChange = (rowIdx, field, value) => {
                   )}
                 </tr>
               ))}
-
-                {chargesRows.map((item, idx) => (
+                
+                {extraCharges.map((item, idx) => (
                   <tr key={item.id}>
                     <td className="py-2 px-2 border border-gray-200 text-center">
                       <input
@@ -803,65 +799,52 @@ const handleChargeInputChange = (rowIdx, field, value) => {
                         onChange={(e) => handleChargeRowCheck(idx, e.target.checked)}
                       />
                     </td>
-
-                    {/* Code */}
                     <td className="py-2 px-2 border border-gray-200">
                       <input
                         type="text"
-                        className="w-full border border-gray-200 rounded px-1 py-1"
+                        className="w-full border rounded px-1 py-1"
                         value={item.code}
                         onChange={(e) => handleChargeInputChange(idx, "code", e.target.value)}
                         placeholder="Code"
                       />
                     </td>
-
-                    {/* Name */}
                     <td className="py-2 px-2 border border-gray-200">
                       <input
                         type="text"
-                        className="w-full border border-gray-200 rounded px-1 py-1"
+                        className="w-full border rounded px-1 py-1"
                         value={item.name}
                         onChange={(e) => handleChargeInputChange(idx, "name", e.target.value)}
                         placeholder="Name"
                       />
                     </td>
-
-                    {/* Qty */}
-                    <td className="py-2 px-2 border border-gray-200 text-center">
+                    <td className="py-2 px-2 text-center border border-gray-200">
                       <input
                         type="number"
                         min={1}
-                        className="w-16 border border-gray-200 rounded px-1 py-1 text-center"
+                        className="w-16 border rounded px-1 py-1 text-center"
                         value={item.qty}
                         onChange={(e) => handleChargeInputChange(idx, "qty", e.target.value)}
                       />
                     </td>
-
-                    {/* Unit $ */}
-                    {(userType === "admin" || userType === "salesRepresentative") && (
-                      <td className="py-2 px-2 border border-gray-200 text-right">
-                        <input
-                          type="number"
-                          min={0}
-                          step="0.01"
-                          className="w-20 border border-gray-200 rounded px-1 py-1 text-right"
-                          value={item.unit}
-                          onChange={(e) => handleChargeInputChange(idx, "unit", e.target.value)}
-                        />
-                      </td>
-                    )}
-
-                    {/* Total $ */}
-                    {(userType === "admin" || userType === "salesRepresentative") && (
-                      <td className="py-2 px-2 border border-gray-200 text-right">
-                        ${(Number(item.qty || 0) * Number(item.unit || 0)).toFixed(2)}
-                      </td>
-                    )}
+                    <td className="py-2 px-2 border border-gray-200 text-right">
+                      <input
+                        type="number"
+                        min={0}
+                        step="0.01"
+                        className="w-20 border rounded px-1 py-1 text-right"
+                        value={item.unit}
+                        onChange={(e) => handleChargeInputChange(idx, "unit", e.target.value)}
+                      />
+                    </td>
+                    <td className="py-2 px-2 border border-gray-200 text-right">
+                      ${(item.qty * item.unit).toFixed(2)}
+                    </td>
                   </tr>
                 ))}
 
               <tr>
                 <td colSpan={6} className="py-2 px-2 border border-gray-200">
+                  <div className="flex items-center gap-2">
                   <button
                     className="border px-2 py-2"
                     // onClick={handleAddExtra}
@@ -869,17 +852,17 @@ const handleChargeInputChange = (rowIdx, field, value) => {
                   >
                     Add Item
                   </button>
-                </td>
-              </tr>
 
-                <tr>
-                  <td colSpan={6} className="py-2 px-2 border border-gray-200">
-                    <button className="border px-2 py-2" onClick={handleAddChargeRow}>
+                    <button
+                      className="border px-2 py-2"
+                      onClick={handleAddChargeRow}
+                    >
                       Add Extra Charges
                     </button>
-                  </td>
-                </tr>
-
+                  </div>
+                </td>
+              </tr>
+              
               <tr>
                 <td colSpan={4} className="border border-gray-200"></td>
                 <td className="py-2 px-2 text-right font-bold border border-gray-200">
@@ -981,7 +964,7 @@ const handleChargeInputChange = (rowIdx, field, value) => {
             </div>
           </div> */}
 
-            <div className="space-y-2">
+          <div className="space-y-2">
               <p>Payment Options</p>
               <div className="flex items-center gap-2">
                 <IoCardSharp size={25} />
@@ -1037,6 +1020,7 @@ const handleChargeInputChange = (rowIdx, field, value) => {
                 </p>
               </div>
             </div>
+            
 
           <div className="space-y-2">
             <p>Other Payment Options</p>

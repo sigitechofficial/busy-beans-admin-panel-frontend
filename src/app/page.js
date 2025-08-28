@@ -15,6 +15,7 @@ import { MdCancel } from 'react-icons/md';
 import { loadStripe } from "@stripe/stripe-js";
 import Loader from "@/components/ui/Loader";
 import api from "@/utilities/StatusErrorHandler";
+import { hasPermission } from "@/utilities/Permission";
 // ✅ Required since PrimeReact requires Client Components
 
 export default function Home() {
@@ -467,7 +468,7 @@ export default function Home() {
 
   return data?.length === 0 ? (
     <Loader />
-  ) : userType === "admin" ? (
+  ) : userType === "admin" && hasPermission("dashboard_view") ? (
     <>
       {/* <div
         className={`bg-red-500 z-10 text-center text-white py-2 ${
@@ -698,7 +699,7 @@ export default function Home() {
         </div>
       </div>
     </>
-  ) : userType === "salesRepresentative" ? (
+  ) : userType === "salesRepresentative" && hasPermission("dashboard_view") ? (
     <div>
       <div
         className={`bg-red-500 z-10 text-center text-white py-2 ${
@@ -995,6 +996,11 @@ export default function Home() {
       </div>
     </div>
   ): (
-    <div>Dashboard In progress</div>
+    // <div>Dashboard In progress</div>
+    <div className="flex items-center justify-center h-screen">
+      <h1 className="text-xl font-semibold text-gray-500">
+        🚫 You don’t have permission to view the Dashboard
+      </h1>
+    </div>
   );
 }

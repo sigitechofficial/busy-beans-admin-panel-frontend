@@ -15,6 +15,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Dialog } from "primereact/dialog";
 import React, { useEffect, useState } from "react";
 import { CiMenuBurger } from "react-icons/ci";
+import { hasPermission } from "@/utilities/Permission";
 
 function CustomerDetails() {
   const { userId } = useParams();
@@ -250,6 +251,27 @@ function CustomerDetails() {
     }
   };
 
+  // const handleAssignSalesRepresentative = async (id) => {
+  //   try {
+  //     const info =
+  //       id === "remove"
+  //         ? { salesRepId: null }
+  //         : { salesRepId: id, employeeId: null };
+
+  //     const res = await PatchAPI(`api/v1/admin/customer-update/${userId}`, { info });
+
+  //     if (res?.data?.status === "success") {
+  //       success_toaster("Local Partner updated successfully");
+  //       reFetch();
+  //       handleCancel();
+  //     } else {
+  //       throw new Error(res?.data?.message || "An unexpected error occurred.");
+  //     }
+  //   } catch (error) {
+  //     ErrorHandler(error);
+  //   }
+  // };
+
   const handleDelete = async () => {
     const res = await DeleteAPI(`api/v1/admin/delete-customer/${userId}`);
     if (res?.data?.status === "success") {
@@ -331,8 +353,8 @@ function CustomerDetails() {
           </p>
         </div>
 
-        <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative text-blue-500">
-            {(userType === "admin" && !data?.data?.customer?.salesRepName) ||
+        {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative text-blue-500">
+            {userType === "admin" ||
               userType === "salesRepresentative" ? (
               <li
                 onClick={() =>
@@ -362,9 +384,6 @@ function CustomerDetails() {
           >
             Edit Customer
           </li>
-          {/* <li>Addresses</li>
-          <li>Reset Password</li>
-          <li>Export</li> */}
           <li
             onClick={() =>
               setUserData({ ...userData, modal: true, type: "delete" })
@@ -372,7 +391,53 @@ function CustomerDetails() {
           >
             Delete Account
           </li>
-        </ul>
+        </ul> */}
+          <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative text-blue-500">
+            {(userType === "admin" || userType === "salesRepresentative") &&
+              hasPermission("customer_update") && (
+                <li
+                  onClick={() =>
+                    setUserData({ ...userData, modal: true, type: "employee" })
+                  }
+                >
+                  Assign Employee
+                </li>
+              )}
+
+            {userType === "admin" && hasPermission("customer_update") && (
+              <li
+                onClick={() =>
+                  setUserData({ ...userData, modal: true, type: "localPartner" })
+                }
+              >
+                Assign Local Partner
+              </li>
+            )}
+
+            {hasPermission("customer_update") && (
+              <li
+                onClick={() => {
+                  const url =
+                    userType === "admin"
+                      ? `/customers/edit/${userId}`
+                      : `/sales-representative/customers/edit/${userId}`;
+                  router.push(url);
+                }}
+              >
+                Edit Customer
+              </li>
+            )}
+
+            {hasPermission("customer_delete") && (
+              <li
+                onClick={() =>
+                  setUserData({ ...userData, modal: true, type: "delete" })
+                }
+              >
+                Delete Account
+              </li>
+            )}
+          </ul>
       </div>
 
       <div className="w-full pt-28 2xl:pt-32 px-6 2xl:px-12 ">
@@ -441,13 +506,13 @@ function CustomerDetails() {
                 <div
                   onClick={() => {
                     if (
-                      userType === "admin" &&
+                      userType === "admin" && hasPermission("customer_update") &&
                       data?.data?.customer?.salesRepId
                     ) {
                       router.push(
                         `/sale-representative/details/${data?.data?.customer?.salesRepId}`
                       );
-                    } else {
+                    } else if (hasPermission("customer_update")) {
                       setUserData({
                         ...userData,
                         type: "localPartner",
@@ -455,13 +520,36 @@ function CustomerDetails() {
                       });
                     }
                   }}
-                  className={` ${
-                    userType === "admin" && "text-blue-500"
-                  } cursor-pointer`}
+                  // className={` ${
+                  //   userType === "admin" && "text-blue-500"
+                  // } cursor-pointer`}
+                  className={`${userType === "admin" && hasPermission("customer_update") ? "text-blue-500" : ""} cursor-pointer`}
                 >
                   {data?.data?.customer?.salesRepName ?? "Not Assigned"}
                 </div>
               </div>
+
+                <div className="flex items-center h-12 border-b [&>span]:w-44">
+                  <span className="text-gray-500 font-medium">Employee</span>
+                  <div
+                    onClick={() => {
+                      if (hasPermission("customer_update")) {
+                        setUserData({
+                          ...userData,
+                          type: "employee",
+                          modal: true,
+                        });
+                      }
+                    }}
+                    className={`${userType === "admin" && hasPermission("customer_update")
+                        ? "text-blue-500 cursor-pointer"
+                        : "cursor-default text-gray-600"
+                      }`}
+                  >
+                    {data?.data?.customer?.employee ?? "Not Assigned"}
+                  </div>
+                </div>
+
               <div className="flex items-center h-12 border-b [&>span]:w-44">
                 <span className="text-gray-500 font-medium">Price List</span>
                 <div className="font-semibold">
@@ -608,7 +696,7 @@ function CustomerDetails() {
           </div>
 
           <div className="w-full flex justify-end">
-            {" "}
+            {hasPermission("customer_update") && (
             <button
               disabled={isDisable}
               onClick={handleSendInvoice}
@@ -622,7 +710,7 @@ function CustomerDetails() {
                  } `}
             >
               Invoice Reminder
-            </button>
+            </button> )}
           </div>
 
           {userOrders?.data?.data?.length > 0 && (

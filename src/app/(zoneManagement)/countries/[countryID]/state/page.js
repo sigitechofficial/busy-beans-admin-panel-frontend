@@ -21,6 +21,7 @@ import BackButton from "@/components/ui/BackButton";
 import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
 import { FaEye } from "react-icons/fa";
+import { hasPermission } from "@/utilities/Permission";
 
 export default function States() {
   const router = useRouter();
@@ -67,6 +68,7 @@ export default function States() {
       // ),
       action: (
         <div className="space-x-2">
+          {hasPermission("country_view") && (
           <button
             className="border border-yellow-400 rounded-md p-2 text-yellow-400"
             onClick={() => {
@@ -74,7 +76,8 @@ export default function States() {
             }}
           >
             <FaEye size={24} />
-          </button>
+          </button> )}
+          {hasPermission("country_delete") && (
           <button
             className="border border-red-400 rounded-md p-2 text-red-400"
             onClick={() => {
@@ -83,7 +86,7 @@ export default function States() {
             }}
           >
             <MdDelete size={24} />
-          </button>
+          </button> )}
         </div>
       ),
     })
@@ -182,12 +185,13 @@ export default function States() {
           />
         </div>
         <div className="flex justify-end">
+          {hasPermission("country_create") && (
           <button
             onClick={() => setModal("add")}
             className="hover:text-theme hover:bg-white duration-150 border border-theme rounded-lg font-inter font-medium text-white px-5 sm:px-8 py-2.5 sm:py-4 bg-theme"
           >
             + Add State
-          </button>
+          </button> )}
         </div>
       </div>
 

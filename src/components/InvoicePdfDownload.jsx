@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import { PostAPI } from "@/utilities/PostAPI";
 import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import { PatchAPI } from "@/utilities/PatchAPI";
+import { hasPermission } from "@/utilities/Permission";
 
 export default function InvoicePDFDownload({ invoiceData, reFetch }) {
   const invoiceRef = useRef(null);
@@ -379,12 +380,13 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
         >
           Download Invoice
         </button>
+        {hasPermission("orders_update") && (
         <button
           onClick={handleUpdate}
           className="mb-4 px-4 py-2 bg-theme text-white rounded"
         >
           Update Invoice
-        </button>
+        </button> )}
       </div>
     </div>
   );

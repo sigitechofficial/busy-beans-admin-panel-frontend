@@ -19,6 +19,7 @@ import { DeleteAPI } from "@/utilities/DeleteAPI";
 import BackButton from "@/components/ui/BackButton";
 import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
+import { hasPermission } from "@/utilities/Permission";
 
 export default function Cities() {
   const router = useRouter();
@@ -68,6 +69,8 @@ export default function Cities() {
       sl: i + 1,
       name: city?.name,
       action: (
+        <>
+        {hasPermission("country_delete") && (
         <button
           className="border border-red-400 rounded-md p-2 text-red-400"
           onClick={() => {
@@ -76,7 +79,8 @@ export default function Cities() {
           }}
         >
           <MdDelete size={24} />
-        </button>
+        </button> )}
+        </>
       ),
     })
   );
@@ -154,12 +158,14 @@ export default function Cities() {
           </div> */}
         </div>
         <div className="flex gap-x-2 justify-end">
+          {hasPermission("country_create") && (
           <button
             onClick={() => setModal("add")}
             className="rounded-lg font-inter font-medium text-white px-6 sm:px-10 py-2.5 sm:py-4 bg-theme hover:bg-white hover:text-theme border border-theme duration-150"
           >
             + Add City
-          </button>
+          </button> )}
+          {hasPermission("country_create") && (
           <button
             // onClick={() => setModal("territory")}
             onClick={() =>
@@ -170,7 +176,7 @@ export default function Cities() {
             className="text-theme bg-white border border-theme hover:text-white hover:bg-theme duration-150 rounded-lg font-inter font-medium px-6 sm:px-10 py-2.5 sm:py-4 "
           >
             + Add Territory
-          </button>
+          </button> )}
         </div>
       </div>
 

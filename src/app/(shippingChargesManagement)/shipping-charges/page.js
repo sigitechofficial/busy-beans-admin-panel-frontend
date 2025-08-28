@@ -9,6 +9,7 @@ import { success_toaster } from "@/utilities/Toaster";
 import { Dialog } from "primereact/dialog";
 import { useEffect, useState } from "react";
 import { CiMenuBurger } from "react-icons/ci";
+import { hasPermission } from "@/utilities/Permission";
 
 export default function ShippingChargesManagement() {
   const [rows, setRows] = useState([]);
@@ -209,6 +210,7 @@ export default function ShippingChargesManagement() {
                     className="w-full px-4 py-2 border rounded-md"
                     value={row.max}
                     onChange={(e) => updateRow(index, "max", e.target.value)}
+                    disabled={!hasPermission("charges_update")}
                   />
                   <input
                     type="number"
@@ -216,29 +218,33 @@ export default function ShippingChargesManagement() {
                     className="w-full px-4 py-2 border rounded-md"
                     value={row.charge}
                     onChange={(e) => updateRow(index, "charge", e.target.value)}
+                    disabled={!hasPermission("charges_update")}
                   />
+                  {hasPermission("charges_delete") && (
                   <button
                     onClick={() => deleteRow(index)}
                     className="text-red-600 font-semibold border border-red-600 w-20"
                   >
                     Delete
-                  </button>
+                  </button> )}
                 </div>
               ))}
 
               <div className="flex justify-end gap-x-2">
+                {hasPermission("charges_create") && (
                 <button
                   onClick={addRow}
                   className="mt-6 px-6 py-2.5 bg-theme text-white font-semibold rounded hover:bg-white hover:text-theme border border-theme"
                 >
                   Add More Charges
-                </button>
+                </button> )}
+                {hasPermission("charges_update") && (
                 <button
                   onClick={handleSubmit}
                   className="mt-6 px-6 py-2.5 bg-theme text-white font-semibold rounded hover:bg-white hover:text-theme border border-theme"
                 >
                   Save
-                </button>
+                </button> )}
               </div>
             </div>
           </div>

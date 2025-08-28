@@ -19,6 +19,7 @@ import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
 import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
+import { hasPermission } from "@/utilities/Permission";
 
 export default function Countries() {
   const countries = Country.getAllCountries();
@@ -141,13 +142,14 @@ export default function Countries() {
             </div>
           </div> */}
           <div className="flex justify-end">
+            {hasPermission("country_create") && (
             <button
               onClick={() => setModal("add")}
               className="rounded-lg font-inter font-medium text-white px-6 sm:px-10 py-2.5 sm:py-4 bg-theme hover:bg-white hover:text-theme border
              border-theme duration-150"
             >
               + Add Country
-            </button>
+            </button> )}
           </div>
         </div>
 
@@ -159,6 +161,7 @@ export default function Countries() {
               setModal={setModal}
               setCountryID={setCountryID}
               countryCode={country?.isoCode}
+              disabled={!hasPermission("country_delete")}
             />
           ))}
           {/* <CountryCard countryName="Denmark" countryCode="DK" />

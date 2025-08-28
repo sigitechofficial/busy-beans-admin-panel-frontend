@@ -19,6 +19,7 @@ import { Dialog } from "primereact/dialog";
 import Loader from "@/components/ui/Loader";
 import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
+import { hasPermission } from "@/utilities/Permission";
 
 export default function Suppliers() {
   const router = useRouter();
@@ -123,6 +124,7 @@ export default function Suppliers() {
         </div>
       ),
       changeStatus: (
+        hasPermission("supplier_update") ? (
         <label className="flex items-center gap-2 ">
           <div>
             {supplier?.status ? (
@@ -148,6 +150,9 @@ export default function Suppliers() {
             boxShadow="none"
           />
         </label>
+        ) : (
+        <span className="text-gray-400">No Access</span>
+        )
       ),
       // action: (
       //   <div className="flex gap-x-2">
@@ -210,12 +215,13 @@ export default function Suppliers() {
           />
           </div> */}
           <div className="flex justify-end">
+            {hasPermission("supplier_create") && (
             <button
               onClick={() => router.push("/suppliers/add")}
               className="rounded-lg font-inter font-medium text-white px-2 sm:px-3 py-2.5 sm:py-4 bg-theme"
             >
               + Add New Supplier
-            </button>
+            </button> )}
           </div>
         </div>
 

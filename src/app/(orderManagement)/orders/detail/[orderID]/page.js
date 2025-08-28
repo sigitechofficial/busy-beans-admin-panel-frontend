@@ -24,6 +24,7 @@ import Link from "next/link";
 import dayjs from "dayjs";
 import { CiMenuBurger } from "react-icons/ci";
 import { useDataContext } from "@/utilities/DataContext";
+import { hasPermission } from "@/utilities/Permission";
 
 export default function OrderDetail() {
   if (typeof window !== "undefined") {
@@ -418,6 +419,7 @@ export default function OrderDetail() {
             {data?.data?.order?.invoicePdf ? "Update Invoice" : "Add Invoice"}
           </li> */}
           <li>
+            {hasPermission("orders_update") && (
             <button
               type="button"
               disabled={data?.data?.order?.statusId === 6 ? true : false}
@@ -427,7 +429,7 @@ export default function OrderDetail() {
               {data?.data?.order?.invoiceDate
                 ? "Invoice reminder"
                 : "Send Invoice"}
-            </button>
+            </button> )}
           </li>
           <li>
             <button
@@ -536,7 +538,7 @@ export default function OrderDetail() {
                 ? "Invoice reminder"
                 : "Send Invoice"}
             </button> */}
-
+            {hasPermission("orders_update") && (
             <button
               type="button"
               onClick={() => router.push(`${pathname}/add-invoice`)}
@@ -545,9 +547,9 @@ export default function OrderDetail() {
               {data?.data?.order?.invoiceDate
                 ? "Update Invoice"
                 : "Add Invoice"}
-            </button>
+            </button> )}
 
-            {userType === "admin" && (
+            {userType === "admin" || hasPermission("orders_update") && (
               <button
                 disabled={
                   data?.data?.order?.statusId === 5 ||
@@ -562,7 +564,7 @@ export default function OrderDetail() {
                 Cancel Order
               </button>
             )}
-              {userType === "admin" && (
+              {(userType === "admin" || userType === "salesRepresentative") || hasPermission("orders_delete") && (
                 <button
                   type="button"
                   onClick={handleDeleteOrder}
@@ -765,6 +767,12 @@ export default function OrderDetail() {
                       <p>{data?.data?.order?.invoiceNumber}</p>
                     </div>
                   )}
+                  {data?.data?.order?.shippingCompany && (
+                    <div className="flex items-center gap-2 border-b">
+                      <p className="w-29">Shipping Company</p>
+                      <p>{data?.data?.order?.shippingCompany}</p>
+                    </div>
+                  )}
                   {data?.data?.order?.trackingNumber && (
                     <div className="flex items-center gap-5 border-b">
                       <p className="w-28">Tracking No: </p>
@@ -829,12 +837,13 @@ export default function OrderDetail() {
                     <div className="lowercase break-all">
                       {data?.data?.order?.user?.dispatchEmail}
                     </div>
+                    {hasPermission("orders_update") && (
                     <span
                       onClick={() => router.push(`${pathname}/edit`)}
                       className="text-blue-500 text-xs cursor-pointer"
                     >
                       Edit
-                    </span>
+                    </span> )}
                   </div>
 
                   {/* Bill To Section */}
@@ -917,13 +926,13 @@ export default function OrderDetail() {
                         {data?.data?.order?.user?.emailToSendInvoices}
                       </div>
                     )}
-
+                    {hasPermission("orders_update") && (
                     <span
                       onClick={() => router.push(`${pathname}/edit`)}
                       className="text-blue-500 text-xs cursor-pointer capitalize"
                     >
                       Edit
-                    </span>
+                    </span> )}
                   </div>
 
                   {data?.data?.order?.invoiceDate && (

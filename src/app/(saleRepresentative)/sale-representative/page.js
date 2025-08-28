@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import Loader from "@/components/ui/Loader";
 import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
+import { hasPermission } from "@/utilities/Permission";
 
 export default function SaleRepresentative() {
   const router = useRouter();
@@ -119,6 +120,7 @@ export default function SaleRepresentative() {
       //   </div>
       // ),
       changeStatus: (
+        hasPermission("local-partner_update") ? (
         <label className="flex items-center gap-2">
           <div>
             {sR?.status ? (
@@ -144,6 +146,9 @@ export default function SaleRepresentative() {
             boxShadow="none"
           />
         </label>
+        ) : (
+        <span className="text-gray-400">No Access</span>
+        )
       ),
       // /orders/pending-pullouts
       action: (
@@ -156,12 +161,14 @@ export default function SaleRepresentative() {
           >
             <FaEye size={24} />
           </button> */}
+          {hasPermission("local-partner_update") && (
           <button
             className="border border-theme rounded-md p-2 text-theme"
             onClick={() => router.push(`/sale-representative/edit/${sR?.id}`)}
           >
             <FaEdit size={24} />
-          </button>
+          </button> )}
+          {hasPermission("local-partner_delete") && (
           <button
             className="border border-red-400 rounded-md p-2 text-red-400"
             onClick={() => {
@@ -170,7 +177,7 @@ export default function SaleRepresentative() {
             }}
           >
             <MdDelete size={24} />
-          </button>
+          </button> )}
         </div>
       ),
     });
@@ -206,12 +213,13 @@ export default function SaleRepresentative() {
           />
           </div> */}
           <div className="flex justify-end">
+            {hasPermission("local-partner_create") && (
             <button
               onClick={() => router.push("/sale-representative/add")}
               className="rounded-lg font-inter font-medium border border-theme text-white bg-theme hover:bg-white hover:text-theme duration-150 px-2 sm:px-3 py-2.5 sm:py-4"
             >
               + Add New Local Partner
-            </button>
+            </button> )}
           </div>
         </div>
 

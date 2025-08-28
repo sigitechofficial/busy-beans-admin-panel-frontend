@@ -9,6 +9,7 @@ import { React, useState } from "react";
 import { DeleteAPI } from "@/utilities/DeleteAPI";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import { success_toaster } from "@/utilities/Toaster";
+import { hasPermission } from "@/utilities/Permission";
 
 export default function LocalPartnerSupplierDetails() {
   if (typeof window !== "undefined") {
@@ -60,17 +61,19 @@ export default function LocalPartnerSupplierDetails() {
         </h2>
 
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
+          {hasPermission("supplier_update") && (
           <li
             onClick={() => {
               router.push(`/suppliers/edit/${userId}`);
             }}
           >
             Edit
-          </li>
+          </li> )}
           {/* <li>Addresses</li>
             <li>Reset Password</li>
             <li>Export</li> */}          
-            <li onClick={() => setIsDeleteOpen(true)}>Delete Account</li>
+            {hasPermission("supplier_delete") && (
+            <li onClick={() => setIsDeleteOpen(true)}>Delete Account</li> )}
         </ul>
       </div>
 

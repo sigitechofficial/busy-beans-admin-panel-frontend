@@ -374,24 +374,29 @@ export default function OrderCard(props) {
         <table className="w-full border border-gray-200 text-sm border-collapse min-w-[750px]">
           <thead className="bg-gray-100">
             <tr>
-              <th className="py-2 px-2 text-left border border-gray-200">
-                Code
-              </th>
+              {userType !== "supplier" && (
+                <th className="py-2 px-2 text-left border border-gray-200">
+                  Code
+                </th>
+              )}
               <th className="py-2 px-2 text-left border border-gray-200">
                 SKU
               </th>
               <th className="py-2 px-2 text-left border border-gray-200">
                 Name
               </th>
+              <th className="py-2 px-2 text-left border border-gray-200">
+                Grind
+              </th>
               <th className="py-2 px-2 text-center border border-gray-200">
                 Qty.
               </th>
-              <th className="py-2 px-2 text-center border border-gray-200">
-                Discount
-              </th>
-              <th className="py-2 px-2 text-center border border-gray-200">
-                Invoiced
-              </th>
+              {userType !== "supplier" && (
+                <>
+                  <th className="py-2 px-2 text-center border border-gray-200">Discount</th>
+                  <th className="py-2 px-2 text-center border border-gray-200">Invoiced</th>
+                </>
+              )}
               <th className="py-2 px-2 text-center border border-gray-200">
                 Paid
               </th>
@@ -425,24 +430,34 @@ export default function OrderCard(props) {
                     </td>
                   </tr> */}
                   <tr>
-                    <td className="py-2 px-2 border border-gray-200">
-                      {item?.productCode}
-                    </td>
+                    {userType !== "supplier" && (
+                      <td className="py-2 px-2 border border-gray-200">
+                        {item?.productCode ?? item?.code ?? ""}
+                      </td>
+                    )}
                     <td className="py-2 px-2 border border-gray-200">
                       {item?.supplierSku}
                     </td>
                     <td className="py-2 px-2 font-semibold border border-gray-200">
-                      {item?.product}
+                      {item?.product ?? item?.productName ?? item?.name ?? ""}
                     </td>
+                    <td className="py-2 px-2 border border-gray-200">
+                      {item?.grind}
+                    </td>
+
                     <td className="py-2 px-2 text-center border border-gray-200">
                       {item?.qty}
                     </td>
-                     <td className="py-2 px-2 text-center border border-gray-200">
-                      {item?.discount}
-                    </td>
-                    <td className="py-2 px-2 text-center border border-gray-200">
-                      {props?.orderData?.invoicePdf ? "Yes" : "Not Yet"}
-                    </td>
+                    {userType !== "supplier" && (
+                      <>
+                        <td className="py-2 px-2 text-center border border-gray-200">
+                          {item?.discount}
+                        </td>
+                        <td className="py-2 px-2 text-center border border-gray-200">
+                          {props?.orderData?.invoicePdf ? "Yes" : "Not Yet"}
+                        </td>
+                      </>
+                    )}
                     <td className="py-2 px-2 text-center border border-gray-200">
                       {props?.orderData?.paymentStatus === "pending"
                         ? "Unpaid"
@@ -471,36 +486,36 @@ export default function OrderCard(props) {
             {/* Subtotal Row */}
             {(userType === "admin" || userType === "salesRepresentative") && (
               <tr>
-                <td colSpan={6} className="border border-gray-200"></td>
+                <td colSpan={userType !== "supplier" ? 9 : 7} className="border border-gray-200"></td>
                 <td className="py-2 px-2 text-right font-semibold border border-gray-200">
                   Sub-Total
                 </td>
                 <td className="py-2 px-2 text-right font-semibold border border-gray-200">
-                  {props?.orderData?.subTotal}
+                  {parseFloat(props?.orderData?.subTotal || 0).toFixed(2)}
                 </td>
               </tr>
             )}
             {/* Shipping Row */}
             {(userType === "admin" || userType === "salesRepresentative") && (
               <tr>
-                <td colSpan={6} className="border border-gray-200"></td>
+                <td colSpan={userType !== "supplier" ? 9 : 7} className="border border-gray-200"></td>
                 <td className="py-2 px-2 text-right border border-gray-200">
                   Shipping Charges
                 </td>
                 <td className="py-2 px-2 text-right border border-gray-200">
-                  {props?.orderData?.shippingCharges}
+                  {parseFloat(props?.orderData?.shippingCharges || 0).toFixed(2)}
                 </td>
               </tr>
             )}
             {/* Total Row */}
             {(userType === "admin" || userType === "salesRepresentative") && (
               <tr>
-                <td colSpan={6} className="border border-gray-200"></td>
+                <td colSpan={userType !== "supplier" ? 9 : 7} className="border border-gray-200"></td>
                 <td className="py-2 px-2 text-right font-bold border border-gray-200">
                   Total USD ({props?.orderData?.items?.length} items)
                 </td>
                 <td className="py-2 px-2 text-right font-bold border border-gray-200">
-                  {props?.orderData?.totalBill}
+                  {parseFloat(props?.orderData?.totalBill || 0).toFixed(2)}
                 </td>
               </tr>
             )}

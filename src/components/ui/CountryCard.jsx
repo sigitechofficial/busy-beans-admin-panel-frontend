@@ -3,7 +3,7 @@ import ReactCountryFlag from "react-country-flag";
 import { MdDelete } from "react-icons/md";
 
 export default function CountryCard(props) {
-  const { countryName, countryCode, setModal, setCountryID, id } = props;
+  const { countryName, countryCode, setModal, setCountryID, id, disabled } = props;
   return (
     <div className="flex flex-col justify-between p-4 space-y-6 rounded-xl border border-tabBorderColor border-opacity-60 shadow-tabShadow bg-themeTab hover:bg-themeGray3 duration-150 font-inter">
       <Link
@@ -30,6 +30,7 @@ export default function CountryCard(props) {
             setModal("delete");
             setCountryID(id);
           }}
+          disabled={disabled}
         >
           <MdDelete size={24} />
         </button>

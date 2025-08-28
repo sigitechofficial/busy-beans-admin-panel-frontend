@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import React from "react";
 import { CiMenuBurger } from "react-icons/ci";
+import { hasPermission } from "@/utilities/Permission";
 
 export default function SalesRepDetails() {
   if (typeof window !== "undefined") {
@@ -45,13 +46,14 @@ export default function SalesRepDetails() {
         </h2>
 
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative text-blue-500">
+          {hasPermission("local-partner_update") && (
           <li
             onClick={() => {
               router.push(`/sale-representative/edit/${userId}`);
             }}
           >
             Edit
-          </li>
+          </li> )}
           <li
             onClick={() => {
               router.push(`/orders/pending-pullouts/${userId}`);

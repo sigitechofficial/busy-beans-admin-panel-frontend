@@ -26,6 +26,7 @@ import MiniLoader from "@/components/ui/MiniLoader";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
+import { hasPermission } from "@/utilities/Permission";
 
 export default function Stock() {
   const [filterId, setFilterId] = useState("");
@@ -435,6 +436,7 @@ export default function Stock() {
       //   </div>
       // ),
       changeStatus: (
+        hasPermission("product_update") ? (
         <label className="flex items-center gap-2">
           <div>
             {prod?.status ? (
@@ -460,15 +462,20 @@ export default function Stock() {
             boxShadow="none"
           />
         </label>
+        ) : (
+        <span className="text-gray-400">No Access</span>
+        )
       ),
       action: (
         <div className="flex gap-x-2">
+          {hasPermission("product_update") && (
           <button
             className="border border-theme rounded-md p-2 text-theme"
             onClick={() => openEditModal(prod?.id)}
           >
             <FaEdit size={24} />
-          </button>
+          </button> )}
+          {hasPermission("product_delete") && (
           <button
             className="border border-red-400 rounded-md p-2 text-red-400"
             onClick={() => {
@@ -477,7 +484,7 @@ export default function Stock() {
             }}
           >
             <MdDelete size={24} />
-          </button>
+          </button> )}
         </div>
       ),
     });
@@ -502,6 +509,7 @@ export default function Stock() {
         </div>
 
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
+          {hasPermission("product_create") && (
           <li
             onClick={() => {
               setSupplierSkus({});
@@ -509,7 +517,7 @@ export default function Stock() {
             }}
           >
             New Product
-          </li>
+          </li> )}
           <li>Import</li>
           <li>Export</li>
         </ul>

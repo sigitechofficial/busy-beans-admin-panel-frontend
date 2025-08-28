@@ -24,6 +24,7 @@ import MiniLoader from "@/components/ui/MiniLoader";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import { CiMenuBurger } from "react-icons/ci";
 import { useDataContext } from "@/utilities/DataContext";
+import { hasPermission } from "@/utilities/Permission";
 
 export default function Category() {
   const { data, reFetch } = GetAPI("api/v1/admin/category", "category");
@@ -159,23 +160,28 @@ export default function Category() {
         </div>
       ),
       changeStatus: (
-        <label>
-          <Switch
-            onChange={() => {
-              handleStatus(cat?.id, cat?.status);
-            }}
-            checked={cat?.status}
-            uncheckedIcon={false}
-            checkedIcon={false}
-            onColor="#86644c"
-            onHandleColor="#fff"
-            className="react-switch"
-            boxShadow="none"
-          />
-        </label>
+        hasPermission("category_update") ? (
+          <label>
+            <Switch
+              onChange={() => {
+                handleStatus(cat?.id, cat?.status);
+              }}
+              checked={cat?.status}
+              uncheckedIcon={false}
+              checkedIcon={false}
+              onColor="#86644c"
+              onHandleColor="#fff"
+              className="react-switch"
+              boxShadow="none"
+            />
+          </label>
+        ) : (
+          <span className="text-gray-400">No Access</span>
+        )
       ),
       action: (
         <div className="flex gap-x-2">
+          {hasPermission("category_update") && (
           <button
             too
             className="border border-theme rounded-md p-2 text-theme"
@@ -186,7 +192,8 @@ export default function Category() {
             }}
           >
             <FaEdit size={24} />
-          </button>
+          </button> )}
+          {hasPermission("category_delete") && (
           <button
             className="border border-red-400 rounded-md p-2 text-red-400"
             onClick={() => {
@@ -195,7 +202,7 @@ export default function Category() {
             }}
           >
             <MdDelete size={24} />
-          </button>
+          </button> )}
         </div>
       ),
     });
@@ -219,6 +226,7 @@ export default function Category() {
         </div>
 
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
+          {hasPermission("category_create") && (
           <li
             onClick={() => {
               setName("");
@@ -226,7 +234,7 @@ export default function Category() {
             }}
           >
             New Category
-          </li>
+          </li> )}
         </ul>
       </div>
       <div className="space-y-8 pt-32 px-6 2xl:px-12 ">

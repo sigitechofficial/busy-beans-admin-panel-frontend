@@ -54,6 +54,11 @@ export default function SalesRepresentativeCustomers() {
       header: "Group",
       minWidth: "14rem",
     },
+    {
+      field: "employee",
+      header: "Employee",
+      minWidth: "14rem",
+    },
     // {
     //   field: "salesRepState",
     //   header: "Sales Representative State",
@@ -83,6 +88,11 @@ export default function SalesRepresentativeCustomers() {
       totalOrderAmount: customer?.totalOrderAmount,
       totalOrderPlaced: customer?.totalOrderPlaced,
       salesRepName: customer?.salesRepName ?? (
+        <di className="w-max text-xs bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+          Not Assigned
+        </di>
+      ),
+      employee: customer?.employee ?? (
         <di className="w-max text-xs bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
           Not Assigned
         </di>

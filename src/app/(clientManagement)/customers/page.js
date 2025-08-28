@@ -19,6 +19,7 @@ import { FaEdit } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
+import { hasPermission } from "@/utilities/Permission";
 
 export default function Customers() {
   const router = useRouter();
@@ -179,31 +180,68 @@ export default function Customers() {
             </div>
           ),
           lastOrder: "last order",
-          changeStatus: (
-            <label className="flex gap-2 items-center">
-              {customer?.status ? (
-                <div className="w-max text-xs bg-themeGreen text-white font-semibold p-2 rounded-md flex justify-center">
-                  Active
-                </div>
-              ) : (
-                <div className="w-max text-xs text-white bg-[#EE4A4A]  font-semibold p-2 rounded-md flex justify-center">
-                  Inactive
-                </div>
-              )}
-              <Switch
-                onChange={() => {
-                  handleStatus(customer?.id, customer?.status);
-                }}
-                checked={customer?.status}
-                uncheckedIcon={false}
-                checkedIcon={false}
-                onColor="#86644c"
-                onHandleColor="#fff"
-                className="react-switch"
-                boxShadow="none"
-              />
-            </label>
-          ),
+          // changeStatus: (
+          //   <label className="flex gap-2 items-center">
+          //     {customer?.status ? (
+          //       <div className="w-max text-xs bg-themeGreen text-white font-semibold p-2 rounded-md flex justify-center">
+          //         Active
+          //       </div>
+          //     ) : (
+          //       <div className="w-max text-xs text-white bg-[#EE4A4A]  font-semibold p-2 rounded-md flex justify-center">
+          //         Inactive
+          //       </div>
+          //     )}
+          //     <Switch
+          //       onChange={() => {
+          //         handleStatus(customer?.id, customer?.status);
+          //       }}
+          //       checked={customer?.status}
+          //       uncheckedIcon={false}
+          //       checkedIcon={false}
+          //       onColor="#86644c"
+          //       onHandleColor="#fff"
+          //       className="react-switch"
+          //       boxShadow="none"
+          //     />
+          //   </label>
+          // ),
+        changeStatus: hasPermission("customer_update") ? (
+          <label className="flex gap-2 items-center">
+            {customer?.status ? (
+              <div className="w-max text-xs bg-themeGreen text-white font-semibold p-2 rounded-md flex justify-center">
+                Active
+              </div>
+            ) : (
+              <div className="w-max text-xs text-white bg-[#EE4A4A]  font-semibold p-2 rounded-md flex justify-center">
+                Inactive
+              </div>
+            )}
+            <Switch
+              onChange={() => {
+                handleStatus(customer?.id, customer?.status);
+              }}
+              checked={customer?.status}
+              uncheckedIcon={false}
+              checkedIcon={false}
+              onColor="#86644c"
+              onHandleColor="#fff"
+              className="react-switch"
+              boxShadow="none"
+            />
+          </label>
+        ) : (
+          <div>
+            {customer?.status ? (
+              <div className="w-max text-xs bg-themeGreen text-white font-semibold p-2 rounded-md flex justify-center">
+                Active
+              </div>
+            ) : (
+              <div className="w-max text-xs text-white bg-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+                Inactive
+              </div>
+            )}
+          </div>
+        ),
           // action: (
           //   <button
           //     className="border border-theme rounded-md p-2 text-theme"
@@ -334,7 +372,8 @@ export default function Customers() {
         </div>
 
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
-          <li onClick={() => router.push("/customers/add")}>Add Customer</li>
+          {hasPermission("customer_create") && (
+          <li onClick={() => router.push("/customers/add")}>Add Customer</li> )}
           {/* <li>Groups</li>
           <li>Nearby</li>
           <li>Export</li> */}
@@ -392,7 +431,7 @@ export default function Customers() {
               type === "all" || type === "assigned" ? "hidden" : "block"
             }`}
           >
-            <button
+            {/* <button
               onClick={() => {
                 selectedRows?.length === 0
                   ? info_toaster("Select atleast one customer")
@@ -405,7 +444,20 @@ export default function Customers() {
                 //  "Reassign Sale Representative"
                 // :
                 "Assign Local Partner"}
-            </button>
+            </button> */}
+              {(type === "unassigned" && hasPermission("customer_update")) && (
+                <button
+                  onClick={() => {
+                    selectedRows?.length === 0
+                      ? info_toaster("Select atleast one customer")
+                      : setModal("assign");
+                  }}
+                  className="rounded-lg font-inter font-medium text-white px-10 py-2.5 sm:h-full border border-theme bg-theme hover:bg-white hover:text-theme duration-150"
+                >
+                  Assign Local Partner
+                </button>
+              )}
+
           </div>
         </div>
 

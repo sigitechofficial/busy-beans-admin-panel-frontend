@@ -20,6 +20,7 @@ import { useDataContext } from "@/utilities/DataContext";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import { hasPermission } from "@/utilities/Permission";
 
 export default function Employee() {
   const { data, reFetch } = GetAPI("api/v1/admin/employees", "employees");
@@ -37,6 +38,7 @@ export default function Employee() {
   const [loader, setLoader] = useState("");
   const [visible, setVisible] = useState(false);
   const [changePasswordStatus, setChangePasswordStatus] = useState(false);
+  const allFeatures = [ "dashboard", "orders", "supplier", "invoice", "customer", "selected-customer",  "local-partner", "product", "category", "employees", "country", "charges", "payment-pullout", "report" ];
 
   const handleModalClose = () => {
     setModal("");
@@ -136,7 +138,7 @@ export default function Employee() {
           throw new Error(res?.data?.message || "An unexpected error occurred.");
         }
       } catch (error) {
-        handleModalClose();
+        // handleModalClose();
         setLoader("");
         ErrorHandler(error);
       }
@@ -227,12 +229,11 @@ export default function Employee() {
   };
 
   const columns = [
-    { field: "sl", header: "SL", sort: true },
+    // { field: "sl", header: "SL", sort: true },
     { field: "name", header: "Name" },
     { field: "email", header: "Email" },
-    { field: "phoneNumber", header: "Phone Number" },
-    { field: "countryCode", header: "Country Code" },
-    { field: "currentStatus", header: "Current Status" },
+    { field: "phoneNumber", header: "Phone Number" }, 
+    // { field: "currentStatus", header: "Current Status" },
     { field: "changeStatus", header: "Change Status" },
     { field: "action", header: "Action" },
   ];
@@ -240,11 +241,10 @@ export default function Employee() {
   const datas = [];
   data?.data?.data?.map((cat, i) => {
     return datas.push({
-      sl: i + 1,
+      // sl: i + 1,
       name: cat?.name,
       email: cat?.email,
-      phoneNumber: cat?.phoneNumber || "-",
-      countryCode: cat?.countryCode || "-",
+      phoneNumber: ( <div> {cat?.countryCode && `+${cat?.countryCode} `}{cat?.phoneNumber || ""} </div> ),
       currentStatus: (
         <div>
           {cat?.status ? (
@@ -259,6 +259,19 @@ export default function Employee() {
         </div>
       ),
       changeStatus: (
+        hasPermission("employees_update") ? (
+        <label className="flex items-center gap-2 ">
+          <div>
+            {cat?.status ? (
+              <div className="w-max text-xs bg-theme text-white font-semibold p-2 rounded-md flex justify-center">
+                Active
+              </div>
+            ) : (
+              <div className="w-max text-xs bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+                Inactive
+              </div>
+            )}
+          </div>
         <Switch
           onChange={() => {
             handleStatus(cat?.id, cat?.status);
@@ -270,10 +283,15 @@ export default function Employee() {
           onHandleColor="#fff"
           className="react-switch"
           boxShadow="none"
-        />
+        /> 
+        </label>
+        ) : (
+        <span className="text-gray-400">No Access</span>
+        )
       ),
       action: (
         <div className="flex gap-x-2">
+          {hasPermission("employees_update") && (
           <button
             className="border border-theme rounded-md p-2 text-theme"
             // onClick={() => {
@@ -293,7 +311,8 @@ export default function Employee() {
             onClick={() => handleEditClick(cat?.id)}
           >
             <FaEdit size={24} />
-          </button>
+          </button> )}
+          {hasPermission("employees_delete") && (
           <button
             className="border border-red-400 rounded-md p-2 text-red-400"
             onClick={() => {
@@ -302,7 +321,7 @@ export default function Employee() {
             }}
           >
             <MdDelete size={24} />
-          </button>
+          </button> )}
         </div>
       ),
     });
@@ -322,6 +341,7 @@ export default function Employee() {
           <h2 className="text-xl font-inter font-semibold">All Employees</h2>
         </div>
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
+          {hasPermission("employees_create") && (
           <li
             onClick={() => {
               setFormData({
@@ -338,7 +358,7 @@ export default function Employee() {
             }}
           >
             New Employee
-          </li>
+          </li> )}
         </ul>
       </div>
 
@@ -532,65 +552,87 @@ export default function Employee() {
                     </div>
 
                     {/* Features */}
-                    <div className="flex flex-col gap-y-2">
-                      <div className="flex justify-between items-center mb-2">
-                        <label className="text-labelColor font-medium font-satoshi">Features</label>
-                        <div className="flex items-center gap-2">
-                          <label className="text-black font-medium font-satoshi">Select All</label>
-                          <input
-                            type="checkbox"
-                            checked={
-                              formData.features.length === 10 &&
-                              formData.features.every(f =>
-                                ["create", "view", "update", "delete"].every(action => f[action])
-                              )
-                            }
-                            onChange={(e) => {
-                              const checked = e.target.checked;
-                              const newFeatures = ["dashboard", "orders", "supplier", "customer", "sales-rep", "product", "category", "employees", "country", "charges"].map(feature => ({
-                                feature,
-                                create: checked,
-                                view: checked,
-                                update: checked,
-                                delete: checked
-                              }));
-                              setFormData({ ...formData, features: newFeatures });
-                            }}
-                            className="form-checkbox"
-                          />
-                        </div>
-                      </div>
-
-                      {["dashboard", "orders", "supplier", "customer", "sales-rep", "product", "category", "employees", "country", "charges"].map((feature) => {
-                        const existingFeature = formData.features.find(f => f.feature === feature) || {};
-                        return (
-                          <div key={feature} className="flex justify-between items-center gap-6 mb-2">
-                            <span className="font-bold w-32">{feature}</span>
-                            {["create", "view", "update", "delete"].map((action) => (
-                              <div key={`${feature}-${action}`} className="flex items-center gap-2">
+                          <div className="flex flex-col gap-y-4">
+                              <div className="flex items-center justify-end gap-2">
                                 <input
                                   type="checkbox"
-                                  checked={!!existingFeature[action]}
+                                  checked={
+                                    formData.features.length === allFeatures.length &&
+                                    formData.features.every(f =>
+                                      ["create", "view", "update", "delete"].every(action => f[action])
+                                    )
+                                  }
                                   onChange={(e) => {
                                     const checked = e.target.checked;
-                                    const newFeatures = [...formData.features];
-                                    const featureIndex = newFeatures.findIndex(f => f.feature === feature);
-                                    if (featureIndex !== -1) {
-                                      newFeatures[featureIndex] = { ...newFeatures[featureIndex], [action]: checked };
-                                    } else {
-                                      newFeatures.push({ feature, [action]: checked });
-                                    }
+                                    const newFeatures = allFeatures.map(feature => ({
+                                      feature,
+                                      create: checked,
+                                      view: checked,
+                                      update: checked,
+                                      delete: checked,
+                                    }));
                                     setFormData({ ...formData, features: newFeatures });
                                   }}
                                   className="form-checkbox"
                                 />
-                                <label className="font-medium capitalize">{action}</label>
+                                <label className="text-black font-medium font-satoshi">Select All</label>
                               </div>
-                            ))}
+                            <div className="grid grid-cols-6 gap-6 font-bold mb-2 items-center">
+                              <span className="col-span-2 text-left text-labelColor font-medium font-satoshi">
+                                Features
+                              </span>
+
+                              {["Create", "View", "Update", "Delete"].map((action) => (
+                                <span key={action} className="text-center w-20">
+                                  {action}
+                                </span>
+                              ))}
+
+                            </div>
+
+                            {allFeatures.map((feature) => {
+                              const existingFeature =
+                                formData.features.find((f) => f.feature === feature) || {};
+                              return (
+                                <div
+                                  key={feature}
+                                  className="grid grid-cols-6 gap-6 items-center mb-2"
+                                >
+                                  <span className="col-span-2 font-bold capitalize">
+                                    {feature.replace("-", " ")}
+                                  </span>
+                                  {["create", "view", "update", "delete"].map((action) => (
+                                    <div key={`${feature}-${action}`} className="flex justify-center">
+                                      <input
+                                        type="checkbox"
+                                        checked={!!existingFeature[action]}
+                                        onChange={(e) => {
+                                          const checked = e.target.checked;
+                                          const newFeatures = [...formData.features];
+                                          const featureIndex = newFeatures.findIndex(
+                                            (f) => f.feature === feature
+                                          );
+
+                                          if (featureIndex !== -1) {
+                                            newFeatures[featureIndex] = {
+                                              ...newFeatures[featureIndex],
+                                              [action]: checked,
+                                            };
+                                          } else {
+                                            newFeatures.push({ feature, [action]: checked });
+                                          }
+
+                                          setFormData({ ...formData, features: newFeatures });
+                                        }}
+                                        className="form-checkbox"
+                                      />
+                                    </div>
+                                  ))}
+                                  <div></div>
+                                </div>
+                              );
+                            })}
                           </div>
-                        );
-                      })}
-                    </div>
                   </>
                 )}
                 <div className="flex items-center justify-end gap-x-4">

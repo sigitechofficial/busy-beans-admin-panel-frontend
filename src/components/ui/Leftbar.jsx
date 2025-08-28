@@ -45,6 +45,8 @@ import GetAPI from "@/utilities/GetAPI";
 import { useDataContext } from "@/utilities/DataContext";
 import { getMessagingInstance, onMessage } from "@/utilities/firebase";
 import { requestDeviceToken } from "@/utilities/requestFCMToken";
+import { hasPermission } from "@/utilities/Permission";
+
 
 export default function Leftbar(props) {
   if (typeof window !== "undefined") {
@@ -52,6 +54,7 @@ export default function Leftbar(props) {
     var userID = localStorage.getItem("userID");
     var connectAccountId = localStorage.getItem("connectAccountId");
     var isAccountConnected = localStorage.getItem("isAccountConnected");
+    var isEmployee = localStorage.getItem("isEmployee") ? true : false;
     var url = window.location.href;
   }
 
@@ -351,7 +354,8 @@ export default function Leftbar(props) {
 
       {userType === "admin" ? (
         <ul className="flex flex-col space-y-1 pt-2 overflow-auto h-[90%]">
-          <ListHead title="Dashboard" to="/" Icon={MdDashboard} />
+          {hasPermission("dashboard_view") && <ListHead title="Dashboard" to="/" Icon={MdDashboard} />}
+          {hasPermission("orders_view") && (
           <ListHead
             title="Order Management"
             Icon={AiOutlineUnorderedList}
@@ -365,44 +369,43 @@ export default function Leftbar(props) {
             onClick={() =>
               handleActive("orderManagement", active?.orderManagement?.status)
             }
-          />
+          /> )}
 
           {active?.orderManagement?.tab === "orderManagement" &&
             active?.orderManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  <ListItems title="Create Order" to="/orders/create" />
+                  {hasPermission("orders_create") && ( <ListItems title="Create Order" to="/orders/create" /> )}
                   <ListItems
                     title="New Orders"
                     to="/orders/new-orders"
                     count={overAllData?.data?.data?.[0]?.count || ""}
-                  />
+                  /> 
                   <ListItems
                     title="All Orders"
                     to="/orders"
                     count={allOrder || ""}
-                  />
-
+                  /> 
                   <ListItems
                     title="Upcoming Orders"
                     to="/orders/upcoming"
                     count={overAllData?.data?.data?.[6]?.count || ""}
-                  />
+                  /> 
                   <ListItems
                     title="Dispatched Orders"
                     to="/orders/assigned"
                     count={overAllData?.data?.data?.[1]?.count || ""}
-                  />
+                  /> 
                   <ListItems
                     title="Acknowledged Orders"
                     to="/orders/acknowledged"
                     count={overAllData?.data?.data?.[2]?.count || ""}
-                  />
+                  /> 
                   <ListItems
                     title="Shipped Orders"
                     to="/orders/shiped"
                     count={overAllData?.data?.data?.[4]?.count || ""}
-                  />
+                  /> 
                   {/* <ListItems
                     title="Dispatched Orders"
                     to="/orders/dispatched"
@@ -411,12 +414,12 @@ export default function Leftbar(props) {
                     title="Cancelled Orders"
                     to="/orders/cancelled"
                     count={overAllData?.data?.data?.[5]?.count || ""}
-                  />
+                  /> 
                 </div>
                 <hr className="w-full" />
               </>
             )}
-
+          {hasPermission("supplier_view") && (
           <ListHead
             title="Supplier Management"
             Icon={GiHumanTarget}
@@ -435,7 +438,7 @@ export default function Leftbar(props) {
                 active?.supplierManagement?.status
               )
             }
-          />
+          /> )}
           {active?.supplierManagement?.tab === "supplierManagement" &&
             active?.supplierManagement?.status && (
               <>
@@ -450,7 +453,7 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
-
+          {(hasPermission("customer_view") || hasPermission("selected-customer_view")) && (
           <ListHead
             title="Client Management"
             Icon={GoPeople}
@@ -464,19 +467,19 @@ export default function Leftbar(props) {
             onClick={() =>
               handleActive("clientManagement", active?.clientManagement?.status)
             }
-          />
+          /> )}
           {active?.clientManagement?.tab === "clientManagement" &&
             active?.clientManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  <ListItems title="All Clients" to="/customers" />
-                  {/* <ListItems title="Active Clients" to="/active-clients" /> */}
+                  {hasPermission("customer_view") && <ListItems title="All Clients" to="/customers" />}
+                  {hasPermission("selected-customer_view") && isEmployee && <ListItems title="Selected Clients" to="/active-clients" />}
                   {/* <ListItems title="Inactive Clients" to="/inactive-clients" /> */}
                 </div>
                 <hr className="w-full" />
               </>
             )}
-
+          {hasPermission("local-partner_view") && (
           <ListHead
             title="Local Partners"
             Icon={GoPeople}
@@ -493,7 +496,7 @@ export default function Leftbar(props) {
                 active?.saleRepresentative?.status
               )
             }
-          />
+          /> )}
           {active?.saleRepresentative?.tab === "saleRepresentative" &&
             active?.saleRepresentative?.status && (
               <>
@@ -506,7 +509,7 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
-
+          {hasPermission("invoice_view") && (
           <ListHead
             title="Invoice Management"
             Icon={PiInvoiceBold}
@@ -523,7 +526,7 @@ export default function Leftbar(props) {
               )
             }
             disabled={true}
-          />
+          /> )}
           {active?.invoiceManagement?.tab === "invoiceManagement" &&
             active?.invoiceManagement?.status && (
               <>
@@ -533,7 +536,7 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
-
+          {hasPermission("payment-pullout_view") && (
           <ListHead
             title="Payment Pullouts"
             active={pathname === "/pullouts"}
@@ -550,7 +553,7 @@ export default function Leftbar(props) {
                 active?.pullouts?.status
               )
             }
-          />
+          /> )}
 
           {active?.pullouts?.tab === "pullouts" &&
             active?.pullouts?.status && (
@@ -714,7 +717,7 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
-
+          {hasPermission("product_view") && (
           <ListHead
             title="Inventory Management"
             // to="/inventory/stock"
@@ -732,7 +735,7 @@ export default function Leftbar(props) {
                 active?.inventoryManagement?.status
               )
             }
-          />
+          /> )}
 
           {active?.inventoryManagement?.tab === "inventoryManagement" &&
             active?.inventoryManagement?.status && (
@@ -743,7 +746,7 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
-
+          {hasPermission("category_view") && (
           <ListHead
             title="Category Management"
             // to="/inventory/stock"
@@ -761,7 +764,7 @@ export default function Leftbar(props) {
                 active?.categoryManagement?.status
               )
             }
-          />
+          /> )}
 
           {active?.categoryManagement?.tab === "categoryManagement" &&
             active?.categoryManagement?.status && (
@@ -773,7 +776,7 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
-
+          {hasPermission("employees_view") && (
           <ListHead
             title="Employee Management"
             active={pathname === "/employee"}
@@ -790,7 +793,7 @@ export default function Leftbar(props) {
                 active?.employees?.status
               )
             }
-          />
+          /> )}
 
           {active?.employees?.tab === "employees" &&
             active?.employees?.status && (
@@ -842,7 +845,7 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
-
+          {hasPermission("country_view") && (
           <ListHead
             title="Zone Management"
             Icon={RiTimeZoneLine}
@@ -860,7 +863,7 @@ export default function Leftbar(props) {
             onClick={() =>
               handleActive("zoneManagement", active?.zoneManagement?.status)
             }
-          />
+          /> )}
 
           {active?.zoneManagement?.tab === "zoneManagement" &&
             active?.zoneManagement?.status && (
@@ -901,20 +904,20 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
-
+          {hasPermission("charges_view") &&
           <ListHead
             title="Shipping Charges Management"
             Icon={FaShippingFast}
             to={"/shipping-charges"}
             active={pathname.includes("/shipping-charges")}
-          />
-
+          /> }
+          {hasPermission("report_view") &&
           <ListHead
             title="Report Management"
             Icon={PiChartBar}
             to={"/reports"}
             active={pathname.includes("/reports")}
-          />
+          /> }
 
           <div className="mx-2 pb-7">
             <button
@@ -1006,7 +1009,7 @@ export default function Leftbar(props) {
         </ul>
       ) : userType === "salesRepresentative" ? (
         <ul className="flex flex-col space-y-1 pt-2 overflow-auto h-[90%]">
-          <ListHead title="Dashboard" to="/" Icon={MdDashboard} />
+          {hasPermission("dashboard_view") && <ListHead title="Dashboard" to="/" Icon={MdDashboard} />}
 
           <ListHead
             title="Quotation Management"
@@ -1038,7 +1041,8 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
-
+            
+          {(hasPermission("customer_view") || hasPermission("selected-customer_view")) && (
           <ListHead
             title="Client Management"
             Icon={GoPeople}
@@ -1052,16 +1056,17 @@ export default function Leftbar(props) {
             onClick={() =>
               handleActive("clientManagement", active?.clientManagement?.status)
             }
-          />
+          /> )}
 
           {active?.clientManagement?.tab === "clientManagement" &&
             active?.clientManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  <ListItems
+                  {hasPermission("customer_view") && <ListItems
                     title="All Clients"
                     to="/sales-representative/customers"
-                  />
+                  />}
+                  {hasPermission("selected-customer_view") && isEmployee && <ListItems title="Selected Clients" to="/active-clients" />}
                 </div>
                 <hr className="w-full" />
               </>
@@ -1082,7 +1087,7 @@ export default function Leftbar(props) {
             //   handleActive("walletManagement", active?.orderManagement?.status)
             // }
           /> */}
-
+          {hasPermission("orders_view") && (
           <ListHead
             title="Order Management"
             Icon={AiOutlineUnorderedList}
@@ -1096,22 +1101,23 @@ export default function Leftbar(props) {
             onClick={() =>
               handleActive("orderManagement", active?.orderManagement?.status)
             }
-          />
+          /> )}
 
           {active?.orderManagement?.tab === "orderManagement" &&
             active?.orderManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
+                  {hasPermission("orders_create") &&
                   <ListItems
                     title="Create Orders"
                     to="/sales-representative/create-order"
-                  />
+                  />}
                   <ListItems
                     title="New Orders"
                     to="/orders/new-orders"
                     count={overAllData?.data?.data?.[0]?.count || ""}
                   />
-                  <ListItems title="All Orders" to="/orders" count={allOrder} />
+                  <ListItems title="All Orders" to="/orders" count={allOrder || ""} />
 
                   <ListItems
                     title="Upcoming Orders"
@@ -1135,12 +1141,16 @@ export default function Leftbar(props) {
                     to="/orders/shiped"
                     count={overAllData?.data?.data?.[4]?.count || ""}
                   />
-                  <ListItems title="Cancelled Orders" to="/orders/cancelled" />
+                  <ListItems 
+                    title="Cancelled Orders" 
+                    to="/orders/cancelled"
+                    count={overAllData?.data?.data?.[5]?.count || ""}
+                   />
                 </div>
                 <hr className="w-full" />
               </>
             )}
-
+          {hasPermission("invoice_view") && (
           <ListHead
             title="Invoice Management"
             Icon={PiInvoiceBold}
@@ -1157,7 +1167,7 @@ export default function Leftbar(props) {
               )
             }
             disabled={true}
-          />
+          /> )}
           {active?.invoiceManagement?.tab === "invoiceManagement" &&
             active?.invoiceManagement?.status && (
               <>
@@ -1167,7 +1177,7 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
-          
+          {hasPermission("payment-pullout_view") && (
           <ListHead
             title="Payment Pullouts"
             active={pathname === "/pullouts"}
@@ -1184,7 +1194,7 @@ export default function Leftbar(props) {
                 active?.pullouts?.status
               )
             }
-          />
+          /> )}
 
           {active?.pullouts?.tab === "pullouts" &&
             active?.pullouts?.status && (
@@ -1195,7 +1205,7 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
-
+          {hasPermission("employees_view") && (
           <ListHead
             title="Employee Management"
             active={pathname === "/employee"}
@@ -1212,7 +1222,7 @@ export default function Leftbar(props) {
                 active?.employees?.status
               )
             }
-          />
+          /> )}
 
           {active?.employees?.tab === "employees" &&
             active?.employees?.status && (
@@ -1278,13 +1288,13 @@ export default function Leftbar(props) {
             //   handleActive("walletManagement", active?.orderManagement?.status)
             // }
           />
-
+          {hasPermission("report_view") && (
           <ListHead
             title="Report Management"
             Icon={PiChartBar}
             to={"/sales-representative/reports"}
             active={pathname.includes("/reports")}
-          />
+          /> )}
 
           <div className="mx-2 pb-7">
             <button

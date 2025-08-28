@@ -89,12 +89,28 @@ export default function SignIn() {
                 ? res?.data?.data?.user?.supplierName
                 : res?.data?.data?.user?.srName
             );
+
             localStorage.setItem("email", res?.data?.data?.user?.email);
             localStorage.setItem("userID", res?.data?.data?.user?.id);
             localStorage.setItem(
               "userType",
               type === "sales-rep" ? "salesRepresentative" : type
             );
+
+            if (res?.data?.data?.user?.permissions && res?.data?.data?.user?.permissions.length > 0) {
+              localStorage.setItem(
+                "permissions",
+                JSON.stringify(res?.data?.data?.user?.permissions.map((p) => p.key))
+              );
+            } else {
+              localStorage.setItem("permissions", "all");
+            }
+            localStorage.setItem("employeeId", res?.data?.data?.user?.id);
+
+            if(res?.data?.data?.user?.employeeOf) {
+              localStorage.setItem("isEmployee", true);
+            }
+            
             success_toaster("Login Successfully");
             if (type === "sales-rep") {
               localStorage.setItem(

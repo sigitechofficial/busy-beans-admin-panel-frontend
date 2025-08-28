@@ -549,7 +549,7 @@ export default function OrderDetail() {
                 : "Add Invoice"}
             </button> )}
 
-            {userType === "admin" || hasPermission("orders_update") && (
+            {(userType === "admin" || userType === "salesRepresentative" || hasPermission("orders_update")) &&  (
               <button
                 disabled={
                   data?.data?.order?.statusId === 5 ||
@@ -564,7 +564,7 @@ export default function OrderDetail() {
                 Cancel Order
               </button>
             )}
-              {(userType === "admin" || userType === "salesRepresentative") || hasPermission("orders_delete") && (
+              {(userType === "admin" || userType === "salesRepresentative" || hasPermission("orders_update")) && (
                 <button
                   type="button"
                   onClick={handleDeleteOrder}

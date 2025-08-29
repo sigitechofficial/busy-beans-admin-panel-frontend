@@ -77,7 +77,6 @@ export default function AddInvoice() {
     otherPayment: "",
     paymentOption: false,
     paymentOption2: false,
-    invoiceDate: "",
     invoicePdf: "",
   });
 
@@ -114,11 +113,12 @@ export default function AddInvoice() {
         ...prev,
         invoiceNumber: data?.data?.order?.invoiceNumber || "",
         poNumber: data?.data?.order?.poNumber || "",
-        invoiceDate: prev?.invoiceDate || getToday(),
+        // invoiceDate: prev?.invoiceDate || getToday(),
+        invoiceDate: data?.data?.order?.invoiceDate || prev.invoiceDate || getToday(),
         dueDate: prev?.dueDate || getDueDate(),
         note: data?.data?.order?.note,
         shippingCharges: data?.data?.order?.shippingCharges,
-        invoiceDate: data?.data?.order?.invoiceDate,
+        // invoiceDate: data?.data?.order?.invoiceDate,
         invoicePdf: data?.data?.order?.invoicePdf,
         discountPercentage: Number(data?.data?.order?.discountPercentage ?? 0),
         // You can set invoiceDate, dueDate, terms, etc. from API if available
@@ -400,7 +400,8 @@ export default function AddInvoice() {
     const orderObj = {
       invoiceNumber: invoiceFields.invoiceNumber,
       poNumber: invoiceFields.poNumber,
-      invoiceDate: invoiceFields.invoiceDate,
+      // invoiceDate: invoiceFields.invoiceDate,
+      invoiceDate: invoiceFields.invoiceDate || Date.now(),
       proforma: invoiceFields.proforma,
       termDays: invoiceFields.terms,
       dueDate: invoiceFields.dueDate,
@@ -409,7 +410,7 @@ export default function AddInvoice() {
       attemptImmediatePayment: invoiceFields.paymentOption,
       emailInvoiceToCustomer: invoiceFields.paymentOption2,
       reminder: invoiceFields?.invoicePdf ? true : false,
-      invoiceDate: invoiceFields?.invoiceDate ? undefined : Date.now(),
+      // invoiceDate: invoiceFields?.invoiceDate ? undefined : Date.now(),
       invoiceReminder: invoiceFields?.invoiceDate ? Date.now() : undefined,
       discountPercentage: Number(invoiceFields.discountPercentage || 0),
       // shippingCharges: manual?.shippingCharge,
@@ -688,6 +689,7 @@ export default function AddInvoice() {
                       min={1}
                       className="w-16 border border-gray-200 rounded px-1 py-1 text-center"
                       value={item.qty}
+                      onWheel={(e) => e.currentTarget.blur()}
                       onChange={(e) =>
                         handleItemQtyChange(itemIdx, e.target.value)
                       }
@@ -696,7 +698,7 @@ export default function AddInvoice() {
                   {(userType === "admin" ||
                     userType === "salesRepresentative") && (
                     <td className="py-2 px-2 text-right border border-gray-200">
-                      $
+                      {/* $ */}
                       {item.unit !== undefined
                         ? item.unit
                         : item.price !== undefined
@@ -824,6 +826,7 @@ export default function AddInvoice() {
                         min={1}
                         className="w-16 border rounded px-1 py-1 text-center"
                         value={item.qty}
+                        onWheel={(e) => e.currentTarget.blur()}
                         onChange={(e) => handleChargeInputChange(idx, "qty", e.target.value)}
                       />
                     </td>
@@ -834,6 +837,7 @@ export default function AddInvoice() {
                         step="0.01"
                         className="w-20 border rounded px-1 py-1 text-right"
                         value={item.unit}
+                        onWheel={(e) => e.currentTarget.blur()}
                         onChange={(e) => handleChargeInputChange(idx, "unit", e.target.value)}
                       />
                     </td>

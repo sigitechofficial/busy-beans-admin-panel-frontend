@@ -29,7 +29,9 @@ import { hasPermission } from "@/utilities/Permission";
 export default function OrderDetail() {
   if (typeof window !== "undefined") {
     var userType = localStorage.getItem("userType");
+    var isEmployee = localStorage.getItem("isEmployee") ? true : false;
   }
+  
   const { orderID } = useParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -419,7 +421,7 @@ export default function OrderDetail() {
             {data?.data?.order?.invoicePdf ? "Update Invoice" : "Add Invoice"}
           </li> */}
           <li>
-            {hasPermission("orders_update") && (
+            {(hasPermission("orders_update") || hasPermission("invoice_update")) && (
             <button
               type="button"
               disabled={data?.data?.order?.statusId === 6 ? true : false}
@@ -538,7 +540,7 @@ export default function OrderDetail() {
                 ? "Invoice reminder"
                 : "Send Invoice"}
             </button> */}
-            {hasPermission("orders_update") && (
+            {(hasPermission("orders_update") || hasPermission("invoice_update")) && (
             <button
               type="button"
               onClick={() => router.push(`${pathname}/add-invoice`)}
@@ -549,7 +551,7 @@ export default function OrderDetail() {
                 : "Add Invoice"}
             </button> )}
 
-            {(userType === "admin" || userType === "salesRepresentative" || hasPermission("orders_update")) &&  (
+            {(!isEmployee || hasPermission("orders_update") || hasPermission("invoice_update")) &&  (
               <button
                 disabled={
                   data?.data?.order?.statusId === 5 ||
@@ -564,7 +566,7 @@ export default function OrderDetail() {
                 Cancel Order
               </button>
             )}
-              {(userType === "admin" || userType === "salesRepresentative" || hasPermission("orders_update")) && (
+              {(!isEmployee || hasPermission("orders_delete") || hasPermission("invoice_delete")) && (
                 <button
                   type="button"
                   onClick={handleDeleteOrder}
@@ -837,7 +839,7 @@ export default function OrderDetail() {
                     <div className="lowercase break-all">
                       {data?.data?.order?.user?.dispatchEmail}
                     </div>
-                    {hasPermission("orders_update") && (
+                    {(hasPermission("orders_update") || hasPermission("invoice_update")) && (
                     <span
                       onClick={() => router.push(`${pathname}/edit`)}
                       className="text-blue-500 text-xs cursor-pointer"
@@ -926,7 +928,7 @@ export default function OrderDetail() {
                         {data?.data?.order?.user?.emailToSendInvoices}
                       </div>
                     )}
-                    {hasPermission("orders_update") && (
+                    {(hasPermission("orders_update") || hasPermission("invoice_update")) && (
                     <span
                       onClick={() => router.push(`${pathname}/edit`)}
                       className="text-blue-500 text-xs cursor-pointer capitalize"

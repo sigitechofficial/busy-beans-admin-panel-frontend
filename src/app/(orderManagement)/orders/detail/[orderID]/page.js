@@ -421,7 +421,7 @@ export default function OrderDetail() {
             {data?.data?.order?.invoicePdf ? "Update Invoice" : "Add Invoice"}
           </li> */}
           <li>
-            {(hasPermission("orders_update") || hasPermission("invoice_update")) && (
+            {(hasPermission("invoice_update")) && (
             <button
               type="button"
               disabled={data?.data?.order?.statusId === 6 ? true : false}
@@ -479,7 +479,7 @@ export default function OrderDetail() {
               ? "Edit Bank Check"
               : "Add Bank Check"}
           </button> */}
-            {userType === "admin" && data?.data?.order?.statusId !== 5 ? (
+            {/* {userType === "admin" && !isEmployee && data?.data?.order?.statusId !== 5 ? (
               <button
                 type="button"
                 disabled={
@@ -526,9 +526,29 @@ export default function OrderDetail() {
                   : data?.data?.order?.statusId === 2
                   ? "Acknowledge Supplier"
                   : ""}
-                {/* Dispatch Order */}
-              </button> // dispatch Order basically rpelaced with status 4 which is delivered Order beacuse dispatch is done by supplier so here we use only text dispatch but inside it hit status code of 4
-            )}
+              </button> 
+            )} */}
+
+              {/* Dispatch / Supplier Actions */}
+              {userType === "admin" && !isEmployee && data?.data?.order?.statusId !== 5 && (
+                <button
+                  type="button"
+                  disabled={
+                    data?.data?.order?.statusId === 5 ||
+                    data?.data?.order?.statusId === 6
+                  }
+                  className="bg-black text-white disabled:cursor-not-allowed"
+                  onClick={() => handleAssignSupplier(data?.data?.order?.statusId)}
+                >
+                  {data?.data?.order?.statusId === 1
+                    ? "Dispatch to Supplier"
+                    : data?.data?.order?.statusId === 2
+                      ? "Acknowledge Supplier"
+                      : data?.data?.order?.statusId === 3
+                        ? "Ship Order"
+                        : "Dispatch Order"}
+                </button>
+              )}
 
             {/* <button
               type="button"
@@ -540,7 +560,7 @@ export default function OrderDetail() {
                 ? "Invoice reminder"
                 : "Send Invoice"}
             </button> */}
-            {(hasPermission("orders_update") || hasPermission("invoice_update")) && (
+            {(hasPermission("invoice_update")) && (
             <button
               type="button"
               onClick={() => router.push(`${pathname}/add-invoice`)}
@@ -551,7 +571,7 @@ export default function OrderDetail() {
                 : "Add Invoice"}
             </button> )}
 
-            {(!isEmployee || hasPermission("orders_update") || hasPermission("invoice_update")) &&  (
+            {(!isEmployee || hasPermission("orders_update")) &&  (
               <button
                 disabled={
                   data?.data?.order?.statusId === 5 ||
@@ -566,7 +586,7 @@ export default function OrderDetail() {
                 Cancel Order
               </button>
             )}
-              {(!isEmployee || hasPermission("orders_delete") || hasPermission("invoice_delete")) && (
+              {(!isEmployee || hasPermission("orders_delete")) && (
                 <button
                   type="button"
                   onClick={handleDeleteOrder}
@@ -839,7 +859,7 @@ export default function OrderDetail() {
                     <div className="lowercase break-all">
                       {data?.data?.order?.user?.dispatchEmail}
                     </div>
-                    {(hasPermission("orders_update") || hasPermission("invoice_update")) && (
+                    {(hasPermission("customer_update") || hasPermission("selected-customer_update")) && (
                     <span
                       onClick={() => router.push(`${pathname}/edit`)}
                       className="text-blue-500 text-xs cursor-pointer"
@@ -928,7 +948,7 @@ export default function OrderDetail() {
                         {data?.data?.order?.user?.emailToSendInvoices}
                       </div>
                     )}
-                    {(hasPermission("orders_update") || hasPermission("invoice_update")) && (
+                    {(hasPermission("customer_update") || hasPermission("selected-customer_update")) && (
                     <span
                       onClick={() => router.push(`${pathname}/edit`)}
                       className="text-blue-500 text-xs cursor-pointer capitalize"

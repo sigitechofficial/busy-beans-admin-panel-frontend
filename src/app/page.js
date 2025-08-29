@@ -25,6 +25,7 @@ export default function Home() {
     var userID = localStorage.getItem("userID");
     var connectAccountId = localStorage.getItem("connectAccountId");
     var isAccountConnected = localStorage.getItem("isAccountConnected");
+    var isEmployee = localStorage.getItem("isEmployee") ? true : false;
     var url = window.location.href;
     var windowClose = window;
   }
@@ -995,12 +996,18 @@ export default function Home() {
         </div>
       </div>
     </div>
-  ): (
-    // <div>Dashboard In progress</div>
+  ) : (
     <div className="flex items-center justify-center h-screen">
-      <h1 className="text-xl font-semibold text-gray-500">
-        🚫 You don’t have permission to view the Dashboard
-      </h1>
+      {isEmployee ? (
+        <h1 className="text-xl font-semibold text-gray-700">
+          Welcome, {userName}.
+          <br />
+        </h1>
+      ) : (
+        <h1 className="text-xl font-semibold text-gray-500">
+          🚫 You don’t have permission to view the Dashboard
+        </h1>
+      )}
     </div>
   );
 }

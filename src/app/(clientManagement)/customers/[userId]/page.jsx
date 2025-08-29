@@ -414,7 +414,7 @@ function CustomerDetails() {
               </li>
             )}
 
-            {hasPermission("customer_update") && (
+            {(hasPermission("customer_update") || hasPermission("selected-customer_update")) && (
               <li
                 onClick={() => {
                   const url =
@@ -428,7 +428,7 @@ function CustomerDetails() {
               </li>
             )}
 
-            {hasPermission("customer_delete") && (
+            {(hasPermission("customer_delete") || hasPermission("selected-customer_delete")) && (
               <li
                 onClick={() =>
                   setUserData({ ...userData, modal: true, type: "delete" })

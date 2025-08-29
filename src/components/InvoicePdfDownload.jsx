@@ -380,7 +380,7 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
         >
           Download Invoice
         </button>
-        {hasPermission("orders_update") && (
+        {(hasPermission("invoice_update")) && (
         <button
           onClick={handleUpdate}
           className="mb-4 px-4 py-2 bg-theme text-white rounded"

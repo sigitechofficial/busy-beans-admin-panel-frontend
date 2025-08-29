@@ -34,6 +34,7 @@ export default function IndividualInvoices() {
     return (
       (detail?.paymentStatus === "pending" || detail?.paymentStatus === "done") &&
       datas.push({
+        id: detail?.id,
         invoiceNumber: detail?.invoiceNumber,
         companyName: detail?.companyName,
         totalBill: "$" + detail?.totalBill,

@@ -215,6 +215,11 @@ export default function CustomersByEmployee() {
             Customer - Employee Management
           </h2>
         </div>
+
+        <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
+          {hasPermission("selected-customer_create") && (
+          <li onClick={() => router.push("/customers/add")}>Add Customer</li> )}
+        </ul>
       </div>
 
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">

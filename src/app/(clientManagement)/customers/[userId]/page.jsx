@@ -320,6 +320,32 @@ function CustomerDetails() {
   };
   const { toggle, setToggle } = useDataContext();
 
+  // Preview/toggle for user discounts
+  const [showAllDiscounts, setShowAllDiscounts] = useState(false);
+  const previewCount = 2;
+
+  const rawDiscounts =
+    data?.data?.customer?.userDiscounts ||
+    data?.data?.customer?.userDiscount ||
+    data?.data?.customer?.categoryDiscounts ||
+    [];
+
+  const normalizedDiscounts = (rawDiscounts || [])
+    .map((d, idx) => {
+      const pct = Number(d?.percentage ?? d?.percent ?? d?.discount);
+      const categoryName =
+        d?.categoryName || d?.employee || d?.name || `Category #${d?.categoryId ?? d?.id ?? idx + 1}`;
+
+      return {
+        key: String(d?.categoryId ?? d?.id ?? idx),
+        categoryName,
+        percentage: Number.isFinite(pct) ? pct : 0,
+      };
+    })
+    .filter((x) => x.categoryName);
+
+  const discountsToShow = showAllDiscounts ? normalizedDiscounts : normalizedDiscounts.slice(0, previewCount);
+
   return data?.length === 0 ? (
     <Loader />
   ) : (
@@ -558,7 +584,7 @@ function CustomerDetails() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 pt-1">
               <div>
                 <h3 className="text-sm font-bold text-gray-700 mb-1">
                   SHIPPING
@@ -692,6 +718,38 @@ function CustomerDetails() {
                   </div>
                 )}
               </div>
+              <div className="md:col-span-2" >
+                  <h2 className="text-lg font-semibold text-gray-800 mb-2">User Discounts</h2>
+                  {!normalizedDiscounts.length ? (
+                    <div className="text-sm text-gray-500">No user discounts.</div>
+                  ) : (
+                    <div className="border border-borderColor rounded-md bg-white overflow-hidden">
+                      <div className="divide-y">
+                        {discountsToShow.map((d) => (
+                          <div
+                            key={d.key}
+                            className="flex items-center justify-between px-4 py-2"
+                          >
+                            <span className="text-sm text-gray-700">{d.categoryName}</span>
+                            <span className="text-sm font-semibold">{d.percentage}%</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {normalizedDiscounts.length > previewCount && (
+                        <button
+                          type="button"
+                          onClick={() => setShowAllDiscounts((v) => !v)}
+                          className="w-full text-sm text-theme py-2 hover:bg-gray-50"
+                        >
+                          {showAllDiscounts
+                            ? "Show less"
+                            : `Show ${normalizedDiscounts.length - previewCount} more`}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
             </div>
           </div>
 

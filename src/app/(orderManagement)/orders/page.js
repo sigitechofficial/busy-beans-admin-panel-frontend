@@ -37,7 +37,7 @@ export default function Orders() {
     // { field: "customerName", header: "Customer" },
     { field: "companyName", header: "Company Name" },
     { field: "orderDate", header: "Order Date", sort: true },
-    { field: "deliveredOn", header: "Deliver On" },
+    // { field: "deliveredOn", header: "Deliver On" },
     // { field: "salesRepName", header: "Local Partner Name" },
     // { field: "subTotal", header: "Sub Total" },
     // { field: "discountPrice", header: "Discount Price" },

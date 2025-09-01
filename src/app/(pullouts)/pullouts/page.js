@@ -27,15 +27,23 @@ export default function Pullouts() {
   );
 
   const columns = [
-    { field: "id", header: "#", sort: true },
+    // { field: "id", header: "#", sort: true },
+    { field: "invoiceNumber", header: "INV#" },
     { field: "companyName", header: "Company Name" },
-    { field: "invoiceNumber", header: "Invoice Number" },
-    { field: "orderDate", header: "Order Date", sort: true },
-    { field: "deliveredOn", header: "Deliver On" },
+    { field: "invoiceDate", header: "Invoice Date", sort: true },
+    // { field: "deliveredOn", header: "Deliver On" },
     { field: "totalBill", header: "Total", sort: true },
+    { field: "localPartnerCommission", header: "Local Partner Commission", sort: true },
+    { field: "adminReceivableAmount", header: "Admin Receivable", sort: true },          
     { field: "paymentStatus", header: "Invoice", sort: true },
     { field: "orderCurrentStatus", header: "Status" },
   ];
+  
+  const safeFormatDate = (v) => {
+    if (!v || v === "null" || v === "undefined" || v === "0000-00-00") return "";
+    const d = dayjs(v);
+    return d.isValid() ? d.format("MM/DD/YYYY") : "";
+  };
 
   const datas = [];
   const resultedOrders = data?.data?.data?.filter((detail, i) => {
@@ -47,8 +55,10 @@ export default function Pullouts() {
         companyName: detail?.companyName,
         invoiceNumber: detail?.invoiceNumber,
         totalBill: "$" + detail?.totalBill,
+        localPartnerCommission: "$" + (detail?.localPartnerCommission ?? detail?.localPatnerCommission ?? "0.00"),
+        adminReceivableAmount: "$" + (detail?.adminReceivableAmount ?? "0.00"),
         paymentStatus: detail?.paymentStatus === "done" ? "Paid" : "Unpaid",
-        orderDate: dayjs(detail?.on).format("MM/DD/YYYY"),
+        invoiceDate: safeFormatDate(detail?.invoiceDate),
         orderCurrentStatus: detail?.orderCurrentStatus,
       })
     );

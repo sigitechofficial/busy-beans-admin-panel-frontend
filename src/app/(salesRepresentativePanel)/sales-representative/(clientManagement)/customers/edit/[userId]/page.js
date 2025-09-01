@@ -16,6 +16,7 @@ import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { FaLongArrowAltLeft } from "react-icons/fa";
 import PhoneInput from "react-phone-input-2";
 import Select from "react-select";
+import { Dialog } from "primereact/dialog";
 
 export default function UpdateCustomer() {
   const router = useRouter();
@@ -24,6 +25,75 @@ export default function UpdateCustomer() {
   if (typeof window !== "undefined") {
     userType = localStorage.getItem("userType");
   }
+
+  // ⬇️ Categories for the discount dialog
+  const { data: categoriesRes, isLoading: catsLoading, error: catsError } = GetAPI("api/v1/admin/category");
+  const [discountSaving, setDiscountSaving] = useState(false);
+  // Normalize server shapes safely
+  const categories =
+    categoriesRes?.data?.data?.data ||
+    categoriesRes?.data?.data ||
+    categoriesRes?.data ||
+    [];
+
+  // Dialog state
+  const [discountDlgOpen, setDiscountDlgOpen] = useState(false);
+  /** Map categoryId -> number (percentage) */
+  const [categoryDiscounts, setCategoryDiscounts] = useState({});
+
+  // Keep % between 0–100 and one decimal
+  const clampPct = (raw) => {
+    if (raw === "" || raw === null || raw === undefined) return "";
+    let n = Number(raw);
+    if (Number.isNaN(n)) return "";
+    if (n < 0) n = 0;
+    if (n > 100) n = 100;
+    return Math.round(n * 10) / 10;
+  };
+
+  const handleDiscountChange = (id, raw) => {
+    const v = clampPct(raw);
+    setCategoryDiscounts((prev) => ({
+      ...prev,
+      [id]: v === "" ? undefined : v,
+    }));
+  };
+
+  // Build payload array for API
+  const buildUserDiscountPayload = () =>
+    Object.entries(categoryDiscounts)
+      .filter(([, v]) => typeof v === "number" && v >= 0 && v <= 100)
+      .map(([k, v]) => ({ categoryId: Number(k), percentage: Number(v) }));
+
+  const handleSaveUserDiscounts = async () => {
+    const userDiscount = buildUserDiscountPayload();
+    if (userDiscount.length === 0) {
+      info_toaster("Please enter at least one discount.");
+      return;
+    }
+    try {
+      setDiscountSaving(true);
+      const res = await PatchAPI(
+        `api/v1/admin/customer-update/${userId}`,
+        { userDiscount },
+        "customer"
+      );
+
+      if (res?.data?.status === "success") {
+        success_toaster("User discount(s) updated.");
+        setDiscountDlgOpen(false);
+        // (Optional) refresh or keep values as-is
+        // setCategoryDiscounts({});
+      } else {
+        throw new Error(res?.data?.message || "Failed to update discounts.");
+      }
+    } catch (err) {
+      ErrorHandler(err);
+    } finally {
+      setDiscountSaving(false);
+    }
+  };
+
   const [step, setStep] = useState(1);
   const [loader, setLoader] = useState(false);
   const [visibility, setVisibility] = useState({
@@ -151,6 +221,23 @@ export default function UpdateCustomer() {
         },
         isChecked: areAddressesSame,
       });
+
+      const existingDiscountsArr =
+        c.userDiscount ||
+        c.userDiscounts ||
+        c.categoryDiscounts ||
+        c.discounts ||
+        [];
+
+      const map = {};
+      existingDiscountsArr.forEach((d) => {
+        const cid = Number(d?.categoryId ?? d?.category_id ?? d?.id);
+        const pct = Number(d?.percentage ?? d?.percent ?? d?.discount);
+        if (!Number.isNaN(cid) && !Number.isNaN(pct)) {
+          map[cid] = clampPct(pct);
+        }
+      });
+      setCategoryDiscounts(map);
     }
   }, [customerData]);
   
@@ -454,6 +541,15 @@ export default function UpdateCustomer() {
     <div>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl font-inter font-semibold">Update Customer</h2>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setDiscountDlgOpen(true)}
+              className="px-3 py-2 rounded-sm bg-theme text-white font-inter text-sm"
+            >
+              Update User Discount
+            </button>
+          </div>
       </div>
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
         <div className="flex items-center gap-x-2">
@@ -1097,6 +1193,90 @@ export default function UpdateCustomer() {
             </div>
           )}
         </div>
+          <Dialog
+            header="Update User Discount by Category"
+            visible={discountDlgOpen}
+            onHide={() => setDiscountDlgOpen(false)}
+            className="w-[95vw] md:w-[720px]"
+            dismissableMask
+          >
+            {catsError && (
+              <p className="text-red-600 font-medium">Failed to load categories.</p>
+            )}
+
+            {catsLoading ? (
+              <div className="py-6">
+                <MiniLoader />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <label className="text-labelColor font-medium font-satoshi">
+                  User Discounts
+                </label>
+
+                <div className="border border-borderColor rounded-md p-3 max-h-64 overflow-y-auto space-y-3">
+                  {!categories?.length ? (
+                    <div className="text-sm text-gray-500">No categories found.</div>
+                  ) : (
+                    <>
+                      <div className="grid gap-3 sm:grid-cols-2 items-center px-0.5">
+                        <span className="text-xs text-secondary">Category</span>
+                        <span className="text-xs text-secondary">Discount %</span>
+                      </div>
+                      {categories.map((cat) => {
+                        const catId = cat?.id ?? cat?.categoryId;
+                        const catName =
+                          cat?.name || cat?.categoryName || `Category #${catId}`;
+
+                        return (
+                          <div key={catId} className="grid gap-3 sm:grid-cols-2 items-center">
+                            <input
+                              type="text"
+                              readOnly
+                              value={catName}
+                              className="border border-borderColor rounded-[4px] px-2.5 py-3 bg-gray-50 text-black"
+                            />
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="number"
+                                min={0}
+                                max={100}
+                                step={0.1}
+                                placeholder={`Enter % for ${catName}`}
+                                value={categoryDiscounts[catId] ?? ""}
+                                onChange={(e) => handleDiscountChange(catId, e.target.value)}
+                                onWheel={(e) => e.currentTarget.blur()}
+                                className="border border-borderColor rounded-[4px] px-2.5 py-3 text-black placeholder:text-secondary w-full"
+                              />
+                              {/* <span className="text-sm text-gray-700">%</span> */}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+            <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium mt-4">
+              <button
+                type="button"
+                onClick={() => setDiscountDlgOpen(false)}
+                className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow px-6"
+                disabled={discountSaving}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveUserDiscounts}
+                disabled={discountSaving}
+                className="rounded-lg border border-theme text-white px-10 bg-theme disabled:opacity-60"
+              >
+                {discountSaving ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </Dialog>
       </div>
     </div>
   );

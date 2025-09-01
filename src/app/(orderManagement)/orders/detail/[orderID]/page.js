@@ -530,7 +530,7 @@ export default function OrderDetail() {
             )} */}
 
               {/* Dispatch / Supplier Actions */}
-              {userType === "admin" && !isEmployee && data?.data?.order?.statusId !== 5 && (
+              {(userType === "admin" || userType === "salesRepresentative") && !isEmployee && data?.data?.order?.statusId !== 5 && (
                 <button
                   type="button"
                   disabled={

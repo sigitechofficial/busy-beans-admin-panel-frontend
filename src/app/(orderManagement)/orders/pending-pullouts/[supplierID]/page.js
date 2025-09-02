@@ -13,6 +13,7 @@ import ErrorHandler from "@/utilities/ErrorHandler";
 import { PostAPI } from "@/utilities/PostAPI";
 import MiniLoader from "@/components/ui/MiniLoader";
 import { success_toaster } from "@/utilities/Toaster";
+import dayjs from "dayjs";
 
 export default function PendingPulloutsOrders() {
   const { supplierID } = useParams();
@@ -29,15 +30,24 @@ export default function PendingPulloutsOrders() {
     },
     0
   );
-
+  
+  const safeFormatDate = (v) => {
+    if (!v || v === "null" || v === "undefined" || v === "0000-00-00") return "";
+    const d = dayjs(v);
+    return d.isValid() ? d.format("MM/DD/YYYY") : "";
+  };
+  
   const columns = [
-    { field: "sl", header: "SL", sort: true },
-    { field: "id", header: "Order ID", sort: true },
+    // { field: "sl", header: "SL", sort: true },
+    // { field: "id", header: "Order ID", sort: true },
+    { field: "invoiceNumber", header: "INV#", sort: true },
     // { field: "customerName", header: "Customer Name" },
-    { field: "companyName", header: "Company Name" },
-    { field: "adminReceivableAmount", header: "Admin Receivable Amount" },
+    { field: "companyName", header: "Company" },
+    { field: "adminReceivableAmount", header: "Admin Receivable" },
     { field: "totalBill", header: "Total Bill" },
-    { field: "localPatnerCommission", header: "Local Partner Commission" },
+    { field: "localPatnerCommission", header: "Partner Profit" },
+    { field: "invoiceDate", header: "Invoice Date", sort: true },
+    { field: "overDueInvoice", header: "OverDue Invoice", sort: true },
     { field: "vat", header: "Discount Price" },
     { field: "itemsPrice", header: "Items Price" },
     { field: "wholesalePrice", header: "Whole Sale Price" },
@@ -45,14 +55,18 @@ export default function PendingPulloutsOrders() {
 
   const datas = [];
   data?.data?.order?.map((detail, i) => {
+    const overdueFlag = Number(detail?.overdueInvoice) === 1 ? "Yes" : "No";
     return datas.push({
       sl: i + 1,
       id: detail?.id,
+      invoiceNumber: detail?.invoiceNumber,
       // customerName: detail?.customerName,
       companyName: detail?.companyName,
       adminReceivableAmount: `$${detail?.adminReceivableAmount ?? 0}`,
       totalBill: `$${detail?.totalBill ?? 0}`,
       localPatnerCommission: `$${detail?.localPatnerCommission ?? 0}`,
+      invoiceDate: safeFormatDate(detail?.invoiceDate),
+      overDueInvoice: overdueFlag,
       vat: `$${detail?.vat ?? 0}`,
       itemsPrice: `$${detail?.itemsPrice ?? 0}`,
       wholesalePrice: `$${detail?.wholesalePrice ?? 0}`,
@@ -157,6 +171,8 @@ export default function PendingPulloutsOrders() {
               checkbox={true}
               selectedRows={selectedRows}
               setSelectedRows={setSelectedRows}
+              sortField="overDueInvoice"
+              sortOrder={1}
               search={true}
             />
           </div>

@@ -996,18 +996,44 @@ export default function Home() {
         </div>
       </div>
     </div>
+    ) : isEmployee ? (
+    <div className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain">
+      <div className="relative z-30 py-5 px-6 2xl:px-12">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-white text-xl lg:text-3xl font-inter font-semibold">
+              Welcome, {userName}.
+            </h1>
+            <p className="text-white font-inter">
+              Monitor your assigned orders and overdue invoices
+            </p>
+          </div>
+        </div>
+
+        {/* Dashboard Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mt-5">
+          <HomeCards
+            title="Total Orders"
+            total={data?.data?.ordersSummary?.orderPlaced ?? 0}
+            Icon={BsCardList}
+            bgColor="bg-homeCards"
+            iconBg="bg-white"
+          />
+          <HomeCards
+            title="Overdue Invoices"
+            total={data?.data?.overdueInvoices ?? 0}
+            Icon={MdCancel}
+            bgColor="bg-homeCards"
+            iconBg="bg-white"
+          />
+        </div>
+      </div>
+    </div>
   ) : (
     <div className="flex items-center justify-center h-screen">
-      {isEmployee ? (
-        <h1 className="text-xl font-semibold text-gray-700">
-          Welcome, {userName}.
-          <br />
-        </h1>
-      ) : (
-        <h1 className="text-xl font-semibold text-gray-500">
-          🚫 You don’t have permission to view the Dashboard
-        </h1>
-      )}
+      <h1 className="text-xl font-semibold text-gray-500">
+        🚫 You don’t have permission to view the Dashboard
+      </h1>
     </div>
   );
 }

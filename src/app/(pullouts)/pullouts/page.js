@@ -19,6 +19,7 @@ export default function Pullouts() {
 
   const router = useRouter();
   const [statusFilter, setStatusFilter] = useState(0); 
+  const isPendingPullout = Number(statusFilter) === 0;
 
   const { data } = GetAPI(
     userType === "salesRepresentative"
@@ -29,14 +30,22 @@ export default function Pullouts() {
   const columns = [
     // { field: "id", header: "#", sort: true },
     { field: "invoiceNumber", header: "INV#" },
-    { field: "companyName", header: "Company Name" },
+    { field: "companyName", header: "Company" },
     { field: "invoiceDate", header: "Invoice Date", sort: true },
     { field: "totalBill", header: "Total", sort: true },
-    { field: "localPartnerCommission", header: "Partner Commission", sort: true },
+    { field: "localPartnerCommission", header: "Partner Profit", sort: true },
     { field: "adminReceivableAmount", header: "Admin Receivable", sort: true },          
     { field: "paymentStatus", header: "Invoice", sort: true },
     { field: "orderCurrentStatus", header: "Status" },
   ];
+
+  if (isPendingPullout) {
+    columns.splice(6, 0, {
+      field: "overDueInvoice",
+      header: "Overdue Invoice",
+      sort: true,
+    });
+  }
   
   const safeFormatDate = (v) => {
     if (!v || v === "null" || v === "undefined" || v === "0000-00-00") return "";
@@ -48,8 +57,6 @@ export default function Pullouts() {
     return "$" + (Number.isFinite(n) ? n.toFixed(2) : "0.00");
   };
 
-  const isPendingPullout = Number(statusFilter) === 0;
-
   const datas = [];
   const resultedOrders = data?.data?.data?.filter((detail, i) => {
     const partnerCommission = isPendingPullout
@@ -59,6 +66,8 @@ export default function Pullouts() {
     const adminReceivable = isPendingPullout
       ? (detail?.adminEarnings ?? "0.00")
       : (detail?.adminReceivableAmount ?? "0.00");
+
+    const overdueFlag = Number(detail?.overdueInvoice) === 1 ? "Yes" : "No";
     return (
       (detail?.paymentStatus === "pending" || detail?.paymentStatus === "done") &&
       datas.push({
@@ -69,6 +78,7 @@ export default function Pullouts() {
         totalBill: formatMoney(detail?.totalBill),
         localPartnerCommission: formatMoney(partnerCommission),
         adminReceivableAmount: formatMoney(adminReceivable),
+        ...(isPendingPullout ? { overDueInvoice: overdueFlag } : {}),
         paymentStatus: detail?.paymentStatus === "done" ? "Paid" : "Unpaid",
         invoiceDate: safeFormatDate(detail?.invoiceDate),
         orderCurrentStatus: detail?.orderCurrentStatus,
@@ -132,6 +142,7 @@ export default function Pullouts() {
               router.push(`/orders/detail/${e.data.id}`);
             }}
             search={true}
+            sortField="overDueInvoice"
           />
         </div>
       </div>

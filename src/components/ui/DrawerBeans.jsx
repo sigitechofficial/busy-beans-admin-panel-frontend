@@ -61,7 +61,8 @@ const DrawerBeans = ({
     addressId: "",
     userId: "",
     shippingCharges: "",
-    discountPercentage: "",
+    // discountPercentage: "",
+    categoryDiscounts: [],
   });
 
   if (typeof window !== "undefined") {
@@ -337,11 +338,13 @@ const DrawerBeans = ({
         const shipping = Number(payload?.shippingCharges ?? payload?.charges ?? 0);
         const rawDiscountPct = payload?.discountPercentage;
         const discountPct = rawDiscountPct == null ? "" : Number(rawDiscountPct);
+        const categoryDiscounts = payload?.discountPercentage || [];
 
         setOrder((prev) => ({
           ...prev,
           shippingCharges: shipping,
-          discountPercentage: discountPct,
+          // discountPercentage: discountPct,
+          categoryDiscounts,
         }));
       } else {
         throw new Error(res?.data?.message || "Failed to fetch charges.");
@@ -409,14 +412,40 @@ const DrawerBeans = ({
       fetchChargesForCustomer(order.userId, totalWeight);
     }
   }, [open, order.userId, totalWeight]);
-  
-  const discountPercentage = Number(order?.discountPercentage ?? 0);
-  const discountAmount = (Number(totalPrice || 0) * discountPercentage) / 100;
 
-  const finalTotal =
-    discountPercentage > 0
-      ? (Number(totalPrice || 0) - discountAmount) + Number(order?.shippingCharges || 0)
-      : Number(totalPrice || 0) + Number(order?.shippingCharges || 0);
+  const calculateDiscounts = () => {
+    let subtotal = 0;
+    let totalDiscount = 0;
+
+    cartItems?.forEach((item) => {
+      const categoryDiscount = order?.categoryDiscounts?.find(
+        (d) => Number(d.categoryId) === Number(item.categoryId)
+      );
+
+      const discountPct = categoryDiscount
+        ? Number(categoryDiscount.percentage)
+        : 0;
+
+      const itemSubtotal = Number(item.price) * Number(item.qty);
+      const itemDiscount = (itemSubtotal * discountPct) / 100;
+
+      subtotal += itemSubtotal;
+      totalDiscount += itemDiscount;
+    });
+
+    return { subtotal, totalDiscount };
+  };
+  
+  const { subtotal, totalDiscount } = calculateDiscounts();
+  const finalTotal = subtotal - totalDiscount + Number(order?.shippingCharges || 0);
+
+  // const discountPercentage = Number(order?.discountPercentage ?? 0);
+  // const discountAmount = (Number(totalPrice || 0) * discountPercentage) / 100;
+
+  // const finalTotal =
+  //   discountPercentage > 0
+  //     ? (Number(totalPrice || 0) - discountAmount) + Number(order?.shippingCharges || 0)
+  //     : Number(totalPrice || 0) + Number(order?.shippingCharges || 0);
 
   const totalWholesale = cartItems?.reduce((a, b) => {
     return Number(a) + Number(b?.wholesalePrice || 0) * Number(b?.qty || 0);
@@ -532,7 +561,7 @@ const DrawerBeans = ({
                       }}
                     />
                   </div>
-                    <div className="flex flex-col gap-y-2">
+                    {/* <div className="flex flex-col gap-y-2">
                       <label className="text-white font-medium font-satoshi">
                         Discount (%)
                       </label>
@@ -574,7 +603,7 @@ const DrawerBeans = ({
                         placeholder={bypassDiscountCap ? "Enter discount" : `Max ${maxDiscountPct.toFixed(2)}%`}
                         className="w-full bg-white text-black rounded px-3 py-3 outline-none font-satoshi placeholder-theme focus:ring-0 focus:border-theme"
                       />
-                    </div>
+                    </div> */}
                   <div>
                     <div className="w-full font-sf font-normal text-base text-theme-black-2 flex items-center gap-3 px-5 py-[5px] duration-300 border-2 border-white hover:border-goldenLight focus-within:border-goldenLight rounded-t">
                       <MdInsertComment size={24} />
@@ -758,14 +787,39 @@ const DrawerBeans = ({
                         <h5 className="text-base text-white">Subtotal</h5>
                         <h6>$ {totalPrice?.toFixed(2)}</h6>
                       </div>
-                       {discountPercentage > 0 && (
+                       {/* {discountPercentage > 0 && (
                         <div className="flex items-center justify-between gap-x-2">
                           <h5 className="text-base text-white">
                             Discount ({discountPercentage}%)
                           </h5>
                           <h6>- $ {discountAmount.toFixed(2)}</h6>
                         </div>
-                      )}
+                      )} */}
+
+                        {order?.categoryDiscounts?.length > 0 &&
+                          cartItems?.map((item, index) => {
+                            const catDiscount = order?.categoryDiscounts?.find(
+                              (d) => Number(d.categoryId) === Number(item.categoryId)
+                            );
+                            if (!catDiscount) return null;
+
+                            const pct = Number(catDiscount.percentage);
+                            const itemSubtotal = Number(item.price) * Number(item.qty);
+                            const itemDiscount = (itemSubtotal * pct) / 100;
+
+                            return (
+                              <div
+                                key={index}
+                                className="flex justify-between text-sm text-gray-300"
+                              >
+                                <span>
+                                  {item.name} ({pct}%)
+                                </span>
+                                <span>- $ {itemDiscount.toFixed(2)}</span>
+                              </div>
+                            );
+                          })}
+
                       <div className="flex items-center justify-between gap-x-2">
                         <h5 className="text-base text-white">
                           Shipping Charges

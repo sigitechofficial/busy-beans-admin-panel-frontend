@@ -182,9 +182,11 @@ export default function AddInvoice() {
 
   // Item qty handler
   const handleItemQtyChange = (itemIdx, value) => {
+    let qty = parseInt(value, 10);
+    if (isNaN(qty) || qty <= 0) qty = 1;
     setItems((prev) =>
       prev.map((item, idx) =>
-        idx === itemIdx ? { ...item, qty: Number(value) } : item
+        idx === itemIdx ? { ...item, qty } : item
       )
     );
   };
@@ -245,10 +247,14 @@ export default function AddInvoice() {
       prev.map((item, idx) =>
         idx === rowIdx
           ? {
-              ...item,
-              [field]:
-                field === "qty" || field === "unit" ? Number(value) : value,
-            }
+            ...item,
+            [field]:
+              field === "qty"
+                ? Math.max(1, parseInt(value, 10) || 1)
+                : field === "unit"
+                  ? parseFloat(value) || 0
+                  : value,
+          }
           : item
       )
     );
@@ -286,7 +292,11 @@ export default function AddInvoice() {
           ? {
             ...item,
             [field]:
-              field === "qty" || field === "unit" ? Number(value) : value,
+              field === "qty"
+                ? Math.max(1, parseInt(value, 10) || 1)
+                : field === "unit"
+                  ? parseFloat(value) || 0
+                  : value,
           }
           : item
       )

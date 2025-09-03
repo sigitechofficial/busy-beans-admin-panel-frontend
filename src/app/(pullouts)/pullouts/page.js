@@ -8,6 +8,9 @@ import { useState } from "react";
 import dayjs from "dayjs";
 import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
+import { PostAPI } from "@/utilities/PostAPI";
+import { success_toaster } from "@/utilities/Toaster";
+import ErrorHandler from "@/utilities/ErrorHandler";
 
 export default function Pullouts() {
   if (typeof window !== "undefined") {
@@ -16,25 +19,26 @@ export default function Pullouts() {
   }
 
   let slCounter = 1;
-
   const router = useRouter();
-  const [statusFilter, setStatusFilter] = useState(0); 
+  const [statusFilter, setStatusFilter] = useState(0);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [loader, setLoader] = useState(false);
+
   const isPendingPullout = Number(statusFilter) === 0;
 
-  const { data } = GetAPI(
+  const { data, reFetch } = GetAPI(
     userType === "salesRepresentative"
       ? `api/v1/admin/orders?salesRepId=${userID}&adminReceivableStatus=${statusFilter}`
       : `api/v1/admin/orders?adminReceivableStatus=${statusFilter}`
   );
 
   const columns = [
-    // { field: "id", header: "#", sort: true },
     { field: "invoiceNumber", header: "INV#" },
     { field: "companyName", header: "Company" },
     { field: "invoiceDate", header: "Invoice Date", sort: true },
     { field: "totalBill", header: "Total", sort: true },
     { field: "localPartnerCommission", header: "Partner Profit", sort: true },
-    { field: "adminReceivableAmount", header: "Admin Receivable", sort: true },          
+    { field: "adminReceivableAmount", header: "Admin Receivable", sort: true },
     { field: "paymentStatus", header: "Invoice", sort: true },
     { field: "orderCurrentStatus", header: "Status" },
   ];
@@ -46,28 +50,32 @@ export default function Pullouts() {
       sort: true,
     });
   }
-  
+
   const safeFormatDate = (v) => {
     if (!v || v === "null" || v === "undefined" || v === "0000-00-00") return "";
     const d = dayjs(v);
     return d.isValid() ? d.format("MM/DD/YYYY") : "";
   };
+
   const formatMoney = (v) => {
     const n = Number(v);
     return "$" + (Number.isFinite(n) ? n.toFixed(2) : "0.00");
   };
 
   const datas = [];
-  const resultedOrders = data?.data?.data?.filter((detail, i) => {
+  const resultedOrders = data?.data?.data?.filter((detail) => {
     const partnerCommission = isPendingPullout
       ? (detail?.totalSalerCommission ?? "0.00")
       : (detail?.localPartnerCommission ?? detail?.localPatnerCommission ?? "0.00");
 
-    const adminReceivable = isPendingPullout
-      ? (detail?.adminEarnings ?? "0.00")
-      : (detail?.adminReceivableAmount ?? "0.00");
+    const adminReceivableRaw = Number(
+      isPendingPullout
+        ? (detail?.adminEarnings ?? 0)
+        : (detail?.adminReceivableAmount ?? 0)
+    ) || 0;
 
     const overdueFlag = Number(detail?.overdueInvoice) === 1 ? "Yes" : "No";
+
     return (
       (detail?.paymentStatus === "pending" || detail?.paymentStatus === "done") &&
       datas.push({
@@ -77,7 +85,8 @@ export default function Pullouts() {
         invoiceNumber: detail?.invoiceNumber,
         totalBill: formatMoney(detail?.totalBill),
         localPartnerCommission: formatMoney(partnerCommission),
-        adminReceivableAmount: formatMoney(adminReceivable),
+        adminReceivableAmount: formatMoney(adminReceivableRaw),
+        adminReceivableRaw, 
         ...(isPendingPullout ? { overDueInvoice: overdueFlag } : {}),
         paymentStatus: detail?.paymentStatus === "done" ? "Paid" : "Unpaid",
         invoiceDate: safeFormatDate(detail?.invoiceDate),
@@ -85,6 +94,36 @@ export default function Pullouts() {
       })
     );
   });
+
+  const handlePulloutPayments = async () => {
+    if (!selectedRows?.length) return;
+
+    const amount = selectedRows.reduce(
+      (sum, row) => sum + (Number(row?.adminReceivableRaw) || 0),
+      0
+    );
+
+    const orderList = selectedRows.map((row) => ({ id: row.id }));
+
+    setLoader(true);
+    try {
+      const res = await PostAPI(
+        `api/v1/admin/pull-payments-from-patners-banka-account/${userID}`,
+        { amount, orderList }
+      );
+      if (res?.data?.status === "success") {
+        success_toaster("Admin Receivable Amount pullout successfully");
+        setSelectedRows([]);
+        reFetch?.();
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
+    } finally {
+      setLoader(false);
+    }
+  };
 
   const { toggle, setToggle } = useDataContext();
 
@@ -128,6 +167,20 @@ export default function Pullouts() {
           </button>
         </div>
 
+        {/* {(userType === "admin" && isPendingPullout) && (
+          <div className="flex justify-end">
+            <button
+              disabled={!selectedRows.length || loader}
+              onClick={handlePulloutPayments}
+              className={`rounded-lg font-inter font-medium text-white bg-theme hover:text-theme hover:bg-white border border-theme duration-150 px-5 py-3 sm:h-full ${
+                !selectedRows.length || loader ? "opacity-60 cursor-not-allowed" : ""
+              }`}
+            >
+              {loader ? "Processing..." : "Pullout Payment"}
+            </button>
+          </div>
+        )} */}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
           <ManagementTab title="Total Orders" desc={resultedOrders?.length} />
         </div>
@@ -138,11 +191,13 @@ export default function Pullouts() {
             data={datas}
             placeholder={"Search ..."}
             pagination={true}
-            onRowClick={(e) => {
-              router.push(`/orders/detail/${e.data.id}`);
-            }}
+            checkbox={isPendingPullout}         
+            selectedRows={selectedRows}
+            setSelectedRows={setSelectedRows}
+            onRowClick={(e) => router.push(`/orders/detail/${e.data.id}`)}
             search={true}
-            sortField="overDueInvoice"
+            sortField={isPendingPullout ? "overDueInvoice" : undefined}
+            sortOrder={-1}
           />
         </div>
       </div>

@@ -37,7 +37,7 @@ export default function Orders() {
     // { field: "customerName", header: "Customer" },
     { field: "companyName", header: "Company Name" },
     { field: "orderDate", header: "Order Date", sort: true },
-    // { field: "deliveredOn", header: "Deliver On" },
+    { field: "deliveredOn", header: "Deliver On" },
     // { field: "salesRepName", header: "Local Partner Name" },
     // { field: "subTotal", header: "Sub Total" },
     // { field: "discountPrice", header: "Discount Price" },
@@ -89,6 +89,7 @@ export default function Orders() {
         paymentStatus: detail?.paymentStatus === "done" ? "Paid" : "Unpaid",
         createdBy: detail?.createdBy,
         orderDate: dayjs(detail?.on).format("MM/DD/YYYY"),
+        deliveredOn: dayjs(detail?.deliveredOn).format("MM/DD/YYYY"),
         // action: (
         //   <button
         //     className="border border-yellow-400 rounded-md p-2 text-yellow-400"

@@ -397,7 +397,14 @@ export default function OrderDetail() {
             {/* Right side */}
             <div className="space-y-8 -order-last xl:-order-first">
               <div className="ml-2">
-                <h6 className="font-semibold">Deliver To</h6>
+                <div className="flex items-center gap-2">
+                  <h6 className="font-semibold">Deliver To</h6>
+                  {data?.data?.order?.shippingCompany && (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full border border-gray-200 bg-gray-50 text-gray-700 uppercase">
+                      {data.data.order.shippingCompany}
+                    </span>
+                  )}
+                </div>
                 <div className="items-center uppercase flex flex-wrap text-gray-500">
                   {data?.data?.order?.address?.companyaddress && (
                     <p>{data.data.order.address.companyaddress}</p>

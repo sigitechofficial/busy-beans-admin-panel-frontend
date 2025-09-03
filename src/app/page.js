@@ -25,7 +25,7 @@ export default function Home() {
     var userID = localStorage.getItem("userID");
     var connectAccountId = localStorage.getItem("connectAccountId");
     var isAccountConnected = localStorage.getItem("isAccountConnected");
-    var isEmployee = localStorage.getItem("isEmployee") ? true : false;
+    var isEmployee = localStorage.getItem("isEmployee") === "true";
     var url = window.location.href;
     var windowClose = window;
   }
@@ -42,13 +42,28 @@ export default function Home() {
   //     : `api/v1/admin/supplier-dashboard/${userID}`
   // );
 
-  const dashboardEndpoint = useMemo(() => {
-    if (userType === "admin") return "api/v1/admin/dashboard";
-    if (userType === "salesRepresentative") return `api/v1/admin/sales-rep-dashboard/${userID}`;
-    return `api/v1/admin/supplier-dashboard/${userID}`;
-  }, [userType, userID]);
+  const EMPLOYEE_API_MAP = {
+    admin: "api/v1/admin/dashboard/admin-employee",
+    "local partner": "api/v1/admin/dashboard/local-partner-employee"
+  };
 
-  const { data } = GetAPI(dashboardEndpoint, 'dashboard');
+  const dashboardEndpoint = useMemo(() => {
+    if (isEmployee) {
+      const employeeOf = (localStorage.getItem("employeeOf") || "").toLowerCase().trim();
+      return EMPLOYEE_API_MAP[employeeOf] || null;
+    }
+
+    if (userType === "admin") return "api/v1/admin/dashboard";
+    if (userType === "salesRepresentative")
+      return `api/v1/admin/sales-rep-dashboard/${userID}`;
+    if (userType === "supplier")
+      return `api/v1/admin/supplier-dashboard/${userID}`;
+
+    return null;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userType, userID, isEmployee]);
+
+  const { data } = dashboardEndpoint ? GetAPI(dashboardEndpoint, 'dashboard') : { data: null };
   
   const supplierDashboard = data?.data?.dashboard || {}; 
   const { totalOrders, dispatchedToSupplierOrders, acknowledgedOrders, shippedOrders, deliveredOrders, cancelledOrders } = supplierDashboard;
@@ -997,38 +1012,40 @@ export default function Home() {
       </div>
     </div>
     ) : isEmployee ? (
-    <div className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain">
-      <div className="relative z-30 py-5 px-6 2xl:px-12">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-white text-xl lg:text-3xl font-inter font-semibold">
-              Welcome, {userName}.
-            </h1>
-            <p className="text-white font-inter">
-              Monitor your assigned orders and overdue invoices
-            </p>
-          </div>
-        </div>
-
-        {/* Dashboard Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mt-5">
-          <HomeCards
-            title="Total Orders"
-            total={data?.data?.ordersSummary?.orderPlaced ?? 0}
-            Icon={BsCardList}
-            bgColor="bg-homeCards"
-            iconBg="bg-white"
-          />
-          <HomeCards
-            title="Overdue Invoices"
-            total={data?.data?.overdueInvoices ?? 0}
-            Icon={MdCancel}
-            bgColor="bg-homeCards"
-            iconBg="bg-white"
-          />
+  <div className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain">
+    <div className="relative z-30 py-5 px-6 2xl:px-12">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-white text-xl lg:text-3xl font-inter font-semibold">
+            Welcome, {userName}.
+          </h1>
+          <p className="text-white font-inter">
+            Monitor your assigned orders and overdue invoices
+          </p>
         </div>
       </div>
+
+      {/* Dashboard Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mt-5">
+        {(Array.isArray(data?.data) ? data.data : data?.data?.output || []).map(
+          (item) => (
+            <HomeCards
+              key={item.id}
+              title={item.orderStatus}
+              total={item.count}
+              Icon={
+                item.orderStatus.toLowerCase().includes("cancel")
+                  ? MdCancel
+                  : BsCardList
+              }
+              bgColor="bg-homeCards"
+              iconBg="bg-white"
+            />
+          )
+        )}
+      </div>
     </div>
+  </div>
   ) : (
     <div className="flex items-center justify-center h-screen">
       <h1 className="text-xl font-semibold text-gray-500">

@@ -61,7 +61,7 @@ export default function NewOrders() {
       companyName: detail?.companyName,
       orderDate: dayjs(detail?.on).format("MM/DD/YYYY"),
       totalBill: "$" + detail?.totalBill,
-      deliveredOn: "",
+      deliveredOn: dayjs(detail?.deliveredOn).format("MM/DD/YYYY"),
       paymentStatus: detail?.paymentStatus === "pending" ? "Unpaid" : "Paid",
       discountPercentage: detail?.discountPercentage + "%",
       itemsPrice: "$" + detail?.itemsPrice,

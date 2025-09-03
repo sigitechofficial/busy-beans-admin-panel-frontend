@@ -131,7 +131,7 @@ function CustomerDetails() {
       id: elem?.id,
       invoicePdf: elem?.invoiceDate,
       orderDate: dayjs(elem?.on).format("MM/DD/YYYY"),
-      deliverOn: "",
+      deliveredOn: dayjs(elem?.deliveredOn).format("MM/DD/YYYY"),
       total: "$" + elem?.totalBill,
       invoice: (
         <span

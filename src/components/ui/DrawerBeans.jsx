@@ -361,6 +361,7 @@ const DrawerBeans = ({
       ...prev,
       userId: selectedEmail?.id,
       addressId: "",
+      paymentMethod: selectedEmail?.preferredPaymentMethod || "",
     }));
     setEmail(selectedEmail?.email);
 
@@ -544,6 +545,13 @@ const DrawerBeans = ({
                       placeholder="Select Payment Method"
                       className="w-full"
                       styles={drawerSelectStyles}
+                        value={
+                          order.paymentMethod
+                            ? paymentMethodOptions.find(
+                              (opt) => opt.value === order.paymentMethod
+                            ) || null
+                            : null
+                        }
                       options={paymentMethodOptions}
                       onChange={(e) => {
                         setOrder({ ...order, paymentMethod: e.value });

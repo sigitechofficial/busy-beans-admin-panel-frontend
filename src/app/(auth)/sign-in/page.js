@@ -87,7 +87,9 @@ export default function SignIn() {
                 ? res?.data?.data?.user?.name
                 : type === "supplier"
                 ? res?.data?.data?.user?.supplierName
-                : res?.data?.data?.user?.srName
+                : type === "sales-rep"
+                ? res?.data?.data?.user?.srName || res?.data?.data?.user?.name
+                : res?.data?.data?.user?.name
             );
 
             localStorage.setItem("email", res?.data?.data?.user?.email);
@@ -107,8 +109,9 @@ export default function SignIn() {
             }
             localStorage.setItem("employeeId", res?.data?.data?.user?.id);
 
-            if(res?.data?.data?.user?.employeeOf) {
-              localStorage.setItem("isEmployee", true);
+            if (res?.data?.data?.user?.employeeOf) {
+              localStorage.setItem("isEmployee", "true"); 
+              localStorage.setItem("employeeOf", res?.data?.data?.user?.employeeOf);
             }
             
             success_toaster("Login Successfully");

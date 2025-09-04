@@ -80,6 +80,7 @@ export default function PendingPulloutsOrders() {
         id: order?.id,
         localPatnerCommission: order?.localPatnerCommission?.replace("$", ""),
         adminReceivableAmount: order?.adminReceivableAmount?.replace("$", ""),
+        invoiceNumber: order?.invoiceNumber,
       })
     );
     console.log("🚀 ~ handlePulloutPayments ~ orderList:", orderList);

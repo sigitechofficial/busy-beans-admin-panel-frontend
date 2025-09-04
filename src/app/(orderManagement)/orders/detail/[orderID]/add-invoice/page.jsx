@@ -141,8 +141,8 @@ export default function AddInvoice() {
           type: "charges",
           code: ch.productCode || ch.code || "",
           name: ch.product || ch.productName || ch.name || "",
-          qty: ch.qty || 1,
-          unit: Number(ch.unit ?? ch.price) || 0,
+          qty: ch.qty,
+          unit: parseFloat(((ch?.price || 0) / (ch?.qty || 1)).toFixed(2)),
           checked: true,
         }));
 
@@ -180,20 +180,13 @@ export default function AddInvoice() {
     );
   };
 
-  const normalizeQty = (oldQty, rawValue) => {
-    let clean = String(rawValue).replace(/\D/g, ""); 
-    if (clean === "") return "";
-    if (clean === "0") return 1;
-    if (String(oldQty) === "1" && clean.length === 1) {
-      return parseInt(clean, 10);
-    }
-    return parseInt(clean, 10);
-  };
-
+  // Item qty handler
   const handleItemQtyChange = (itemIdx, value) => {
+    let qty = parseInt(value, 10);
+    if (isNaN(qty) || qty <= 0) qty = 1;
     setItems((prev) =>
       prev.map((item, idx) =>
-        idx === itemIdx ? { ...item, qty: normalizeQty(item.qty, value) } : item
+        idx === itemIdx ? { ...item, qty } : item
       )
     );
   };
@@ -248,18 +241,22 @@ export default function AddInvoice() {
     setModal(false);
   };
 
+  // Handle input change for extra rows
   const handleExtraInputChange = (rowIdx, field, value) => {
     setExtraRows((prev) =>
-      prev.map((item, idx) => {
-        if (idx !== rowIdx) return item;
-        if (field === "qty") {
-          return { ...item, qty: normalizeQty(item.qty, value) };
-        }
-        return {
-          ...item,
-          [field]: field === "unit" ? parseFloat(value) || 0 : value,
-        };
-      })
+      prev.map((item, idx) =>
+        idx === rowIdx
+          ? {
+            ...item,
+            [field]:
+              field === "qty"
+                ? Math.max(1, parseInt(value, 10) || 1)
+                : field === "unit"
+                  ? parseFloat(value) || 0
+                  : value,
+          }
+          : item
+      )
     );
   };
 
@@ -290,16 +287,19 @@ export default function AddInvoice() {
 
   const handleChargeInputChange = (rowIdx, field, value) => {
     setExtraCharges((prev) =>
-      prev.map((item, idx) => {
-        if (idx !== rowIdx) return item;
-        if (field === "qty") {
-          return { ...item, qty: normalizeQty(item.qty, value) };
-        }
-        return {
-          ...item,
-          [field]: field === "unit" ? parseFloat(value) || 0 : value,
-        };
-      })
+      prev.map((item, idx) =>
+        idx === rowIdx
+          ? {
+            ...item,
+            [field]:
+              field === "qty"
+                ? Math.max(1, parseInt(value, 10) || 1)
+                : field === "unit"
+                  ? parseFloat(value) || 0
+                  : value,
+          }
+          : item
+      )
     );
   };
 

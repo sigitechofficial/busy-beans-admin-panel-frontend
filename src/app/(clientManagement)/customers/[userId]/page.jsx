@@ -342,7 +342,7 @@ function CustomerDetails() {
         percentage: Number.isFinite(pct) ? pct : 0,
       };
     })
-    .filter((x) => x.categoryName);
+    .filter((x) => x.categoryName && x.percentage > 0);
 
   const discountsToShow = showAllDiscounts ? normalizedDiscounts : normalizedDiscounts.slice(0, previewCount);
 

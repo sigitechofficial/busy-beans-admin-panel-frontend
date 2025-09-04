@@ -26,22 +26,17 @@ export default function UpdateCustomer() {
     userType = localStorage.getItem("userType");
   }
 
-  // ⬇️ Categories for the discount dialog
   const { data: categoriesRes, isLoading: catsLoading, error: catsError } = GetAPI("api/v1/admin/category");
   const [discountSaving, setDiscountSaving] = useState(false);
-  // Normalize server shapes safely
   const categories =
     categoriesRes?.data?.data?.data ||
     categoriesRes?.data?.data ||
     categoriesRes?.data ||
     [];
 
-  // Dialog state
   const [discountDlgOpen, setDiscountDlgOpen] = useState(false);
-  /** Map categoryId -> number (percentage) */
   const [categoryDiscounts, setCategoryDiscounts] = useState({});
 
-  // Keep % between 0–100 and one decimal
   const clampPct = (raw) => {
     if (raw === "" || raw === null || raw === undefined) return "";
     let n = Number(raw);
@@ -59,7 +54,6 @@ export default function UpdateCustomer() {
     }));
   };
 
-  // Build payload array for API
   const buildUserDiscountPayload = () =>
     Object.entries(categoryDiscounts)
       .filter(([, v]) => typeof v === "number" && v >= 0 && v <= 100)
@@ -82,7 +76,6 @@ export default function UpdateCustomer() {
       if (res?.data?.status === "success") {
         success_toaster("User discount(s) updated.");
         setDiscountDlgOpen(false);
-        // (Optional) refresh or keep values as-is
         // setCategoryDiscounts({});
       } else {
         throw new Error(res?.data?.message || "Failed to update discounts.");
@@ -1013,7 +1006,7 @@ export default function UpdateCustomer() {
                           className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                         />
                       </div>
-                          <div className="flex flex-col gap-y-2">
+                          {/* <div className="flex flex-col gap-y-2">
                             <label className="text-labelColor font-medium font-satoshi">Discount (%)</label>
                             <input
                               type="number"
@@ -1047,7 +1040,7 @@ export default function UpdateCustomer() {
                               onWheel={(e) => e.target.blur()}
                               className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                             />
-                          </div>
+                          </div> */}
                     </div>
                   </div>
                 </div>
@@ -1197,8 +1190,13 @@ export default function UpdateCustomer() {
             header="Update User Discount by Category"
             visible={discountDlgOpen}
             onHide={() => setDiscountDlgOpen(false)}
-            className="w-[95vw] md:w-[720px]"
+            className={`w-[95vw] md:w-[720px] ${typeof window !== "undefined" && window.innerHeight < 800
+              ? "h-[90vh]"  
+              : ""
+            }`}
+            // className="w-[95vw] md:w-[720px]"
             dismissableMask
+            style={{ maxHeight: "90vh", overflowY: "auto" }}
           >
             {catsError && (
               <p className="text-red-600 font-medium">Failed to load categories.</p>

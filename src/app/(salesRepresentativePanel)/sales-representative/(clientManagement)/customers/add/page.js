@@ -1324,7 +1324,7 @@ export default function AddCustomer() {
                           className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                         />
                       </div>
-                        <div className="flex flex-col gap-y-2">
+                        {/* <div className="flex flex-col gap-y-2">
                           <label className="text-labelColor font-medium font-satoshi">
                             Discount (%)
                           </label>
@@ -1360,7 +1360,7 @@ export default function AddCustomer() {
                             onWheel={(e) => e.target.blur()}
                             className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                           />
-                        </div>
+                        </div> */}
                     </div>
                     {/* <div>
                         <button

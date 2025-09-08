@@ -62,13 +62,18 @@ export default function AddInvoice() {
     }
   }, [savedCards, selectedCardId]);
 
+  const getToday = () => {
+    const today = new Date();
+    return today.toISOString().split("T")[0];
+  };
+
   let userType = "admin";
 
   // States for invoice fields
   const [invoiceFields, setInvoiceFields] = useState({
     invoiceNumber: "",
     poNumber: "",
-    invoiceDate: "",
+    invoiceDate: getToday(),
     proforma: false,
     terms: "30",
     dueDate: "",
@@ -76,8 +81,8 @@ export default function AddInvoice() {
     note: "",
     otherPayment: "",
     paymentOption: false,
-    paymentOption2: false,
-    invoiceDate: "",
+    emailInvoiceToCustomer: false,
+    // invoiceDate: "",
     invoicePdf: "",
   });
 
@@ -86,11 +91,6 @@ export default function AddInvoice() {
 
   // Extra rows state (for added delivery/extra charges)
   const [extraRows, setExtraRows] = useState([]);
-
-  const getToday = () => {
-    const today = new Date();
-    return today.toISOString().split("T")[0];
-  };
 
   // Utility to get date 30 days from today in yyyy-mm-dd format
   const getDueDate = () => {
@@ -263,11 +263,26 @@ export default function AddInvoice() {
   };
 
   // Invoice fields change handler
+  // const handleInvoiceFieldChange = (field, value) => {
+  //   setInvoiceFields((prev) => ({
+  //     ...prev,
+  //     [field]: value,
+  //   }));
+  // };
+
   const handleInvoiceFieldChange = (field, value) => {
-    setInvoiceFields((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    if (field === "emailInvoiceToCustomer" && value) {
+      setInvoiceFields((prev) => ({
+        ...prev,
+        [field]: value,
+        invoiceDate: Date.now(),  // Set invoiceDate to current date if checkbox is checked
+      }));
+    } else {
+      setInvoiceFields((prev) => ({
+        ...prev,
+        [field]: value,
+      }));
+    }
   };
 
   // Extra Charge Rows
@@ -409,17 +424,18 @@ export default function AddInvoice() {
     const orderObj = {
       invoiceNumber: invoiceFields.invoiceNumber,
       poNumber: invoiceFields.poNumber,
-      invoiceDate: invoiceFields.invoiceDate,
+      // invoiceDate: invoiceFields.invoiceDate,
       proforma: invoiceFields.proforma,
       termDays: invoiceFields.terms,
       dueDate: invoiceFields.dueDate,
       note: invoiceFields.note,
       otherPayment: invoiceFields.otherPayment,
       attemptImmediatePayment: invoiceFields.paymentOption,
-      emailInvoiceToCustomer: invoiceFields.paymentOption2,
+      emailInvoiceToCustomer: invoiceFields.emailInvoiceToCustomer,
+      invoiceDate: invoiceFields.emailInvoiceToCustomer ? invoiceFields.invoiceDate : null, 
       reminder: invoiceFields?.invoicePdf ? true : false,
-      invoiceDate: invoiceFields?.invoiceDate ? undefined : Date.now(),
-      invoiceReminder: invoiceFields?.invoiceDate ? Date.now() : undefined,
+      // invoiceDate: invoiceFields?.invoiceDate ? undefined : Date.now(),
+      // invoiceReminder: invoiceFields?.invoiceDate ? Date.now() : undefined,
       discountPercentage: Number(invoiceFields.discountPercentage || 0),
       // shippingCharges: manual?.shippingCharge,
       ...(manual?.show === false && {
@@ -427,7 +443,9 @@ export default function AddInvoice() {
       }),
       paymentCardId: paymentCardId,
     };
-
+    if (data?.data?.order?.invoiceDate) {
+      orderObj.invoiceReminder = Date.now();
+    }
     // API call
     let res = await PatchAPI(
       `api/v1/admin/order-management/update-order/${orderID}`,
@@ -1050,9 +1068,9 @@ export default function AddInvoice() {
             <input
               type="checkbox"
               className="size-5"
-              checked={invoiceFields.paymentOption2}
+              checked={invoiceFields.emailInvoiceToCustomer}
               onChange={(e) =>
-                handleInvoiceFieldChange("paymentOption2", e.target.checked)
+                handleInvoiceFieldChange("emailInvoiceToCustomer", e.target.checked)
               }
             />
             <p>Email the invoice to the customer?</p>

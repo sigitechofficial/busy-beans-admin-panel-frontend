@@ -180,13 +180,18 @@ export default function AddInvoice() {
     );
   };
 
+  const normalizeQty = (rawValue) => {
+    let clean = String(rawValue).replace(/\D/g, ""); 
+    if (clean === "") return "";
+    if (clean === "0") return 1;
+    return parseInt(clean, 10);
+  };
+
   // Item qty handler
   const handleItemQtyChange = (itemIdx, value) => {
-    let qty = parseInt(value, 10);
-    if (isNaN(qty) || qty <= 0) qty = 1;
     setItems((prev) =>
       prev.map((item, idx) =>
-        idx === itemIdx ? { ...item, qty } : item
+        idx === itemIdx ? { ...item, qty: normalizeQty(value) } : item
       )
     );
   };
@@ -244,19 +249,16 @@ export default function AddInvoice() {
   // Handle input change for extra rows
   const handleExtraInputChange = (rowIdx, field, value) => {
     setExtraRows((prev) =>
-      prev.map((item, idx) =>
-        idx === rowIdx
-          ? {
-            ...item,
-            [field]:
-              field === "qty"
-                ? Math.max(1, parseInt(value, 10) || 1)
-                : field === "unit"
-                  ? parseFloat(value) || 0
-                  : value,
-          }
-          : item
-      )
+      prev.map((item, idx) => {
+        if (idx !== rowIdx) return item;
+        if (field === "qty") {
+          return { ...item, qty: normalizeQty(value) };
+        }
+        return {
+          ...item,
+          [field]: field === "unit" ? parseFloat(value) || 0 : value,
+        };
+      })
     );
   };
 
@@ -287,19 +289,16 @@ export default function AddInvoice() {
 
   const handleChargeInputChange = (rowIdx, field, value) => {
     setExtraCharges((prev) =>
-      prev.map((item, idx) =>
-        idx === rowIdx
-          ? {
-            ...item,
-            [field]:
-              field === "qty"
-                ? Math.max(1, parseInt(value, 10) || 1)
-                : field === "unit"
-                  ? parseFloat(value) || 0
-                  : value,
-          }
-          : item
-      )
+      prev.map((item, idx) => {
+        if (idx !== rowIdx) return item;
+        if (field === "qty") {
+          return { ...item, qty: normalizeQty(value) };
+        }
+        return {
+          ...item,
+          [field]: field === "unit" ? parseFloat(value) || 0 : value,
+        };
+      })
     );
   };
 

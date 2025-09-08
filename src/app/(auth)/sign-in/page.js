@@ -18,6 +18,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Checkbox } from "primereact/checkbox";
 import { useEffect, useState } from "react";
+import SIGN_IN from "./sign-in.testids";
 
 export default function SignIn() {
   const router = useRouter();
@@ -180,7 +181,7 @@ export default function SignIn() {
                     onBlur={handleBlur}
                     placeholder="Email"
                     className="border border-inputBorder rounded-lg outline-none px-3 py-2"
-                    data-testid="login-email-input"
+                    data-testid={SIGN_IN.emailInput}
                   />
                   <div className={errors.email && touched.email}>
                     {errors.email && touched.email && (
@@ -202,7 +203,7 @@ export default function SignIn() {
                     onBlur={handleBlur}
                     placeholder="password"
                     className="border border-inputBorder rounded-lg outline-none px-3 py-2"
-                    data-testid="login-password-input"
+                    data-testid={SIGN_IN.passwordInput}
                   />
                   <div className={errors.password && touched.password}>
                     {" "}
@@ -216,7 +217,7 @@ export default function SignIn() {
                   <p className="text-white text-sm text-end font-normal">
                     <Link 
                       href={"/forgot-password"}
-                      data-testid="login-forgot-password-link"
+                      data-testid={SIGN_IN.forgotPasswordLink}
                     > Forgot Password?</Link>
                   </p>
                 </div>
@@ -228,7 +229,7 @@ export default function SignIn() {
                       value="admin"
                       checked={type === "admin" ?? false}
                       onClick={() => setType("admin")}
-                      data-testid="login-admin-chk"
+                      data-testid={SIGN_IN.adminChk}
                     />
                     <label htmlFor="admin" className="ml-2 font-inter">
                       Admin
@@ -241,7 +242,7 @@ export default function SignIn() {
                       value="supplier"
                       checked={type === "supplier" ?? false}
                       onClick={() => setType("supplier")}
-                      data-testid="login-supplier-chk"
+                      data-testid={SIGN_IN.supplierChk}
                     />
                     <label htmlFor="supplier" className="ml-2 font-inter">
                       Supplier
@@ -254,7 +255,7 @@ export default function SignIn() {
                       value="sales-rep"
                       checked={type === "sales-rep" ?? false}
                       onClick={() => setType("sales-rep")}
-                      data-testid="login-sales-rep-chk"
+                      data-testid={SIGN_IN.salesRepChk}
                     />
                     <label htmlFor="sales-rep" className="ml-2 font-inter">
                       Local Partner
@@ -266,7 +267,7 @@ export default function SignIn() {
                 <button
                   type="submit"
                   className="bg-theme text-white hover:bg-white hover:text-theme border border-theme outline-none duration-150 font-satoshi py-2 rounded-lg w-full font-medium"
-                  data-testid="login-submit-btn"
+                  data-testid={SIGN_IN.submitBtn}
                 >
                   Sign In
                 </button>

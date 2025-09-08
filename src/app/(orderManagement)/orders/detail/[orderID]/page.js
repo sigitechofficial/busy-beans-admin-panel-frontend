@@ -335,19 +335,18 @@ export default function OrderDetail() {
 
   const handleSendInvoice = async () => {
     try {
-      const res = await PostAPI(`api/v1/admin/order-management/send-invoice`, {
-        order: [
-          {
-            orderId: orderID,
-            reminder: data?.data?.order?.invoicePdf ? true : false,
-            invoiceDate: data?.data?.order?.invoiceDate
-              ? undefined
-              : Date.now(),
-            invoiceReminder: data?.data?.order?.invoiceDate
-              ? Date.now()
-              : undefined,
-          },
-        ],
+      const res = await PostAPI(`api/v1/admin/order-management/send-invoice/${orderID}`, {
+        order:
+        {
+          orderId: orderID,
+          reminder: data?.data?.order?.invoicePdf ? true : false,
+          invoiceDate: data?.data?.order?.invoiceDate
+            ? undefined
+            : Date.now(),
+          invoiceReminder: data?.data?.order?.invoiceDate
+            ? Date.now()
+            : undefined,
+        },
         successUrl:
           "https://main.d28wfx1ny3of09.amplifyapp.com/invoice-payment-success",
         cancelUrl:

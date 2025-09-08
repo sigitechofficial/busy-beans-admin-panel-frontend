@@ -62,13 +62,18 @@ export default function AddInvoice() {
     }
   }, [savedCards, selectedCardId]);
 
+  const getToday = () => {
+    const today = new Date();
+    return today.toISOString().split("T")[0];
+  };
+
   let userType = "admin";
 
   // States for invoice fields
   const [invoiceFields, setInvoiceFields] = useState({
     invoiceNumber: "",
     poNumber: "",
-    invoiceDate: "",
+    invoiceDate: getToday(),
     proforma: false,
     terms: "30",
     dueDate: "",
@@ -76,8 +81,8 @@ export default function AddInvoice() {
     note: "",
     otherPayment: "",
     paymentOption: false,
-    paymentOption2: false,
-    invoiceDate: "",
+    emailInvoiceToCustomer: false,
+    // invoiceDate: "",
     invoicePdf: "",
   });
 
@@ -86,11 +91,6 @@ export default function AddInvoice() {
 
   // Extra rows state (for added delivery/extra charges)
   const [extraRows, setExtraRows] = useState([]);
-
-  const getToday = () => {
-    const today = new Date();
-    return today.toISOString().split("T")[0];
-  };
 
   // Utility to get date 30 days from today in yyyy-mm-dd format
   const getDueDate = () => {
@@ -180,13 +180,18 @@ export default function AddInvoice() {
     );
   };
 
+  const normalizeQty = (rawValue) => {
+    let clean = String(rawValue).replace(/\D/g, ""); 
+    if (clean === "") return "";
+    if (clean === "0") return 1;
+    return parseInt(clean, 10);
+  };
+
   // Item qty handler
   const handleItemQtyChange = (itemIdx, value) => {
-    let qty = parseInt(value, 10);
-    if (isNaN(qty) || qty <= 0) qty = 1;
     setItems((prev) =>
       prev.map((item, idx) =>
-        idx === itemIdx ? { ...item, qty } : item
+        idx === itemIdx ? { ...item, qty: normalizeQty(value) } : item
       )
     );
   };
@@ -244,28 +249,40 @@ export default function AddInvoice() {
   // Handle input change for extra rows
   const handleExtraInputChange = (rowIdx, field, value) => {
     setExtraRows((prev) =>
-      prev.map((item, idx) =>
-        idx === rowIdx
-          ? {
-            ...item,
-            [field]:
-              field === "qty"
-                ? Math.max(1, parseInt(value, 10) || 1)
-                : field === "unit"
-                  ? parseFloat(value) || 0
-                  : value,
-          }
-          : item
-      )
+      prev.map((item, idx) => {
+        if (idx !== rowIdx) return item;
+        if (field === "qty") {
+          return { ...item, qty: normalizeQty(value) };
+        }
+        return {
+          ...item,
+          [field]: field === "unit" ? parseFloat(value) || 0 : value,
+        };
+      })
     );
   };
 
   // Invoice fields change handler
+  // const handleInvoiceFieldChange = (field, value) => {
+  //   setInvoiceFields((prev) => ({
+  //     ...prev,
+  //     [field]: value,
+  //   }));
+  // };
+
   const handleInvoiceFieldChange = (field, value) => {
-    setInvoiceFields((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    if (field === "emailInvoiceToCustomer" && value) {
+      setInvoiceFields((prev) => ({
+        ...prev,
+        [field]: value,
+        invoiceDate: Date.now(),  // Set invoiceDate to current date if checkbox is checked
+      }));
+    } else {
+      setInvoiceFields((prev) => ({
+        ...prev,
+        [field]: value,
+      }));
+    }
   };
 
   // Extra Charge Rows
@@ -287,19 +304,16 @@ export default function AddInvoice() {
 
   const handleChargeInputChange = (rowIdx, field, value) => {
     setExtraCharges((prev) =>
-      prev.map((item, idx) =>
-        idx === rowIdx
-          ? {
-            ...item,
-            [field]:
-              field === "qty"
-                ? Math.max(1, parseInt(value, 10) || 1)
-                : field === "unit"
-                  ? parseFloat(value) || 0
-                  : value,
-          }
-          : item
-      )
+      prev.map((item, idx) => {
+        if (idx !== rowIdx) return item;
+        if (field === "qty") {
+          return { ...item, qty: normalizeQty(value) };
+        }
+        return {
+          ...item,
+          [field]: field === "unit" ? parseFloat(value) || 0 : value,
+        };
+      })
     );
   };
 
@@ -410,17 +424,18 @@ export default function AddInvoice() {
     const orderObj = {
       invoiceNumber: invoiceFields.invoiceNumber,
       poNumber: invoiceFields.poNumber,
-      invoiceDate: invoiceFields.invoiceDate,
+      // invoiceDate: invoiceFields.invoiceDate,
       proforma: invoiceFields.proforma,
       termDays: invoiceFields.terms,
       dueDate: invoiceFields.dueDate,
       note: invoiceFields.note,
       otherPayment: invoiceFields.otherPayment,
       attemptImmediatePayment: invoiceFields.paymentOption,
-      emailInvoiceToCustomer: invoiceFields.paymentOption2,
+      emailInvoiceToCustomer: invoiceFields.emailInvoiceToCustomer,
+      invoiceDate: invoiceFields.emailInvoiceToCustomer ? invoiceFields.invoiceDate : null, 
       reminder: invoiceFields?.invoicePdf ? true : false,
-      invoiceDate: invoiceFields?.invoiceDate ? undefined : Date.now(),
-      invoiceReminder: invoiceFields?.invoiceDate ? Date.now() : undefined,
+      // invoiceDate: invoiceFields?.invoiceDate ? undefined : Date.now(),
+      // invoiceReminder: invoiceFields?.invoiceDate ? Date.now() : undefined,
       discountPercentage: Number(invoiceFields.discountPercentage || 0),
       // shippingCharges: manual?.shippingCharge,
       ...(manual?.show === false && {
@@ -428,7 +443,9 @@ export default function AddInvoice() {
       }),
       paymentCardId: paymentCardId,
     };
-
+    if (data?.data?.order?.invoiceDate) {
+      orderObj.invoiceReminder = Date.now();
+    }
     // API call
     let res = await PatchAPI(
       `api/v1/admin/order-management/update-order/${orderID}`,
@@ -1051,9 +1068,9 @@ export default function AddInvoice() {
             <input
               type="checkbox"
               className="size-5"
-              checked={invoiceFields.paymentOption2}
+              checked={invoiceFields.emailInvoiceToCustomer}
               onChange={(e) =>
-                handleInvoiceFieldChange("paymentOption2", e.target.checked)
+                handleInvoiceFieldChange("emailInvoiceToCustomer", e.target.checked)
               }
             />
             <p>Email the invoice to the customer?</p>

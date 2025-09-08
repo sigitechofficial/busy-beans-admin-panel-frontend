@@ -16,7 +16,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import Loader from "@/components/ui/Loader";
 import api from "@/utilities/StatusErrorHandler";
 import { hasPermission } from "@/utilities/Permission";
-// ✅ Required since PrimeReact requires Client Components
+import DASHBOARD from "./dashboard.testids";
 
 export default function Home() {
   if (typeof window !== "undefined") {
@@ -484,7 +484,7 @@ export default function Home() {
 
   return data?.length === 0 ? (
     <Loader />
-  ) : userType === "admin" && hasPermission("dashboard_view") ? (
+  ) : (userType === "admin" && !isEmployee) ? (
     <>
       {/* <div
         className={`bg-red-500 z-10 text-center text-white py-2 ${
@@ -508,9 +508,10 @@ export default function Home() {
             : "Complete Account Registration"}
         </button>
       </div> */}
-      <div className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain">
+      <div className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain"
+      data-testid={DASHBOARD.adminRoot}>
         <div className="relative z-30 py-5 px-6 2xl:px-12">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center" data-testid={DASHBOARD.header}>
             <div>
               <h1 className="text-white text-xl lg:text-3xl font-inter font-semibold">
                 Welcome, {userName}.
@@ -581,7 +582,7 @@ export default function Home() {
           </div> */}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mt-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mt-5" data-testid={DASHBOARD.statsCardsGrid}>
             <HomeCards
               title="Total Countries"
               // description="Upcoming bookings + completed bookings + Cancelled bookings"
@@ -633,7 +634,7 @@ export default function Home() {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mt-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mt-12" data-testid={DASHBOARD.miniCardsGrid}>
             <HomeMiniCards
               title="Total Sale"
               // description="The bookings that are booked and an employee has been assigned to them."
@@ -715,8 +716,8 @@ export default function Home() {
         </div>
       </div>
     </>
-  ) : userType === "salesRepresentative" && hasPermission("dashboard_view") ? (
-    <div>
+  ) : (userType === "salesRepresentative" && !isEmployee) ? (
+    <div data-testid={DASHBOARD.salesRepRoot}>
       <div
         className={`bg-red-500 z-10 text-center text-white py-2 ${
           userType === "salesRepresentative" &&
@@ -724,11 +725,13 @@ export default function Home() {
             ? "flex items-center justify-center gap-x-2"
             : "hidden"
         }`}
+        data-testid={DASHBOARD.connectBanner}
       >
         Your Stripe Account is not Connected {"? click here "}
         <button
           onClick={handleConnectAccount}
-          className="flex gap-x-2 text-wrap items-center px-2 rounded-lg font-inter font-medium   duration-200 bg-theme text-white"
+          className="flex gap-x-2 text-wrap items-center px-2 rounded-lg font-inter font-medium duration-200 bg-theme text-white"
+          data-testid={DASHBOARD.connectBtn}
         >
           {(connectAccountId !== "null" || !connectAccountId) &&
           isAccountConnected === "true"
@@ -741,7 +744,8 @@ export default function Home() {
       </div>
 
       {showBankRetry && (
-        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-60 flex justify-center items-center z-50">
+        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-60 flex justify-center items-center z-50"
+          data-testid={DASHBOARD.bankRetryModal}>
           <div className="bg-white p-6 rounded-md">
             <p className="text-red-600 mb-4 font-semibold">
               Bank account linking is required and Compulsory.
@@ -749,6 +753,7 @@ export default function Home() {
             <button
               onClick={handleFinancialConnection}
               className="bg-black text-white hover:text-black hover:bg-white border border-black duration-150 px-4 py-2 rounded-md"
+              data-testid={DASHBOARD.bankRetryBtn}
             >
               Try Again
             </button>
@@ -757,7 +762,7 @@ export default function Home() {
       )}
       <div className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain">
         <div className="relative z-30 py-5 px-6 2xl:px-12">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center" data-testid={DASHBOARD.header}>
             <div>
               <h1 className="text-white text-xl lg:text-3xl font-inter font-semibold">
                 Welcome, {userName}.
@@ -828,7 +833,7 @@ export default function Home() {
           </div> */}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mt-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mt-5" data-testid={DASHBOARD.statsCardsGrid}>
             <HomeCards
               title="Total Sale"
               // description="Upcoming bookings + completed bookings + Cancelled bookings"
@@ -875,7 +880,7 @@ export default function Home() {
               Icon={LuPackageX}
             />
           </div> */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mt-6" data-testid={DASHBOARD.miniCardsGrid}>
             <HomeMiniCards
               title="Total Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
@@ -934,9 +939,9 @@ export default function Home() {
       </div>
     </div>
   ) : userType === "supplier" ? (
-      <div className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain">
+      <div className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain" data-testid={DASHBOARD.supplierRoot}>
       <div className="relative z-30 py-5 px-6 2xl:px-12">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center" data-testid={DASHBOARD.header}>
           <div>
             <h1 className="text-white text-xl lg:text-3xl font-inter font-semibold">
               Welcome, {userName}.
@@ -948,7 +953,7 @@ export default function Home() {
         </div>
 
         {/* Dashboard Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mt-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mt-5" data-testid={DASHBOARD.statsCardsGrid}>
           <HomeCards
             title="Total Orders"
             total={totalOrders}
@@ -992,10 +997,10 @@ export default function Home() {
             iconBg="bg-white"
           />
         </div>
-        <div className="mt-8">
+        <div className="mt-8" data-testid={DASHBOARD.topProductsSection}>
           <h2 className="text-black text-lg font-semibold mb-4">Top Products Sold</h2>
           {topProducts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5" data-testid={DASHBOARD.topProductsGrid}>
               {topProducts.map((product) => (
                 <HomeMiniCards
                   key={product.productId}
@@ -1011,10 +1016,10 @@ export default function Home() {
         </div>
       </div>
     </div>
-    ) : isEmployee ? (
-  <div className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain">
+    ) : (isEmployee || hasPermission("dashboard_view")) ? (
+  <div className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain" data-testid={DASHBOARD.employeeRoot}>
     <div className="relative z-30 py-5 px-6 2xl:px-12">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center" data-testid={DASHBOARD.header}>
         <div>
           <h1 className="text-white text-xl lg:text-3xl font-inter font-semibold">
             Welcome, {userName}.
@@ -1026,7 +1031,7 @@ export default function Home() {
       </div>
 
       {/* Dashboard Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mt-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mt-5" data-testid={DASHBOARD.statsCardsGrid}>
         {(Array.isArray(data?.data) ? data.data : data?.data?.output || []).map(
           (item) => (
             <HomeCards
@@ -1049,7 +1054,7 @@ export default function Home() {
   ) : (
     <div className="flex items-center justify-center h-screen">
       <h1 className="text-xl font-semibold text-gray-500">
-        🚫 You don’t have permission to view the Dashboard
+        Dashboard in progress
       </h1>
     </div>
   );

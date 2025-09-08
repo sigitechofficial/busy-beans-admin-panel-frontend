@@ -45,6 +45,8 @@ export default function OrderCard(props) {
       [e.target.name]: e.target.value,
     });
   };
+  
+  const isTruckCompany = props?.orderData?.shippingCompany?.trim()?.toLowerCase()?.includes("truck") || false;
 
   const handlePaymentStatus = async (status) => {
     try {
@@ -67,6 +69,7 @@ export default function OrderCard(props) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (props?.orderData?.statusId === 1) {
       if (suppliersData?.data?.data?.length === 0) {
         info_toaster("No supplier found. Add supplier");
@@ -84,16 +87,11 @@ export default function OrderCard(props) {
           if (res?.data?.status === "success") {
             success_toaster("Supplier assign successfully");
             props?.reFetch();
-            props?.setModal({
-              type: "",
-              status: false,
-            });
+            props?.setModal({ type: "", status: false });
             setLoader("");
           } else {
             setLoader("");
-            throw new Error(
-              res?.data?.message || "An unexpected error occurred."
-            );
+            throw new Error(res?.data?.message || "An unexpected error occurred.");
           }
         } catch (error) {
           setLoader("");
@@ -102,57 +100,59 @@ export default function OrderCard(props) {
       }
     } else if (props?.orderData?.statusId === 3) {
       try {
-        if (!dispatchOrderData?.trackingNumber) {
-          info_toaster("Enter Tracking number");
-        } else if (!dispatchOrderData?.shippingCompany) {
-          info_toaster("Select Shipping company");
+        const isTruck =
+          props?.orderData?.shippingCompany?.trim()?.toLowerCase()?.includes("truck");
+
+        // For non-truck flows, enforce dialog inputs
+        if (!isTruck) {
+          if (!dispatchOrderData?.trackingNumber) {
+            info_toaster("Enter Tracking number");
+            return;
+          } else if (!dispatchOrderData?.shippingCompany) {
+            info_toaster("Select Shipping company");
+            return;
+          }
+        }
+
+        setLoader("dispatchOrder");
+        const res = await PatchAPI("api/v1/admin/order-dispatch", {
+          orderId: props?.orderData?.id,
+          orderData: {
+            statusId: 4,
+            trackingNumber: isTruck
+              ? (props?.orderData?.trackingNumber || "")
+              : dispatchOrderData?.trackingNumber,
+            shippingCompany: isTruck
+              ? (props?.orderData?.shippingCompany || "Shipping By Truck")
+              : dispatchOrderData?.shippingCompany,
+          },
+        });
+
+        if (res?.data?.status === "success") {
+          success_toaster("Order Shipped successfully");
+          props?.setModal({ type: "", status: false });
+          setDispatchOrderData({ trackingNumber: "", shippingCompany: "" });
+          setLoader("");
         } else {
-          setLoader("dispatchOrder");
-          const res = await PatchAPI("api/v1/admin/order-dispatch", {
-            orderId: props?.orderData?.id,
-            orderData: {
-              statusId: 4,
-              trackingNumber: dispatchOrderData?.trackingNumber,
-              shippingCompany: dispatchOrderData?.shippingCompany,
-            },
-          });
+          setLoader("");
+          throw new Error(res?.data?.message || "An unexpected error occurred.");
+        }
 
-          if (res?.data?.status === "success") {
-            success_toaster("Order Shipped successfully");
-            // props?.reFetch();
-            props?.setModal({
-              type: "",
-              status: false,
-            });
-            setDispatchOrderData({
-              trackingNumber: "",
-              shippingCompany: "",
-            });
-            setLoader("");
-          } else {
-            setLoader("");
-            throw new Error(
-              res?.data?.message || "An unexpected error occurred."
-            );
-          }
+        // Deliver immediately
+        const resDeliver = await PatchAPI("api/v1/admin/order-deliver", {
+          orderId: props?.orderData?.id,
+          orderData: {
+            statusId: 5,
+            orderStatus: props?.orderData?.orderCurrentStatus,
+            paymentStaus: props?.orderData?.paymentStatus,
+          },
+        });
 
-          const resDeliver = await PatchAPI("api/v1/admin/order-deliver", {
-            orderId: props?.orderData?.id,
-            orderData: {
-              statusId: 5,
-              orderStatus: props?.orderData?.orderCurrentStatus,
-              paymentStaus: props?.orderData?.paymentStatus,
-            },
-          });
-
-          if (resDeliver?.data?.status === "success") {
-            success_toaster("Order Delivered successfully");
-            props?.reFetch();
-          } else {
-            throw new Error(
-              resDeliver?.data?.message || "Failed to deliver order."
-            );
-          }
+        if (resDeliver?.data?.status === "success") {
+          success_toaster("Order Delivered successfully");
+          props?.reFetch();
+        } else {
+          throw new Error(resDeliver?.data?.message || "Failed to deliver order.");
         }
       } catch (error) {
         setLoader("");
@@ -160,7 +160,7 @@ export default function OrderCard(props) {
       }
     }
   };
-
+  
   const columns = [
     { field: "#", header: "#", sort: true, minWidth: "1rem" },
     { field: "product", header: "Product", minWidth: "12rem" },
@@ -568,6 +568,8 @@ export default function OrderCard(props) {
           <div className="font-nunito font-bold text-2xl ">
             {props?.orderData?.statusId === 1
               ? "Assign Supplier"
+              : isTruckCompany
+              ? "Confirm Truck Shipment"
               : "Ship Order"}
           </div>
           // <div className="font-nunito font-bold text-2xl ">
@@ -608,48 +610,73 @@ export default function OrderCard(props) {
                 </div>
               )
             ) : (
-              <div className="space-y-2">
-                <div className="flex flex-col gap-y-2">
-                  <label className="text-labelColor font-medium font-satoshi">
-                    Company Name
-                  </label>
-                  {/* <input
-                  type="text"
-                  name="shippingCompany"
-                  value={dispatchOrderData}
-                  onChange={handleChange}
-                  placeholder="Enter Description"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                /> */}
-                  <Select
-                    placeholder="Select dispatch order company"
-                    className="w-full"
-                    defaultValue={{ value: "fedex", label: "FedEx" }}
-                    styles={selectStyles2}
-                    options={[{ value: "fedex", label: "FedEx" }]}
-                    onChange={(e) => {
-                      setDispatchOrderData({
-                        ...dispatchOrderData,
-                        shippingCompany: e.value,
-                      });
-                    }}
-                  />
-                </div>
-                <div className="flex flex-col gap-y-2">
-                  <label className="text-labelColor font-medium font-satoshi">
-                    Tracking Number
-                  </label>
-                  <input
-                    type="text"
-                    name="trackingNumber"
-                    value={dispatchOrderData?.trackingNumber}
-                    onChange={handleChange}
-                    placeholder="Enter Tracking number"
-                    className="border border-borderColor text-labelColor placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                  />
-                </div>
-              </div>
-            )}
+                isTruckCompany ? (
+                  // Truck confirmation view (no fields required)
+                  <div className="space-y-3">
+                    <p className="text-labelColor font-nunito font-medium text-lg">
+                      Ship this order by <span className="font-semibold">Truck</span>?
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      No tracking number is required for truck shipments.
+                    </p>
+                    <div className="text-sm text-gray-700">
+                      <div>
+                        <span className="font-medium">Shipping Company:</span>{" "}
+                        <span>{props?.orderData?.shippingCompany || "Shipping By Truck"}</span>
+                      </div>
+                      {props?.orderData?.totalWeight ? (
+                        <div>
+                          <span className="font-medium">Total Weight:</span>{" "}
+                          <span>{props?.orderData?.totalWeight} lbs</span>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                ) : (
+                  // ✉️ Non-truck flow: show existing FedEx form
+                  <div className="space-y-2">
+                    <div className="flex flex-col gap-y-2">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Company Name
+                      </label>
+                      {/* <input
+                      type="text"
+                      name="shippingCompany"
+                      value={dispatchOrderData}
+                      onChange={handleChange}
+                      placeholder="Enter Description"
+                      className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      /> */}
+                      <Select
+                        placeholder="Select dispatch order company"
+                        className="w-full"
+                        defaultValue={{ value: "fedex", label: "FedEx" }}
+                        styles={selectStyles2}
+                        options={[{ value: "fedex", label: "FedEx" }]}
+                        onChange={(e) => {
+                          setDispatchOrderData({
+                            ...dispatchOrderData,
+                            shippingCompany: e.value,
+                          });
+                        }}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-y-2">
+                      <label className="text-labelColor font-medium font-satoshi">
+                        Tracking Number
+                      </label>
+                      <input
+                        type="text"
+                        name="trackingNumber"
+                        value={dispatchOrderData?.trackingNumber}
+                        onChange={handleChange}
+                        placeholder="Enter Tracking number"
+                        className="border border-borderColor text-labelColor placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      />
+                    </div>
+                  </div>
+                )
+              )}
             <div className="text-end">
               <button
                 type="submit"
@@ -661,6 +688,8 @@ export default function OrderCard(props) {
                   : props?.orderData?.statusId === 1 &&
                     suppliersData?.data?.data?.length > 0
                   ? "Assign Supplier"
+                  : isTruckCompany
+                  ? "Confirm Ship"
                   : "Ship Order"}
                 {/* {props?.orderData?.statusId === 1 &&
                 suppliersData?.data?.data?.length === 0

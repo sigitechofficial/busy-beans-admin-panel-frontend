@@ -24,6 +24,9 @@ import { hasPermission } from "@/utilities/Permission";
 
 export default function Employee() {
   const { data, reFetch } = GetAPI("api/v1/admin/employees", "employees");
+  if (typeof window !== "undefined") {
+    var userType = localStorage.getItem("userType");
+  }
 
   const [modal, setModal] = useState("");
   const [formData, setFormData] = useState({
@@ -38,7 +41,9 @@ export default function Employee() {
   const [loader, setLoader] = useState("");
   const [visible, setVisible] = useState(false);
   const [changePasswordStatus, setChangePasswordStatus] = useState(false);
-  const allFeatures = [ "dashboard", "orders", "supplier", "invoice", "customer", "selected-customer",  "local-partner", "product", "category", "employees", "country", "charges", "payment-pullout", "report" ];
+  const ADMIN_FEATURES = [ "dashboard", "orders", "supplier", "invoice", "customer", "selected-customer",  "local-partner", "product", "category", "employees", "country", "charges", "payment-pullout", "report" ];
+  const SALES_REP_FEATURES = [ "dashboard", "quotation", "customer", "orders", "invoice", "payment-pullout", "employees", "account", "wallet", "report" ];
+  const allFeatures =  userType === "salesRepresentative" ? SALES_REP_FEATURES : ADMIN_FEATURES;
 
   const handleModalClose = () => {
     setModal("");
@@ -203,6 +208,9 @@ export default function Employee() {
         });
 
         const mappedFeatures = Object.values(featuresMap);
+        const filteredMapped = mappedFeatures.filter((f) =>
+          allFeatures.includes(f.feature)
+        );
         setFormData({
           name: emp?.name || "",
           email: emp?.email || "",
@@ -210,9 +218,11 @@ export default function Employee() {
           phoneNumber: emp?.phoneNumber || "",
           countryCode: emp?.countryCode || "",
           features:
-            mappedFeatures.length
-              ? mappedFeatures
-              : Array.isArray(emp?.features) ? emp.features : [],
+            filteredMapped.length
+              ? filteredMapped
+              : (Array.isArray(emp?.features)
+                ? emp.features.filter((f) => allFeatures.includes(f.feature))
+                : []),
         });
         setVisible(false);
         setChangePasswordStatus(false);

@@ -1011,7 +1011,7 @@ export default function Leftbar(props) {
       ) : userType === "salesRepresentative" ? (
         <ul className="flex flex-col space-y-1 pt-2 overflow-auto h-[90%]">
           {hasPermission("dashboard_view") && <ListHead title="Dashboard" to="/" Icon={MdDashboard} />}
-
+          {hasPermission("quotation_view") &&
           <ListHead
             title="Quotation Management"
             active={pathname === "/sales-representative/quotation"}
@@ -1028,7 +1028,7 @@ export default function Leftbar(props) {
                 active?.inventoryManagement?.status
               )
             }
-          />
+          />}
 
           {active?.inventoryManagement?.tab === "inventoryManagement" &&
             active?.inventoryManagement?.status && (
@@ -1235,7 +1235,7 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
-
+          {hasPermission("account_view") &&
           <ListHead
             title="Account Management"
             Icon={AiOutlineUnorderedList}
@@ -1252,7 +1252,7 @@ export default function Leftbar(props) {
                 active?.accountManagement?.status
               )
             }
-          />
+          />}
 
           {active?.accountManagement?.tab === "accountManagement" &&
             active?.accountManagement?.status && (
@@ -1274,7 +1274,7 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
-
+          {hasPermission("wallet_view") &&
           <ListHead
             title="Wallet Management"
             Icon={AiOutlineUnorderedList}
@@ -1289,7 +1289,7 @@ export default function Leftbar(props) {
             // onClick={() =>
             //   handleActive("walletManagement", active?.orderManagement?.status)
             // }
-          />
+          />}
           {hasPermission("report_view") && (
           <ListHead
             title="Report Management"

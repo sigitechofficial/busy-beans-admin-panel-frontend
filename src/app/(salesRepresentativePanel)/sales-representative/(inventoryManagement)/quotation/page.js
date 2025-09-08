@@ -6,6 +6,7 @@ import GetAPI from "@/utilities/GetAPI";
 import DrawerBeans from "@/components/ui/DrawerBeans";
 import Select from "react-select";
 import selectStyles, { selectStyles2 } from "@/utilities/SelectStyle";
+import { hasPermission } from "@/utilities/Permission";
 import { success_toaster } from "@/utilities/Toaster";
 
 export default function SalesRepresentativeInventory() {
@@ -149,6 +150,7 @@ export default function SalesRepresentativeInventory() {
             ))}
           </div>
           <div className="fixed bottom-4 right-3">
+            {(hasPermission("quotation_create") || hasPermission("quotation_update")) &&
             <button
               onClick={() => setVisibleRight(true)}
               className="rounded-lg font-inter font-medium text-white px-2 sm:px-3 py-2.5 sm:py-4 bg-theme"
@@ -157,7 +159,7 @@ export default function SalesRepresentativeInventory() {
               <div className="absolute -right-3 -top-3 bg-black size-7 rounded-full text-lg">
                 {quotationData?.length}
               </div>
-            </button>
+            </button>}
           </div>
           <DrawerBeans
             drawerOpen={visibleRight}

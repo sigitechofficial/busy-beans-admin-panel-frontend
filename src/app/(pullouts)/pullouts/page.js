@@ -49,6 +49,12 @@ export default function Pullouts() {
       header: "Overdue Invoice",
       sort: true,
     });
+  } else {
+    columns.splice(6, 0, {
+      field: "pulloutTransferId",
+      header: "Pullout Transfer Id",
+      sort: false,
+    });
   }
 
   const safeFormatDate = (v) => {
@@ -88,6 +94,7 @@ export default function Pullouts() {
         adminReceivableAmount: formatMoney(adminReceivableRaw),
         adminReceivableRaw, 
         ...(isPendingPullout ? { overDueInvoice: overdueFlag } : {}),
+        ...(!isPendingPullout ? { pulloutTransferId: detail?.pulloutIntentId ?? "" } : {}),
         paymentStatus: detail?.paymentStatus === "done" ? "Paid" : "Unpaid",
         invoiceDate: safeFormatDate(detail?.invoiceDate),
         orderCurrentStatus: detail?.orderCurrentStatus,

@@ -24,6 +24,7 @@ function CustomerDetails() {
   if (typeof window !== "undefined") {
     var userType = localStorage.getItem("userType");
     var salesRepId = localStorage.getItem("userID");
+    var isEmployee = localStorage.getItem("isEmployee") ? true : false;
   }
   const { data: salesRepresentativeData } = GetAPI("api/v1/admin/sales-rep");
   const { data, reFetch } = GetAPI(
@@ -419,8 +420,7 @@ function CustomerDetails() {
           </li>
         </ul> */}
           <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative text-blue-500">
-            {(userType === "admin" || userType === "salesRepresentative") &&
-              hasPermission("customer_update") && (
+            {(userType === "admin" && !isEmployee) &&
                 <li
                   onClick={() =>
                     setUserData({ ...userData, modal: true, type: "employee" })
@@ -428,9 +428,9 @@ function CustomerDetails() {
                 >
                   Assign Employee
                 </li>
-              )}
+            }
 
-            {userType === "admin" && hasPermission("customer_update") && (
+            {(userType === "admin" && !isEmployee) &&(
               <li
                 onClick={() =>
                   setUserData({ ...userData, modal: true, type: "localPartner" })
@@ -529,48 +529,31 @@ function CustomerDetails() {
               </div>
               <div className="flex items-center h-12 border-b [&>span]:w-44">
                 <span className="text-gray-500 font-medium">Local Partner</span>
-                <div
-                  onClick={() => {
-                    if (
-                      userType === "admin" && hasPermission("customer_update") &&
-                      data?.data?.customer?.salesRepId
-                    ) {
-                      router.push(
-                        `/sale-representative/details/${data?.data?.customer?.salesRepId}`
-                      );
-                    } else if (hasPermission("customer_update")) {
-                      setUserData({
-                        ...userData,
-                        type: "localPartner",
-                        modal: true,
-                      });
-                    }
-                  }}
-                  // className={` ${
-                  //   userType === "admin" && "text-blue-500"
-                  // } cursor-pointer`}
-                  className={`${userType === "admin" && hasPermission("customer_update") ? "text-blue-500" : ""} cursor-pointer`}
-                >
-                  {data?.data?.customer?.salesRepName ?? "Not Assigned"}
-                </div>
+                  <div
+                    onClick={() => {
+                      if (userType === "admin" && !isEmployee) {
+                        if (data?.data?.customer?.salesRepId) {
+                          router.push(`/sale-representative/details/${data?.data?.customer?.salesRepId}`);
+                        } else {
+                          setUserData({ ...userData, type: "localPartner", modal: true });
+                        }
+                      }
+                    }}
+                    className={`${userType === "admin" && !isEmployee ? "text-blue-500 cursor-pointer" : "cursor-default text-gray-600"}`}
+                  >
+                    {data?.data?.customer?.salesRepName ?? "Not Assigned"}
+                  </div>
               </div>
 
                 <div className="flex items-center h-12 border-b [&>span]:w-44">
                   <span className="text-gray-500 font-medium">Employee</span>
                   <div
                     onClick={() => {
-                      if (hasPermission("customer_update")) {
-                        setUserData({
-                          ...userData,
-                          type: "employee",
-                          modal: true,
-                        });
+                      if (userType === "admin" && !isEmployee) {
+                        setUserData({ ...userData, type: "employee", modal: true });
                       }
                     }}
-                    className={`${userType === "admin" && hasPermission("customer_update")
-                        ? "text-blue-500 cursor-pointer"
-                        : "cursor-default text-gray-600"
-                      }`}
+                    className={`${userType === "admin" && !isEmployee? "text-blue-500 cursor-pointer" : "cursor-default text-gray-600"}`}
                   >
                     {data?.data?.customer?.employee ?? "Not Assigned"}
                   </div>

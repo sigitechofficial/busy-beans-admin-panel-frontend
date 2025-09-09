@@ -44,7 +44,7 @@ export default function Pullouts() {
   ];
 
   if (isPendingPullout) {
-    columns.splice(6, 0, {
+    columns.splice(1, 0, {
       field: "overDueInvoice",
       header: "Overdue Invoice",
       sort: true,
@@ -93,7 +93,12 @@ export default function Pullouts() {
         localPartnerCommission: formatMoney(partnerCommission),
         adminReceivableAmount: formatMoney(adminReceivableRaw),
         adminReceivableRaw, 
-        ...(isPendingPullout ? { overDueInvoice: overdueFlag } : {}),
+        // ...(isPendingPullout ? { overDueInvoice: overdueFlag } : {}),
+        ...(isPendingPullout ? {
+          overDueInvoice: overdueFlag === "Yes"
+            ? <span style={{ color: "red", fontWeight: "bold" }}>Yes</span>
+            : "No"
+        } : {}),
         ...(!isPendingPullout ? { pulloutTransferId: detail?.pulloutIntentId ?? "" } : {}),
         paymentStatus: detail?.paymentStatus === "done" ? "Paid" : "Unpaid",
         invoiceDate: safeFormatDate(detail?.invoiceDate),

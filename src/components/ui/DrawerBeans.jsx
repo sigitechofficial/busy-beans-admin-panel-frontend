@@ -82,7 +82,7 @@ const DrawerBeans = ({
   const { data } = GetAPI(
     userType === "admin"
       ? `api/v1/admin/customer-management/customer-list/all`
-      : `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}`,
+      : `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}&orderCreation=yes`,
     "customer"
   );
 

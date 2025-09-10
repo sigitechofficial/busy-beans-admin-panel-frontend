@@ -476,11 +476,11 @@ export default function Home() {
     //   }
     // };
 
-    if (userType === "salesRepresentative") {
+    if (userType === "salesRepresentative" && !isEmployee) {
       stripeAccountStatus();
       handleFinancialConnection();
     }
-  }, [userType, userID]);
+  }, [userType, userID, isEmployee]);
 
   return data?.length === 0 ? (
     <Loader />

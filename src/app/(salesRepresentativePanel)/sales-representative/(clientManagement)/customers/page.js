@@ -20,7 +20,7 @@ export default function SalesRepresentativeCustomers() {
 
   const router = useRouter();
   const { data, reFetch } = GetAPI(
-    `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID} `
+    `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}&orderCreation=yes`
   );
 
   const handleStatus = async (id, status) => {

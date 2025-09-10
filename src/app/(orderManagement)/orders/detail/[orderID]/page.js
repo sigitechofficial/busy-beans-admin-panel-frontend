@@ -788,6 +788,12 @@ export default function OrderDetail() {
                       <p>{data?.data?.order?.invoiceNumber}</p>
                     </div>
                   )}
+                  {data?.data?.order?.pulloutIntentId && (
+                    <div className="flex items-center gap-2 border-b">
+                      <p className="w-29">Pullout Transfer ID</p>
+                      <p>{data?.data?.order?.pulloutIntentId}</p>
+                    </div>
+                  )}
                   {data?.data?.order?.shippingCompany && (
                     <div className="flex items-center gap-2 border-b">
                       <p className="w-29">Shipping Company</p>

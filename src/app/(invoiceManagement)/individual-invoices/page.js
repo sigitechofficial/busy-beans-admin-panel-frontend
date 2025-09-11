@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import dayjs from "dayjs";
 import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
+import { INDIVIDUAL_INVOICES } from "../invoice.testid"
 
 export default function IndividualInvoices() {
   if (typeof window !== "undefined") {
@@ -49,8 +50,9 @@ export default function IndividualInvoices() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div className="w-full">
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+    <div className="w-full" data-testid={INDIVIDUAL_INVOICES.root}>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={INDIVIDUAL_INVOICES.headerBar}>
         <div className="flex items-center gap-2">
           <p
             onClick={() => setToggle(!toggle)}
@@ -58,17 +60,17 @@ export default function IndividualInvoices() {
           >
             <CiMenuBurger size={20} />
           </p>
-          <h2 className="text-xl font-inter font-semibold">Invoices</h2>
+          <h2 className="text-xl font-inter font-semibold" data-testid={INDIVIDUAL_INVOICES.title}>Invoices</h2>
         </div>
       </div>
 
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-          <ManagementTab title="Total Orders" desc={resultedOrders?.length} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5" data-testid={INDIVIDUAL_INVOICES.statsGrid}>
+          <ManagementTab title="Total Orders" desc={resultedOrders?.length} data-testid={INDIVIDUAL_INVOICES.totalInvoicesCard}/>
         </div>
 
-        <div>
+        <div data-testid={INDIVIDUAL_INVOICES.tableWrapper}>
           <MyDataTable
             columns={columns}
             data={datas}
@@ -78,6 +80,8 @@ export default function IndividualInvoices() {
               router.push(`/orders/detail/${e.data.id}`);
             }}
             search={true}
+            data-testid={INDIVIDUAL_INVOICES.table}
+            rowTestId={(row) => `data-testid-${INDIVIDUAL_INVOICES.row(row.id)}`}
           />
         </div>
       </div>

@@ -10,6 +10,7 @@ import { DeleteAPI } from "@/utilities/DeleteAPI";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import { success_toaster } from "@/utilities/Toaster";
 import { hasPermission } from "@/utilities/Permission";
+import { DETAIL_SUPPLIER } from "../../supplier.testid";
 
 export default function LocalPartnerSupplierDetails() {
   if (typeof window !== "undefined") {
@@ -43,9 +44,10 @@ export default function LocalPartnerSupplierDetails() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div className="w-full">
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
-        <h2 className="text-xl font-inter font-semibold flex items-center gap-2">
+    <div className="w-full" data-testid={DETAIL_SUPPLIER.root}>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={DETAIL_SUPPLIER.headerBar}>
+        <h2 className="text-xl font-inter font-semibold flex items-center gap-2" data-testid={DETAIL_SUPPLIER.title}>
           <div className="text-base">
             <BackButton />
           </div>
@@ -66,6 +68,7 @@ export default function LocalPartnerSupplierDetails() {
             onClick={() => {
               router.push(`/suppliers/edit/${userId}`);
             }}
+            data-testid={DETAIL_SUPPLIER.editButton}
           >
             Edit
           </li> )}
@@ -73,37 +76,37 @@ export default function LocalPartnerSupplierDetails() {
             <li>Reset Password</li>
             <li>Export</li> */}          
             {hasPermission("supplier_delete") && (
-            <li onClick={() => setIsDeleteOpen(true)}>Delete Account</li> )}
+            <li onClick={() => setIsDeleteOpen(true)} data-testid={DETAIL_SUPPLIER.deleteButton}>Delete Account</li> )}
         </ul>
       </div>
 
       <div className="w-full pt-28 2xl:pt-32 px-6 2xl:px-12 ">
         <div className="max-w-6xl mx-auto space-y-6 py-8 px-8 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div>
+            <div data-testid={DETAIL_SUPPLIER.contactSection}>
               <div className="flex items-center h-12 border-b [&>span]:w-44">
                 <span className="text-gray-500 font-medium">Contact</span>
-                <div className="font-semibold">
+                <div className="font-semibold" data-testid={DETAIL_SUPPLIER.supplierName}>
                   {data?.data?.data?.supplierName}
                 </div>
               </div>
-              <div className="flex items-center h-12 border-b [&>span]:w-44">
+              <div className="flex items-center h-12 border-b [&>span]:w-44" data-testid={DETAIL_SUPPLIER.supplierEmail}>
                 <span className="text-gray-500 font-medium">Email</span>
                 <div className="text-blue-600">{data?.data?.data?.email}</div>
               </div>
-              <div className="flex items-center h-12 border-b [&>span]:w-44">
+              <div className="flex items-center h-12 border-b [&>span]:w-44" data-testid={DETAIL_SUPPLIER.supplierCreatedAt}>
                 <span className="text-gray-500 font-medium">Created At</span>
                 <div>
                   {dayjs(data?.data?.data?.createdAt).format("MM/DD/YYYY")}
                 </div>
               </div>
 
-              <div className="gap-3 flex items-center h-12 border-b [&>span]:w-44">
+              <div className="gap-3 flex items-center h-12 border-b [&>span]:w-44" data-testid={DETAIL_SUPPLIER.supplierRegisteredBy}>
                 <span className="text-gray-500 font-medium">Registered By</span>
                 <div>{data?.data?.data?.registerBy}</div>
               </div>
 
-              <div className="flex items-center h-12 border-b [&>span]:w-44">
+              <div className="flex items-center h-12 border-b [&>span]:w-44" data-testid={DETAIL_SUPPLIER.supplierPhone}>
                 <span className="text-gray-500 font-medium">Phone</span>
                 <div>
                   {data?.data?.data?.countryCode +
@@ -111,11 +114,11 @@ export default function LocalPartnerSupplierDetails() {
                     data?.data?.data?.phoneNum}
                 </div>
               </div>
-              <div className="flex items-center h-12 border-b [&>span]:w-44">
+              <div className="flex items-center h-12 border-b [&>span]:w-44" data-testid={DETAIL_SUPPLIER.supplierBankAccount}>
                 <span className="text-gray-500 font-medium">Bank Account</span>
                 <div>{data?.data?.data?.bankAccount}</div>
               </div>
-              <div className="flex items-center h-12 border-b [&>span]:w-44">
+              <div className="flex items-center h-12 border-b [&>span]:w-44" data-testid={DETAIL_SUPPLIER.supplierType}>
                 <span className="text-gray-500 font-medium">Supplier Type</span>
                 <div className="font-semibold">
                   {data?.data?.data?.supplierType}
@@ -124,7 +127,7 @@ export default function LocalPartnerSupplierDetails() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
+              <div data-testid={DETAIL_SUPPLIER.addressSection}>
                 <h3 className="text-sm font-bold text-gray-700 mb-1">
                   Address
                 </h3>
@@ -132,19 +135,19 @@ export default function LocalPartnerSupplierDetails() {
                   <div className="text-sm text-gray-700 space-y-1 uppercase">
                     {/* Company Name (if present) */}
                     {data?.data?.data?.companyaddress?.trim() && (
-                      <div>
+                      <div data-testid={DETAIL_SUPPLIER.companyAddress}>
                         {data?.data?.data?.addresses?.[0].companyaddress}
                       </div>
                     )}
 
                     {/* Address Line One */}
                     {data?.data?.data?.addressOne?.trim() && (
-                      <div>{data?.data?.data?.addressOne}</div>
+                      <div data-testid={DETAIL_SUPPLIER.addressLineOne}>{data?.data?.data?.addressOne}</div>
                     )}
 
                     {/* Address Line Two (optional) */}
                     {data?.data?.data?.addressTwo?.trim() && (
-                      <div>{data?.data?.data?.addressTwo}</div>
+                      <div data-testid={DETAIL_SUPPLIER.addressLineTwo}>{data?.data?.data?.addressTwo}</div>
                     )}
 
                     {/* Town, State, ZIP */}
@@ -165,7 +168,7 @@ export default function LocalPartnerSupplierDetails() {
 
                     {/* Country */}
                     {data?.data?.data?.country?.trim() && (
-                      <div>{data?.data?.data?.country}</div>
+                      <div data-testid={DETAIL_SUPPLIER.country}>{data?.data?.data?.country}</div>
                     )}
                   </div>
                 ) : (
@@ -256,6 +259,7 @@ export default function LocalPartnerSupplierDetails() {
           <div
             className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40"
             onClick={() => (loader ? null : setIsDeleteOpen(false))}
+            data-testid={DETAIL_SUPPLIER.deleteModal}
           >
             <div
               className="w-[90%] max-w-md rounded-md bg-white p-6 shadow-xl"
@@ -267,7 +271,7 @@ export default function LocalPartnerSupplierDetails() {
               <h3 id="delete-title" className="text-lg font-semibold">
                 Delete Supplier Account
               </h3>
-              <p className="mt-2 text-sm text-gray-600">
+              <p className="mt-2 text-sm text-gray-600" data-testid={DETAIL_SUPPLIER.deleteModalMessage}>
                 Are you sure you want to delete{" "}
                 <span className="font-medium">{data?.data?.data?.supplierName}</span>?
               </p>
@@ -277,6 +281,7 @@ export default function LocalPartnerSupplierDetails() {
                   type="button"
                   className="px-4 py-2 rounded border"
                   onClick={() => setIsDeleteOpen(false)}
+                  data-testid={DETAIL_SUPPLIER.deleteModalCancelButton}
                   disabled={loader === "delete"}
                 >
                   Cancel
@@ -287,6 +292,7 @@ export default function LocalPartnerSupplierDetails() {
                     }`}
                   onClick={handleDelete}
                   disabled={loader === "delete"}
+                  data-testid={DETAIL_SUPPLIER.deleteModalConfirmButton}
                 >
                   {loader === "delete" ? "Deleting..." : "Delete"}
                 </button>

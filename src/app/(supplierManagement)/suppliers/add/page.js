@@ -14,6 +14,7 @@ import PhoneInput from "react-phone-input-2";
 import GetAPI from "@/utilities/GetAPI";
 import axios from "axios";
 import { BASE_URL } from "@/utilities/URL";
+import { ADD_NEW_SUPPLIER } from "../supplier.testid";
 
 export default function AddNewSupplier() {
   const [supplier, setSupplier] = useState({
@@ -237,11 +238,12 @@ export default function AddNewSupplier() {
   };
 
   return (
-    <div>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
+    <div data-testid={ADD_NEW_SUPPLIER.root}>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={ADD_NEW_SUPPLIER.headerBar}>
         <div className="flex items-center gap-x-2">
           <BackButton />
-          <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+          <h2 className="text-xl lg:text-2xl font-inter font-semibold" data-testid={ADD_NEW_SUPPLIER.title}>
             Add New Supplier
           </h2>
         </div>
@@ -272,17 +274,20 @@ export default function AddNewSupplier() {
                   type="button"
                   onClick={handleSelectImage}
                   className="rounded-xl border border-tabBorderColor border-opacity-40 size-20 flex items-center justify-center"
+                  data-testid={ADD_NEW_SUPPLIER.imageUploadButton}
                 >
                   <input
                     type="file"
                     className="hidden selectImage"
                     onChange={handleImage}
+                     data-testid={ADD_NEW_SUPPLIER.imageUploadButton}
                   />
                   {imagePreview ? (
                     <img
                       src={imagePreview}
                       alt="supplier-image"
                       className="object-cover object-center"
+                      data-testid={ADD_NEW_SUPPLIER.imagePreview}
                     />
                   ) : (
                     <LuImageUp size={"60"} color="rgba(0, 0, 0, 0.6)" />
@@ -299,6 +304,7 @@ export default function AddNewSupplier() {
                     placeholder="Enter Supplier Name"
                     className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
+                    data-testid={ADD_NEW_SUPPLIER.supplierNameField}
                   />
                 </div>
                 <div className="flex flex-col gap-y-2">
@@ -312,6 +318,7 @@ export default function AddNewSupplier() {
                     placeholder="Enter Business name"
                     className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
+                    data-testid={ADD_NEW_SUPPLIER.businessWebField}
                   />
                 </div>
                 <div className="flex flex-col gap-y-2 w-full">
@@ -326,6 +333,7 @@ export default function AddNewSupplier() {
                     }
                     className="w-full text-black"
                     styles={selectStyles2}
+                    data-testid={ADD_NEW_SUPPLIER.supplierTypeSelect}
                   />
                 </div>
                 <div className="flex flex-col gap-y-2 w-full">
@@ -343,6 +351,7 @@ export default function AddNewSupplier() {
                     }
                     className="w-full"
                     styles={selectStyles2}
+                    data-testid={ADD_NEW_SUPPLIER.statusSelect}
                   />
                 </div>
                 <div className="flex flex-col gap-y-2">
@@ -356,6 +365,7 @@ export default function AddNewSupplier() {
                     placeholder="Select registration date"
                     className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
+                    data-testid={ADD_NEW_SUPPLIER.registerDateField}
                   />
                 </div>
               </div>
@@ -391,6 +401,7 @@ export default function AddNewSupplier() {
                           });
                           handleSelectedCountryStates(e.label);
                         }}
+                        data-testid={ADD_NEW_SUPPLIER.countrySelect}
                       />
                     </div>
                     <div className="flex flex-col gap-y-2 w-full">
@@ -418,6 +429,7 @@ export default function AddNewSupplier() {
                           });
                           handleSelectedCountryStatesCities(e.value);
                         }}
+                        data-testid={ADD_NEW_SUPPLIER.stateSelect}
                       />
                     </div>
                   </div>
@@ -447,6 +459,7 @@ export default function AddNewSupplier() {
                                 city: e.label,
                               });
                             }}
+                            data-testid={ADD_NEW_SUPPLIER.citySelect}
                           />
                           <button
                             type="button"
@@ -503,6 +516,7 @@ export default function AddNewSupplier() {
                         placeholder="Enter Zip code"
                         className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                         onChange={handleChange}
+                        data-testid={ADD_NEW_SUPPLIER.zipCodeField}
                       />
                     </div>
                   </div>
@@ -517,6 +531,7 @@ export default function AddNewSupplier() {
                       placeholder="Enter Address 1"
                       className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       onChange={handleChange}
+                      data-testid={ADD_NEW_SUPPLIER.addressOneField}
                     />
                   </div>
                   <div className="flex flex-col gap-y-2">
@@ -530,6 +545,7 @@ export default function AddNewSupplier() {
                       placeholder="Enter Address 2"
                       className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       onChange={handleChange}
+                      data-testid={ADD_NEW_SUPPLIER.addressTwoField}
                     />
                   </div>
                   <div className="flex flex-col gap-y-2">
@@ -577,6 +593,7 @@ export default function AddNewSupplier() {
                         placeholder="Enter Phone Number"
                         className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5  w-full col-span-8"
                         onChange={handleChange}
+                        data-testid={ADD_NEW_SUPPLIER.phoneNumField}
                       />
                     </div>
                   </div>
@@ -598,6 +615,7 @@ export default function AddNewSupplier() {
                       placeholder="Enter Valid IBAN Number"
                       className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       onChange={handleChange}
+                      data-testid={ADD_NEW_SUPPLIER.bankAccountField}
                     />
                   </div>
                   <div className="flex flex-col gap-y-2">
@@ -612,6 +630,7 @@ export default function AddNewSupplier() {
                       placeholder="Enter Email"
                       className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       onChange={handleChange}
+                      data-testid={ADD_NEW_SUPPLIER.emailField}
                     />
                     <div
                       className={`text-red-600 space-y-1 pb-1 ${
@@ -637,6 +656,7 @@ export default function AddNewSupplier() {
                       placeholder="Enter password"
                       className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none ps-2.5 pe-12 py-3"
                       onChange={handleChange}
+                      data-testid={ADD_NEW_SUPPLIER.passwordField}
                     />
                     <button
                       onClick={() => setVisible(!visible)}
@@ -657,6 +677,7 @@ export default function AddNewSupplier() {
               <button
                 type="submit"
                 className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
+                data-testid={ADD_NEW_SUPPLIER.submitButton}
               >
                 Add Supplier
               </button>

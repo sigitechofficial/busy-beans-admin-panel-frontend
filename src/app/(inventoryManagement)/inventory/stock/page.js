@@ -27,6 +27,7 @@ import ErrorHandler from "@/utilities/ErrorHandler";
 import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
 import { hasPermission } from "@/utilities/Permission";
+import { INVENTORY_MANAGEMENT } from "../stock.testid";
 
 export default function Stock() {
   const [filterId, setFilterId] = useState("");
@@ -406,6 +407,7 @@ export default function Stock() {
   const datas = [];
   data?.data?.data?.map((prod, i) => {
     return datas.push({
+      id: prod?.id,
       sl: i + 1,
       name: prod?.name,
       quantity: prod?.quantity,
@@ -494,8 +496,9 @@ export default function Stock() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div>
-      <div className="w-full md:w=[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+    <div data-testid={INVENTORY_MANAGEMENT.root}>
+      <div className="w-full md:w=[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={INVENTORY_MANAGEMENT.headerBar}>
         <div className="flex items-center gap-2">
           <p
             onClick={() => setToggle(!toggle)}
@@ -503,7 +506,7 @@ export default function Stock() {
           >
             <CiMenuBurger size={20} />
           </p>
-          <h2 className="text-xl font-inter font-semibold">
+          <h2 className="text-xl font-inter font-semibold" data-testid={INVENTORY_MANAGEMENT.title}>
             Inventory Management
           </h2>
         </div>
@@ -515,11 +518,12 @@ export default function Stock() {
               setSupplierSkus({});
               setModal("add");
             }}
+            data-testid={INVENTORY_MANAGEMENT.addProductBtn}
           >
             New Product
           </li> )}
-          <li>Import</li>
-          <li>Export</li>
+          <li data-testid={INVENTORY_MANAGEMENT.importProductBtn}>Import</li>
+          <li data-testid={INVENTORY_MANAGEMENT.exportProductBtn}>Export</li>
         </ul>
       </div>
       <div className="space-y-8 pt-32 px-6 2xl:px-12 ">

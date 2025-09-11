@@ -19,6 +19,7 @@ export default function StockCard(props) {
     weight,
     wholesalePrice,
     qty,
+    ...rest
   } = props;
   const [itemQuantity, setItemQuantity] = useState(qty);
 
@@ -27,7 +28,7 @@ export default function StockCard(props) {
   }, [qty]);
 
   return (
-    <div className="flex flex-col justify-between rounded-xl border border-tabBorderColor border-opacity-60 shadow-tabShadow bg-white ">
+    <div {...rest} className="flex flex-col justify-between rounded-xl border border-tabBorderColor border-opacity-60 shadow-tabShadow bg-white ">
       <div className="border-b border-tabBorderColor border-opacity-20 py-4">
         <div className="h-28">
           <img

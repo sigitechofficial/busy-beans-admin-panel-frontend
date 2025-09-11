@@ -16,6 +16,7 @@ import { BASE_URL } from "@/utilities/URL";
 import PhoneInput from "react-phone-input-2";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import Loader from "@/components/ui/Loader";
+import { EDIT_SUPPLIER } from "../../supplier.testid";
 
 export default function EditSupplier() {
   const { supplierID } = useParams();
@@ -220,10 +221,11 @@ export default function EditSupplier() {
     <Loader />
   ) : (
     <form onSubmit={handleSubmit} className="">
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+        data-testid={EDIT_SUPPLIER.headerBar}>
         <div className="flex items-center gap-x-2">
           <BackButton />
-          <h2 className="text-xl font-inter font-semibold">
+          <h2 className="text-xl font-inter font-semibold" data-testid={EDIT_SUPPLIER.title}>
             Update Supplier
           </h2>
         </div>
@@ -241,11 +243,13 @@ export default function EditSupplier() {
                 type="button"
                 onClick={handleSelectImage}
                 className="rounded-xl border border-tabBorderColor border-opacity-40 size-20 flex items-center justify-center"
+                data-testid={EDIT_SUPPLIER.imageUploadButton}
               >
                 <input
                   type="file"
                   className="hidden selectImage"
                   onChange={handleImage}
+                  data-testid={EDIT_SUPPLIER.imageUploadButton}
                 />
                 {imagePreview ? (
                   <img
@@ -256,6 +260,7 @@ export default function EditSupplier() {
                     }
                     alt="supplier-image"
                     className="object-cover object-center"
+                    data-testid={EDIT_SUPPLIER.imagePreview}
                   />
                 ) : (
                   <LuImageUp size={"60"} color="rgba(0, 0, 0, 0.6)" />
@@ -272,6 +277,7 @@ export default function EditSupplier() {
                   placeholder="Enter Supplier Name"
                   className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
+                  data-testid={EDIT_SUPPLIER.supplierNameField}
                 />
               </div>
               <div className="flex flex-col gap-y-2">
@@ -285,6 +291,7 @@ export default function EditSupplier() {
                   placeholder="Enter Business name"
                   className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
+                  data-testid={EDIT_SUPPLIER.businessWebField}
                 />
               </div>
               <div className="flex flex-col gap-y-2 w-full">
@@ -304,6 +311,7 @@ export default function EditSupplier() {
                   }
                   className="w-full"
                   styles={selectStyles2}
+                  data-testid={EDIT_SUPPLIER.supplierTypeSelect}
                 />
               </div>
               <div className="flex flex-col gap-y-2 w-full">
@@ -326,6 +334,7 @@ export default function EditSupplier() {
                   }
                   className="w-full"
                   styles={selectStyles2}
+                  data-testid={EDIT_SUPPLIER.statusSelect}
                 />
               </div>
               <div className="flex flex-col gap-y-2">
@@ -339,6 +348,7 @@ export default function EditSupplier() {
                   placeholder="Select registration date"
                   className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
+                  data-testid={EDIT_SUPPLIER.registerDateField}
                 />
               </div>
             </div>
@@ -359,6 +369,7 @@ export default function EditSupplier() {
                       placeholder="Enter Country Name"
                       className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       onChange={handleChange}
+                      data-testid={EDIT_SUPPLIER.countrySelect}
                     />
                   </div>
                   <div className="flex flex-col gap-y-2 w-full">
@@ -372,6 +383,7 @@ export default function EditSupplier() {
                       placeholder="Enter State Name"
                       className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       onChange={handleChange}
+                      data-testid={EDIT_SUPPLIER.stateSelect}
                     />
                   </div>
                 </div>
@@ -387,6 +399,7 @@ export default function EditSupplier() {
                       placeholder="Enter City Name"
                       className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       onChange={handleChange}
+                      data-testid={EDIT_SUPPLIER.citySelect}
                     />
                   </div>
                   <div className="flex flex-col gap-y-2">
@@ -400,6 +413,7 @@ export default function EditSupplier() {
                       placeholder="Enter Zip code"
                       className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       onChange={handleChange}
+                      data-testid={EDIT_SUPPLIER.zipCodeField}
                     />
                   </div>
                 </div>
@@ -414,6 +428,7 @@ export default function EditSupplier() {
                     placeholder="Enter Address 1"
                     className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
+                    data-testid={EDIT_SUPPLIER.addressOneField}
                   />
                 </div>
                 <div className="flex flex-col gap-y-2">
@@ -427,6 +442,7 @@ export default function EditSupplier() {
                     placeholder="Enter Address 2"
                     className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
+                    data-testid={EDIT_SUPPLIER.addressTwoField}
                   />
                 </div>
                 <div className="flex flex-col gap-y-2">
@@ -475,6 +491,7 @@ export default function EditSupplier() {
                       placeholder="Enter Phone Number"
                       className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5  w-full col-span-8"
                       onChange={handleChange}
+                      data-testid={EDIT_SUPPLIER.phoneNumField}
                     />
                   </div>
                 </div>
@@ -496,6 +513,7 @@ export default function EditSupplier() {
                     placeholder="000322655655654454"
                     className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
+                    data-testid={EDIT_SUPPLIER.bankAccountField}
                   />
                 </div>
                 <div className="flex flex-col gap-y-2">
@@ -510,6 +528,7 @@ export default function EditSupplier() {
                     placeholder="Enter Email"
                     className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
+                    data-testid={EDIT_SUPPLIER.emailField}
                   />
                 </div>
 
@@ -527,11 +546,13 @@ export default function EditSupplier() {
                         placeholder="Enter New Password"
                         className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none ps-2.5 pe-12 py-3"
                         onChange={handleChange}
+                        data-testid={EDIT_SUPPLIER.passwordField}
                       />
                       <button
                         onClick={() => setVisible(!visible)}
                         type="button"
                         className="text-labelColor absolute right-4 top-11"
+                        data-testid={EDIT_SUPPLIER.passwordVisibilityToggle}
                       >
                         {visible ? (
                           <AiOutlineEye size={24} color="#000000" />
@@ -845,6 +866,7 @@ export default function EditSupplier() {
             <button
               type="submit"
               className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
+              data-testid={EDIT_SUPPLIER.submitButton}
             >
               Update Supplier
             </button>

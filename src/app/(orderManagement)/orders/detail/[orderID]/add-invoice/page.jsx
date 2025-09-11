@@ -15,6 +15,7 @@ import { CiMenuBurger } from "react-icons/ci";
 import { IoIosSearch } from "react-icons/io";
 import { IoCardSharp, IoSearch } from "react-icons/io5";
 import Select from "react-select";
+import { ORDER_ADD_INVOICE } from "../../../orders.testids";
 
 export default function AddInvoice() {
   const router = useRouter();
@@ -469,10 +470,11 @@ export default function AddInvoice() {
   const { toggle, setToggle } = useDataContext();
 
   return data?.length === 0 ? (
-    <Loader />
+    <Loader data-testid={ORDER_ADD_INVOICE.pageLoader} />
   ) : (
-    <div>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+    <div data-testid={ORDER_ADD_INVOICE.root}>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={ORDER_ADD_INVOICE.headerBar}>
         <div className="text-xl font-inter font-semibold flex items-center gap-x-1">
           <p
             onClick={() => setToggle(!toggle)}
@@ -483,6 +485,7 @@ export default function AddInvoice() {
           <p
             className="hover:text-blue-500 cursor-pointer"
             onClick={() => router.push("/orders")}
+            data-testid={ORDER_ADD_INVOICE.breadcrumbOrdersLink}
           >
             Order
           </p>{" "}
@@ -490,6 +493,7 @@ export default function AddInvoice() {
           <p
             className="hover:text-blue-500 cursor-pointer"
             onClick={() => window.history.back()}
+            data-testid={ORDER_ADD_INVOICE.breadcrumbOrderIdLink(orderID)}
           >
             {orderID}
           </p>{" "}
@@ -541,12 +545,13 @@ export default function AddInvoice() {
               name="invoiceNumber"
               minLength={3}
               min={3}
-              value={invoiceFields.invoiceNumber}
+              value={invoiceFields.invoiceNumber ?? ""}
               placeholder="INV-000"
               className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
               onChange={(e) =>
                 handleInvoiceFieldChange("invoiceNumber", e.target.value)
               }
+              data-testid={ORDER_ADD_INVOICE.invoiceNumberInput}
             />
           </div>
           <div className="flex flex-col gap-y-2">
@@ -556,12 +561,13 @@ export default function AddInvoice() {
             <input
               type="text"
               name="poNumber"
-              value={invoiceFields.poNumber}
+              value={invoiceFields.poNumber ?? ""}
               placeholder=""
               className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
               onChange={(e) =>
                 handleInvoiceFieldChange("poNumber", e.target.value)
               }
+              data-testid={ORDER_ADD_INVOICE.poNumberInput}
             />
           </div>
           <div className="flex flex-col gap-y-2">
@@ -571,12 +577,13 @@ export default function AddInvoice() {
             <input
               type="date"
               name="invoiceDate"
-              value={invoiceFields.invoiceDate}
+              value={invoiceFields.invoiceDate ?? ""}
               placeholder=""
               className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
               onChange={(e) =>
                 handleInvoiceFieldChange("invoiceDate", e.target.value)
               }
+              data-testid={ORDER_ADD_INVOICE.invoiceDateInput}
             />
           </div>
           {/* <div className="flex flex-col gap-y-2 items-start 2xl:col-span-2">
@@ -620,6 +627,7 @@ export default function AddInvoice() {
               onChange={(option) =>
                 handleInvoiceFieldChange("terms", option?.value || "")
               }
+              inputId={ORDER_ADD_INVOICE.termsSelect}
             />
           </div>
 
@@ -630,12 +638,13 @@ export default function AddInvoice() {
             <input
               type="date"
               name="dueDate"
-              value={invoiceFields.dueDate}
+              value={invoiceFields.dueDate ?? ""}
               placeholder=""
               className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
               onChange={(e) =>
                 handleInvoiceFieldChange("dueDate", e.target.value)
               }
+              data-testid={ORDER_ADD_INVOICE.dueDateInput}
             />
           </div>
 
@@ -652,6 +661,7 @@ export default function AddInvoice() {
                 required
                 onWheel={(e) => e.currentTarget.blur()}
                 className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                data-testid={ORDER_ADD_INVOICE.discountPercentageInput ?? 0}
               />
             </div>
 
@@ -666,6 +676,7 @@ export default function AddInvoice() {
                     type="checkbox"
                     checked={allChecked}
                     onChange={(e) => handleCheckAll(e.target.checked)}
+                    data-testid={ORDER_ADD_INVOICE.checkAllInput}
                   />
                 </th>
                 <th className="py-2 px-2 text-left border border-gray-200">
@@ -693,7 +704,7 @@ export default function AddInvoice() {
             </thead>
             <tbody>
               {items.map((item, itemIdx) => (
-                <tr key={item.id}>
+                <tr key={item.id} data-testid={ORDER_ADD_INVOICE.itemRow(item.id)}>
                   <td className="py-2 px-2 border border-gray-200 text-center">
                     <input
                       type="checkbox"
@@ -714,11 +725,12 @@ export default function AddInvoice() {
                       type="number"
                       min={1}
                       className="w-16 border border-gray-200 rounded px-1 py-1 text-center"
-                      value={item.qty}
+                      value={item.qty ?? 1}
                       onWheel={(e) => e.currentTarget.blur()}
                       onChange={(e) =>
                         handleItemQtyChange(itemIdx, e.target.value)
                       }
+                      data-testid={ORDER_ADD_INVOICE.itemQtyInput(item.id)}
                     />
                   </td>
                   {(userType === "admin" ||
@@ -749,7 +761,7 @@ export default function AddInvoice() {
                 </tr>
               ))}
               {extraRows.map((item, idx) => (
-                <tr key={item.id}>
+                <tr key={item.id} data-testid={ORDER_ADD_INVOICE.extraRow(item.id)}>
                   <td className="py-2 px-2 border border-gray-200 text-center">
                     <input
                       type="checkbox"
@@ -764,7 +776,7 @@ export default function AddInvoice() {
                       disabled
                       type="text"
                       className="w-full border border-gray-200 rounded px-1 py-1"
-                      value={item.productCode}
+                      value={item.productCode ?? ""}
                       onChange={(e) =>
                         handleExtraInputChange(idx, "code", e.target.value)
                       }
@@ -775,7 +787,7 @@ export default function AddInvoice() {
                     <input
                       type="text"
                       className="w-full border border-gray-200 rounded px-1 py-1"
-                      value={item.name}
+                      value={item.name ?? ""}
                       disabled
                       onChange={(e) =>
                         handleExtraInputChange(idx, "name", e.target.value)
@@ -788,7 +800,7 @@ export default function AddInvoice() {
                       type="number"
                       min={1}
                       className="w-16 border border-gray-200 rounded px-1 py-1 text-center"
-                      value={item.qty}
+                      value={item.qty ?? 1}
                       onChange={(e) =>
                         handleExtraInputChange(idx, "qty", e.target.value)
                       }
@@ -803,7 +815,7 @@ export default function AddInvoice() {
                         disabled
                         step="0.01"
                         className="w-20 border border-gray-200 rounded px-1 py-1 text-right"
-                        value={item.unit}
+                        value={item.unit ?? 0}
                         onChange={(e) =>
                           handleExtraInputChange(idx, "unit", e.target.value)
                         }
@@ -820,7 +832,7 @@ export default function AddInvoice() {
               ))}
                 
                 {extraCharges.map((item, idx) => (
-                  <tr key={item.id}>
+                  <tr key={item.id} data-testid={ORDER_ADD_INVOICE.extraChargeRow(item.id)}>
                     <td className="py-2 px-2 border border-gray-200 text-center">
                       <input
                         type="checkbox"
@@ -880,6 +892,7 @@ export default function AddInvoice() {
                     className="border px-2 py-2"
                     // onClick={handleAddExtra}
                     onClick={() => setModal(true)}
+                    data-testid={ORDER_ADD_INVOICE.addItemBtn}
                   >
                     Add Item
                   </button>
@@ -887,6 +900,7 @@ export default function AddInvoice() {
                     <button
                       className="border px-2 py-2"
                       onClick={handleAddChargeRow}
+                      data-testid={ORDER_ADD_INVOICE.addExtraChargesBtn}
                     >
                       Add Extra Charges
                     </button>
@@ -894,7 +908,7 @@ export default function AddInvoice() {
                 </td>
               </tr>
               
-              <tr>
+              <tr data-testid={ORDER_ADD_INVOICE.totalWeightRow}>
                 <td colSpan={4} className="border border-gray-200"></td>
                 <td className="py-2 px-2 text-right font-bold border border-gray-200">
                   Total weight (lbs)
@@ -971,8 +985,9 @@ export default function AddInvoice() {
             <p>Comments</p>
             <textarea
               className="w-full h-48 border resize-none border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-              value={invoiceFields.note}
+              value={invoiceFields.note ?? ""}
               onChange={(e) => handleInvoiceFieldChange("note", e.target.value)}
+              data-testid={ORDER_ADD_INVOICE.commentsTextarea}
             ></textarea>
           </div>
 
@@ -1015,6 +1030,7 @@ export default function AddInvoice() {
                         value={c.id}
                         checked={selectedCardId === c.id}
                         onChange={() => setSelectedCardId(c.id)}
+                        data-testid={ORDER_ADD_INVOICE.savedCardRadio(c.id)}
                       />
                       <span className="text-sm">
                         {c.brand?.toUpperCase()} •••• {c.last4} (exp {String(c.expMonth).padStart(2, '0')}/{String(c.expYear).slice(-2)})
@@ -1037,6 +1053,7 @@ export default function AddInvoice() {
                   checked={invoiceFields.paymentOption}
                   onChange={(e) => handleInvoiceFieldChange("paymentOption", e.target.checked)}
                   title={!selectedCardId ? "Select a saved card first" : ""}
+                  data-testid={ORDER_ADD_INVOICE.immediatePaymentCheckbox}
                 />
                 <p className="text-sm">
                   Attempt immediate payment
@@ -1057,10 +1074,11 @@ export default function AddInvoice() {
             <p>Other Payment Options</p>
             <textarea
               className="w-full h-48 border resize-none border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-              value={invoiceFields.otherPayment}
+              value={invoiceFields.otherPayment ?? ""}
               onChange={(e) =>
                 handleInvoiceFieldChange("otherPayment", e.target.value)
               }
+              data-testid={ORDER_ADD_INVOICE.otherPaymentTextarea}
             ></textarea>
           </div>
 
@@ -1072,6 +1090,7 @@ export default function AddInvoice() {
               onChange={(e) =>
                 handleInvoiceFieldChange("emailInvoiceToCustomer", e.target.checked)
               }
+              data-testid={ORDER_ADD_INVOICE.emailInvoiceCheckbox}
             />
             <p>Email the invoice to the customer?</p>
           </div>
@@ -1081,6 +1100,7 @@ export default function AddInvoice() {
               disabled={loading}
               className="rounded-lg font-inter font-medium text-white px-2 sm:px-3 py-2.5 sm:py-4 bg-theme"
               onClick={handleCreateInvoice}
+              data-testid={ORDER_ADD_INVOICE.submitBtn}
             >
               {data?.data?.order?.invoiceDate
                 ? "Update Invoice"
@@ -1093,6 +1113,7 @@ export default function AddInvoice() {
       {/* Modal */}
       <Dialog
         visible={modal}
+        data-testid={ORDER_ADD_INVOICE.modal.root}
         style={{ width: "40vw" }}
         // breakpoints={{ "1496px": "40vw", "1024px": "70vw", "641px": "80vw" }}
         className="font-nunito"
@@ -1122,6 +1143,7 @@ export default function AddInvoice() {
                   id=""
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search Product..."
+                  data-testid={ORDER_ADD_INVOICE.modal.searchInput}
                 />
               </div>
               <div className="w-full">
@@ -1132,6 +1154,7 @@ export default function AddInvoice() {
                   styles={selectStyles2}
                   // value={ }
                   onChange={(e) => setFilterId(e?.value)}
+                  inputId={ORDER_ADD_INVOICE.modal.categorySelect}
                 />
               </div>
             </div>
@@ -1142,6 +1165,7 @@ export default function AddInvoice() {
                   key={item.id || idx}
                   onClick={() => handleAddExtra(item)}
                   className="text-sm text-start text-gray-500 cursor-pointer h-12 border-b flex items-center hover:bg-gray-100 px-2 hover:text-black hover:font-semibold"
+                  data-testid={ORDER_ADD_INVOICE.modal.productRow(item.id)}
                 >
                   <p>{item?.name}</p>
                 </div>

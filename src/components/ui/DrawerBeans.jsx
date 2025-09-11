@@ -21,6 +21,7 @@ import { drawerSelectStyles, selectStyles2 } from "@/utilities/SelectStyle";
 import { RxCross2 } from "react-icons/rx";
 import MiniLoader from "./MiniLoader";
 import { MdInsertComment, MdOutlineConfirmationNumber } from "react-icons/md";
+import { ORDERS_CREATE_DRAWER } from "../../app/(orderManagement)/orders/orders.testids"
 
 const DrawerBeans = ({
   drawerOpen: open,
@@ -465,11 +466,14 @@ const DrawerBeans = ({
         position="right"
         onHide={() => setOpen(false)}
         className="rounded-tl-xl rounded-bl-xl bg-theme text-white w-[512px]"
+        data-testid={type === "createOrder" ? ORDERS_CREATE_DRAWER.modal : undefined}
       >
         <div className="px-4 space-y-6">
           <div>
             <div className="flex justify-between items-center">
-              <h2 className="text-[32px] font-black font-nunito text-theme-black-2">
+              <h2 className="text-[32px] font-black font-nunito text-theme-black-2"
+                data-testid={type === "createOrder" ? ORDERS_CREATE_DRAWER.title : undefined}
+              >
                 {type === "createOrder" ? "Create Order" : "Send Quotation"}
               </h2>
             </div>
@@ -494,6 +498,7 @@ const DrawerBeans = ({
                           // setEmail(e.value);
                           handleCompanyName(e.value);
                         }}
+                        data-testid={ORDERS_CREATE_DRAWER.companySelect}
                       />
                     </div>
                   </div>
@@ -521,6 +526,7 @@ const DrawerBeans = ({
                         placeholder="Email"
                         className="w-full bg-white text-black rounded px-3 py-3 outline-none cursor-not-allowed font-satoshi placeholder-theme focus:ring-0 focus:border-theme"
                         disabled
+                        data-testid={ORDERS_CREATE_DRAWER.emailInput}
                       />
                     </div>
                   </div>
@@ -538,6 +544,7 @@ const DrawerBeans = ({
                       onChange={(e) => {
                         setOrder({ ...order, addressId: e?.value || "" });
                       }}
+                      data-testid={ORDERS_CREATE_DRAWER.addressSelect}
                     />
                   </div>
                   <div>
@@ -556,6 +563,7 @@ const DrawerBeans = ({
                       onChange={(e) => {
                         setOrder({ ...order, paymentMethod: e.value });
                       }}
+                      data-testid={ORDERS_CREATE_DRAWER.paymentMethodSelect}
                     />
                   </div>
                   <div>
@@ -567,6 +575,7 @@ const DrawerBeans = ({
                       onChange={(e) => {
                         setOrder({ ...order, orderFrequency: e.value });
                       }}
+                      data-testid={ORDERS_CREATE_DRAWER.frequencySelect}
                     />
                   </div>
                     {/* <div className="flex flex-col gap-y-2">
@@ -626,6 +635,7 @@ const DrawerBeans = ({
                           onChange={(e) =>
                             setOrder({ ...order, note: e.target.value })
                           }
+                          data-testid={ORDERS_CREATE_DRAWER.noteInput}
                         />
                         <label
                           htmlFor="courier-note"
@@ -654,6 +664,7 @@ const DrawerBeans = ({
                           onChange={(e) =>
                             setOrder({ ...order, poNumber: e.target.value })
                           }
+                          data-testid={ORDERS_CREATE_DRAWER.poNumberInput}
                         />
                         <label
                           htmlFor="poNumber"
@@ -716,7 +727,7 @@ const DrawerBeans = ({
 
               <p className="font-medium text-base">Order Details</p>
 
-              <div className="">
+              <div className="" data-testid={ORDERS_CREATE_DRAWER.itemsList}>
                 {cartItems?.length > 0 ? (
                   <div>
                     <div className="h-3/5 overflow-y-auto">
@@ -755,6 +766,7 @@ const DrawerBeans = ({
                                     handleItemClick("minus", cartI?.id);
                                   }}
                                   className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-white hover:text-black duration-300"
+                                  data-testid={ORDERS_CREATE_DRAWER.itemMinusBtn(cartI?.id)}
                                 >
                                   <RiSubtractFill />
                                 </button>
@@ -766,6 +778,7 @@ const DrawerBeans = ({
                                     handleItemClick("plus", cartI?.id);
                                   }}
                                   className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-white hover:text-black duration-300"
+                                  data-testid={ORDERS_CREATE_DRAWER.itemQtyBadge(cartI?.id)}
                                 >
                                   <BiPlus />
                                 </button>
@@ -774,6 +787,7 @@ const DrawerBeans = ({
                                     handleItemClick("delete", cartI?.id);
                                   }}
                                   className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-red-600 hover:text-white duration-300"
+                                  data-testid={ORDERS_CREATE_DRAWER.itemDeleteBtn(cartI?.id)}
                                 >
                                   <BiTrash />
                                 </button>
@@ -782,6 +796,7 @@ const DrawerBeans = ({
                               <span
                                 onClick={() => handleCounterClick(index)}
                                 className="text-lg font-sf w-7 text-center"
+                                data-testid={ORDERS_CREATE_DRAWER.itemQtyBadge(cartI?.id)}
                               >
                                 {cartI?.qty}
                               </span>
@@ -793,7 +808,7 @@ const DrawerBeans = ({
                     <div className="space-y-1">
                       <div className="flex items-center justify-between gap-x-2">
                         <h5 className="text-base text-white">Subtotal</h5>
-                        <h6>$ {totalPrice?.toFixed(2)}</h6>
+                        <h6 data-testid={ORDERS_CREATE_DRAWER.subtotalValue}>$ {totalPrice?.toFixed(2)}</h6>
                       </div>
                        {/* {discountPercentage > 0 && (
                         <div className="flex items-center justify-between gap-x-2">
@@ -819,6 +834,7 @@ const DrawerBeans = ({
                               <div
                                 key={index}
                                 className="flex justify-between text-sm text-gray-300"
+                                data-testid={ORDERS_CREATE_DRAWER.discountLine(item.categoryId)}
                               >
                                 <span>
                                   {item.name} ({pct}%)
@@ -832,7 +848,7 @@ const DrawerBeans = ({
                         <h5 className="text-base text-white">
                           Shipping Charges
                         </h5>
-                        <h6>$ {Number(order?.shippingCharges || 0).toFixed(2)}</h6>
+                        <h6 data-testid={ORDERS_CREATE_DRAWER.shippingValue}>$ {Number(order?.shippingCharges || 0).toFixed(2)}</h6>
                         {/* <h6>$ {order?.shippingCharges}</h6> */}
                       </div>
                     </div>
@@ -851,6 +867,7 @@ const DrawerBeans = ({
               disabled={loader}
               className="bg-themeLight font-bold text-white rounded-[4px] px-5 min-h-14 w-full flex items-center justify-between"
               onClick={handleSendQuotation}
+              data-testid={ORDERS_CREATE_DRAWER.submitBtn}
             >
               <div className="flex space-x-4 items-center">
                 <div className="bg-white text-black text-sm py-[1px] px-[7px] rounded-full">

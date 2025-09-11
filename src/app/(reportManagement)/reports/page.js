@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 "use client";
 import ManagementTab from "@/components/ui/ManagementTab";
 import ReportCard from "@/components/ui/ReportCard";
@@ -8,20 +9,23 @@ import { BsCardList } from "react-icons/bs";
 import { CiMenuBurger } from "react-icons/ci";
 import { TbReportAnalytics } from "react-icons/tb";
 import Select from "react-select";
+import { REPORT_MANAGEMENT } from "./report.testid";
 
 export default function page() {
   const { toggle, setToggle } = useDataContext();
   return (
-    <div>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+    <div data-testid={REPORT_MANAGEMENT.root}>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={REPORT_MANAGEMENT.headerBar}>
         <div className="flex items-center gap-2">
           <p
             onClick={() => setToggle(!toggle)}
             className="cursor-pointer md:hidden"
+            data-testid={REPORT_MANAGEMENT.menuToggleButton}
           >
             <CiMenuBurger size={20} />
           </p>
-          <h2 className="text-xl font-inter font-semibold">
+          <h2 className="text-xl font-inter font-semibold" data-testid={REPORT_MANAGEMENT.title}>
             Report Management
           </h2>
         </div>
@@ -33,35 +37,40 @@ export default function page() {
           </h2>
         </div> */}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5 xl:gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5 xl:gap-10" data-testid={REPORT_MANAGEMENT.reportCardSection}>
           <ReportCard
             Icon={TbReportAnalytics}
             title="Partner Profits Report"
             to="/reports/partner-commission"
+            data-testid={REPORT_MANAGEMENT.partnerProfitsReportCard}
           />
 
           <ReportCard
             Icon={TbReportAnalytics}
             title="Partner Credit Limit Report"
             to="/reports/partner-credit-limit"
+            data-testid={REPORT_MANAGEMENT.partnerCreditLimitReportCard}
           />
 
           <ReportCard
             Icon={BsCardList}
             title="Unpaid Partner Balances Report"
             to="/reports/unpaid-partner-balances"
+             data-testid={REPORT_MANAGEMENT.unpaidPartnerBalancesReportCard}
           />
 
           <ReportCard
             Icon={BsCardList}
             title="Products Sale Report"
             to="/reports/products-sale"
+            data-testid={REPORT_MANAGEMENT.productsSaleReportCard}
           />
 
           <ReportCard
             Icon={TbReportAnalytics}
             title="Customers Report"
             to="/reports/customers"
+            data-testid={REPORT_MANAGEMENT.customersReportCard}
           />
         </div>
       </div>

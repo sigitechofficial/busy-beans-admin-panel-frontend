@@ -9,6 +9,7 @@ import { useState } from "react";
 import { CiMenuBurger } from "react-icons/ci";
 import { ImCross } from "react-icons/im";
 import Select from "react-select";
+import { PARTNER_COMMISSION_REPORT } from "../report.testid";
 
 export default function PartnerCommissionReport() {
   const [customDates, setCustomDates] = useState({
@@ -52,6 +53,7 @@ export default function PartnerCommissionReport() {
   const datas = [];
   data?.data?.map((report, i) =>
     datas.push({
+      id: report?.id,
       sl: i + 1,
       srName: report?.srName,
       ordersPlaced: `$${report?.ordersPlaced ?? 0}`,
@@ -89,8 +91,9 @@ export default function PartnerCommissionReport() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+    <div data-testid={PARTNER_COMMISSION_REPORT.root}>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={PARTNER_COMMISSION_REPORT.headerBar}>
         <div className="flex items-center gap-2">
           <p
             onClick={() => setToggle(!toggle)}
@@ -98,7 +101,7 @@ export default function PartnerCommissionReport() {
           >
             <CiMenuBurger size={20} />
           </p>
-          <h2 className="text-xl font-inter font-semibold">
+          <h2 className="text-xl font-inter font-semibold" data-testid={PARTNER_COMMISSION_REPORT.title}>
             Partner Profits Report
           </h2>
         </div>
@@ -171,13 +174,14 @@ export default function PartnerCommissionReport() {
           </div>
         </div> */}
 
-        <div>
+        <div data-testid={PARTNER_COMMISSION_REPORT.tableWrapper}>
           <MyDataTable
             columns={columns}
             data={datas}
             placeholder={"Search ..."}
             pagination={true}
             search={true}
+            rowTestId={(row) => `data-testid-${PARTNER_COMMISSION_REPORT.row(row.id)}`}
           />
         </div>
       </div>

@@ -21,6 +21,7 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { hasPermission } from "@/utilities/Permission";
+import { EMPLOYEES } from "./employee.testids"
 
 export default function Employee() {
   const { data, reFetch } = GetAPI("api/v1/admin/employees", "employees");
@@ -293,6 +294,7 @@ export default function Employee() {
           onHandleColor="#fff"
           className="react-switch"
           boxShadow="none"
+          data-testid={EMPLOYEES.rowStatusSwitch(cat?.id)}
         /> 
         </label>
         ) : (
@@ -300,7 +302,7 @@ export default function Employee() {
         )
       ),
       action: (
-        <div className="flex gap-x-2">
+        <div className="flex gap-x-2" data-testid={EMPLOYEES.row(cat?.id)}>
           {hasPermission("employees_update") && (
           <button
             className="border border-theme rounded-md p-2 text-theme"
@@ -319,6 +321,7 @@ export default function Employee() {
             //   setCategoryID(cat?.id);
             // }}
             onClick={() => handleEditClick(cat?.id)}
+            data-testid={EMPLOYEES.rowEditBtn(cat?.id)}
           >
             <FaEdit size={24} />
           </button> )}
@@ -329,6 +332,7 @@ export default function Employee() {
               setModal("delete");
               setCategoryID(cat?.id);
             }}
+            data-testid={EMPLOYEES.rowDeleteBtn(cat?.id)}
           >
             <MdDelete size={24} />
           </button> )}
@@ -342,13 +346,14 @@ export default function Employee() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+    <div data-testid={EMPLOYEES.root}>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+        data-testid={EMPLOYEES.headerBar}>
         <div className="flex items-center gap-2">
           <p onClick={() => setToggle(!toggle)} className="cursor-pointer md:hidden">
             <CiMenuBurger size={20} />
           </p>
-          <h2 className="text-xl font-inter font-semibold">All Employees</h2>
+          <h2 className="text-xl font-inter font-semibold" data-testid={EMPLOYEES.title}>All Employees</h2>
         </div>
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
           {hasPermission("employees_create") && (
@@ -383,15 +388,18 @@ export default function Employee() {
           placeholder={"Search ..."}
           pagination={true}
           search={true}
+          data-testid={EMPLOYEES.tableWrapper}
+          rowTestId={(row) => `data-testid-${EMPLOYEES.row(row.id)}`}
         />
 
         {/* Modal */}
         <Dialog
           visible={modal === "add" || modal === "edit" || modal === "delete"}
           className="font-nunito w-[80%] lg:w-[40vw]"
+          data-testid={EMPLOYEES.modal}
           onHide={handleModalClose}
           header={
-            <div className="font-nunito font-bold text-sm lg:text-2xl text-center">
+            <div className="font-nunito font-bold text-sm lg:text-2xl text-center" data-testid={EMPLOYEES.modalTitle}>
               {modal === "add"
                 ? "Add"
                 : modal === "edit"
@@ -424,6 +432,7 @@ export default function Employee() {
                         onChange={handleChange}
                         placeholder="Enter Employee name"
                         className="border border-borderColor rounded-[4px] px-2.5 py-3"
+                        data-testid={EMPLOYEES.nameInput}
                       />
                     </div>
 
@@ -437,6 +446,7 @@ export default function Employee() {
                         onChange={handleChange}
                         placeholder="Enter Email"
                         className="border border-borderColor rounded-[4px] px-2.5 py-3"
+                        data-testid={EMPLOYEES.emailInput}
                       />
                     </div>
 
@@ -451,11 +461,13 @@ export default function Employee() {
                           onChange={handleChange}
                           placeholder="Enter Password"
                           className="border border-borderColor rounded-[4px] ps-2.5 pe-12 py-3"
+                          data-testid={EMPLOYEES.passwordInput}
                         />
                         <button
                           onClick={() => setVisible(!visible)}
                           type="button"
                           className="absolute right-4 top-11"
+                          data-testid={EMPLOYEES.passwordVisibilityToggle}
                         >
                           {visible ? (
                             <AiOutlineEye size={24} color="#000000" />
@@ -482,11 +494,13 @@ export default function Employee() {
                               placeholder="Enter New Password"
                               className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none ps-2.5 pe-12 py-3"
                               onChange={handleChange}
+                              data-testid={EMPLOYEES.changePasswordCheckbox}
                             />
                             <button
                               onClick={() => setVisible(!visible)}
                               type="button"
                               className="text-labelColor absolute right-4 top-11"
+                              data-testid={EMPLOYEES.passwordVisibilityToggle}
                             >
                               {visible ? (
                                 <AiOutlineEye size={24} color="#000000" />
@@ -527,6 +541,7 @@ export default function Employee() {
                             onChange={(phone) =>
                               setFormData({ ...formData, countryCode: phone })
                             }
+                            data-testid={EMPLOYEES.phoneInput}
                             containerStyle={{ width: "100%" }}
                             inputStyle={{
                               width: "100%",
@@ -556,6 +571,7 @@ export default function Employee() {
                             onChange={handleChange}
                             placeholder="Enter Phone Number"
                             className="w-full border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-2.5"
+                            data-testid={EMPLOYEES.phoneInput}
                           />
                         </div>
                       </div>
@@ -635,6 +651,7 @@ export default function Employee() {
                                           setFormData({ ...formData, features: newFeatures });
                                         }}
                                         className="form-checkbox"
+                                        data-testid={EMPLOYEES.featuresCheckbox}
                                       />
                                     </div>
                                   ))}
@@ -656,6 +673,7 @@ export default function Employee() {
                   <button
                     type="submit"
                     className="rounded-lg border border-theme text-white px-10 bg-theme"
+                    data-testid={EMPLOYEES.modalSubmitBtn}
                   >
                     {modal === "add"
                       ? "Add"

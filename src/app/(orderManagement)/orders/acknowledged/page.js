@@ -9,6 +9,7 @@ import { FaEye } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { CiMenuBurger } from "react-icons/ci";
 import { useDataContext } from "@/utilities/DataContext";
+import { ACKNOWLEDGED_ORDERS } from "../orders.testids"
 
 export default function AcknowledgedOrders() {
   if (typeof window !== "undefined") {
@@ -73,6 +74,7 @@ export default function AcknowledgedOrders() {
           onClick={() => {
             router.push(`/orders/detail/${detail?.id}`);
           }}
+          data-testid={ACKNOWLEDGED_ORDERS.rowViewBtn(detail?.id)}
         >
           <FaEye size={24} />
         </button>
@@ -84,8 +86,9 @@ export default function AcknowledgedOrders() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+    <div data-testid={ACKNOWLEDGED_ORDERS.root}>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={ACKNOWLEDGED_ORDERS.headerBar}>
         <div className="flex items-center gap-2">
           <p
             onClick={() => setToggle(!toggle)}
@@ -99,15 +102,15 @@ export default function AcknowledgedOrders() {
         </div>
       </div>
       <div className="space-y-8 pt-28 2xl:pt-32 px-6 2xl:px-12 ">
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-          <ManagementTab title="Total Orders" desc={data?.data?.data?.length} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5" data-testid={ACKNOWLEDGED_ORDERS.statsGrid}>
+          <ManagementTab title="Total Orders" desc={data?.data?.data?.length} data-testid={ACKNOWLEDGED_ORDERS.totalOrdersCard}/>
           {/* <ManagementTab title="New Orders" desc="5%" />
          <ManagementTab title="Pending Orders" desc="5000" />
          <ManagementTab title="In progress Orders" desc="5,000" />
          <ManagementTab title="Cancelled Orders" desc="5,000" /> */}
         </div>
 
-        <div>
+        <div data-testid={ACKNOWLEDGED_ORDERS.tableWrapper}>
           <MyDataTable
             columns={columns}
             data={datas}
@@ -117,6 +120,8 @@ export default function AcknowledgedOrders() {
             onRowClick={(e) => {
               Example: router.push(`/orders/detail/${e.data.id}`);
             }}
+            data-testid={ACKNOWLEDGED_ORDERS.table}
+            rowTestId={(row) => `data-testid-${ACKNOWLEDGED_ORDERS.row(row.id)}`}
           />
         </div>
       </div>

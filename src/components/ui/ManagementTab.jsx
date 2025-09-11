@@ -1,9 +1,11 @@
 import ReactCountryFlag from "react-country-flag";
 
-export default function ManagementTab(props) {
-  const { title, desc, countryCode } = props;
+export default function ManagementTab({ title, desc, countryCode, ...rest }) {
   return (
-    <div className="p-5 space-y-8 font-inter font-medium text-lg bg-themeTab border border-tabBorderColor shadow-tabShadow rounded-xl">
+    <div
+      {...rest}
+      className="p-5 space-y-8 font-inter font-medium text-lg bg-themeTab border border-tabBorderColor shadow-tabShadow rounded-xl"
+    >
       <ReactCountryFlag
         countryCode={countryCode}
         svg

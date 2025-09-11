@@ -20,6 +20,7 @@ import MiniLoader from "@/components/ui/MiniLoader";
 import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
 import { hasPermission } from "@/utilities/Permission";
+import { COUNTRIES } from "./country.testid";
 
 export default function Countries() {
   const countries = Country.getAllCountries();
@@ -113,8 +114,9 @@ export default function Countries() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+    <div data-testid={COUNTRIES.root}>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={COUNTRIES.headerBar}>
         <div className="flex items-center gap-2">
           <p
             onClick={() => setToggle(!toggle)}
@@ -122,7 +124,7 @@ export default function Countries() {
           >
             <CiMenuBurger size={20} />
           </p>
-          <h2 className="text-xl font-inter font-semibold">All Countries</h2>
+          <h2 className="text-xl font-inter font-semibold" data-testid={COUNTRIES.title}>All Countries</h2>
         </div>
       </div>
       <div className="space-y-8 pt-28 2xl:pt-32 px-6 2xl:px-12 ">
@@ -147,6 +149,7 @@ export default function Countries() {
               onClick={() => setModal("add")}
               className="rounded-lg font-inter font-medium text-white px-6 sm:px-10 py-2.5 sm:py-4 bg-theme hover:bg-white hover:text-theme border
              border-theme duration-150"
+             data-testid={COUNTRIES.addCountryBtn}
             >
               + Add Country
             </button> )}
@@ -176,8 +179,9 @@ export default function Countries() {
           // style={{ width: "40vw" }}
           className="font-nunito w-[80%] lg:w-[40vw]"
           onHide={() => setModal(false)}
+          data-testid={COUNTRIES.countryModal}
           header={
-            <div className="font-nunito font-bold text-sm lg:text-2xl text-center">
+            <div className="font-nunito font-bold text-sm lg:text-2xl text-center" data-testid={COUNTRIES.countryModalTitle}>
               {modal === "add" ? "Add" : modal === "delete" ? "Delete" : ""}{" "}
               Country
             </div>
@@ -197,7 +201,7 @@ export default function Countries() {
 
               {/* body */}
 
-              <div className="w-full space-y-4">
+              <div className="w-full space-y-4" data-testid={COUNTRIES.countryModalBody}>
                 {modal === "add" ? (
                   <div className="flex flex-col gap-y-2 w-full relative">
                     <label className="text-labelColor font-medium font-satoshi">
@@ -213,6 +217,7 @@ export default function Countries() {
                       }
                       menuPortalTarget={document.body}
                       menuPosition="fixed"
+                      data-testid={COUNTRIES.countrySelectDropdown}
                     />
                   </div>
                 ) : (
@@ -225,12 +230,14 @@ export default function Countries() {
                     type="button"
                     onClick={() => setModal("")}
                     className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow px-4 sm:px-6"
+                    data-testid={COUNTRIES.countryModalCancelBtn}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     className="rounded-lg border border-theme text-white px-10 bg-theme hover:bg-white hover:text-theme duration-150 px-5 sm:px-10"
+                    data-testid={COUNTRIES.countryModalSubmitBtn}
                   >
                     {modal === "add"
                       ? "Add"

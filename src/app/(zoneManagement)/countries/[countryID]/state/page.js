@@ -22,6 +22,7 @@ import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
 import { FaEye } from "react-icons/fa";
 import { hasPermission } from "@/utilities/Permission";
+import { STATES } from "../../country.testid";
 
 export default function States() {
   const router = useRouter();
@@ -51,6 +52,7 @@ export default function States() {
   const stateListDatas = [];
   countryStates?.data?.data?.map((state, i) =>
     stateListDatas.push({
+      id: state?.id,
       sl: i + 1,
       name: state?.name,
       // city: (
@@ -170,49 +172,54 @@ export default function States() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div className="space-y-8">
-      <div className="space-y-4">
+    <div className="w-full" data-testid={STATES.root}>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={STATES.headerBar}>
         <div className="flex items-center justify-between">
-          <h2 className="flex items-center gap-x-2 text-xl lg:text-2xl font-inter font-semibold">
+          <h2 className="flex items-center gap-x-2 text-xl lg:text-2xl font-inter font-semibold" data-testid={STATES.title}>
             <BackButton />
             All States
           </h2>
-
-          <Select
-            placeholder="Filters"
-            className="w-40"
-            styles={selectStyles}
-          />
-        </div>
-        <div className="flex justify-end">
-          {hasPermission("country_create") && (
-          <button
-            onClick={() => setModal("add")}
-            className="hover:text-theme hover:bg-white duration-150 border border-theme rounded-lg font-inter font-medium text-white px-5 sm:px-8 py-2.5 sm:py-4 bg-theme"
-          >
-            + Add State
-          </button> )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-        <ManagementTab
-          countryCode={data?.data?.data?.isoCode}
-          title={data?.data?.data?.name}
-        />
-        {/* <ManagementTab title="Total Countries" desc="5000" /> */}
-        {/* <ManagementTab title="Total Cities" desc="55000" /> */}
-      </div>
+        <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+            <div className="flex items-center gap-4 justify-end col-span-1 sm:col-span-2 xl:col-span-4">
+              <Select
+                placeholder="Filters"
+                className="w-40"
+                styles={selectStyles}
+              />
+              {hasPermission("country_create") && (
+                <button
+                  onClick={() => setModal("add")}
+                  className="hover:text-theme hover:bg-white duration-150 border border-theme rounded-lg font-inter font-medium text-white px-5 sm:px-8 py-2.5 sm:py-4 bg-theme"
+                   data-testid={STATES.addStateBtn}
+                >
+                  + Add State
+                </button>
+              )}
+            </div>
+            <ManagementTab
+              countryCode={data?.data?.data?.isoCode}
+              title={data?.data?.data?.name}
+            />
+            {/* <ManagementTab title="Total Countries" desc="5000" /> */}
+            {/* <ManagementTab title="Total Cities" desc="55000" /> */}
+          </div>
 
-      <div>
-        <MyDataTable
-          columns={columns}
-          data={stateListDatas}
-          placeholder={"Search ..."}
-          pagination={true}
-          search={true}
-        />
-      </div>
+          <div>
+            <MyDataTable
+              columns={columns}
+              data={stateListDatas}
+              placeholder={"Search ..."}
+              pagination={true}
+              search={true}
+              rowTestId={(row) => `data-testid-${STATES.row(row.id)}`}
+            />
+          </div>
+        </div>
 
       {/* Modal */}
       <Dialog
@@ -220,8 +227,9 @@ export default function States() {
         style={{ width: "40vw" }}
         className="font-nunito"
         onHide={() => setModal(false)}
+        data-testid={STATES.stateModal}
         header={
-          <div className="font-nunito font-bold text-2xl text-center">
+          <div className="font-nunito font-bold text-2xl text-center" data-testid={STATES.stateModalTitle}>
             {modal === "add" ? "Add" : modal === "delete" ? "Delete" : ""} State
           </div>
         }
@@ -234,7 +242,7 @@ export default function States() {
             className="space-y-4 flex flex-col items-center"
           >
             {/* body */}
-            <div className="w-full space-y-4">
+            <div className="w-full space-y-4" data-testid={STATES.stateModalBody}>
               {modal === "add" ? (
                 <div className="flex flex-col gap-y-2 w-full">
                   <label className="text-labelColor font-medium font-satoshi">
@@ -250,6 +258,7 @@ export default function States() {
                     }
                     menuPortalTarget={document.body}
                     menuPosition="fixed"
+                    data-testid={STATES.stateSelectDropdown}
                   />
                 </div>
               ) : (
@@ -283,12 +292,14 @@ export default function States() {
                   type="button"
                   onClick={() => setModal("")}
                   className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow  px-6"
+                  data-testid={STATES.stateModalCancelBtn}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   className="rounded-lg border border-theme text-white px-10 bg-theme hover:bg-white hover:text-theme duration-150"
+                  data-testid={STATES.stateModalSubmitBtn}
                 >
                   {modal === "add" ? "Add" : modal === "delete" ? "Delete" : ""}{" "}
                   State

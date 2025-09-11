@@ -7,8 +7,29 @@ import Select from "react-select";
 import selectStyles from "@/utilities/SelectStyle";
 import { Checkbox } from "primereact/checkbox";
 
-export default function MyDataTable(props) {
-  const { selectedRows, setSelectedRows } = props;
+export default function MyDataTable({
+  selectedRows,
+  setSelectedRows,
+  data = [],
+  columns = [],
+  search,
+  pagination,
+  checkbox,
+  sortField,
+  sortOrder,
+  onRowClick,
+  placeholder,
+  hide,
+  options,
+  selectedOption,
+  onOptionChange,
+  setSelectedOption,
+  handleDownload,
+  csvFileName,
+  Styles,
+  rowTestId,
+  ...rest
+}) {
   const [internalSelectedRows, setInternalSelectedRows] = useState([]);
   const selected = selectedRows ?? internalSelectedRows;
   const updateSelected = setSelectedRows ?? setInternalSelectedRows;
@@ -22,9 +43,6 @@ export default function MyDataTable(props) {
   const onSelectionChange = (e) => {
     updateSelected(e.value || []);
   };
-
-  const data = Array.isArray(props?.data) ? props.data : [];
-  const columns = Array.isArray(props?.columns) ? props.columns : [];
 
   const filteredData = data.filter((item) =>
     Object.entries(item).some(([key, val]) =>
@@ -70,9 +88,6 @@ export default function MyDataTable(props) {
     );
   };
 
-  const rowClassName = (rowData) =>
-    selected?.some((row) => row?.id === rowData?.id) ? "selected-row" : "";
-
   // ===== CSV Download (built-in) =====
   const handleDownloadCsv = () => {
     const rowsToExport =
@@ -102,7 +117,7 @@ export default function MyDataTable(props) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = props?.csvFileName || "export.csv";
+    a.download = csvFileName || "export.csv";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -112,17 +127,19 @@ export default function MyDataTable(props) {
   return (
     <div
       className={
-        props?.Styles ??
-        `bg-white p-5 sm:p-8 rounded-xl border border-borderColor shadow-tableShadow space-y-6`
+        Styles ??
+        "bg-white p-5 sm:p-8 rounded-xl border border-borderColor shadow-tableShadow space-y-6"
       }
+      {...rest}
     >
+      {/* header with search + options + download */}
       <div className="flex justify-between items-end md:items-center flex-wrap gap-3">
-        <div className={`${props?.search ? "relative" : "hidden"}`}>
+        <div className={`${search ? "relative" : "hidden"}`}>
           <input
             type="search"
             value={globalFilter}
             onChange={onGlobalFilterChange}
-            placeholder={props?.placeholder}
+            placeholder={placeholder}
             className="w-[280px] sm:w-[330px] md:w-[430px] h-10 md:h-12 bg-themeGray rounded-lg ps-10 pe-5 outline-none placeholder:font-inter placeholder:font-medium focus:bg-gray-200"
           />
           <LuSearch
@@ -132,20 +149,20 @@ export default function MyDataTable(props) {
           />
         </div>
 
-        <div className={`flex gap-x-5 ${props?.hide ? "hidden" : "block"}`}>
-          <div className={`${props?.options ? "block" : "hidden"}`}>
+        <div className={`flex gap-x-5 ${hide ? "hidden" : "block"}`}>
+          <div className={`${options ? "block" : "hidden"}`}>
             <Select
-              options={props?.options}
-              defaultValue={props?.selectedOption}
+              options={options}
+              defaultValue={selectedOption}
               onChange={(val) => {
-                props?.onOptionChange?.(val); 
-                props?.setSelectedOption?.(val);
+                onOptionChange?.(val);
+                setSelectedOption?.(val);
               }}
               styles={selectStyles}
             />
           </div>
           <button
-            onClick={props?.handleDownload ?? handleDownloadCsv}
+            onClick={handleDownload ?? handleDownloadCsv}
             className="flex items-center gap-x-2 px-5 md:px-8 py-1.5 md:py-3 rounded-lg border border-black text-white bg-black hover:text-black hover:bg-white duration-200 group"
           >
             <RiFileDownloadLine size={24} />
@@ -156,13 +173,14 @@ export default function MyDataTable(props) {
         </div>
       </div>
 
+      {/* PrimeReact DataTable */}
       <div className="manageTable">
         <DataTable
           value={filteredData}
-          paginator={props.pagination}
-          selectionMode="multiple" // Allow multiple row selection
+          paginator={pagination}
+          selectionMode="multiple"
           selection={selected}
-          onSelectionChange={props?.checkbox ? onSelectionChange : null}
+          onSelectionChange={checkbox ? onSelectionChange : null}
           // scrollable
           // scrollHeight="500px"
           rows={10}
@@ -170,13 +188,18 @@ export default function MyDataTable(props) {
           removableSort
           dataKey="id"
           emptyMessage="No Data Found"
-          rowClassName={rowClassName}
-          onRowClick={props.onRowClick}
-          sortField={props.sortField}
-          sortOrder={props.sortOrder}
+          onRowClick={onRowClick}
+          sortField={sortField}
+          sortOrder={sortOrder}
+          rowClassName={(rowData) => {
+            const base =
+              selected?.some((row) => row?.id === rowData?.id)
+                ? "selected-row"
+                : "";
+            return `${base} ${rowTestId ? rowTestId(rowData) : ""}`;
+          }}
         >
-          {/* Header column with checkbox to select all rows */}
-          {props?.checkbox && (
+          {checkbox && (
             <Column
               header={headerCheckbox}
               body={checkboxBody}
@@ -185,27 +208,17 @@ export default function MyDataTable(props) {
           )}
 
           {/* Other columns */}
-          {columns?.map((col, ind) =>
-            col?.filter ? (
-              <Column
-                key={ind}
-                field={col.field}
-                header={col.header}
-                sortable={col?.sort}
-                filter
-                filterPlaceholder="Search"
-                style={{ minWidth: col?.minWidth ? col?.minWidth : "12rem" }}
-              />
-            ) : (
-              <Column
-                key={ind}
-                field={col.field}
-                header={col.header}
-                sortable={col?.sort}
-                style={{ minWidth: col?.minWidth ? col?.minWidth : "12rem" }}
-              />
-            )
-          )}
+          {columns?.map((col, ind) => (
+            <Column
+              key={ind}
+              field={col.field}
+              header={col.header}
+              sortable={col?.sort}
+              filter={!!col?.filter}
+              filterPlaceholder={col?.filter ? "Search" : undefined}
+              style={{ minWidth: col?.minWidth ? col?.minWidth : "12rem" }}
+            />
+          ))}
         </DataTable>
       </div>
     </div>

@@ -20,6 +20,7 @@ import BackButton from "@/components/ui/BackButton";
 import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
 import { hasPermission } from "@/utilities/Permission";
+import { CITIES } from "../../../../country.testid";
 
 export default function Cities() {
   const router = useRouter();
@@ -141,10 +142,11 @@ export default function Cities() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div className="space-y-8">
-      <div className="space-y-4">
+    <div className="w-full" data-testid={CITIES.root}>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={CITIES.headerBar}>
         <div className="flex items-center justify-between">
-          <h2 className="flex items-center gap-x-2 text-xl lg:text-2xl font-inter font-semibold">
+          <h2 className="flex items-center gap-x-2 text-xl lg:text-2xl font-inter font-semibold" data-testid={CITIES.title}>
             <BackButton /> All Cities
           </h2>
 
@@ -157,11 +159,16 @@ export default function Cities() {
             </div>
           </div> */}
         </div>
-        <div className="flex gap-x-2 justify-end">
+      </div>
+
+     <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+        <div className="flex items-center gap-4 justify-end col-span-1 sm:col-span-2 xl:col-span-4">
           {hasPermission("country_create") && (
           <button
             onClick={() => setModal("add")}
             className="rounded-lg font-inter font-medium text-white px-6 sm:px-10 py-2.5 sm:py-4 bg-theme hover:bg-white hover:text-theme border border-theme duration-150"
+            data-testid={CITIES.addCityBtn}
           >
             + Add City
           </button> )}
@@ -174,13 +181,11 @@ export default function Cities() {
               )
             }
             className="text-theme bg-white border border-theme hover:text-white hover:bg-theme duration-150 rounded-lg font-inter font-medium px-6 sm:px-10 py-2.5 sm:py-4 "
+            data-testid={CITIES.addTerritoryBtn}
           >
             + Add Territory
           </button> )}
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         <ManagementTab
           countryCode={countryData?.data?.data?.isoCode}
           title={countryData?.data?.data?.name}
@@ -202,7 +207,9 @@ export default function Cities() {
           //   checkbox={true}
           //   selectedRows={selectedRows}
           //   setSelectedRows={setSelectedRows}
+          rowTestId={(row) => `data-testid-${CITIES.row(row.id)}`}
         />
+      </div>
       </div>
 
       {/* Modal */}
@@ -210,9 +217,10 @@ export default function Cities() {
         visible={modal === "add" || modal === "delete"}
         style={{ width: "50vw" }}
         className="font-nunito"
+        data-testid={CITIES.cityModal}
         onHide={() => setModal(false)}
         header={
-          <div className="font-nunito font-bold text-2xl text-center">
+          <div className="font-nunito font-bold text-2xl text-center" data-testid={CITIES.cityModalTitle}>
             {modal === "add" ? "Add" : "Delete"} City
           </div>
         }
@@ -225,7 +233,7 @@ export default function Cities() {
             className="space-y-4 flex flex-col items-center"
           >
             {/* body */}
-            <div className="w-full space-y-4">
+            <div className="w-full space-y-4" data-testid={CITIES.cityModalBody}>
               {modal === "add" ? (
                 <div className="flex flex-col gap-y-2 w-full">
                   <label className="text-labelColor font-medium font-satoshi">
@@ -241,6 +249,7 @@ export default function Cities() {
                     }
                     menuPortalTarget={document.body}
                     menuPosition="fixed"
+                    data-testid={CITIES.citySelectDropdown}
                   />
                 </div>
               ) : (
@@ -258,12 +267,14 @@ export default function Cities() {
                     setSelectedRows([]);
                   }}
                   className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow  px-6"
+                  data-testid={CITIES.cityModalCancelBtn}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   className="hover:bg-white hover:text-theme duration-150 rounded-lg border border-theme text-white px-10 bg-theme"
+                  data-testid={CITIES.cityModalSubmitBtn}
                 >
                   {modal === "add" ? "Add" : "Delete"} City
                 </button>

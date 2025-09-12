@@ -46,7 +46,7 @@ import { useDataContext } from "@/utilities/DataContext";
 import { getMessagingInstance, onMessage } from "@/utilities/firebase";
 import { requestDeviceToken } from "@/utilities/requestFCMToken";
 import { hasPermission } from "@/utilities/Permission";
-
+import { LEFTBAR } from "@/components/ui/leftbar.testid";
 
 export default function Leftbar(props) {
   if (typeof window !== "undefined") {
@@ -312,15 +312,18 @@ export default function Leftbar(props) {
 
   return (
     <section
+      data-testid={LEFTBAR.root}
       className={`bg-white ${toggle ? "hidden" : "block"
         } md:block fixed w-full md:max-w-[240px] lg:max-w-[288px] h-full sm:pb-5 sm:pl-2 border-r-2 z-50`}
     >
-      <div className="flex items-center justify-center font-bold text-4xl 2xl:min-h-[70px] h-[70px] 2xl:h-[94px] border-b max-md:hidden">
+      <div className="flex items-center justify-center font-bold text-4xl 2xl:min-h-[70px] h-[70px] 2xl:h-[94px] border-b max-md:hidden"
+       data-testid={LEFTBAR.logoContainer}>
         <Link href="/">
           <img
             src="/images/logocoffee.png"
             alt="logo"
             className="h-full max-h-[70px]"
+            data-testid={LEFTBAR.logoImage}
           />
         </Link>
       </div>
@@ -338,6 +341,7 @@ export default function Leftbar(props) {
               src="/images/logocoffee.png"
               alt="logo"
               className="max-w-48 max-h-[70px]"
+              data-testid={LEFTBAR.logoImage}
             />
           </Link>
         </div>
@@ -354,7 +358,7 @@ export default function Leftbar(props) {
 
       {userType === "admin" ? (
         <ul className="flex flex-col space-y-1 pt-2 overflow-auto h-[90%]">
-          {hasPermission("dashboard_view") && <ListHead title="Dashboard" to="/" Icon={MdDashboard} />}
+          {hasPermission("dashboard_view") && <ListHead data-testid={LEFTBAR.dashboardSection} title="Dashboard" to="/" Icon={MdDashboard} />}
           {hasPermission("orders_view") && (
           <ListHead
             title="Order Management"
@@ -369,6 +373,7 @@ export default function Leftbar(props) {
             onClick={() =>
               handleActive("orderManagement", active?.orderManagement?.status)
             }
+            data-testid={LEFTBAR.orderManagementSection}
           /> )}
 
           {active?.orderManagement?.tab === "orderManagement" &&
@@ -380,31 +385,37 @@ export default function Leftbar(props) {
                     title="New Orders"
                     to="/orders/new-orders"
                     count={overAllData?.data?.data?.[0]?.count || ""}
+                    data-testid={LEFTBAR.listItem("orderManagement", "New Orders")} 
                   /> 
                   <ListItems
                     title="All Orders"
                     to="/orders"
                     count={allOrder || ""}
+                    data-testid={LEFTBAR.listItem("orderManagement", "All Orders")} 
                   /> 
                   <ListItems
                     title="Upcoming Orders"
                     to="/orders/upcoming"
                     count={overAllData?.data?.data?.[6]?.count || ""}
+                    data-testid={LEFTBAR.listItem("orderManagement", "Upcoming Orders")} 
                   /> 
                   <ListItems
                     title="Dispatched Orders"
                     to="/orders/assigned"
                     count={overAllData?.data?.data?.[1]?.count || ""}
+                    data-testid={LEFTBAR.listItem("orderManagement", "Dispatched Orders")} 
                   /> 
                   <ListItems
                     title="Acknowledged Orders"
                     to="/orders/acknowledged"
                     count={overAllData?.data?.data?.[2]?.count || ""}
+                    data-testid={LEFTBAR.listItem("orderManagement", "Acknowledged Orders")} 
                   /> 
                   <ListItems
                     title="Shipped Orders"
                     to="/orders/shiped"
                     count={overAllData?.data?.data?.[4]?.count || ""}
+                    data-testid={LEFTBAR.listItem("orderManagement", "Shipped Orders")} 
                   /> 
                   {/* <ListItems
                     title="Dispatched Orders"
@@ -414,6 +425,7 @@ export default function Leftbar(props) {
                     title="Cancelled Orders"
                     to="/orders/cancelled"
                     count={overAllData?.data?.data?.[5]?.count || ""}
+                    data-testid={LEFTBAR.listItem("orderManagement", "Cancelled Orders")} 
                   /> 
                 </div>
                 <hr className="w-full" />
@@ -423,6 +435,7 @@ export default function Leftbar(props) {
           <ListHead
             title="Supplier Management"
             Icon={GiHumanTarget}
+            data-testid={LEFTBAR.supplierManagementSection}
             active={
               pathname === "/suppliers" || pathname === "/add-new-supplier"
             }
@@ -443,7 +456,8 @@ export default function Leftbar(props) {
             active?.supplierManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  <ListItems title="All Supplier" to="/suppliers" />
+                  <ListItems title="All Supplier" to="/suppliers" 
+                  data-testid={LEFTBAR.listItem("supplierManagement", "All Supplier")} />
                   {/* <ListItems title="Active Supplier" to="/active-supplier" />
                   <ListItems
                     title="Inactive Supplier"
@@ -457,6 +471,7 @@ export default function Leftbar(props) {
           <ListHead
             title="Client Management"
             Icon={GoPeople}
+            data-testid={LEFTBAR.clientManagementSection}
             active={pathname.includes("/customers")}
             Angle={
               active?.clientManagement?.tab === "clientManagement" &&
@@ -472,8 +487,8 @@ export default function Leftbar(props) {
             active?.clientManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  {hasPermission("customer_view") && <ListItems title="All Clients" to="/customers" />}
-                  {hasPermission("selected-customer_view") && isEmployee && <ListItems title="Selected Clients" to="/active-clients" />}
+                  {hasPermission("customer_view") && <ListItems title="All Clients" to="/customers" data-testid={LEFTBAR.listItem("clientManagement", "All Clients")} />}
+                  {hasPermission("selected-customer_view") && isEmployee && <ListItems title="Selected Clients" to="/active-clients" data-testid={LEFTBAR.listItem("clientManagement", "Selected Clients")} />}
                   {/* <ListItems title="Inactive Clients" to="/inactive-clients" /> */}
                 </div>
                 <hr className="w-full" />
@@ -483,6 +498,7 @@ export default function Leftbar(props) {
           <ListHead
             title="Local Partners"
             Icon={GoPeople}
+            data-testid={LEFTBAR.localPartnersSection}
             active={pathname === "/sale-representative"}
             Angle={
               active?.saleRepresentative?.tab === "saleRepresentative" &&
@@ -504,6 +520,7 @@ export default function Leftbar(props) {
                   <ListItems
                     title="All Local Partners"
                     to="/sale-representative"
+                    data-testid={LEFTBAR.listItem("saleRepresentative", "All Local Partners")} 
                   />
                 </div>
                 <hr className="w-full" />
@@ -513,6 +530,7 @@ export default function Leftbar(props) {
           <ListHead
             title="Invoice Management"
             Icon={PiInvoiceBold}
+            data-testid={LEFTBAR.invoiceManagementSection}
             Angle={
               active?.invoiceManagement?.tab === "invoiceManagement" &&
               active?.invoiceManagement?.status
@@ -531,8 +549,8 @@ export default function Leftbar(props) {
             active?.invoiceManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  <ListItems title="All Invoices" to="/invoices" />
-                  <ListItems title="Individual Invoices" to="/individual-invoices" />
+                  <ListItems title="All Invoices" to="/invoices" data-testid={LEFTBAR.listItem("invoiceManagement", "All Invoices")} />
+                  <ListItems title="Individual Invoices" to="/individual-invoices" data-testid={LEFTBAR.listItem("invoiceManagement", "Individual Invoices")} />
                 </div>
                 <hr className="w-full" />
               </>
@@ -541,6 +559,7 @@ export default function Leftbar(props) {
           <ListHead
             title="Payment Pullouts"
             active={pathname === "/pullouts"}
+            data-testid={LEFTBAR.pulloutsManagementSection}
             Icon={SlDrawer}
             Angle={
               active?.pullouts?.tab === "pullouts" &&
@@ -560,7 +579,7 @@ export default function Leftbar(props) {
             active?.pullouts?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  <ListItems title="Pullouts" to="/pullouts" />
+                  <ListItems title="Pullouts" to="/pullouts" data-testid={LEFTBAR.listItem("pullouts", "Pullouts")} />
                 </div>
                 <hr className="w-full" />
               </>
@@ -723,6 +742,7 @@ export default function Leftbar(props) {
             title="Inventory Management"
             // to="/inventory/stock"
             active={pathname === "/inventory/stock"}
+            data-testid={LEFTBAR.inventoryManagementSection}
             Icon={MdInventory}
             Angle={
               active?.inventoryManagement?.tab === "inventoryManagement" &&
@@ -742,7 +762,7 @@ export default function Leftbar(props) {
             active?.inventoryManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  <ListItems title="Inventory Stock" to="/inventory/stock" />
+                  <ListItems title="Inventory Stock" to="/inventory/stock" data-testid={LEFTBAR.listItem("inventoryManagement", "Inventory Stock")} />
                 </div>
                 <hr className="w-full" />
               </>
@@ -752,6 +772,7 @@ export default function Leftbar(props) {
             title="Category Management"
             // to="/inventory/stock"
             active={pathname === "/category" || pathname === "/sub-category"}
+            data-testid={LEFTBAR.categoryManagementSection}
             Icon={MdInventory}
             Angle={
               active?.categoryManagement?.tab === "categoryManagement" &&
@@ -771,7 +792,7 @@ export default function Leftbar(props) {
             active?.categoryManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  <ListItems title="Category" to="/category" />
+                  <ListItems title="Category" to="/category" data-testid={LEFTBAR.listItem("categoryManagement", "Category")} />
                   {/* <ListItems title="Sub Category" to="/sub-category" /> */}
                 </div>
                 <hr className="w-full" />
@@ -781,6 +802,7 @@ export default function Leftbar(props) {
           <ListHead
             title="Employee Management"
             active={pathname === "/employee"}
+            data-testid={LEFTBAR.employeeManagementSection}
             Icon={GiHumanTarget}
             Angle={
               active?.employees?.tab === "employees" &&
@@ -800,7 +822,7 @@ export default function Leftbar(props) {
             active?.employees?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  <ListItems title="Employee" to="/employee" />
+                  <ListItems title="Employee" to="/employee" data-testid={LEFTBAR.listItem("employees", "Employee")} />
                 </div>
                 <hr className="w-full" />
               </>
@@ -850,6 +872,7 @@ export default function Leftbar(props) {
           <ListHead
             title="Zone Management"
             Icon={RiTimeZoneLine}
+            data-testid={LEFTBAR.zoneManagementSection}
             active={
               pathname === "/zones" ||
               pathname === "/countries" ||
@@ -870,7 +893,7 @@ export default function Leftbar(props) {
             active?.zoneManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  <ListItems title="All Countries" to="/countries" />
+                  <ListItems title="All Countries" to="/countries" data-testid={LEFTBAR.listItem("zoneManagement", "All Countries")} />
                 </div>
                 <hr className="w-full" />
               </>
@@ -911,6 +934,7 @@ export default function Leftbar(props) {
             Icon={FaShippingFast}
             to={"/shipping-charges"}
             active={pathname.includes("/shipping-charges")}
+            data-testid={LEFTBAR.shippingChargesManagementSection}
           /> }
           {hasPermission("report_view") &&
           <ListHead
@@ -918,6 +942,7 @@ export default function Leftbar(props) {
             Icon={PiChartBar}
             to={"/reports"}
             active={pathname.includes("/reports")}
+            data-testid={LEFTBAR.reportManagementSection}
           /> }
 
           <div className="mx-2 pb-7">
@@ -933,11 +958,12 @@ export default function Leftbar(props) {
         </ul>
       ) : userType === "supplier" ? (
         <ul className="flex flex-col space-y-1 pt-2  overflow-auto h-[90%]">
-          <ListHead title="Dashboard" to="/" Icon={MdDashboard} />
+          <ListHead title="Dashboard" to="/" Icon={MdDashboard} data-testid={LEFTBAR.dashboardSection}/>
 
           <ListHead
             title="Order Management"
             Icon={AiOutlineUnorderedList}
+            data-testid={LEFTBAR.orderManagementSection}
             active={
               pathname === "/supplier/assigned-orders" ||
               pathname === "/supplier/acknowledge-orders" ||
@@ -966,16 +992,19 @@ export default function Leftbar(props) {
                     title="New Orders"
                     to="/supplier/assigned-orders"
                     count={overAllData?.data?.data?.[0]?.count || ""}
+                    data-testid={LEFTBAR.listItem("orderManagement", "New Orders")} 
                   />
                   <ListItems
                     title="Acknowledged Orders"
                     to="/supplier/acknowledge-orders"
                     count={overAllData?.data?.data?.[2]?.count || ""}
+                    data-testid={LEFTBAR.listItem("orderManagement", "Acknowledged Orders")} 
                   />
                   <ListItems
                     title="Shipped Orders"
                     to="/supplier/shiped-orders"
                     count={overAllData?.data?.data?.[3]?.count || ""}
+                    data-testid={LEFTBAR.listItem("orderManagement", "Shipped Orders")} 
                   />
                   {/* <ListItems
                     title="Dispatched Orders"
@@ -995,6 +1024,7 @@ export default function Leftbar(props) {
             Icon={PiChartBar}
             to={"/supplier/reports"}
             active={pathname.includes("/reports")}
+            data-testid={LEFTBAR.reportManagementSection}
           />
 
           <div className="mx-2 pb-7">
@@ -1010,12 +1040,13 @@ export default function Leftbar(props) {
         </ul>
       ) : userType === "salesRepresentative" ? (
         <ul className="flex flex-col space-y-1 pt-2 overflow-auto h-[90%]">
-          {hasPermission("dashboard_view") && <ListHead title="Dashboard" to="/" Icon={MdDashboard} />}
+          {hasPermission("dashboard_view") && <ListHead data-testid={LEFTBAR.dashboardSection} title="Dashboard" to="/" Icon={MdDashboard} />}
           {hasPermission("quotation_view") &&
           <ListHead
             title="Quotation Management"
             active={pathname === "/sales-representative/quotation"}
             Icon={MdInventory}
+            data-testid={LEFTBAR.quotationManagementSection}
             Angle={
               active?.inventoryManagement?.tab === "inventoryManagement" &&
               active?.inventoryManagement?.status
@@ -1037,6 +1068,7 @@ export default function Leftbar(props) {
                   <ListItems
                     title="Quotation"
                     to="/sales-representative/quotation"
+                    data-testid={LEFTBAR.listItem("inventoryManagement", "Quotation")} 
                   />
                 </div>
                 <hr className="w-full" />
@@ -1047,6 +1079,7 @@ export default function Leftbar(props) {
           <ListHead
             title="Client Management"
             Icon={GoPeople}
+            data-testid={LEFTBAR.clientManagementSection}
             active={pathname === "/sales-representative/customers"}
             Angle={
               active?.clientManagement?.tab === "clientManagement" &&
@@ -1066,8 +1099,10 @@ export default function Leftbar(props) {
                   {hasPermission("customer_view") && <ListItems
                     title="All Clients"
                     to="/sales-representative/customers"
+                    data-testid={LEFTBAR.listItem("clientManagement", "All Clients")} 
                   />}
-                  {hasPermission("selected-customer_view") && isEmployee && <ListItems title="Selected Clients" to="/active-clients" />}
+                  {hasPermission("selected-customer_view") && isEmployee && <ListItems title="Selected Clients" to="/active-clients" 
+                  data-testid={LEFTBAR.listItem("clientManagement", "Selected Clients")} />}
                 </div>
                 <hr className="w-full" />
               </>
@@ -1092,6 +1127,7 @@ export default function Leftbar(props) {
           <ListHead
             title="Order Management"
             Icon={AiOutlineUnorderedList}
+            data-testid={LEFTBAR.orderManagementSection}
             active={pathname.includes("/orders") || pathname.includes("-order")}
             Angle={
               active?.orderManagement?.tab === "orderManagement" &&
@@ -1112,40 +1148,48 @@ export default function Leftbar(props) {
                   <ListItems
                     title="Create Orders"
                     to="/sales-representative/create-order"
+                    data-testid={LEFTBAR.listItem("orderManagement", "Create Orders")} 
                   />}
                   <ListItems
                     title="New Orders"
                     to="/orders/new-orders"
                     count={overAllData?.data?.data?.[0]?.count || ""}
+                    data-testid={LEFTBAR.listItem("orderManagement", "New Orders")} 
                   />
-                  <ListItems title="All Orders" to="/orders" count={allOrder || ""} />
+                  <ListItems title="All Orders" to="/orders" count={allOrder || ""} 
+                  data-testid={LEFTBAR.listItem("orderManagement", "All Orders")} />
 
                   <ListItems
                     title="Upcoming Orders"
                     to="/sales-representative/upcoming-orders"
                     count={overAllData?.data?.data?.[6]?.count || ""}
+                    data-testid={LEFTBAR.listItem("orderManagement", "Upcoming Orders")} 
                   />
                   {/* <ListItems title="Assigned Orders" to="/orders/assigned" /> */}
                   <ListItems
                     title="Dispatched Orders"
                     to="/orders/assigned"
                     count={overAllData?.data?.data?.[1]?.count || ""}
+                    data-testid={LEFTBAR.listItem("orderManagement", "Dispatched Orders")} 
                   />
 
                   <ListItems
                     title="Acknowledged Orders"
                     to="/orders/acknowledged"
                     count={overAllData?.data?.data?.[2]?.count || ""}
+                    data-testid={LEFTBAR.listItem("orderManagement", "Acknowledged Orders")} 
                   />
                   <ListItems
                     title="Shipped Orders"
                     to="/orders/shiped"
                     count={overAllData?.data?.data?.[4]?.count || ""}
+                    data-testid={LEFTBAR.listItem("orderManagement", "Shipped Orders")} 
                   />
                   <ListItems 
                     title="Cancelled Orders" 
                     to="/orders/cancelled"
                     count={overAllData?.data?.data?.[5]?.count || ""}
+                    data-testid={LEFTBAR.listItem("orderManagement", "Cancelled Orders")} 
                    />
                 </div>
                 <hr className="w-full" />
@@ -1155,6 +1199,7 @@ export default function Leftbar(props) {
           <ListHead
             title="Invoice Management"
             Icon={PiInvoiceBold}
+            data-testid={LEFTBAR.invoiceManagementSection}
             Angle={
               active?.invoiceManagement?.tab === "invoiceManagement" &&
               active?.invoiceManagement?.status
@@ -1173,8 +1218,10 @@ export default function Leftbar(props) {
             active?.invoiceManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  <ListItems title="All Invoices" to="/invoices" />
-                  <ListItems title="Individual Invoices" to="/individual-invoices" />
+                  <ListItems title="All Invoices" to="/invoices" 
+                  data-testid={LEFTBAR.listItem("invoiceManagement", "All Invoices")} />
+                  <ListItems title="Individual Invoices" to="/individual-invoices" 
+                  data-testid={LEFTBAR.listItem("invoiceManagement", "Individual Invoices")} />
                 </div>
                 <hr className="w-full" />
               </>
@@ -1184,6 +1231,7 @@ export default function Leftbar(props) {
             title="Payment Pullouts"
             active={pathname === "/pullouts"}
             Icon={SlDrawer}
+            data-testid={LEFTBAR.pulloutsManagementSection}
             Angle={
               active?.pullouts?.tab === "pullouts" &&
               active?.pullouts?.status
@@ -1202,7 +1250,8 @@ export default function Leftbar(props) {
             active?.pullouts?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  <ListItems title="Pullouts" to="/pullouts" />
+                  <ListItems title="Pullouts" to="/pullouts" 
+                  data-testid={LEFTBAR.listItem("pullouts", "Pullouts")} />
                 </div>
                 <hr className="w-full" />
               </>
@@ -1212,6 +1261,7 @@ export default function Leftbar(props) {
             title="Employee Management"
             active={pathname === "/employee"}
             Icon={GiHumanTarget}
+            data-testid={LEFTBAR.employeeManagementSection}
             Angle={
               active?.employees?.tab === "employees" &&
               active?.employees?.status
@@ -1230,7 +1280,8 @@ export default function Leftbar(props) {
             active?.employees?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  <ListItems title="Employee" to="/employee" />
+                  <ListItems title="Employee" to="/employee" 
+                  data-testid={LEFTBAR.listItem("employees", "Employee")} />
                 </div>
                 <hr className="w-full" />
               </>
@@ -1240,6 +1291,7 @@ export default function Leftbar(props) {
             title="Account Management"
             Icon={AiOutlineUnorderedList}
             active={pathname.includes("/account")}
+            data-testid={LEFTBAR.accountManagementSection}
             Angle={
               active?.accountManagement?.tab === "accountManagement" &&
               active?.accountManagement?.status
@@ -1279,6 +1331,7 @@ export default function Leftbar(props) {
             title="Wallet Management"
             Icon={AiOutlineUnorderedList}
             to={"/sales-representative/wallet"}
+            data-testid={LEFTBAR.walletManagementSection}
             active={pathname === "/sales-representative/wallet"}
             // Angle={
             //   active?.orderManagement?.tab === "walletManagement" &&
@@ -1296,6 +1349,7 @@ export default function Leftbar(props) {
             Icon={PiChartBar}
             to={"/sales-representative/reports"}
             active={pathname.includes("/reports")}
+            data-testid={LEFTBAR.reportManagementSection}
           /> )}
 
           <div className="mx-2 pb-7">
@@ -1303,6 +1357,7 @@ export default function Leftbar(props) {
               className="w-full font-inter font-medium text-lg sm:text-sm lg:text-base flex items-center gap-x-2 px-2 py-3 rounded-lg text-black hover:bg-black hover:text-white 
           duration-200"
               onClick={logoutFunc}
+              data-testid={LEFTBAR.userLogoutButton}
             >
               <MdLogout size={26} />
               <span>Logout</span>

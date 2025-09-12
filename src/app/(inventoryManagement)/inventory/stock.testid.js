@@ -7,6 +7,13 @@ const INVENTORY_MANAGEMENT = {
 
   // filter
   categoryFilter: "inventory-management-category-filter",
+  
+  // stats
+  statsGrid: "inventory-management-stats-grid",
+  totalStocksCard: "inventory-management-total-stocks-card",
+
+  // main table
+  row: (id) => `inventory-management-row-${id}`,
 
   // actions
   addProductBtn: "inventory-management-add-product-btn",

@@ -17,6 +17,7 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
     poNumber: "",
   });
   const [isPrint, setIsPrint] = useState(false);
+  const [isLinkCopied, setIsLinkCopied] = useState(false);
 
   const handleDownload = () => {
     setIsPrint(true);
@@ -36,6 +37,21 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
     setTimeout(() => {
       setIsPrint(false);
     }, 3000);
+  };
+
+  const handleCopyLink = () => {
+    const link = `https://www.busybeancoffee.com/paymentCheck?orderId=${invoiceData?.id}`;
+    navigator.clipboard.writeText(link)
+      .then(() => {
+        setIsLinkCopied(true); 
+        // info_toaster("Payment link copied to clipboard!"); 
+        setTimeout(() => {
+          setIsLinkCopied(false); 
+        }, 2000);
+      })
+      .catch(() => {
+        info_toaster("Failed to copy the link."); 
+      });
   };
 
   const handleChange = (index, value, type) => {
@@ -281,13 +297,24 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
           <div className="text-xl font-semibold mt-10">
             ${invoiceData?.totalBill} due amount
           </div>
-          <button
-            onClick={() => window.open(`https://www.busybeancoffee.com/paymentCheck?orderId=${invoiceData?.id}`, '_blank')}
-            className="mb-4 px-4 py-2 bg-theme text-white rounded inline-block hover:bg-theme-dark"
-          >
-            Pay Online
-          </button>
+          {!isPrint && (
+            <>
+              <button
+                onClick={() => window.open(`https://www.busybeancoffee.com/paymentCheck?orderId=${invoiceData?.id}`, '_blank')}
+                className="mb-4 px-4 py-2 bg-theme text-white rounded inline-block hover:bg-theme-dark"
+              >
+                Pay Online
+              </button>
 
+              <button
+                onClick={handleCopyLink}
+                className={`ml-2 mb-4 px-4 py-2 rounded inline-block transition-colors ${isLinkCopied ? "bg-green-500 text-white" : "bg-black text-white"
+                  }`}
+              >
+                {isLinkCopied ? "Link Copied!" : "Copy Payment Link"}
+              </button>
+            </>
+          )}
           {/* Table */}
           <div className="mt-4">
             <div className="w-full text-sm">
@@ -306,10 +333,10 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
                     return (
                       <div className="border-b last:border-0 grid grid-cols-7 gap-4 h-8 items-center">
                         <div className="px-2 text-left">{prod?.productCode}</div>
-                        <div className="px-2 font-semibold col-span-2 overflow-hidden text-ellipsis whitespace-nowrap">
+                        <div className="px-2 py-2 font-semibold col-span-2 overflow-hidden text-ellipsis whitespace-nowrap">
                           {prod?.product ?? prod?.productName ?? prod?.name ?? ""}
                         </div>
-                        <div className="px-2 text-left overflow-hidden text-ellipsis whitespace-nowrap">
+                        <div className="px-2 py-2 text-left overflow-hidden text-ellipsis whitespace-nowrap">
                           {prod?.grind} 
                         </div>
                         <div className="px-2 text-right">

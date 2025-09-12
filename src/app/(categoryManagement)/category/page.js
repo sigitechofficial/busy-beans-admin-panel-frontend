@@ -25,6 +25,7 @@ import ErrorHandler from "@/utilities/ErrorHandler";
 import { CiMenuBurger } from "react-icons/ci";
 import { useDataContext } from "@/utilities/DataContext";
 import { hasPermission } from "@/utilities/Permission";
+import { CATEGORY_MANAGEMENT } from "./category.testid";
 
 export default function Category() {
   const { data, reFetch } = GetAPI("api/v1/admin/category", "category");
@@ -173,6 +174,7 @@ export default function Category() {
               onHandleColor="#fff"
               className="react-switch"
               boxShadow="none"
+              data-testid={CATEGORY_MANAGEMENT.rowStatusSwitch(cat.id)}
             />
           </label>
         ) : (
@@ -180,7 +182,7 @@ export default function Category() {
         )
       ),
       action: (
-        <div className="flex gap-x-2">
+        <div className="flex gap-x-2" data-testid={CATEGORY_MANAGEMENT.row(cat.id)}>
           {hasPermission("category_update") && (
           <button
             too
@@ -190,6 +192,7 @@ export default function Category() {
               setModal("edit");
               setCategoryID(cat?.id);
             }}
+            data-testid={CATEGORY_MANAGEMENT.rowEditBtn(cat.id)}
           >
             <FaEdit size={24} />
           </button> )}
@@ -200,6 +203,7 @@ export default function Category() {
               setModal("delete");
               setCategoryID(cat?.id);
             }}
+            data-testid={CATEGORY_MANAGEMENT.rowDeleteBtn(cat.id)}
           >
             <MdDelete size={24} />
           </button> )}
@@ -213,8 +217,9 @@ export default function Category() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+    <div data-testid={CATEGORY_MANAGEMENT.root}>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={CATEGORY_MANAGEMENT.headerBar}>
         <div className="flex items-center gap-2">
           <p
             onClick={() => setToggle(!toggle)}
@@ -222,7 +227,7 @@ export default function Category() {
           >
             <CiMenuBurger size={20} />
           </p>
-          <h2 className="text-xl font-inter font-semibold">All Categories</h2>
+          <h2 className="text-xl font-inter font-semibold" data-testid={CATEGORY_MANAGEMENT.title}>All Categories</h2>
         </div>
 
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
@@ -263,22 +268,25 @@ export default function Category() {
           </div>
         </div> */}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5" data-testid={CATEGORY_MANAGEMENT.statsGrid}>
           <ManagementTab
             title="Total Categories"
             desc={data?.data?.data?.length}
+            data-testid={CATEGORY_MANAGEMENT.totalCategoriesCard}
           />
           {/* <ManagementTab title="Total Countries" desc="5000" /> */}
           {/* <ManagementTab title="Total Cities" desc="55000" /> */}
         </div>
 
-        <div>
+        <div data-testid={CATEGORY_MANAGEMENT.tableWrapper}>
           <MyDataTable
             columns={columns}
             data={datas}
             placeholder={"Search ..."}
             pagination={true}
             search={true}
+            data-testid={CATEGORY_MANAGEMENT.table}
+            rowTestId={(row) => `data-testid-${CATEGORY_MANAGEMENT.row(row.id)}`}
           />
         </div>
 
@@ -288,8 +296,9 @@ export default function Category() {
           // style={{ width: "40vw" }}
           className="font-nunito w-[80%] lg:w-[40vw]"
           onHide={handleModalClose}
+          data-testid={CATEGORY_MANAGEMENT.modal}
           header={
-            <div className="font-nunito font-bold text-sm lg:text-2xl text-center">
+            <div className="font-nunito font-bold text-sm lg:text-2xl text-center" data-testid={CATEGORY_MANAGEMENT.modalTitle}>
               {modal === "add"
                 ? "Add"
                 : modal === "edit"
@@ -336,6 +345,7 @@ export default function Category() {
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Enter Category name"
                       className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      data-testid={CATEGORY_MANAGEMENT.nameInput}
                     />
                   </div>
                 )}
@@ -350,6 +360,7 @@ export default function Category() {
                   <button
                     type="submit"
                     className="rounded-lg border border-theme text-white px-10 bg-theme"
+                    data-testid={CATEGORY_MANAGEMENT.modalSubmitBtn}
                   >
                     {modal === "add"
                       ? "Add"

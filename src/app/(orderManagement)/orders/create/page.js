@@ -13,6 +13,7 @@ import axios from "axios";
 import { CiMenuBurger } from "react-icons/ci";
 import { LuSearch } from "react-icons/lu"; 
 import { useDataContext } from "@/utilities/DataContext";
+import { ORDERS_CREATE } from "../orders.testids"
 
 export default function CreateOrder() {
   if (typeof window !== "undefined") {
@@ -169,8 +170,9 @@ export default function CreateOrder() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+    <div data-testid={ORDERS_CREATE.root}>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+        data-testid={ORDERS_CREATE.headerBar} >
         <div className="flex items-center gap-2">
           <p onClick={() => setToggle(!toggle)} className="cursor-pointer md:hidden">
             <CiMenuBurger size={20} />
@@ -183,6 +185,7 @@ export default function CreateOrder() {
             options={categoryList}
             className="w-40"
             styles={selectStyles}
+            data-testid={ORDERS_CREATE.categorySelect}
           />
       </div>
 
@@ -226,11 +229,13 @@ export default function CreateOrder() {
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search products..."
             className="w-[220px] sm:w-[300px] md:w-[360px] h-10 md:h-12 bg-themeGray rounded-lg ps-10 pe-5 outline-none placeholder:font-inter placeholder:font-medium focus:bg-gray-200"
+            data-testid={ORDERS_CREATE.searchInput}
           />
           <LuSearch size={20} color="#111827" className="absolute top-3.5 left-3" />
         </div>
         <div className="space-y-4 relative">
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6"
+            data-testid={ORDERS_CREATE.productsGrid}>
             {filteredProducts?.map((item, i) => (
               <StockCard
                 key={i}
@@ -248,6 +253,7 @@ export default function CreateOrder() {
                 price={item?.price}
                 handlePlus={handlePlus}
                 handleMinus={handleMinus}
+                data-testid={ORDERS_CREATE.productCard(item?.id)}
               />
             ))}
           </div>
@@ -260,6 +266,7 @@ export default function CreateOrder() {
                   : info_toaster("No Item is Selected")
               }
               className="text-xl rounded-lg font-inter font-medium text-white px-2 sm:px-4 py-2.5 sm:py-4 bg-theme"
+              data-testid={ORDERS_CREATE.openDrawerBtn}
             >
               Create Order
               <div className="absolute -right-3 -top-3 bg-black size-7 rounded-full text-lg">

@@ -16,6 +16,7 @@ import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import dayjs from "dayjs";
 import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
+import { UPCOMING_ORDERS } from "../orders.testids";
 
 export default function UpcomingOrders() {
   const router = useRouter();
@@ -112,6 +113,7 @@ export default function UpcomingOrders() {
             setItems(detail?.items);
             setModal("view");
           }}
+          data-testid={UPCOMING_ORDERS.rowViewBtn(detail?.id)}
         >
           <FaEye size={24} />
         </button>
@@ -133,7 +135,8 @@ export default function UpcomingOrders() {
     <Loader />
   ) : (
     <>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+        data-testid={UPCOMING_ORDERS.headerBar}>
         <div className="flex items-center gap-2">
           <p
             onClick={() => setToggle(!toggle)}
@@ -144,10 +147,10 @@ export default function UpcomingOrders() {
           <h2 className="text-xl font-inter font-semibold">Upcoming Orders</h2>
         </div>
 
-        <Select placeholder="Filters" className="w-40" styles={selectStyles} />
+        <Select placeholder="Filters" className="w-40" styles={selectStyles} data-testid={UPCOMING_ORDERS.headerFilterSelect}/>
       </div>
 
-      <div className="space-y-8 pt-28 2xl:pt-32 px-6 2xl:px-12">
+      <div className="space-y-8 pt-28 2xl:pt-32 px-6 2xl:px-12" data-testid={UPCOMING_ORDERS.root}>
         {/* <div className="flex items-center justify-between">
           <h2 className="text-xl lg:text-2xl font-inter font-semibold">
             Upcoming Orders
@@ -163,15 +166,17 @@ export default function UpcomingOrders() {
           <button
             onClick={handleRebookOrder}
             className="rounded-lg font-inter font-medium text-white bg-theme hover:text-theme hover:bg-white border border-theme duration-150 px-5 py-3 sm:h-full"
+            data-testid={UPCOMING_ORDERS.rebookBtn}
           >
             Rebook Order
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5" data-testid={UPCOMING_ORDERS.statsGrid}>
           <ManagementTab
             title="Total Orders"
             desc={data?.data?.order?.length}
+            data-testid={UPCOMING_ORDERS.totalOrdersCard}
           />
           {/* <ManagementTab title="New Orders" desc="5%" />
         <ManagementTab title="Pending Orders" desc="5000" />
@@ -179,7 +184,7 @@ export default function UpcomingOrders() {
         <ManagementTab title="Cancelled Orders" desc="5,000" /> */}
         </div>
 
-        <div>
+        <div div data-testid={UPCOMING_ORDERS.tableWrapper}>
           <MyDataTable
             columns={columns}
             data={datas}
@@ -189,6 +194,8 @@ export default function UpcomingOrders() {
             selectedRows={selectedRows}
             setSelectedRows={setSelectedRows}
             search={true}
+            data-testid={UPCOMING_ORDERS.table}
+            rowTestId={(row) => `data-testid-${UPCOMING_ORDERS.row(row.id)}`}
           />
         </div>
 
@@ -199,18 +206,19 @@ export default function UpcomingOrders() {
           className="font-nunito"
           onHide={handleCancel}
           header={
-            <div className="font-nunito font-bold text-2xl text-center">
+            <div className="font-nunito font-bold text-2xl text-center" data-testid={UPCOMING_ORDERS.itemsDialogHeader}>
               Item Details
             </div>
           }
         >
-          <div className="space-y-4">
+          <div className="space-y-4" data-testid={UPCOMING_ORDERS.itemsTableWrapper}>
             <MyDataTable
               columns={columnsItems}
               data={datasItems}
               placeholder={"Search ..."}
               pagination={true}
               hide={true}
+              data-testid={UPCOMING_ORDERS.itemsTable}
             />
             <div className="flex justify-end">
               <button
@@ -218,6 +226,7 @@ export default function UpcomingOrders() {
                 onClick={handleCancel}
                 className="rounded-lg border border-theme bg-theme text-white hover:bg-white hover:text-theme duration-150
                        shadow-buttonShadow px-6 font-nunito py-3 font-medium"
+                data-testid={UPCOMING_ORDERS.itemsCancelBtn}
               >
                 Cancel
               </button>

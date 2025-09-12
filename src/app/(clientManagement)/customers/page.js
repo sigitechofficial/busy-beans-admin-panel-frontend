@@ -20,6 +20,7 @@ import { useRouter } from "next/navigation";
 import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
 import { hasPermission } from "@/utilities/Permission";
+import { CLIENT_MANAGEMENT } from "./customer.testid";
 
 export default function Customers() {
   const router = useRouter();
@@ -161,9 +162,9 @@ export default function Customers() {
           totalOrderAmount: customer?.totalOrderAmount,
           totalOrderPlaced: customer?.totalOrderPlaced,
           salesRepName: customer?.salesRepName ?? (
-            <di className="w-max text-xs bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+            <div className="w-max text-xs bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
               Not Assigned
-            </di>
+            </div>
           ),
           salesRepState: customer?.salesRepState ?? "-",
           status: (
@@ -263,9 +264,9 @@ export default function Customers() {
           totalOrderAmount: customer?.totalOrderAmount,
           totalOrderPlaced: customer?.totalOrderPlaced,
           salesRepName: customer?.salesRepName ?? (
-            <di className="w-44 bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+            <div className="w-44 bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
               Not Assigned Yet
-            </di>
+            </div>
           ),
           salesRepState: customer?.salesRepState ?? "-",
           status: (
@@ -357,8 +358,9 @@ export default function Customers() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+    <div data-testid={CLIENT_MANAGEMENT.root}>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={CLIENT_MANAGEMENT.headerBar}>
         <div className="flex items-center gap-2">
           <p
             onClick={() => setToggle(!toggle)}
@@ -371,7 +373,7 @@ export default function Customers() {
           </h2>
         </div>
 
-        <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
+        <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative" data-testid={CLIENT_MANAGEMENT.title}>
           {hasPermission("customer_create") && (
           <li onClick={() => router.push("/customers/add")}>Add Customer</li> )}
           {/* <li>Groups</li>
@@ -461,10 +463,11 @@ export default function Customers() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5" data-testid={CLIENT_MANAGEMENT.statsGrid}>
           <ManagementTab
             title="Total Customer"
             desc={data?.data?.data?.length}
+            data-testid={CLIENT_MANAGEMENT.totalCustomerCard}
           />
           {/* <ManagementTab
           title="New Customer"
@@ -486,7 +489,7 @@ export default function Customers() {
         <ManagementTab title="Pending Payments" desc="500" /> */}
         </div>
 
-        <div>
+        <div data-testid={CLIENT_MANAGEMENT.tableWrapper}>
           <MyDataTable
             columns={columns}
             data={datas}
@@ -499,6 +502,8 @@ export default function Customers() {
             onRowClick={(e) => {
               router.push(`/customers/${e?.data?.id}`);
             }}
+            data-testid={CLIENT_MANAGEMENT.table}
+            rowTestId={(row) => `data-testid-${CLIENT_MANAGEMENT.row(row.id)}`}
           />
         </div>
 
@@ -513,6 +518,7 @@ export default function Customers() {
               Assign Local Partner
             </div>
           }
+          data-testid={CLIENT_MANAGEMENT.modal}
         >
           {loader === "unassigned" ? (
             <MiniLoader />
@@ -532,6 +538,7 @@ export default function Customers() {
                   onClick={handleCancel}
                   className="rounded-lg border border-theme bg-theme text-white hover:bg-white hover:text-theme duration-150
                  shadow-buttonShadow px-6 font-nunito py-3 font-medium"
+                 data-testid={CLIENT_MANAGEMENT.modalCancelBtn}
                 >
                   Cancel
                 </button>

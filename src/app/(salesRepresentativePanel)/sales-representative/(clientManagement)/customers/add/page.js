@@ -17,6 +17,7 @@ import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { FaLongArrowAltLeft } from "react-icons/fa";
 import PhoneInput from "react-phone-input-2";
 import Select from "react-select";
+import { ADD_CUSTOMER } from "../../../../../(clientManagement)/customers/customer.testid";
 
 export default function AddCustomer() {
   if (typeof window !== "undefined") {
@@ -593,9 +594,10 @@ export default function AddCustomer() {
   };
 
   return (
-    <div>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
-        <h2 className="text-xl font-inter font-semibold">
+    <div data-testid={ADD_CUSTOMER.root}>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={ADD_CUSTOMER.headerBar}>
+        <h2 className="text-xl font-inter font-semibold" data-testid={ADD_CUSTOMER.title}>
           Add New Customer
         </h2>
 
@@ -654,7 +656,7 @@ export default function AddCustomer() {
               {step === 1 && (
                 <div className="space-y-6">
                   <div className="font-satoshi space-y-4">
-                    <p className="font-black text-xl lg:text-2xl text-theme">
+                    <p className="font-black text-xl lg:text-2xl text-theme" data-testid={ADD_CUSTOMER.step1Title}>
                       1. Shipping Address
                     </p>
                     <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
@@ -714,7 +716,7 @@ export default function AddCustomer() {
                             onChange={handleAddress}
                           />
                         </div> */}
-                        <div className="flex flex-col gap-y-2">
+                        <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.addressLineOneInput}>
                           <label className="text-labelColor font-medium font-satoshi">
                             Address Line 1
                           </label>
@@ -727,7 +729,7 @@ export default function AddCustomer() {
                             className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                           />
                         </div>
-                        <div className="flex flex-col gap-y-2">
+                        <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.addressLineTwoInput}>
                           <label className="text-labelColor font-medium font-satoshi">
                             Address Line 2
                           </label>
@@ -745,7 +747,7 @@ export default function AddCustomer() {
                       <div className="flex flex-col justify-between gap-y-4">
                         <div className="space-y-4">
                           <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
-                            <div className="flex flex-col gap-y-2">
+                            <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.addressCountrySelect}>
                               <label className="text-labelColor font-medium font-satoshi">
                                 Country
                               </label>
@@ -790,7 +792,7 @@ export default function AddCustomer() {
                                 }}
                               />
                             </div>
-                            <div className="flex flex-col gap-y-2">
+                            <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.addressStateSelect}>
                               <label className="text-labelColor font-medium font-satoshi">
                                 State
                               </label>
@@ -829,7 +831,7 @@ export default function AddCustomer() {
                           /> */}
                             </div>
                           </div>
-                          <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
+                          <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4" data-testid={ADD_CUSTOMER.addressTownInput}>
                             <div className="flex flex-col gap-y-2">
                               <label className="text-labelColor font-medium font-satoshi">
                                 Town / City
@@ -883,7 +885,7 @@ export default function AddCustomer() {
                             className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                           /> */}
                             </div>
-                            <div className="flex flex-col gap-y-2">
+                            <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.addressZipCodeInput}>
                               <label className="text-labelColor font-medium font-satoshi">
                                 Zip Code
                               </label>
@@ -934,7 +936,7 @@ export default function AddCustomer() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-x-2">
+                  <div className="flex items-center gap-x-2" data-testid={ADD_CUSTOMER.billingSameAsShippingCheckbox}>
                     <input
                       type="checkbox"
                       name="billingStatus"
@@ -1016,7 +1018,7 @@ export default function AddCustomer() {
                               onChange={handleBillingAddress}
                             />
                           </div> */}
-                            <div className="flex flex-col gap-y-2">
+                            <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.billingAddressLineOneInput}>
                               <label className="text-labelColor font-medium font-satoshi">
                                 Address Line 1
                               </label>
@@ -1030,7 +1032,7 @@ export default function AddCustomer() {
                               />
                             </div>
                             {/* Address Line 2 */}
-                            <div className="flex flex-col gap-y-2">
+                            <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.billingAddressLineTwoInput}>
                               <label className="text-labelColor font-medium font-satoshi">
                                 Address Line 2
                               </label>
@@ -1049,7 +1051,7 @@ export default function AddCustomer() {
                             <div className="space-y-4">
                               {/* Country Select */}
                               <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
-                                <div className="flex flex-col gap-y-2">
+                                <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.billingAddressCountrySelect}>
                                   <label className="text-labelColor font-medium font-satoshi">Country</label>
                                   <Select
                                     placeholder="Select Country"
@@ -1078,7 +1080,7 @@ export default function AddCustomer() {
                                     }}
                                   />
                                 </div>
-                                <div className="flex flex-col gap-y-2">
+                                <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.billingAddressStateSelect}>
                                   <label className="text-labelColor font-medium font-satoshi">State</label>
                                   <Select
                                     placeholder="Select State"
@@ -1110,7 +1112,7 @@ export default function AddCustomer() {
 
                               {/* Town / City Input */}
                               <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
-                                <div className="flex flex-col gap-y-2">
+                                <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.billingAddressTownInput}>
                                   <label className="text-labelColor font-medium font-satoshi">Town / City</label>
                                   <input
                                     type="text"
@@ -1158,7 +1160,7 @@ export default function AddCustomer() {
                           /> */}
                                 </div>
                                 {/* Zip Code Input */}
-                                <div className="flex flex-col gap-y-2">
+                                <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.billingAddressZipCodeInput}>
                                   <label className="text-labelColor font-medium font-satoshi">Zip Code</label>
                                   <input
                                     type="text"
@@ -1197,7 +1199,7 @@ export default function AddCustomer() {
                 </p>
                 <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
                   <div className="space-y-4">
-                    <div className="flex flex-col gap-y-2">
+                    <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.customerCompanyNameInput}>
                       <label className="text-labelColor font-medium font-satoshi">
                         Company Name
                       </label>
@@ -1210,7 +1212,7 @@ export default function AddCustomer() {
                         className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       />
                     </div>
-                    <div className="flex flex-col gap-y-2">
+                    <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.customerDispatchEmailInput}>
                       <label className="text-labelColor font-medium font-satoshi">
                         Dispatch Email
                       </label>
@@ -1236,7 +1238,7 @@ export default function AddCustomer() {
                         className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       />
                     </div> */}
-                    <div className="flex flex-col gap-y-2">
+                    <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.customerPhoneInput}>
                       <label className="text-labelColor font-medium font-satoshi">
                         Phone number
                       </label>
@@ -1298,7 +1300,7 @@ export default function AddCustomer() {
 
                   <div className="flex flex-col justify-between gap-y-4">
                     <div className="space-y-4">
-                      <div className="flex flex-col gap-y-2">
+                      <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.customerSaleTaxNumberInput}>
                         <label className="text-labelColor font-medium font-satoshi">
                           Sale Tax Number <span>(if applicable)</span>
                         </label>
@@ -1311,7 +1313,7 @@ export default function AddCustomer() {
                           className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                         />
                       </div>
-                      <div className="flex flex-col gap-y-2">
+                      <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.customerInvoiceEmailInput}>
                         <label className="text-labelColor font-medium font-satoshi">
                           Invoice Email
                         </label>
@@ -1381,7 +1383,7 @@ export default function AddCustomer() {
                 </p>
                 <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
                   <div className="space-y-4">
-                    <div className="flex flex-col gap-y-2">
+                    <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.customerNameInput}>
                       <label className="text-labelColor font-medium font-satoshi">
                         Full Name / Contact Name
                       </label>
@@ -1394,7 +1396,7 @@ export default function AddCustomer() {
                         className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       />
                     </div>
-                    <div className="flex flex-col gap-y-2">
+                    <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.customerEmailInput}>
                       <label className="text-labelColor font-medium font-satoshi">
                         Login Email / Contact Email
                       </label>
@@ -1411,7 +1413,7 @@ export default function AddCustomer() {
 
                   <div className="flex flex-col justify-between gap-y-4">
                     <div className="space-y-4">
-                      <div className="flex flex-col gap-y-2 relative">
+                      <div className="flex flex-col gap-y-2 relative" data-testid={ADD_CUSTOMER.customerPasswordInput}>
                         <label className="text-labelColor font-medium font-satoshi">
                           Password
                         </label>
@@ -1449,6 +1451,7 @@ export default function AddCustomer() {
                           }
                           type="button"
                           className="text-black absolute right-4 top-11"
+                          data-testid={ADD_CUSTOMER.passwordVisibilityToggle}
                         >
                           {visibility?.pass ? (
                             <AiOutlineEye size={24} color="#000000" />
@@ -1457,7 +1460,7 @@ export default function AddCustomer() {
                           )}
                         </button>
                       </div>
-                      <div className="flex flex-col gap-y-2 relative">
+                      <div className="flex flex-col gap-y-2 relative" data-testid={ADD_CUSTOMER.customerConfirmPasswordInput}>
                         <label className="text-labelColor font-medium font-satoshi">
                           Confirm Password
                         </label>
@@ -1478,6 +1481,7 @@ export default function AddCustomer() {
                           }
                           type="button"
                           className="text-black absolute right-4 top-11"
+                          data-testid={ADD_CUSTOMER.confirmPasswordVisibilityToggle}
                         >
                           {visibility?.confirmPass ? (
                             <AiOutlineEye size={24} color="#000000" />
@@ -1494,6 +1498,7 @@ export default function AddCustomer() {
                   <button
                     type="submit"
                     className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
+                    data-testid={ADD_CUSTOMER.submitButton}
                   >
                     Submit
                   </button>

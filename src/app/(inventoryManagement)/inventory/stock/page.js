@@ -27,6 +27,7 @@ import ErrorHandler from "@/utilities/ErrorHandler";
 import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
 import { hasPermission } from "@/utilities/Permission";
+import { INVENTORY_MANAGEMENT } from "../stock.testid";
 
 export default function Stock() {
   const [filterId, setFilterId] = useState("");
@@ -406,6 +407,7 @@ export default function Stock() {
   const datas = [];
   data?.data?.data?.map((prod, i) => {
     return datas.push({
+      id: prod?.id,
       sl: i + 1,
       name: prod?.name,
       quantity: prod?.quantity,
@@ -494,8 +496,9 @@ export default function Stock() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div>
-      <div className="w-full md:w=[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+    <div data-testid={INVENTORY_MANAGEMENT.root}>
+      <div className="w-full md:w=[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={INVENTORY_MANAGEMENT.headerBar}>
         <div className="flex items-center gap-2">
           <p
             onClick={() => setToggle(!toggle)}
@@ -503,7 +506,7 @@ export default function Stock() {
           >
             <CiMenuBurger size={20} />
           </p>
-          <h2 className="text-xl font-inter font-semibold">
+          <h2 className="text-xl font-inter font-semibold" data-testid={INVENTORY_MANAGEMENT.title}>
             Inventory Management
           </h2>
         </div>
@@ -515,11 +518,12 @@ export default function Stock() {
               setSupplierSkus({});
               setModal("add");
             }}
+            data-testid={INVENTORY_MANAGEMENT.addProductBtn}
           >
             New Product
           </li> )}
-          <li>Import</li>
-          <li>Export</li>
+          <li data-testid={INVENTORY_MANAGEMENT.importProductBtn}>Import</li>
+          <li data-testid={INVENTORY_MANAGEMENT.exportProductBtn}>Export</li>
         </ul>
       </div>
       <div className="space-y-8 pt-32 px-6 2xl:px-12 ">
@@ -565,6 +569,7 @@ export default function Stock() {
           <ManagementTab
             title="Total Products"
             desc={data?.data?.data?.length}
+            data-testid={INVENTORY_MANAGEMENT.totalStocksCard}
           />
           {/* <ManagementTab title="Total Countries" desc="5000" /> */}
           {/* <ManagementTab title="Total Cities" desc="55000" /> */}
@@ -577,6 +582,7 @@ export default function Stock() {
             placeholder={"Search ..."}
             pagination={true}
             search={true}
+            rowTestId={(row) => `data-testid-${INVENTORY_MANAGEMENT.row(row.id)}`}
           />
         </div>
 
@@ -597,9 +603,10 @@ export default function Stock() {
           // style={{ width: "40vw" }}
           // breakpoints={{ "1496px": "40vw", "1024px": "70vw", "641px": "80vw" }}
           className="font-nunito w-[80%] lg:w-[40vw]"
+          data-testid={INVENTORY_MANAGEMENT.stockModal}
           onHide={handleCancel}
           header={
-            <div className="font-nunito font-bold lg:text-2xl text-center">
+            <div className="font-nunito font-bold lg:text-2xl text-center" data-testid={INVENTORY_MANAGEMENT.stockModalTitle}>
               {modal === "add"
                 ? "Add"
                 : modal === "edit"
@@ -612,7 +619,7 @@ export default function Stock() {
           }
         >
           {loader === "add" || loader === "edit" || loader === "delete" || loader === "prefill" ? (
-            <MiniLoader />
+            <MiniLoader data-testid={INVENTORY_MANAGEMENT.miniLoader} />
           ) : (
             <form
               onSubmit={handleStock}
@@ -624,6 +631,7 @@ export default function Stock() {
                   type="button"
                   onClick={handleImageClick}
                   className="overflow-hidden rounded-xl border border-tabBorderColor border-opacity-40 size-28 flex items-center justify-center"
+                  data-testid={INVENTORY_MANAGEMENT.stockImageInput}
                 >
                   <input
                     type="file"
@@ -651,7 +659,7 @@ export default function Stock() {
                   </p>
                 ) : (
                   <div className="space-y-4">
-                    <div className="flex flex-col gap-y-2 w-full">
+                    <div className="flex flex-col gap-y-2 w-full" data-testid={INVENTORY_MANAGEMENT.stockNameInput}>
                       <label className="text-labelColor font-medium font-satoshi">
                         Item Name
                       </label>
@@ -679,7 +687,7 @@ export default function Stock() {
                       />
                     </div>
 
-                    <div className="flex flex-col gap-y-2 w-full">
+                    <div className="flex flex-col gap-y-2 w-full" data-testid={INVENTORY_MANAGEMENT.stockCategorySelect}>
                       <label className="text-labelColor font-medium font-satoshi">
                         Category
                       </label>
@@ -716,6 +724,7 @@ export default function Stock() {
                           onChange={handleChange}
                           placeholder="Enter price"
                           className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                          data-testid={INVENTORY_MANAGEMENT.stockPriceInput}
                         />
                         <div
                           className={`text-red-600 space-y-1 pb-1 ${
@@ -740,6 +749,7 @@ export default function Stock() {
                           onChange={handleChange}
                           placeholder="Enter whole sale price"
                           className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                           data-testid={INVENTORY_MANAGEMENT.stockWholesalePriceInput}
                         />
                         <div
                           className={`text-red-600 space-y-1 pb-1 ${
@@ -924,12 +934,14 @@ export default function Stock() {
                     type="button"
                     onClick={handleCancel}
                     className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow  px-6"
+                    data-testid={INVENTORY_MANAGEMENT.stockModalCancelBtn}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     className="rounded-lg border border-theme text-white px-10  bg-theme"
+                    data-testid={INVENTORY_MANAGEMENT.stockModalSubmitBtn}
                   >
                     {modal === "add"
                       ? "Add"

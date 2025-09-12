@@ -17,6 +17,7 @@ import { FaLongArrowAltLeft } from "react-icons/fa";
 import PhoneInput from "react-phone-input-2";
 import Select from "react-select";
 import { Dialog } from "primereact/dialog";
+import { UPDATE_CUSTOMER } from "../../../../../../(clientManagement)/customers/customer.testid";
 
 export default function UpdateCustomer() {
   const router = useRouter();
@@ -531,14 +532,16 @@ export default function UpdateCustomer() {
   return customerData?.length === 0 ? (
     <Loader />
   ) : (
-    <div>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
-        <h2 className="text-xl font-inter font-semibold">Update Customer</h2>
+    <div data-testid={UPDATE_CUSTOMER.root}>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={UPDATE_CUSTOMER.headerBar}>
+        <h2 className="text-xl font-inter font-semibold" data-testid={UPDATE_CUSTOMER.title}>Update Customer</h2>
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setDiscountDlgOpen(true)}
               className="px-3 py-2 rounded-sm bg-theme text-white font-inter text-sm"
+              data-testid={UPDATE_CUSTOMER.discountDlgOpen}
             >
               Update User Discount
             </button>
@@ -568,7 +571,7 @@ export default function UpdateCustomer() {
               {step === 1 && (
                 <div className="space-y-6">
                   <div className="font-satoshi space-y-4">
-                    <p className="font-black text-xl lg:text-2xl text-theme">
+                    <p className="font-black text-xl lg:text-2xl text-theme" data-testid={UPDATE_CUSTOMER.step1Title}>
                       1. Shipping Address
                     </p>
                     <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
@@ -586,7 +589,7 @@ export default function UpdateCustomer() {
                             onChange={handleAddress}
                           />
                         </div> */}
-                        <div className="flex flex-col gap-y-2">
+                        <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.addressLineOneInput}>
                           <label className="text-labelColor font-medium font-satoshi">
                             Address Line 1
                           </label>
@@ -599,7 +602,7 @@ export default function UpdateCustomer() {
                             className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                           />
                         </div>
-                        <div className="flex flex-col gap-y-2">
+                        <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.addressLineTwoInput}>
                           <label className="text-labelColor font-medium font-satoshi">
                             Address Line 2
                           </label>
@@ -616,7 +619,7 @@ export default function UpdateCustomer() {
                       <div className="flex flex-col justify-between gap-y-4">
                         <div className="space-y-4">
                           <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
-                            <div className="flex flex-col gap-y-2">
+                            <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.addressCountrySelect}>
                               <label className="text-labelColor font-medium font-satoshi">
                                 Country
                               </label>
@@ -647,7 +650,7 @@ export default function UpdateCustomer() {
                                 }}
                               />
                             </div>
-                            <div className="flex flex-col gap-y-2">
+                            <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.addressStateSelect}>
                               <label className="text-labelColor font-medium font-satoshi">
                                 State
                               </label>
@@ -679,7 +682,7 @@ export default function UpdateCustomer() {
                             </div>
                           </div>
                           <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
-                            <div className="flex flex-col gap-y-2">
+                            <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.addressTownInput}>
                               <label className="text-labelColor font-medium font-satoshi">
                                 Town / City
                               </label>
@@ -700,7 +703,7 @@ export default function UpdateCustomer() {
                                 className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                               />
                             </div>
-                            <div className="flex flex-col gap-y-2">
+                            <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.addressZipCodeInput}>
                               <label className="text-labelColor font-medium font-satoshi">
                                 Zip Code
                               </label>
@@ -718,7 +721,7 @@ export default function UpdateCustomer() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-x-2">
+                  <div className="flex items-center gap-x-2" data-testid={UPDATE_CUSTOMER.billingSameAsShippingCheckbox}>
                     <input
                       type="checkbox"
                       name="billingStatus"
@@ -756,7 +759,7 @@ export default function UpdateCustomer() {
                                 />
                               </div> */}
                               {/* Billing Address Line 1 */}
-                              <div className="flex flex-col gap-y-2">
+                              <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.billingAddressLineOneInput}>
                                 <label className="text-labelColor font-medium font-satoshi">Address Line 1</label>
                                 <input
                                   type="text"
@@ -768,7 +771,7 @@ export default function UpdateCustomer() {
                                 />
                               </div>
                               {/* Billing Address Line 2 */}
-                              <div className="flex flex-col gap-y-2">
+                              <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.billingAddressLineTwoInput}>
                                 <label className="text-labelColor font-medium font-satoshi">Address Line 2</label>
                                 <input
                                   type="text"
@@ -785,7 +788,7 @@ export default function UpdateCustomer() {
                               <div className="space-y-4">
                                 {/* Country Select */}
                                 <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
-                                  <div className="flex flex-col gap-y-2">
+                                  <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.billingAddressCountrySelect}>
                                     <label className="text-labelColor font-medium font-satoshi">Country</label>
                                     <Select
                                       placeholder="Select Country"
@@ -818,7 +821,7 @@ export default function UpdateCustomer() {
                                   </div>
 
                                   {/* State Select */}
-                                  <div className="flex flex-col gap-y-2">
+                                  <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.billingAddressStateSelect}>
                                     <label className="text-labelColor font-medium font-satoshi">State</label>
                                     <Select
                                       placeholder="Select State"
@@ -852,7 +855,7 @@ export default function UpdateCustomer() {
 
                                 {/* Town / City Input */}
                                 <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
-                                  <div className="flex flex-col gap-y-2">
+                                  <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.billingAddressTownInput}>
                                     <label className="text-labelColor font-medium font-satoshi">Town / City</label>
                                     <input
                                       type="text"
@@ -870,7 +873,7 @@ export default function UpdateCustomer() {
                                   </div>
 
                                   {/* Zip Code Input */}
-                                  <div className="flex flex-col gap-y-2">
+                                  <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.billingAddressZipCodeInput}>
                                     <label className="text-labelColor font-medium font-satoshi">Zip Code</label>
                                     <input
                                       type="text"
@@ -900,7 +903,7 @@ export default function UpdateCustomer() {
                 </p>
                 <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
                   <div className="space-y-4">
-                    <div className="flex flex-col gap-y-2">
+                    <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.customerCompanyNameInput}>
                       <label className="text-labelColor font-medium font-satoshi">
                         Company Name
                       </label>
@@ -913,7 +916,7 @@ export default function UpdateCustomer() {
                         className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       />
                     </div>
-                    <div className="flex flex-col gap-y-2">
+                    <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.customerDispatchEmailInput}>
                       <label className="text-labelColor font-medium font-satoshi">
                         Dispatch Email
                       </label>
@@ -926,7 +929,7 @@ export default function UpdateCustomer() {
                         className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       />
                     </div>
-                    <div className="flex flex-col gap-y-2">
+                    <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.customerPhoneInput}>
                       <label className="text-labelColor font-medium font-satoshi">
                         Phone number
                       </label>
@@ -980,7 +983,7 @@ export default function UpdateCustomer() {
                   </div>
                   <div className="flex flex-col justify-between gap-y-4">
                     <div className="space-y-4">
-                      <div className="flex flex-col gap-y-2">
+                      <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.customerSaleTaxNumberInput}>
                         <label className="text-labelColor font-medium font-satoshi">
                           Sale Tax Number <span>(if applicable)</span>
                         </label>
@@ -993,7 +996,7 @@ export default function UpdateCustomer() {
                           className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                         />
                       </div>
-                      <div className="flex flex-col gap-y-2">
+                      <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.customerInvoiceEmailInput}>
                         <label className="text-labelColor font-medium font-satoshi">
                           Invoice Email
                         </label>
@@ -1051,7 +1054,7 @@ export default function UpdateCustomer() {
                 </p>
                 <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
                   <div className="space-y-4">
-                    <div className="flex flex-col gap-y-2">
+                    <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.customerNameInput}>
                       <label className="text-labelColor font-medium font-satoshi">
                         Full Name / Contact Name
                       </label>
@@ -1064,7 +1067,7 @@ export default function UpdateCustomer() {
                         className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       />
                     </div>
-                    <div className="flex flex-col gap-y-2">
+                    <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.customerEmailInput}>
                       <label className="text-labelColor font-medium font-satoshi">
                         Login Email / Contact Email
                       </label>
@@ -1107,6 +1110,7 @@ export default function UpdateCustomer() {
                           value={userData?.info?.password}
                           placeholder="Enter Password"
                           className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                          data-testid={UPDATE_CUSTOMER.customerPasswordInput}
                         />
                         {userData?.info?.password.length > 0 && (
                           <p className="text-red-700 text font-semibold text-sm">
@@ -1134,6 +1138,7 @@ export default function UpdateCustomer() {
                           }
                           type="button"
                           className="text-black absolute right-4 top-11"
+                          data-testid={UPDATE_CUSTOMER.passwordVisibilityToggle}
                         >
                           {visibility?.pass ? (
                             <AiOutlineEye size={24} color="#000000" />
@@ -1153,6 +1158,7 @@ export default function UpdateCustomer() {
                           value={userData?.info?.confirmPassword}
                           placeholder="Enter password again"
                           className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                          data-testid={UPDATE_CUSTOMER.customerConfirmPasswordInput}
                         />
                         <button
                           onClick={() =>
@@ -1163,6 +1169,7 @@ export default function UpdateCustomer() {
                           }
                           type="button"
                           className="text-black absolute right-4 top-11"
+                          data-testid={UPDATE_CUSTOMER.confirmPasswordVisibilityToggle}
                         >
                           {visibility?.confirmPass ? (
                             <AiOutlineEye size={24} color="#000000" />
@@ -1178,6 +1185,7 @@ export default function UpdateCustomer() {
                   <button
                     type="submit"
                     className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
+                    data-testid={UPDATE_CUSTOMER.submitButton}
                   >
                     Update
                   </button>
@@ -1197,6 +1205,7 @@ export default function UpdateCustomer() {
             // className="w-[95vw] md:w-[720px]"
             dismissableMask
             style={{ maxHeight: "90vh", overflowY: "auto" }}
+            data-testid={UPDATE_CUSTOMER.discountDlgOpen}
           >
             {catsError && (
               <p className="text-red-600 font-medium">Failed to load categories.</p>
@@ -1245,6 +1254,7 @@ export default function UpdateCustomer() {
                                 onChange={(e) => handleDiscountChange(catId, e.target.value)}
                                 onWheel={(e) => e.currentTarget.blur()}
                                 className="border border-borderColor rounded-[4px] px-2.5 py-3 text-black placeholder:text-secondary w-full"
+                                data-testid={UPDATE_CUSTOMER.categoryDiscountInput}
                               />
                               {/* <span className="text-sm text-gray-700">%</span> */}
                             </div>
@@ -1262,6 +1272,7 @@ export default function UpdateCustomer() {
                 onClick={() => setDiscountDlgOpen(false)}
                 className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow px-6"
                 disabled={discountSaving}
+                data-testid={UPDATE_CUSTOMER.cancelDiscountButton}
               >
                 Cancel
               </button>
@@ -1270,6 +1281,7 @@ export default function UpdateCustomer() {
                 onClick={handleSaveUserDiscounts}
                 disabled={discountSaving}
                 className="rounded-lg border border-theme text-white px-10 bg-theme disabled:opacity-60"
+                data-testid={UPDATE_CUSTOMER.saveDiscountButton}
               >
                 {discountSaving ? "Saving..." : "Save"}
               </button>

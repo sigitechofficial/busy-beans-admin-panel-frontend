@@ -10,6 +10,7 @@ import { Dialog } from "primereact/dialog";
 import { useEffect, useState } from "react";
 import { CiMenuBurger } from "react-icons/ci";
 import { hasPermission } from "@/utilities/Permission";
+import { SHIPPING_CHARGES } from "./shipping-charges.testids";
 
 export default function ShippingChargesManagement() {
   const [rows, setRows] = useState([]);
@@ -142,10 +143,11 @@ export default function ShippingChargesManagement() {
   const { toggle, setToggle } = useDataContext();
 
   return data?.length === 0 ? (
-    <Loader />
+    <Loader data-testid={SHIPPING_CHARGES.pageLoader}/>
   ) : (
-    <div>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+    <div data-testid={SHIPPING_CHARGES.root}>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={SHIPPING_CHARGES.headerBar}>
         <div className="flex items-center gap-2">
           <p
             onClick={() => setToggle(!toggle)}
@@ -153,7 +155,7 @@ export default function ShippingChargesManagement() {
           >
             <CiMenuBurger size={20} />
           </p>
-          <h2 className="text-xl font-inter font-semibold">
+          <h2 className="text-xl font-inter font-semibold" data-testid={SHIPPING_CHARGES.title}>
             Shipping Charges Management
           </h2>
         </div>
@@ -172,10 +174,10 @@ export default function ShippingChargesManagement() {
         </div> */}
 
         {loader ? (
-          <MiniLoader />
+          <MiniLoader data-testid={SHIPPING_CHARGES.miniLoader}/>
         ) : (
           <div>
-            <div className="space-y-4" id="shipping-rows">
+            <div className="space-y-4" id="shipping-rows" data-testid={SHIPPING_CHARGES.rowsContainer}>
                   <div className="grid grid-cols-4 gap-4 items-center font-semibold text-gray-700 border-b pb-2 mb-4 text-sm sm:text-base">
                     <div className="truncate">
                       Min Range
@@ -194,6 +196,7 @@ export default function ShippingChargesManagement() {
                 <div
                   key={index}
                   className="grid grid-cols-4 gap-4 items-center"
+                  data-testid={SHIPPING_CHARGES.row(index)}
                 >
                   <input
                     type="number"
@@ -202,6 +205,7 @@ export default function ShippingChargesManagement() {
                     value={index === 0 ? 0 : row.min}
                     onChange={(e) => updateRow(index, "min", e.target.value)}
                     disabled={true}
+                    data-testid={SHIPPING_CHARGES.minInput(index)}
                     // disabled={index !== 0 || index === 0}
                   />
                   <input
@@ -211,6 +215,7 @@ export default function ShippingChargesManagement() {
                     value={row.max}
                     onChange={(e) => updateRow(index, "max", e.target.value)}
                     disabled={!hasPermission("charges_update")}
+                    data-testid={SHIPPING_CHARGES.maxInput(index)}
                   />
                   <input
                     type="number"
@@ -219,11 +224,13 @@ export default function ShippingChargesManagement() {
                     value={row.charge}
                     onChange={(e) => updateRow(index, "charge", e.target.value)}
                     disabled={!hasPermission("charges_update")}
+                    data-testid={SHIPPING_CHARGES.chargeInput(index)}
                   />
                   {hasPermission("charges_delete") && (
                   <button
                     onClick={() => deleteRow(index)}
                     className="text-red-600 font-semibold border border-red-600 w-20"
+                    data-testid={SHIPPING_CHARGES.deleteBtn(index)}
                   >
                     Delete
                   </button> )}
@@ -235,6 +242,7 @@ export default function ShippingChargesManagement() {
                 <button
                   onClick={addRow}
                   className="mt-6 px-6 py-2.5 bg-theme text-white font-semibold rounded hover:bg-white hover:text-theme border border-theme"
+                  data-testid={SHIPPING_CHARGES.addRowBtn}
                 >
                   Add More Charges
                 </button> )}
@@ -242,6 +250,7 @@ export default function ShippingChargesManagement() {
                 <button
                   onClick={handleSubmit}
                   className="mt-6 px-6 py-2.5 bg-theme text-white font-semibold rounded hover:bg-white hover:text-theme border border-theme"
+                  data-testid={SHIPPING_CHARGES.saveBtn}
                 >
                   Save
                 </button> )}

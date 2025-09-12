@@ -9,6 +9,7 @@ import { useState } from "react";
 import { CiMenuBurger } from "react-icons/ci";
 import { ImCross } from "react-icons/im";
 import Select from "react-select";
+import { PARTNER_CREDIT_LIMIT_REPORT } from "../report.testid"
 
 export default function PartnerCreditLimit() {
   const [customDates, setCustomDates] = useState({
@@ -51,6 +52,7 @@ export default function PartnerCreditLimit() {
   const datas = [];
   data?.data?.map((report, i) =>
     datas.push({
+      id: report?.id,
       sl: i + 1,
       srName: report?.srName,
       creditLimit: `$${report?.creditLimit ?? 0}`,
@@ -89,8 +91,9 @@ export default function PartnerCreditLimit() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+    <div data-testid={PARTNER_CREDIT_LIMIT_REPORT.root}>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={PARTNER_CREDIT_LIMIT_REPORT.headerBar}>
         <div className="flex items-center gap-2">
           <p
             onClick={() => setToggle(!toggle)}
@@ -98,13 +101,13 @@ export default function PartnerCreditLimit() {
           >
             <CiMenuBurger size={20} />
           </p>
-          <h2 className="text-xl font-inter font-semibold">
+          <h2 className="text-xl font-inter font-semibold" data-testid={PARTNER_CREDIT_LIMIT_REPORT.title}>
             Partner Credit Limit Report
           </h2>
         </div>
       </div>
       <div className="space-y-8 pt-28 2xl:pt-32 px-6 2xl:px-12 ">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between" data-testid={PARTNER_CREDIT_LIMIT_REPORT.filterSection}>
           <div className="flex items-center gap-x-2">
             <BackButton />
             {/* <h2 className="text-xl lg:text-2xl font-inter font-semibold">
@@ -127,6 +130,7 @@ export default function PartnerCreditLimit() {
                     name="startDate"
                     value={customDates?.startDate}
                     onChange={handleCustomDates}
+                    data-testid={PARTNER_CREDIT_LIMIT_REPORT.filterStartDate}
                     className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium 
                             text-labelColor"
                   />
@@ -144,6 +148,7 @@ export default function PartnerCreditLimit() {
                     name="endDate"
                     value={customDates?.endDate}
                     onChange={handleCustomDates}
+                    data-testid={PARTNER_CREDIT_LIMIT_REPORT.filterEndDate}
                     className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium 
                             text-labelColor"
                   />
@@ -152,6 +157,7 @@ export default function PartnerCreditLimit() {
                   <button
                     onClick={handleCancel}
                     className="px-2 h-full rounded-lg border border-theme text-theme bg-white hover:text-white hover:bg-theme duration-200 group"
+                    data-testid={PARTNER_CREDIT_LIMIT_REPORT.filterClearBtn}
                   >
                     <ImCross size={24} />
                   </button>
@@ -166,19 +172,21 @@ export default function PartnerCreditLimit() {
                   value={selectedOption ? selectedOption : null}
                   onChange={(val) => handleChange(val)}
                   options={options ? options : null}
+                  data-testid={PARTNER_CREDIT_LIMIT_REPORT.filterSelect}
                 />
               </div>
             )}
           </div>
         </div>
 
-        <div>
+        <div data-testid={PARTNER_CREDIT_LIMIT_REPORT.tableWrapper}>
           <MyDataTable
             columns={columns}
             data={datas}
             placeholder={"Search ..."}
             pagination={true}
             search={true}
+            rowTestId={(row) => `data-testid-${PARTNER_CREDIT_LIMIT_REPORT.row(row.id)}`}
           />
         </div>
       </div>

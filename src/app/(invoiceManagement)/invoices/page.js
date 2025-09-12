@@ -8,6 +8,7 @@ import selectStyles from "@/utilities/SelectStyle";
 import { useRouter } from "next/navigation";
 import { CiMenuBurger } from "react-icons/ci";
 import Select from "react-select";
+import { INVOICES } from "../invoice.testid";
 
 export default function Invoices() {
   const router = useRouter();
@@ -57,8 +58,9 @@ export default function Invoices() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+    <div data-testid={INVOICES.root}>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={INVOICES.headerBar}>
         <div className="flex items-center gap-2">
           <p
             onClick={() => setToggle(!toggle)}
@@ -66,7 +68,7 @@ export default function Invoices() {
           >
             <CiMenuBurger size={20} />
           </p>
-          <h2 className="text-xl font-inter font-semibold">
+          <h2 className="text-xl font-inter font-semibold" data-testid={INVOICES.title}>
             Invoices Management
           </h2>
         </div>
@@ -79,14 +81,15 @@ export default function Invoices() {
           <Select placeholder="Filters" className="w-40" styles={selectStyles} />
         </div> */}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5" data-testid={INVOICES.statsGrid}>
           <ManagementTab
             title="Total Invoices"
             desc={data?.data?.data?.length}
+            data-testid={INVOICES.totalInvoicesCard}
           />
         </div>
 
-        <div>
+        <div data-testid={INVOICES.tableWrapper}>
           <MyDataTable
             columns={columns}
             data={datas}
@@ -96,6 +99,8 @@ export default function Invoices() {
             sortField="totalBalance"
             sortOrder={-1}
             onRowClick={(e) => router.push(`/invoices/${e.data.id}`)}
+            data-testid={INVOICES.table}
+            rowTestId={(row) => `data-testid-${INVOICES.row(row.id)}`}
           />
         </div>
       </div>

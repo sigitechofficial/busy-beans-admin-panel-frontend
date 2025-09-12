@@ -25,6 +25,7 @@ import dayjs from "dayjs";
 import { CiMenuBurger } from "react-icons/ci";
 import { useDataContext } from "@/utilities/DataContext";
 import { hasPermission } from "@/utilities/Permission";
+import { ORDER_DETAIL } from "../../orders.testids";
 
 export default function OrderDetail() {
   if (typeof window !== "undefined") {
@@ -383,22 +384,26 @@ export default function OrderDetail() {
   };
   const { toggle, setToggle } = useDataContext();
   return data?.length === 0 ? (
-    <Loader />
+    <Loader data-testid={ORDER_DETAIL.pageLoader}/>
   ) : (
-    <div>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+    <div data-testid={ORDER_DETAIL.root}>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={ORDER_DETAIL.headerBar}>
         <div className="text-xl font-inter font-semibold flex items-center gap-2 [&>p]:cursor-pointer [&>p]:whitespace-nowrap">
           <p onClick={() => setToggle(!toggle)} className="cursor-pointer md:hidden">
             <CiMenuBurger size={20} />
           </p>
-          <p onClick={() => router.push("/orders")}>Order /</p>{" "}
-          {data?.data?.order?.id}{" "}
+          <p onClick={() => router.push("/orders")} data-testid={ORDER_DETAIL.breadcrumbOrdersLink}>Order /</p>{" "}
+            <span data-testid={ORDER_DETAIL.orderIdText(data?.data?.order?.id)}>
+              {data?.data?.order?.id}
+            </span>
           <p
             className={`text-xs font-medium px-3 py-1 rounded-full text-white whitespace-nowrap ${
               data?.data?.order?.orderCurrentStatus?.includes("Cancelled")
                 ? "bg-red-500 "
                 : "bg-themeGreen "
             }`}
+            data-testid={ORDER_DETAIL.statusPill}
           >
             {data?.data?.order?.statusId == 4 ||
             data?.data?.order?.statusId == 5
@@ -415,7 +420,8 @@ export default function OrderDetail() {
           </p>
         </div>
 
-        <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative text-blue-500">
+        <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative text-blue-500"
+         data-testid={ORDER_DETAIL.actionsBar}>
           {/* <li onClick={() => router.push(`${pathname}/add-invoice`)}>
             {data?.data?.order?.invoicePdf ? "Update Invoice" : "Add Invoice"}
           </li> */}
@@ -426,6 +432,7 @@ export default function OrderDetail() {
               disabled={data?.data?.order?.statusId === 6 ? true : false}
               className="disabled:cursor-not-allowed"
               onClick={() => handleSendInvoice(data?.data?.order?.statusId)}
+              data-testid={ORDER_DETAIL.sendInvoiceBtn}
             >
               {data?.data?.order?.invoiceDate
                 ? "Invoice reminder"
@@ -436,6 +443,7 @@ export default function OrderDetail() {
             <button
               onClick={() => router.push(`${pathname}/invoice`)}
               type="button"
+              data-testid={ORDER_DETAIL.viewPdfBtn}
             >
               View PDF
             </button>
@@ -468,7 +476,8 @@ export default function OrderDetail() {
             </div>
           </div> */}
 
-          <div className="flex items-center gap-x-2 sm:gap-x-4 [&>button]:py-2 sm:[&>button]:py-3 [&>button]:px-2 sm:[&>button]:px-5 [&>button]:rounded-lg [&>button]:font-nunito [&>button]:font-medium [&>button]:text-xs lg:[&>button]:text-sm">
+          <div className="flex items-center gap-x-2 sm:gap-x-4 [&>button]:py-2 sm:[&>button]:py-3 [&>button]:px-2 sm:[&>button]:px-5 [&>button]:rounded-lg [&>button]:font-nunito [&>button]:font-medium [&>button]:text-xs lg:[&>button]:text-sm"
+           data-testid={ORDER_DETAIL.actionsBar}>
             {/* <button
             type="button"
             onClick={handleAddChequeModel}
@@ -538,6 +547,7 @@ export default function OrderDetail() {
                   }
                   className="bg-black text-white disabled:cursor-not-allowed"
                   onClick={() => handleAssignSupplier(data?.data?.order?.statusId)}
+                  data-testid={ORDER_DETAIL.dispatchFlowBtn}
                 >
                   {data?.data?.order?.statusId === 1
                     ? "Dispatch to Supplier"
@@ -564,6 +574,7 @@ export default function OrderDetail() {
               type="button"
               onClick={() => router.push(`${pathname}/add-invoice`)}
               className="border border-buttonBorderColor shadow-buttonShadow"
+              data-testid={ORDER_DETAIL.addOrUpdateInvoiceBtn}
             >
               {data?.data?.order?.invoiceDate
                 ? "Update Invoice"
@@ -581,6 +592,7 @@ export default function OrderDetail() {
                 type="button"
                 onClick={handleCancelOrder}
                 className="bg-theme text-white disabled:cursor-not-allowed"
+                data-testid={ORDER_DETAIL.cancelOrderBtn}
               >
                 Cancel Order
               </button>
@@ -598,6 +610,7 @@ export default function OrderDetail() {
                       ? "Shipped orders cannot be deleted"
                       : ""
                   }
+                  data-testid={ORDER_DETAIL.deleteOrderBtn}
                 >
                   Delete Order
                 </button>
@@ -640,7 +653,7 @@ export default function OrderDetail() {
               }}
             /> */}
 
-              <div className="bg-blue-50 rounded-md w-full px-4 lg:px-6 py-6 flex gap-x-2">
+              <div className="bg-blue-50 rounded-md w-full px-4 lg:px-6 py-6 flex gap-x-2" data-testid={ORDER_DETAIL.infoBanner}>
                 <div>
                   <LuClipboardList size={25} />
                 </div>
@@ -673,13 +686,13 @@ export default function OrderDetail() {
                           userType === "salesRepresentative") &&
                           data?.data?.order?.paymentMethod === "card") ||
                         data?.data?.order?.statusId === 6 ? (
-                          <div className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none">
+                          <div className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none" data-testid={ORDER_DETAIL.paymentStatusReadonly}>
                             {data?.data?.order?.paymentStatus === "done"
                               ? "Paid"
                               : "Unpaid"}
                           </div>
                         ) : (
-                          <span className="w-40">
+                          <span className="w-40" data-testid={ORDER_DETAIL.paymentStatusSelect}>
                             <Select
                               placeholder="Select Payment Status"
                               className="w-full"
@@ -702,10 +715,10 @@ export default function OrderDetail() {
                 </div>
               </div>
 
-              <div className="w-full grid xl:grid-cols-2 gap-10 xl:gap-20 py-4 px-4 2xl:px-8 space-y-4 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm">
+              <div className="w-full grid xl:grid-cols-2 gap-10 xl:gap-20 py-4 px-4 2xl:px-8 space-y-4 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm" data-testid={ORDER_DETAIL.summaryCard.wrapper}>
                 <div className="w-full [&>div]:h-10 text-sm">
                   {data?.data?.order?.on && (
-                    <div className="flex items-center gap-5 border-b">
+                    <div className="flex items-center gap-5 border-b" data-testid={ORDER_DETAIL.summaryCard.orderedOnRow}>
                       <p className="w-28">Ordered On </p>
                       <p>{dayjs(data?.data?.order?.on).format("MM/DD/YYYY")}</p>
                     </div>
@@ -722,6 +735,7 @@ export default function OrderDetail() {
                         router.push(`/customers/${data?.data?.order?.user?.id}`)
                       }
                       className="flex items-center gap-5 border-b capitalize cursor-pointer"
+                      data-testid={ORDER_DETAIL.summaryCard.companyRow}
                     >
                       <p className="w-28">Company Name</p>
                       <p className="text-blue-500">
@@ -730,14 +744,14 @@ export default function OrderDetail() {
                     </div>
                   )}
                   {data?.data?.order?.createdBy && (
-                    <div className="flex items-center gap-5 border-b">
+                    <div className="flex items-center gap-5 border-b" data-testid={ORDER_DETAIL.summaryCard.createdByRow}>
                       <p className="w-28">Created By</p>
 
                       <p className="">{data?.data?.order?.createdBy}</p>
                     </div>
                   )}
                   {data?.data?.order?.supplier?.supplierName && (
-                    <div className="flex items-center gap-5 border-b">
+                    <div className="flex items-center gap-5 border-b" data-testid={ORDER_DETAIL.summaryCard.supplierRow}>
                       <p className="w-28">Supplier</p>
                       <Link
                         href={
@@ -757,7 +771,7 @@ export default function OrderDetail() {
                     </div>
                   )}
                   {data?.data?.order?.salesRepName && (
-                    <div className="flex items-center gap-5 border-b">
+                    <div className="flex items-center gap-5 border-b" data-testid={ORDER_DETAIL.summaryCard.salesRepRow}>
                       <p className="w-28">Local Partner</p>
                       <Link
                         href={
@@ -777,13 +791,13 @@ export default function OrderDetail() {
                     </div>
                   )}
                   {data?.data?.order?.poNumber && (
-                    <div className="flex items-center gap-5 border-b">
+                    <div className="flex items-center gap-5 border-b" data-testid={ORDER_DETAIL.summaryCard.poNumberRow}>
                       <p className="w-28">P.O. # </p>
                       <p>{data?.data?.order?.poNumber}</p>
                     </div>
                   )}
                   {data?.data?.order?.invoiceNumber && (
-                    <div className="flex items-center gap-5 border-b">
+                    <div className="flex items-center gap-5 border-b" data-testid={ORDER_DETAIL.summaryCard.invoiceNumberRow}>
                       <p className="w-28">Invoice No </p>
                       <p>{data?.data?.order?.invoiceNumber}</p>
                     </div>
@@ -795,25 +809,31 @@ export default function OrderDetail() {
                     </div>
                   )}
                   {data?.data?.order?.shippingCompany && (
-                    <div className="flex items-center gap-2 border-b">
+                    <div className="flex items-center gap-2 border-b" data-testid={ORDER_DETAIL.summaryCard.shippingCompanyRow}>
                       <p className="w-29">Shipping Company</p>
                       <p>{data?.data?.order?.shippingCompany}</p>
                     </div>
                   )}
+                  {data?.data?.order?.pulloutIntentId && (
+                    <div className="flex items-center gap-2 border-b" data-testid={ORDER_DETAIL.summaryCard.pulloutIntentIdRow}>
+                      <p className="w-29">Pullout Transfer ID</p>
+                      <p>{data?.data?.order?.pulloutIntentId}</p>
+                    </div>
+                  )}
                   {data?.data?.order?.trackingNumber && (
-                    <div className="flex items-center gap-5 border-b">
+                    <div className="flex items-center gap-5 border-b" data-testid={ORDER_DETAIL.summaryCard.trackingNumberRow}>
                       <p className="w-28">Tracking No: </p>
                       <p>{data?.data?.order?.trackingNumber}</p>
                     </div>
                   )}
                   {data?.data?.order?.frequency && (
-                    <div className="flex items-center gap-5 border-b">
+                    <div className="flex items-center gap-5 border-b" data-testid={ORDER_DETAIL.summaryCard.frequencyRow}>
                       <p className="w-28">Frequency: </p>
                       <p>{data?.data?.order?.frequency}</p>
                     </div>
                   )}
                   {data?.data?.order?.invoiceDate && (
-                    <div className="flex items-center gap-5 border-b">
+                    <div className="flex items-center gap-5 border-b" data-testid={ORDER_DETAIL.summaryCard.invoicePaidDateRow}>
                       <p className="w-28">Invoice Date: </p>
                       <p>
                         {data?.data?.order?.invoiceDate
@@ -825,7 +845,7 @@ export default function OrderDetail() {
                     </div>
                   )}
                   {data?.data?.order?.invoicePaidDate && (
-                    <div className="flex items-center gap-5 border-b">
+                    <div className="flex items-center gap-5 border-b" data-testid={ORDER_DETAIL.summaryCard.trackingNumberRow}>
                       <p className="w-28">Invoice Paid Date: </p>
                       <p>
                         {data?.data?.order?.invoicePaidDate
@@ -840,7 +860,7 @@ export default function OrderDetail() {
                 {/* ================ */}
                 <div className="w-full grid grid-cols-2 gap-10 text-xs lg:text-sm">
                   {/* Deliver To */}
-                  <div>
+                  <div data-testid={ORDER_DETAIL.deliverTo.wrapper}>
                     <h6 className="font-semibold">Deliver To</h6>
                     <div className="items-center uppercase">
                       {data?.data?.order?.address?.companyaddress && (
@@ -874,7 +894,7 @@ export default function OrderDetail() {
                   </div>
 
                   {/* Bill To Section */}
-                  <div className="uppercase">
+                  <div className="uppercase" data-testid={ORDER_DETAIL.invoiceTo.wrapper}>
                     <div className="font-bold capitalize">Invoice to</div>
 
                     {/* Company address or name */}
@@ -966,6 +986,7 @@ export default function OrderDetail() {
                     <div
                       onClick={() => router.push(`${pathname}/invoice`)}
                       className="max-w-32 flex flex-col items-center text-xs text-gray-500"
+                      data-testid={ORDER_DETAIL.invoiceCard}
                     >
                       <img
                         src={
@@ -986,7 +1007,9 @@ export default function OrderDetail() {
                     </div>
                   )}
                   {data?.data?.order?.statusId == 5 && (
-                    <div className="max-w-32 flex flex-col items-center text-xs text-gray-500">
+                    <div className="max-w-32 flex flex-col items-center text-xs text-gray-500"
+                     data-testid={ORDER_DETAIL.dispatchedCard}
+                    >
                       <img src="/images/dispatch.png" alt="dispatch image" />
                       <p>Dispatched</p>
                       <p>
@@ -1026,18 +1049,19 @@ export default function OrderDetail() {
             </div>
 
             {/* Right side */}
-            <div className="space-y-8">
+            <div className="space-y-8" data-testid={ORDER_DETAIL.trackOrderSection}>
               <TrackOrder
                 orderHistories={data?.data?.order?.orderHistories}
                 statusId={data?.data?.order?.statusId}
               />
-
+              <div data-testid={ORDER_DETAIL.orderCardSection}>
               <OrderCard
                 reFetch={reFetch}
                 orderData={data?.data?.order}
                 modal={modal}
                 setModal={setModal}
               />
+              </div>
             </div>
           </div>
         )}
@@ -1058,7 +1082,9 @@ export default function OrderDetail() {
             })
           }
             header={
-              <div className="font-nunito font-bold text-2xl text-center">
+              <div className="font-nunito font-bold text-2xl text-center"
+               data-testid={ORDER_DETAIL.dialog.title}
+              >
                 {modal?.type === "cancelOrder"
                   ? "Cancel Order"
                   : modal?.type === "addCheque"
@@ -1069,13 +1095,14 @@ export default function OrderDetail() {
                 }
               </div>
             }
+          data-testid={ORDER_DETAIL.dialog.root}
         >
           <form
             onSubmit={handleSubmit}
             className="space-y-4 flex flex-col items-center"
           >
             {loader === "cancelOrder" || loader === "addCheque" || loader === "deleteOrder" ? (
-              <MiniLoader />
+              <MiniLoader data-testid={ORDER_DETAIL.miniLoader}/>
             ) : (
               <div className="w-full space-y-4">
                 {modal?.type === "cancelOrder" ? (
@@ -1102,6 +1129,7 @@ export default function OrderDetail() {
                         onChange={handleChange}
                         placeholder="Enter Cheque Number"
                         className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        data-testid={ORDER_DETAIL.dialog.chequeNumberInput}
                       />
                     </div>
                     <div className="flex flex-col gap-y-2">
@@ -1115,6 +1143,7 @@ export default function OrderDetail() {
                         onChange={handleChange}
                         placeholder="Select Cheque Date"
                         className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        data-testid={ORDER_DETAIL.dialog.chequeDateInput}
                       />
                     </div>
                     <div className="flex flex-col gap-y-2">
@@ -1128,6 +1157,7 @@ export default function OrderDetail() {
                       onChange={handleChange}
                       placeholder="Enter Description"
                       className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      inputId={ORDER_DETAIL.dialog.chequeStatusSelect}
                     /> */}
                       <Select
                         placeholder="Select Cheque Status"
@@ -1142,6 +1172,7 @@ export default function OrderDetail() {
                         onChange={(e) => {
                           setAddCheque({ ...addCheque, chequeStatus: e });
                         }}
+                        inputId={ORDER_DETAIL.dialog.chequeStatusSelect}
                       />
                     </div>
                     <div className="flex flex-col gap-y-2">
@@ -1155,6 +1186,7 @@ export default function OrderDetail() {
                         onChange={handleChange}
                         placeholder="Enter Bank Name"
                         className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        data-testid={ORDER_DETAIL.dialog.bankNameInput}
                       />
                     </div>
                     <div className="flex flex-col gap-y-2">
@@ -1168,6 +1200,7 @@ export default function OrderDetail() {
                         onChange={handleChange}
                         placeholder="Enter Bank Branch"
                         className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        data-testid={ORDER_DETAIL.dialog.bankBranchInput}
                       />
                     </div>
                     <div className="flex flex-col gap-y-2">
@@ -1195,6 +1228,7 @@ export default function OrderDetail() {
                         onChange={(e) => {
                           setAddCheque({ ...addCheque, chequeType: e });
                         }}
+                        inputId={ORDER_DETAIL.dialog.chequeTypeSelect}
                       />
                     </div>
                     <div className="flex flex-col gap-y-2">
@@ -1208,6 +1242,7 @@ export default function OrderDetail() {
                         onChange={handleChange}
                         placeholder="Enter Description"
                         className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                        data-testid={ORDER_DETAIL.dialog.chequeReceiptDateInput}
                       />
                     </div>
                   </div>
@@ -1223,12 +1258,14 @@ export default function OrderDetail() {
                       })
                     }
                     className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow  px-6"
+                    data-testid={ORDER_DETAIL.dialog.cancelBtn}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     className="rounded-lg border border-theme text-white px-10 bg-theme"
+                    data-testid={ORDER_DETAIL.dialog.submitBtn}
                   >
                   {modal?.type === "cancelOrder"
                     ? "Cancel Order"

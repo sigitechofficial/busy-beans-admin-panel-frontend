@@ -18,6 +18,7 @@ import PhoneInput from "react-phone-input-2";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import axios from "axios";
 import Loader from "@/components/ui/Loader";
+import { UPDATE_LOCAL_PARTNER } from "../../localPartner.testid";
 
 export default function EditsSalesRepresentative() {
   const { salesRepresentativeID } = useParams();
@@ -264,17 +265,18 @@ export default function EditsSalesRepresentative() {
         </div>
       </div> */}
 
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={UPDATE_LOCAL_PARTNER.headerBar}>
         <div className="flex items-center gap-x-2">
           <BackButton />
-          <h2 className="text-xl font-inter font-semibold">
+          <h2 className="text-xl font-inter font-semibold" data-testid={UPDATE_LOCAL_PARTNER.title}>
             Update Local Partner
           </h2>
         </div>
       </div>
 
       {loader ? (
-        <MiniLoader />
+        <MiniLoader data-testid={UPDATE_LOCAL_PARTNER.miniLoader}/>
       ) : (
         <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
           <div className="grid xl:grid-cols-2 gap-6">
@@ -285,6 +287,7 @@ export default function EditsSalesRepresentative() {
                 type="button"
                 onClick={handleSelectImage}
                 className="rounded-xl border border-tabBorderColor border-opacity-40 size-20 flex items-center justify-center"
+                data-testid={UPDATE_LOCAL_PARTNER.imageUploadButton}
               >
                 <input
                   type="file"
@@ -300,6 +303,7 @@ export default function EditsSalesRepresentative() {
                     }
                     alt="supplier-image"
                     className="object-cover object-center"
+                    data-testid={UPDATE_LOCAL_PARTNER.imagePreview}
                   />
                 ) : (
                   <LuImageUp size={"60"} color="rgba(0, 0, 0, 0.6)" />
@@ -316,6 +320,7 @@ export default function EditsSalesRepresentative() {
                   placeholder="Enter Name"
                   className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
+                  data-testid={UPDATE_LOCAL_PARTNER.partnerNameInput}
                 />
               </div>
               <div className="flex flex-col gap-y-2 w-full">
@@ -341,6 +346,7 @@ export default function EditsSalesRepresentative() {
                   }
                   className="w-full"
                   styles={selectStyles2}
+                  data-testid={UPDATE_LOCAL_PARTNER.partnerStatusSelect}
                 />
               </div>
               <div className="flex flex-col gap-y-2">
@@ -355,6 +361,7 @@ export default function EditsSalesRepresentative() {
                   placeholder="Enter Credit Limit"
                   className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                   onChange={handleChange}
+                  data-testid={UPDATE_LOCAL_PARTNER.partnerCreditLimitInput}
                 />
               </div>
             </div>
@@ -398,6 +405,7 @@ export default function EditsSalesRepresentative() {
                         });
                         handleSelectedCountryStates(e.label);
                       }}
+                      data-testid={UPDATE_LOCAL_PARTNER.partnerCountrySelect}
                     />
                   </div>
                   <div className="flex flex-col gap-y-2 w-full">
@@ -433,6 +441,7 @@ export default function EditsSalesRepresentative() {
                         });
                         handleSelectedCountryStatesCities(e.value);
                       }}
+                      data-testid={UPDATE_LOCAL_PARTNER.partnerStateSelect}
                     />
                   </div>
                 </div>
@@ -470,6 +479,7 @@ export default function EditsSalesRepresentative() {
                               city: e.label,
                             });
                           }}
+                          data-testid={UPDATE_LOCAL_PARTNER.partnerCitySelect}
                         />
                         <button
                           type="button"
@@ -514,6 +524,7 @@ export default function EditsSalesRepresentative() {
                       placeholder="Enter Zip code"
                       className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       onChange={handleChange}
+                      data-testid={UPDATE_LOCAL_PARTNER.partnerZipCodeInput}
                     />
                   </div>
                 </div>
@@ -528,6 +539,7 @@ export default function EditsSalesRepresentative() {
                     placeholder="Enter Title"
                     className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
+                    data-testid={UPDATE_LOCAL_PARTNER.partnerTerritoryInput}
                   />
                 </div>
                 <div className="flex flex-col gap-y-2">
@@ -541,6 +553,7 @@ export default function EditsSalesRepresentative() {
                     placeholder="Enter Address"
                     className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
+                    data-testid={UPDATE_LOCAL_PARTNER.partnerAddressInput}
                   />
                 </div>
                 <div className="flex flex-col gap-y-2">
@@ -589,6 +602,7 @@ export default function EditsSalesRepresentative() {
                       placeholder="Enter Phone Number"
                       className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5  w-full col-span-8"
                       onChange={handleChange}
+                      data-testid={UPDATE_LOCAL_PARTNER.partnerPhoneNumberInput}
                     />
                   </div>
                 </div>
@@ -610,6 +624,7 @@ export default function EditsSalesRepresentative() {
                     placeholder="Enter Email"
                     className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
+                    data-testid={UPDATE_LOCAL_PARTNER.partnerEmailInput}
                   />
                 </div>
 
@@ -627,11 +642,13 @@ export default function EditsSalesRepresentative() {
                         placeholder="Enter New Password"
                         className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none ps-2.5 pe-12 py-3"
                         onChange={handleChange}
+                        data-testid={UPDATE_LOCAL_PARTNER.passwordChangeSection}
                       />
                       <button
                         onClick={() => setVisible(!visible)}
                         type="button"
                         className="text-labelColor absolute right-4 top-11"
+                        data-testid={UPDATE_LOCAL_PARTNER.passwordVisibilityToggle}
                       >
                         {visible ? (
                           <AiOutlineEye size={24} color="#000000" />
@@ -653,6 +670,7 @@ export default function EditsSalesRepresentative() {
                         setChangePasswordStatus(!changePasswordStatus)
                       }
                       className="size-4 border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none"
+                      data-testid={UPDATE_LOCAL_PARTNER.changePasswordCheckbox}
                     />
                   </div>
                 </div>
@@ -663,6 +681,7 @@ export default function EditsSalesRepresentative() {
             <button
               type="submit"
               className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
+              data-testid={UPDATE_LOCAL_PARTNER.submitButton}
             >
               Update Local Partner
             </button>

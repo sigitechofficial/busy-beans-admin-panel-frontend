@@ -20,6 +20,7 @@ import Loader from "@/components/ui/Loader";
 import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
 import { hasPermission } from "@/utilities/Permission";
+import { SALES_REPRESENTATIVE } from "./localPartner.testid";
 
 export default function SaleRepresentative() {
   const router = useRouter();
@@ -187,8 +188,9 @@ export default function SaleRepresentative() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+    <div data-testid={SALES_REPRESENTATIVE.root}>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={SALES_REPRESENTATIVE.headerBar}>
         <div className="flex items-center gap-2">
           <p
             onClick={() => setToggle(!toggle)}
@@ -196,7 +198,7 @@ export default function SaleRepresentative() {
           >
             <CiMenuBurger size={20} />
           </p>
-          <h2 className="text-xl font-inter font-semibold">Local Partners</h2>
+          <h2 className="text-xl font-inter font-semibold" data-testid={SALES_REPRESENTATIVE.title}>Local Partners</h2>
         </div>
       </div>
       <div className="space-y-8 pt-28 2xl:pt-32 px-6 2xl:px-12 ">
@@ -224,16 +226,17 @@ export default function SaleRepresentative() {
         </div>
 
         <div className="space-y-4">
-          <div className="grid  grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+          <div className="grid  grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5" data-testid={SALES_REPRESENTATIVE.statsGrid}>
             <ManagementTab
               title="Total Local Partners"
               desc={data?.data?.data?.length ?? 0}
+              data-testid={SALES_REPRESENTATIVE.totalSalesRepCard}
             />
             {/* <ManagementTab title="New Sales Represenatives" desc="5000" /> */}
           </div>
         </div>
 
-        <div>
+        <div data-testid={SALES_REPRESENTATIVE.tableWrapper}>
           <MyDataTable
             columns={columns}
             data={datas}
@@ -243,6 +246,8 @@ export default function SaleRepresentative() {
             onRowClick={(e) =>
               router.push(`/sale-representative/details/${e?.data?.id}`)
             }
+            data-testid={SALES_REPRESENTATIVE.table}
+            rowTestId={(row) => `data-testid-${SALES_REPRESENTATIVE.row(row.id)}`}
           />
         </div>
 
@@ -253,7 +258,7 @@ export default function SaleRepresentative() {
           onHide={handleModalClose}
           header={
             <div className="font-nunito font-bold text-2xl text-center">
-              Delete Supplier
+              Delete Local Partner
             </div>
           }
         >
@@ -281,6 +286,7 @@ export default function SaleRepresentative() {
                   <button
                     type="submit"
                     className="rounded-lg border border-theme text-white px-10 bg-theme"
+                    data-testid={SALES_REPRESENTATIVE.modalSubmitBtn}
                   >
                     Delete
                   </button>

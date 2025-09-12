@@ -11,6 +11,7 @@ import { CiMenuBurger } from "react-icons/ci";
 import { PostAPI } from "@/utilities/PostAPI";
 import { success_toaster } from "@/utilities/Toaster";
 import ErrorHandler from "@/utilities/ErrorHandler";
+import { PULLOUTS } from "./pullouts.testid";
 
 export default function Pullouts() {
   if (typeof window !== "undefined") {
@@ -142,8 +143,9 @@ export default function Pullouts() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div className="w-full">
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+    <div className="w-full" data-testid={PULLOUTS.root}>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={PULLOUTS.headerBar}>
         <div className="flex items-center gap-2">
           <p
             onClick={() => setToggle(!toggle)}
@@ -151,7 +153,7 @@ export default function Pullouts() {
           >
             <CiMenuBurger size={20} />
           </p>
-          <h2 className="text-xl font-inter font-semibold">Orders</h2>
+          <h2 className="text-xl font-inter font-semibold" data-testid={PULLOUTS.title}>Orders</h2>
         </div>
       </div>
 
@@ -164,6 +166,7 @@ export default function Pullouts() {
             className={`${
               statusFilter === 0 ? "bg-black text-white" : "bg-white text-black"
             } font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 duration-200 max-sm:w-60`}
+            data-testid={PULLOUTS.pendingPulloutsBtn}
           >
             Pending Pullouts
           </button>
@@ -174,6 +177,7 @@ export default function Pullouts() {
             className={`${
               statusFilter === 1 ? "bg-black text-white" : "bg-white text-black"
             } font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 duration-200 max-sm:w-60`}
+            data-testid={PULLOUTS.confirmPulloutsBtn}
           >
             Confirm Pullouts
           </button>
@@ -193,11 +197,11 @@ export default function Pullouts() {
           </div>
         )} */}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-          <ManagementTab title="Total Orders" desc={resultedOrders?.length} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5" data-testid={PULLOUTS.statsGrid}>
+          <ManagementTab title="Total Orders" desc={resultedOrders?.length} data-testid={PULLOUTS.totalOrdersCard}/>
         </div>
 
-        <div>
+        <div data-testid={PULLOUTS.tableWrapper}>
           <MyDataTable
             columns={columns}
             data={datas}
@@ -210,6 +214,8 @@ export default function Pullouts() {
             search={true}
             sortField={isPendingPullout ? "overDueInvoice" : undefined}
             sortOrder={-1}
+            data-testid={PULLOUTS.table}
+            rowTestId={(row) => `data-testid-${PULLOUTS.row(row.id)}`}
           />
         </div>
       </div>

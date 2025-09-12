@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export default function ListHead(props) {
-  const { Icon, Angle, to, onClick, title, active } = props;
+  const { Icon, Angle, to, onClick, title, active, dataTestId } = props;
   const pathname = usePathname();
   const { setToggle } = useDataContext();
 
@@ -21,6 +21,7 @@ export default function ListHead(props) {
     <li className="mx-2">
       <Link href={to || "#"} className="space-y-1">
         <div
+          data-testid={dataTestId}
           className={`flex gap-x-2 justify-between items-center py-1.5 lg:py-3 px-2 rounded-xl hover:bg-black hover:text-white duration-200
          ${
             pathname === to || active 

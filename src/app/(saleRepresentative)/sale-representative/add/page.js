@@ -14,6 +14,7 @@ import GetAPI from "@/utilities/GetAPI";
 import axios from "axios";
 import { BASE_URL } from "@/utilities/URL";
 import { useRouter } from "next/navigation";
+import { ADD_LOCAL_PARTNER } from "../localPartner.testid";
 
 export default function AddSaleRepresentative() {
   const router = useRouter();
@@ -228,9 +229,10 @@ export default function AddSaleRepresentative() {
   };
 
   return (
-    <div>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
-        <h2 className="text-xl lg:text-2xl font-inter font-semibold">
+    <div data-testid={ADD_LOCAL_PARTNER.root}>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={ADD_LOCAL_PARTNER.headerBar}>
+        <h2 className="text-xl lg:text-2xl font-inter font-semibold" data-testid={ADD_LOCAL_PARTNER.title}>
           Add Local Partner
         </h2>
 
@@ -244,6 +246,7 @@ export default function AddSaleRepresentative() {
       <form
         onSubmit={handleSubmit}
         className="space-y-8 pb-6 pt-32 px-6 2xl:px-12"
+        data-testid={ADD_LOCAL_PARTNER.submitButton}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-x-2">
@@ -255,7 +258,7 @@ export default function AddSaleRepresentative() {
         </div>
 
         {loader ? (
-          <MiniLoader />
+          <MiniLoader data-testid={ADD_LOCAL_PARTNER.miniLoader}/>
         ) : (
           <div className="space-y-6">
             <div className="grid xl:grid-cols-2 gap-6">
@@ -266,6 +269,7 @@ export default function AddSaleRepresentative() {
                   type="button"
                   onClick={handleSelectImage}
                   className="rounded-xl border border-tabBorderColor border-opacity-40 size-20 flex items-center justify-center"
+                  data-testid={ADD_LOCAL_PARTNER.imageUploadButton}
                 >
                   <input
                     type="file"
@@ -277,6 +281,7 @@ export default function AddSaleRepresentative() {
                       src={imagePreview}
                       alt="supplier-image"
                       className="object-cover object-center"
+                      data-testid={ADD_LOCAL_PARTNER.imagePreview}
                     />
                   ) : (
                     <LuImageUp size={"60"} color="rgba(0, 0, 0, 0.6)" />
@@ -293,6 +298,7 @@ export default function AddSaleRepresentative() {
                     placeholder="Enter Name"
                     className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
+                    data-testid={ADD_LOCAL_PARTNER.partnerNameInput}
                   />
                 </div>
                 {/* <div className="flex flex-col gap-y-2">
@@ -326,6 +332,7 @@ export default function AddSaleRepresentative() {
                     }
                     className="w-full"
                     styles={selectStyles2}
+                    data-testid={ADD_LOCAL_PARTNER.partnerStatusSelect}
                   />
                 </div>
                 <div className="flex flex-col gap-y-2">
@@ -339,6 +346,7 @@ export default function AddSaleRepresentative() {
                     placeholder="Enter Credit Limit"
                     className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                     onChange={handleChange}
+                    data-testid={ADD_LOCAL_PARTNER.partnerCreditLimitInput}
                   />
                 </div>
               </div>
@@ -374,6 +382,7 @@ export default function AddSaleRepresentative() {
                           });
                           handleSelectedCountryStates(e.label);
                         }}
+                        data-testid={ADD_LOCAL_PARTNER.partnerCountrySelect}
                       />
                     </div>
                     <div className="flex flex-col gap-y-2 w-full">
@@ -401,6 +410,7 @@ export default function AddSaleRepresentative() {
                           });
                           handleSelectedCountryStatesCities(e.value);
                         }}
+                        data-testid={ADD_LOCAL_PARTNER.partnerStateSelect}
                       />
                     </div>
                   </div>
@@ -430,6 +440,7 @@ export default function AddSaleRepresentative() {
                                 city: e.label,
                               });
                             }}
+                            data-testid={ADD_LOCAL_PARTNER.partnerCitySelect}
                           />
                           <button
                             type="button"
@@ -474,6 +485,7 @@ export default function AddSaleRepresentative() {
                         placeholder="Enter Zip code"
                         className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                         onChange={handleChange}
+                        data-testid={ADD_LOCAL_PARTNER.partnerZipCodeInput}
                       />
                     </div>
                   </div>
@@ -488,6 +500,7 @@ export default function AddSaleRepresentative() {
                       placeholder="Enter Address"
                       className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       onChange={handleChange}
+                      data-testid={ADD_LOCAL_PARTNER.partnerAddressInput}
                     />
                   </div>
                   <div className="flex flex-col gap-y-2">
@@ -501,6 +514,7 @@ export default function AddSaleRepresentative() {
                       placeholder="Enter Title"
                       className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       onChange={handleChange}
+                      data-testid={ADD_LOCAL_PARTNER.partnerTerritoryInput}
                     />
                   </div>
                   <div className="flex flex-col gap-y-2">
@@ -552,6 +566,7 @@ export default function AddSaleRepresentative() {
                         placeholder="Enter Phone Number"
                         className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5  w-full col-span-8"
                         onChange={handleChange}
+                        data-testid={ADD_LOCAL_PARTNER.partnerPhoneNumberInput}
                       />
                     </div>
                     <div
@@ -584,6 +599,7 @@ export default function AddSaleRepresentative() {
                       placeholder="Enter Email"
                       className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       onChange={handleChange}
+                      data-testid={ADD_LOCAL_PARTNER.partnerEmailInput}
                     />
                   </div>
                   <div className="flex flex-col gap-y-2 relative">
@@ -598,6 +614,7 @@ export default function AddSaleRepresentative() {
                       placeholder="Enter password"
                       className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       onChange={handleChange}
+                      data-testid={ADD_LOCAL_PARTNER.partnerPasswordInput}
                     />
                   </div>
                 </div>
@@ -948,6 +965,7 @@ export default function AddSaleRepresentative() {
               <button
                 type="submit"
                 className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme hover:bg-white hover:text-theme border border-theme duration-150 w-full py-3"
+                data-testid={ADD_LOCAL_PARTNER.submitButton}
               >
                 Add Local Partner
               </button>

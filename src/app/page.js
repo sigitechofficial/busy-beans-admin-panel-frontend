@@ -590,6 +590,7 @@ export default function Home() {
               Icon={BsCardList}
               bgColor="bg-homeCards"
               iconBg="bg-white"
+              data-testid="dashboard-total-countries-card"
             />
             <HomeCards
               currecncyunit={"$"}
@@ -599,6 +600,7 @@ export default function Home() {
               Icon={FaChartLine}
               bgColor="bg-homeCards"
               iconBg="bg-white"
+              data-testid="dashboard-total-states-card"
             />
             <HomeCards
               title="Total Cities"
@@ -607,6 +609,7 @@ export default function Home() {
               Icon={PiUsersThreeBold}
               bgColor="bg-homeCards"
               iconBg="bg-white"
+              data-testid="dashboard-total-cities-card"
             />
             <HomeCards
               title="Total Local Partners"
@@ -615,6 +618,7 @@ export default function Home() {
               Icon={PiHandbagFill}
               bgColor="bg-homeCards"
               iconBg="bg-white"
+              data-testid="dashboard-total-local-partners-card"
             />
             <HomeCards
               title="Total Suppliers"
@@ -623,6 +627,7 @@ export default function Home() {
               Icon={PiHandbagFill}
               bgColor="bg-homeCards"
               iconBg="bg-white"
+              data-testid="dashboard-total-suppliers-card"
             />
             <HomeCards
               title="Total Clients"
@@ -631,6 +636,7 @@ export default function Home() {
               Icon={PiHandbagFill}
               bgColor="bg-homeCards"
               iconBg="bg-white"
+              data-testid="dashboard-total-clients-card"
             />
           </div>
 
@@ -640,16 +646,19 @@ export default function Home() {
               // description="The bookings that are booked and an employee has been assigned to them."
               total={`$${data?.data?.salesSummary?.sales}`}
               // Icon={FiBox}
+              data-testid="dashboard-total-sales"
             />
             <HomeMiniCards
               title="Whole Sale"
               total={`$${data?.data?.salesSummary?.wholesalePriceTotal}`}
               // Icon={LuPackageCheck}
+              data-testid="dashboard-total-whole-sales"
             />
             <HomeMiniCards
               title="Suppliers Earning"
               total={`$${data?.data?.revenueSummary?.revenueCollected||0}`}
               // Icon={LuPackageX}
+              data-testid="dashboard-supplier-earnings"
             />
             {/* <HomeMiniCards
             title="Pending Payments"
@@ -664,48 +673,56 @@ export default function Home() {
               // description="The bookings in which minimum 1 service is not assigned to any employee"
               total={data?.data?.ordersSummary?.orderPlaced}
               // Icon={FiBox}
+              data-testid="dashboard-total-orders"
             />
             <HomeMiniCards
               title="Assigned Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
               total={data?.data?.ordersSummary?.assignedToSupplier}
               // Icon={FiBox}
+              data-testid="dashboard-assigned-orders"
             />
             <HomeMiniCards
               title="Acknowledged Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
               total={data?.data?.ordersSummary?.supplierAcknowledged}
               // Icon={FiBox}
+              data-testid="dashboard-acknowledged-orders"
             />
             <HomeMiniCards
               title="Dispatched Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
               total={data?.data?.ordersSummary?.dispatchedOrders}
               // Icon={FiBox}
+              data-testid="dashboard-dispatched-orders"
             />
             <HomeMiniCards
               title="Delivered Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
               total={data?.data?.ordersSummary?.deliveredOrders}
               // Icon={FiBox}
+              data-testid="dashboard-delivered-orders"
             />
             <HomeMiniCards
               title="Cancelled Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
               total={data?.data?.ordersSummary?.CanceledOrders}
               // Icon={FiBox}
+              data-testid="dashboard-cancelled-orders"
             />
             <HomeMiniCards
               title="Unpaid Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
               total={data?.data?.ordersSummary?.paymentPending}
               // Icon={FiBox}
+              data-testid="dashboard-unpaid-orders"
             />
             <HomeMiniCards
               title="Paid Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
               total={data?.data?.ordersSummary?.paymentDone}
               // Icon={FiBox}
+              data-testid="dashboard-paid-orders"
             />
           </div>
 
@@ -841,6 +858,7 @@ export default function Home() {
               Icon={BsCardList}
               bgColor="bg-homeCards"
               iconBg="bg-white"
+              data-testid="dashboard-total-sales-card"
             />
             <HomeCards
               currecncyunit={"$"}
@@ -850,6 +868,7 @@ export default function Home() {
               Icon={FaChartLine}
               bgColor="bg-homeCards"
               iconBg="bg-white"
+              data-testid="dashboard-total-whole-sales-card"
             />
             <HomeCards
               currecncyunit={"$"}
@@ -859,6 +878,7 @@ export default function Home() {
               Icon={FaChartLine}
               bgColor="bg-homeCards"
               iconBg="bg-white"
+              data-testid="dashboard-total-revenue-card"
             />
           </div>
 
@@ -886,48 +906,56 @@ export default function Home() {
               // description="The bookings in which minimum 1 service is not assigned to any employee"
               total={data?.data?.ordersSummary?.orderPlaced}
               // Icon={FiBox}
+              data-testid="dashboard-total-orders"
             />
             <HomeMiniCards
               title="Assigned Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
               total={data?.data?.ordersSummary?.assignedToSupplier}
               // Icon={FiBox}
+              data-testid="dashboard-assigned-orders"
             />
             <HomeMiniCards
               title="Acknowledged Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
               total={data?.data?.ordersSummary?.supplierAcknowledged}
               // Icon={FiBox}
+              data-testid="dashboard-acknowledged-orders"
             />
             <HomeMiniCards
               title="Dispatched Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
               total={data?.data?.ordersSummary?.dispatchedOrders}
               // Icon={FiBox}
+              data-testid="dashboard-dispatched-orders"
             />
             <HomeMiniCards
               title="Delivered Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
               total={data?.data?.ordersSummary?.deliveredOrders}
               // Icon={FiBox}
+              data-testid="dashboard-delivered-orders"
             />
             <HomeMiniCards
               title="Cancelled Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
               total={data?.data?.ordersSummary?.CanceledOrders}
               // Icon={FiBox}
+              data-testid="dashboard-cancelled-orders"
             />
             <HomeMiniCards
               title="Unpaid Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
               total={data?.data?.ordersSummary?.paymentPending}
               // Icon={FiBox}
+              data-testid="dashboard-unpaid-orders"
             />
             <HomeMiniCards
               title="Paid Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
               total={data?.data?.ordersSummary?.paymentDone}
               // Icon={FiBox}
+              data-testid="dashboard-paid-orders"
             />
           </div>
 
@@ -960,6 +988,7 @@ export default function Home() {
             Icon={BsCardList}
             bgColor="bg-homeCards"
             iconBg="bg-white"
+            data-testid="dashboard-total-orders"
           />
           <HomeCards
             title="Shipped Orders"
@@ -967,6 +996,7 @@ export default function Home() {
             Icon={FaChartLine}
             bgColor="bg-homeCards"
             iconBg="bg-white"
+            data-testid="dashboard-total-shipped-orders"
           />
           <HomeCards
             title="Acknowledged Orders"
@@ -974,6 +1004,7 @@ export default function Home() {
             Icon={PiUsersThreeBold}
             bgColor="bg-homeCards"
             iconBg="bg-white"
+            data-testid="dashboard-total-acknowledged-orders"
           />
           <HomeCards
             title="Dispatched To Suppliers"
@@ -981,6 +1012,7 @@ export default function Home() {
             Icon={FaChartLine}
             bgColor="bg-homeCards"
             iconBg="bg-white"
+            data-testid="dashboard-total-dispatched-orders"
           />
           <HomeCards
             title="Delivered Orders"
@@ -988,6 +1020,7 @@ export default function Home() {
             Icon={PiHandbagFill}
             bgColor="bg-homeCards"
             iconBg="bg-white"
+            data-testid="dashboard-total-delivered-orders"
           />
           <HomeCards
             title="Cancelled Orders"
@@ -995,6 +1028,7 @@ export default function Home() {
             Icon={MdCancel}
             bgColor="bg-homeCards"
             iconBg="bg-white"
+            data-testid="dashboard-total-cancelled-orders"
           />
         </div>
         <div className="mt-8" data-testid={DASHBOARD.topProductsSection}>
@@ -1007,6 +1041,7 @@ export default function Home() {
                   title={product.productName}
                   // total={`Total Sold: ${product.totalSold}`}
                   total={product.totalSold}
+                  data-testid="dashboard-top-products"
                 />
               ))}
             </div>
@@ -1045,6 +1080,7 @@ export default function Home() {
               }
               bgColor="bg-homeCards"
               iconBg="bg-white"
+              data-testid="dashboard-total-orders"
             />
           )
         )}

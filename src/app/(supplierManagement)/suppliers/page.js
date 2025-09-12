@@ -20,6 +20,7 @@ import Loader from "@/components/ui/Loader";
 import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
 import { hasPermission } from "@/utilities/Permission";
+import { SUPPLIER_MANAGEMENT } from "./supplier.testid";
 
 export default function Suppliers() {
   const router = useRouter();
@@ -186,8 +187,9 @@ export default function Suppliers() {
   return data?.length === 0 ? (
     <Loader />
   ) : (
-    <div>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+    <div data-testid={SUPPLIER_MANAGEMENT.root}>
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+       data-testid={SUPPLIER_MANAGEMENT.headerBar}>
         <div className="flex items-center gap-2">
           <p
             onClick={() => setToggle(!toggle)}
@@ -195,7 +197,7 @@ export default function Suppliers() {
           >
             <CiMenuBurger size={20} />
           </p>
-          <h2 className="text-xl font-inter font-semibold">
+          <h2 className="text-xl font-inter font-semibold" data-testid={SUPPLIER_MANAGEMENT.title}>
             Supplier Management
           </h2>
         </div>
@@ -219,17 +221,19 @@ export default function Suppliers() {
             <button
               onClick={() => router.push("/suppliers/add")}
               className="rounded-lg font-inter font-medium text-white px-2 sm:px-3 py-2.5 sm:py-4 bg-theme"
+              data-testid={SUPPLIER_MANAGEMENT.addNewSupplierBtn}
             >
               + Add New Supplier
             </button> )}
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4" data-testid={SUPPLIER_MANAGEMENT.statsGrid}>
           <div className="grid  grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
             <ManagementTab
               title="Total Supplier"
               desc={data?.data?.data?.length}
+              data-testid={SUPPLIER_MANAGEMENT.totalSupplierCard}
             />
             {/* <ManagementTab title="New Supplier" desc="5000" />
           <ManagementTab title="Pending Request" desc="500" />
@@ -263,7 +267,7 @@ export default function Suppliers() {
         </div> */}
         </div>
 
-        <div>
+        <div data-testid={SUPPLIER_MANAGEMENT.tableWrapper}>
           <MyDataTable
             columns={columns}
             data={datas}
@@ -271,6 +275,8 @@ export default function Suppliers() {
             pagination={true}
             search={true}
             onRowClick={(e) => router.push(`/suppliers/details/${e?.data?.id}`)}
+            data-testid={SUPPLIER_MANAGEMENT.table}
+            rowTestId={(row) => `data-testid-${SUPPLIER_MANAGEMENT.row(row.id)}`}
           />
         </div>
 
@@ -284,6 +290,7 @@ export default function Suppliers() {
               Delete Supplier
             </div>
           }
+          data-testid={SUPPLIER_MANAGEMENT.modal}
         >
           <form
             onSubmit={handleSubmit}
@@ -304,12 +311,14 @@ export default function Suppliers() {
                     type="button"
                     onClick={handleModalClose}
                     className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow  px-6"
+                    data-testid={SUPPLIER_MANAGEMENT.cancelBtn}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     className="rounded-lg border border-theme text-white px-10 bg-theme"
+                    data-testid={SUPPLIER_MANAGEMENT.deleteSupplierBtn}
                   >
                     Delete Supplier
                   </button>

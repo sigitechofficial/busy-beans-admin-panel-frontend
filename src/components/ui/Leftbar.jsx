@@ -109,6 +109,10 @@ export default function Leftbar(props) {
       tab: "",
       status: false,
     },
+    // machineSubscriptions: {
+    //   tab: "",
+    //   status: false,
+    // },
     inventoryManagement: {
       tab: "",
       status: false,
@@ -526,6 +530,37 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
+
+          {/* {hasPermission("subscription_view") && (
+          <ListHead
+            title="Machine Subscriptions"
+            active={pathname === "/subscription"}
+            data-testid={LEFTBAR.subscriptionManagementSection}
+            Icon={GiHumanTarget}
+            Angle={
+              active?.subscription?.tab === "subscription" &&
+              active?.subscription?.status
+                ? FaAngleUp
+                : FaAngleDown
+            }
+            onClick={() =>
+              handleActive(
+                "subscription",
+                active?.subscription?.status
+              )
+            }
+          /> )}
+
+          {active?.subscription?.tab === "subscription" &&
+            active?.subscription?.status && (
+              <>
+                <div className="m-2 relative space-y-1">
+                  <ListItems title="Subscription" to="/subscription" data-testid={LEFTBAR.listItem("subscription", "Subscription")} />
+                </div>
+                <hr className="w-full" />
+              </>
+            )} */}
+
           {hasPermission("invoice_view") && (
           <ListHead
             title="Invoice Management"
@@ -549,6 +584,7 @@ export default function Leftbar(props) {
             active?.invoiceManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
+                  <ListItems title="Create Invoice" to="/create-invoice" data-testid={LEFTBAR.listItem("invoiceManagement", "Create Invoice")} />
                   <ListItems title="All Invoices" to="/invoices" data-testid={LEFTBAR.listItem("invoiceManagement", "All Invoices")} />
                   <ListItems title="Individual Invoices" to="/individual-invoices" data-testid={LEFTBAR.listItem("invoiceManagement", "Individual Invoices")} />
                 </div>
@@ -1195,6 +1231,36 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
+          {/* {hasPermission("subscription_view") && (
+          <ListHead
+            title="Machine Subscriptions"
+            active={pathname === "/subscription"}
+            data-testid={LEFTBAR.subscriptionManagementSection}
+            Icon={GiHumanTarget}
+            Angle={
+              active?.subscription?.tab === "subscription" &&
+              active?.subscription?.status
+                ? FaAngleUp
+                : FaAngleDown
+            }
+            onClick={() =>
+              handleActive(
+                "subscription",
+                active?.subscription?.status
+              )
+            }
+          /> )}
+
+          {active?.subscription?.tab === "subscription" &&
+            active?.subscription?.status && (
+              <>
+                <div className="m-2 relative space-y-1">
+                  <ListItems title="Subscription" to="/subscription" data-testid={LEFTBAR.listItem("subscription", "Subscription")} />
+                </div>
+                <hr className="w-full" />
+              </>
+            )} */}
+            
           {hasPermission("invoice_view") && (
           <ListHead
             title="Invoice Management"
@@ -1218,6 +1284,8 @@ export default function Leftbar(props) {
             active?.invoiceManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
+                  <ListItems title="Create Invoice" to="/create-invoice" 
+                  data-testid={LEFTBAR.listItem("invoiceManagement", "Create Invoice")} />
                   <ListItems title="All Invoices" to="/invoices" 
                   data-testid={LEFTBAR.listItem("invoiceManagement", "All Invoices")} />
                   <ListItems title="Individual Invoices" to="/individual-invoices" 

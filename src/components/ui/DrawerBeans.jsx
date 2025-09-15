@@ -22,6 +22,7 @@ import { RxCross2 } from "react-icons/rx";
 import MiniLoader from "./MiniLoader";
 import { MdInsertComment, MdOutlineConfirmationNumber } from "react-icons/md";
 import { ORDERS_CREATE_DRAWER } from "../../app/(orderManagement)/orders/orders.testids"
+import { hasPermission } from "@/utilities/Permission";
 
 const DrawerBeans = ({
   drawerOpen: open,
@@ -33,6 +34,7 @@ const DrawerBeans = ({
   if (typeof window !== "undefined") {
     var userID = localStorage.getItem("userID");
     var userType = localStorage.getItem("userType");
+    var isEmployee = localStorage.getItem("isEmployee") === "true";
   }
   const options = [];
   const companyNameOptions = [];
@@ -80,12 +82,16 @@ const DrawerBeans = ({
     return Number(a) + Number(b?.weight) * Number(b?.qty);
   }, 0);
 
-  const { data } = GetAPI(
-    userType === "admin"
-      ? `api/v1/admin/customer-management/customer-list/all`
-      : `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}&orderCreation=yes`,
-    "customer"
-  );
+  const customerListEndpoint =
+    (isEmployee && hasPermission("selected-customer_view"))
+      ? `api/v1/admin/customer-management/customer-list/employee-id/${userID}`
+      : (userType === "admin")
+        ? `api/v1/admin/customer-management/customer-list/all`
+        : (userType === "salesRepresentative")
+          ? `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}&orderCreation=yes`
+          : `api/v1/admin/customer-management/customer-list/all`;
+
+  const { data } = GetAPI(customerListEndpoint, "customer");
 
   data?.data?.data?.map((user) =>
     options.push({ value: user?.email, label: user?.email })

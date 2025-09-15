@@ -18,6 +18,7 @@ const LEFTBAR = {
   shippingChargesManagementSection: "leftbar-shipping-charges-management-section",
   clientManagementSection: "leftbar-client-management-section",
   localPartnersSection: "leftbar-local-partners-section",
+  subscriptionManagementSection: "leftbar-subscription-management-section",
   invoiceManagementSection: "leftbar-invoice-management-section",
   inventoryManagementSection: "leftbar-inventory-management-section",
   reportManagementSection: "leftbar-report-management-section",

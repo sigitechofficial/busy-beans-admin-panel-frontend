@@ -541,7 +541,6 @@ export default function Employee() {
                             onChange={(phone) =>
                               setFormData({ ...formData, countryCode: phone })
                             }
-                            data-testid={EMPLOYEES.phoneInput}
                             containerStyle={{ width: "100%" }}
                             inputStyle={{
                               width: "100%",

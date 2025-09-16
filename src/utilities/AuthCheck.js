@@ -1,28 +1,41 @@
+// utilities/AuthCheck.js
 import { info_toaster } from "@/utilities/Toaster";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { BASE_URL } from "@/utilities/URL";
 
-export const setLoginStatus = (data) => {
+const logout = (router, msg = "Please login first !") => {
   try {
-    localStorage.setItem("loginStatus", data);
-  } catch (err) {}
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("loginStatus");
+    localStorage.removeItem("email");
+    localStorage.removeItem("userType");
+    localStorage.removeItem("userID");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("permissions");
+    localStorage.removeItem("isEmployee");
+    localStorage.removeItem("employeeOf");
+  } catch {}
+  router.push("/sign-in");
+  info_toaster(msg);
 };
- 
+
 export const AuthCheck = () => {
   const router = useRouter();
+
   useEffect(() => {
-    if (
-      !localStorage.getItem("loginStatus") ||
-      !localStorage.getItem("accessToken")
-    ) {
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("loginStatus");
-      localStorage.removeItem("email");
-      localStorage.removeItem("userType");
-      localStorage.removeItem("userID");
-      localStorage.removeItem("userName");
-      router.push("/sign-in");
-      info_toaster("Please login first !");
+    const token = localStorage.getItem("accessToken");
+    const loggedIn = localStorage.getItem("loginStatus");
+    const userType = localStorage.getItem("userType");
+    const permissions = localStorage.getItem("permissions");
+    const isEmployee = localStorage.getItem("isEmployee") === "true";
+    const employeeOf = localStorage.getItem("employeeOf");
+
+    if (!token || !loggedIn || !userType || !permissions) {
+      return logout(router);
+    }
+    if (isEmployee && !employeeOf) {
+      return logout(router);
     }
   }, [router]);
 };

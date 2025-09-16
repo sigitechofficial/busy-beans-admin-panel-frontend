@@ -4,6 +4,7 @@ import HomeCards from "@/components/ui/HomeCards";
 import HomeMiniCards from "@/components/ui/HomeMiniCards";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import GetAPI from "@/utilities/GetAPI";
+import { PostAPI } from "@/utilities/PostAPI";
 import { error_toaster, success_toaster } from "@/utilities/Toaster";
 import { BASE_URL } from "@/utilities/URL";
 import axios from "axios";
@@ -75,8 +76,7 @@ export default function Home() {
     const path = url.split("/");
     if (isAccountConnected === "false" && connectAccountId !== "null") {
       try {
-        const res = await axios.post(
-          BASE_URL + `api/v1/admin/stripe-connect-account-url/${userID}`,
+        const res = await PostAPI(`api/v1/admin/stripe-connect-account-url/${userID}`,
           {
             returnUrl: "https://" + path[2].trim(),
           }
@@ -87,7 +87,8 @@ export default function Home() {
           if (res?.data?.data?.data?.connectAccount) {
             const link = document.createElement("a");
             link.href = res?.data?.data?.data?.connectAccount;
-            link.target = "_self";
+            link.target = "_blank"; 
+            link.rel = "noopener noreferrer";
             link.click();
           }
         } else {
@@ -103,8 +104,7 @@ export default function Home() {
       isAccountConnected === "false"
     ) {
       try {
-        const res = await axios.post(
-          BASE_URL + `api/v1/admin/create-stripe-connect-account/${userID}`,
+        const res = await PostAPI(`api/v1/admin/create-stripe-connect-account/${userID}`,
           {
             returnUrl: "https://" + path[2].trim(),
           }
@@ -373,8 +373,7 @@ export default function Home() {
       }
 
       // Now handle attachment with backend
-      const attachRes = await axios.post(
-        BASE_URL + `api/v1/admin/attach-bank-account-setup/sales-rep/${userID}`,
+      const attachRes = await PostAPI(`api/v1/admin/attach-bank-account-setup/sales-rep/${userID}`,
         {
           setupIntentId: result?.setupIntent?.id,
           paymentMethodId: result?.setupIntent?.payment_method,
@@ -399,29 +398,24 @@ export default function Home() {
     }
   };
 
-  useEffect(() => {
-    if (didInitRef.current) return; 
-    didInitRef.current = true;
-    const stripeAccountStatus = async () => {
-      try {
-        const res = await api.get(
-          BASE_URL + `api/v1/admin/stripe-connect-account-retrieve/${userID}`
-        );
-        if (res?.data?.status === "success") {
-          localStorage.setItem("isAccountConnected", true);
-        }
-        //  else {
-        //   throw new Error(
-        //     "Connect Stripe Acocunt in order to create order"
-        //   );
-        // }
-      } catch (error) {
-        // console.log("🚀 ~ stripeAccountStatus ~ error:", error);
-        // ErrorHandler("Connect Stripe Account");
-      }
-    };
+  // useEffect(() => {
+  //   if (didInitRef.current) return; 
+  //   didInitRef.current = true;
+  //   const stripeAccountStatus = async () => {
+  //     try {
+  //       const res = await api.get(
+  //         BASE_URL + `api/v1/admin/stripe-connect-account-retrieve/${userID}`
+  //       );
+  //       if (res?.data?.status === "success") {
+  //         localStorage.setItem("isAccountConnected", true);
+  //       }
+  //     } catch (error) {
+  //       // console.log("🚀 ~ stripeAccountStatus ~ error:", error);
+  //       // ErrorHandler("Connect Stripe Account");
+  //     }
+  //   };
 
-    // const createFinancialConnectionSection = async () => {
+  // const createFinancialConnectionSection = async () => {
     //   try {
     //     const res = await axios.post(
     //       BASE_URL +
@@ -475,6 +469,61 @@ export default function Home() {
     //     ErrorHandler(error);
     //   }
     // };
+
+  //   if (userType === "salesRepresentative" && !isEmployee) {
+  //     stripeAccountStatus();
+  //     handleFinancialConnection();
+  //   }
+  // }, [userType, userID, isEmployee]);
+
+  useEffect(() => {
+    if (didInitRef.current) return;
+    didInitRef.current = true;
+
+    const stripeAccountStatus = async () => {
+      try {
+        const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("token") || localStorage.getItem("accessToken")
+          : "";
+        const res = await api.get(
+          BASE_URL + `api/v1/admin/stripe-connect-account-retrieve/${userID}`,
+          {
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+          }
+        );
+
+        if (res?.data?.status === "success") {
+          localStorage.setItem("isAccountConnected", "true");
+        } else {
+          throw new Error(res?.data?.message || "Failed to retrieve account.");
+        }
+      } catch (error) {
+        try {
+          const path = url.split("/");
+          const fallback = await PostAPI(`api/v1/admin/stripe-connect-account-url/${userID}`,
+            { returnUrl: "https://" + path[2].trim() }
+          );
+          
+          if (
+            fallback?.data?.status === "success" &&
+            fallback?.data?.data?.data?.connectAccount
+          ) {
+            const link = document.createElement("a");
+            link.href = fallback?.data?.data?.data?.connectAccount;
+            link.target = "_blank"; 
+            link.rel = "noopener noreferrer"; 
+            link.click();
+          }
+        } catch (fallbackErr) {
+          ErrorHandler(fallbackErr);
+        }
+      }
+    };
 
     if (userType === "salesRepresentative" && !isEmployee) {
       stripeAccountStatus();

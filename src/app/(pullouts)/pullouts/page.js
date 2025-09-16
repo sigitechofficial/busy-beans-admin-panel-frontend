@@ -58,6 +58,14 @@ export default function Pullouts() {
     });
   }
 
+  if (!isPendingPullout) {
+    columns.splice(7, 0, {
+      field: "pulloutDate",
+      header: "Pullout Date",
+      sort: true,
+    });
+  }
+
   const safeFormatDate = (v) => {
     if (!v || v === "null" || v === "undefined" || v === "0000-00-00") return "";
     const d = dayjs(v);
@@ -103,6 +111,7 @@ export default function Pullouts() {
         ...(!isPendingPullout ? { pulloutTransferId: detail?.pulloutIntentId ?? "" } : {}),
         paymentStatus: detail?.paymentStatus === "done" ? "Paid" : "Unpaid",
         invoiceDate: safeFormatDate(detail?.invoiceDate),
+        ...(!isPendingPullout ? { pulloutDate: safeFormatDate(detail?.pulloutDate) ?? ""} : {}),
         orderCurrentStatus: detail?.orderCurrentStatus,
       })
     );

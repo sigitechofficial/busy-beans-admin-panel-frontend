@@ -250,8 +250,8 @@ export default function AddCustomer() {
         }
       : userData.billingAddress;
 
-    if (!userData.isChecked && !billing.companyaddress?.trim())
-      return { error: true, message: "Billing address cannot be empty" };
+    // if (!userData.isChecked && !billing.companyaddress?.trim())
+    //   return { error: true, message: "Billing address cannot be empty" };
     if (!userData.isChecked && !billing.town?.trim())
       return { error: true, message: "Billing town cannot be empty" };
     if (!userData.isChecked && !billing.country?.trim())

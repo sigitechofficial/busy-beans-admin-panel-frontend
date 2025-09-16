@@ -42,6 +42,7 @@ import axios from "axios";
 import { BASE_URL } from "@/utilities/URL";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import GetAPI from "@/utilities/GetAPI";
+import { PostAPI } from "@/utilities/PostAPI";
 import { useDataContext } from "@/utilities/DataContext";
 import { getMessagingInstance, onMessage } from "@/utilities/firebase";
 import { requestDeviceToken } from "@/utilities/requestFCMToken";
@@ -168,8 +169,7 @@ export default function Leftbar(props) {
     const path = url.split("/");
     if (isAccountConnected === "false" && connectAccountId !== "null") {
       try {
-        const res = await axios.post(
-          BASE_URL + `api/v1/admin/stripe-connect-account-url/${userID}`,
+        const res = await PostAPI(`api/v1/admin/stripe-connect-account-url/${userID}`,
           {
             returnUrl: "https://" + path[2].trim(),
           }
@@ -196,8 +196,7 @@ export default function Leftbar(props) {
       isAccountConnected === "false"
     ) {
       try {
-        const res = await axios.post(
-          BASE_URL + `api/v1/admin/create-stripe-connect-account/${userID}`,
+        const res = await PostAPI(`api/v1/admin/create-stripe-connect-account/${userID}`,
           {
             returnUrl: "https://" + path[2].trim(),
           }
@@ -227,8 +226,18 @@ export default function Leftbar(props) {
       isAccountConnected === "true"
     ) {
       try {
+        const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("token") || localStorage.getItem("accessToken")
+          : "";
         const res = await axios.get(
-          BASE_URL + `api/v1/admin/stripe-connect-account-dashboard/${userID}`
+          BASE_URL + `api/v1/admin/stripe-connect-account-dashboard/${userID}`, {
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+          }
         );
         if (res?.data?.status === "success") {
           success_toaster(res?.data?.data?.message);
@@ -248,7 +257,6 @@ export default function Leftbar(props) {
       }
     }
   };
-
   // useEffect(() => {
   //   const stripeAccountStatus = async () => {
   //     try {

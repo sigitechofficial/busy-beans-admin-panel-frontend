@@ -808,16 +808,25 @@ export default function OrderDetail() {
                       <p>{data?.data?.order?.pulloutIntentId}</p>
                     </div>
                   )}
+                      {data?.data?.order?.paymentStatus === "done" && (
+                        data?.data?.order?.paymentIntentId ? (
+                          <div className="flex items-center gap-2 border-b">
+                            <p className="w-32">Payment Intent ID</p>
+                            <p>{data?.data?.order?.paymentIntentId}</p>
+                          </div>
+                        ) : (
+                          data?.data?.order?.invoiceId && (
+                            <div className="flex items-center gap-2 border-b">
+                              <p className="w-32">Checkout Session ID</p>
+                              <p>{data?.data?.order?.invoiceId}</p>
+                            </div>
+                          )
+                        )
+                      )}
                   {data?.data?.order?.shippingCompany && (
                     <div className="flex items-center gap-2 border-b" data-testid={ORDER_DETAIL.summaryCard.shippingCompanyRow}>
                       <p className="w-29">Shipping Company</p>
                       <p>{data?.data?.order?.shippingCompany}</p>
-                    </div>
-                  )}
-                  {data?.data?.order?.pulloutIntentId && (
-                    <div className="flex items-center gap-2 border-b" data-testid={ORDER_DETAIL.summaryCard.pulloutIntentIdRow}>
-                      <p className="w-29">Pullout Transfer ID</p>
-                      <p>{data?.data?.order?.pulloutIntentId}</p>
                     </div>
                   )}
                   {data?.data?.order?.trackingNumber && (
@@ -857,6 +866,18 @@ export default function OrderDetail() {
                     </div>
                   )}
                 </div>
+                {data?.data?.order?.pulloutDate && (
+                    <div className="flex items-center gap-5 border-b">
+                      <p className="w-28">Pullout Date: </p>
+                      <p>
+                        {data?.data?.order?.pulloutDate
+                          ? dayjs(data?.data?.order?.pulloutDate).format(
+                              "MM/DD/YYYY"
+                            )
+                          : ""}
+                      </p>
+                    </div>
+                  )}
                 {/* ================ */}
                 <div className="w-full grid grid-cols-2 gap-10 text-xs lg:text-sm">
                   {/* Deliver To */}

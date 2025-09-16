@@ -37,7 +37,7 @@ export default function CreateInvoice() {
   });
 
   const { toggle, setToggle } = useDataContext();
-  const [visibleRight, setVisibleRight] = useState(false);
+  const [visibleRight, setVisibleRight] = useState(true);
   const [invoiceData, setInvoiceData] = useState([]); 
 
   if (!data) return <Loader />;
@@ -54,9 +54,9 @@ export default function CreateInvoice() {
       </div>
 
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+        {/* <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
           <ManagementTab title="Total Orders" desc={resultedOrders?.length || 0} />
-        </div>
+        </div> */}
 
         {/* Floating action button */}
         <div className="fixed right-10 bottom-10">

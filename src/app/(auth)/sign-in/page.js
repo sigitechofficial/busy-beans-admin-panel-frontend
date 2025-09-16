@@ -100,7 +100,7 @@ export default function SignIn() {
               type === "sales-rep" ? "salesRepresentative" : type
             );
 
-            if (res?.data?.data?.user?.permissions && res?.data?.data?.user?.permissions.length > 0) {
+            if (Array.isArray(res?.data?.data?.user?.permissions) && res?.data?.data?.user?.permissions.length > 0) {
               localStorage.setItem(
                 "permissions",
                 JSON.stringify(res?.data?.data?.user?.permissions.map((p) => p.key))
@@ -114,7 +114,6 @@ export default function SignIn() {
               localStorage.setItem("isEmployee", "true"); 
               localStorage.setItem("employeeOf", res?.data?.data?.user?.employeeOf);
             }
-            
             success_toaster("Login Successfully");
             if (type === "sales-rep") {
               localStorage.setItem(

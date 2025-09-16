@@ -648,7 +648,7 @@ export default function AddInvoice() {
             />
           </div>
 
-            <div className="flex flex-col gap-y-2">
+            {/* <div className="flex flex-col gap-y-2">
               <label className="text-labelColor font-medium font-satoshi">Discount (%)</label>
               <input
                 type="number"
@@ -663,7 +663,7 @@ export default function AddInvoice() {
                 className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                 data-testid={ORDER_ADD_INVOICE.discountPercentageInput ?? 0}
               />
-            </div>
+            </div> */}
 
         </div>
 

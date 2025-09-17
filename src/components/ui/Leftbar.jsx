@@ -282,7 +282,7 @@ export default function Leftbar(props) {
   //   }
   // }, []);
   const allOrder = overAllData?.data?.data?.reduce(
-    (sum, item) => (item?.id != 6 ? sum + item?.count : sum),
+    (sum, item) => (sum + item?.count),
     0
   );
   useEffect(() => {
@@ -1035,7 +1035,7 @@ export default function Leftbar(props) {
                     // title="Assigned Orders"
                     title="New Orders"
                     to="/supplier/assigned-orders"
-                    count={overAllData?.data?.data?.[0]?.count || ""}
+                    count={overAllData?.data?.data?.[1]?.count || ""}
                     data-testid={LEFTBAR.listItem("orderManagement", "New Orders")} 
                   />
                   <ListItems
@@ -1047,7 +1047,7 @@ export default function Leftbar(props) {
                   <ListItems
                     title="Shipped Orders"
                     to="/supplier/shiped-orders"
-                    count={overAllData?.data?.data?.[3]?.count || ""}
+                    count={overAllData?.data?.data?.[4]?.count || ""}
                     data-testid={LEFTBAR.listItem("orderManagement", "Shipped Orders")} 
                   />
                   {/* <ListItems

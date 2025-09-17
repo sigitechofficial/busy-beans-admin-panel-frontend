@@ -219,7 +219,7 @@ const DrawerBeansGenerateInvoice = ({
 
       if (res?.data?.status === "success") {
         const orderId = res?.data?.data?.id;
-        success_toaster("Invoice generated successfully");
+        // success_toaster("Invoice generated successfully");
         localStorage.setItem("createOrderData", JSON.stringify([]));
         setInvoiceData?.([]);
         setOpen(false);

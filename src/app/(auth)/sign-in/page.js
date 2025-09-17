@@ -80,7 +80,6 @@ export default function SignIn() {
           if (res?.data?.status === "success") {
             setLoader(false);
             router.push("/");
-            const user = res?.data?.data?.user;
             localStorage.setItem("accessToken", res?.data?.data?.token);
             localStorage.setItem("loginStatus", true);
             localStorage.setItem(
@@ -96,36 +95,25 @@ export default function SignIn() {
 
             localStorage.setItem("email", res?.data?.data?.user?.email);
             localStorage.setItem("userID", res?.data?.data?.user?.id);
-            const normalizedUserType = type === "sales-rep" ? "salesRepresentative" : type;
-            localStorage.setItem("userType", normalizedUserType);
-            
-            const isEmployee = Boolean(user?.employeeOf);
-            if (isEmployee) {
-              localStorage.setItem("isEmployee", "true");
-              localStorage.setItem("employeeOf", user.employeeOf);
-            } else {
-              localStorage.removeItem("isEmployee");
-              localStorage.removeItem("employeeOf");
-            }
-            
-            if (isEmployee) {
-              localStorage.setItem("permissions", "[]"); 
-            } else if (
-              normalizedUserType === "admin" ||
-              normalizedUserType === "salesRepresentative"
-            ) {
-              localStorage.setItem("permissions", "all");
-            } else if (Array.isArray(user?.permissions) && user.permissions.length > 0) {
+            localStorage.setItem(
+              "userType",
+              type === "sales-rep" ? "salesRepresentative" : type
+            );
+
+            if (Array.isArray(res?.data?.data?.user?.permissions) && res?.data?.data?.user?.permissions.length > 0) {
               localStorage.setItem(
                 "permissions",
-                JSON.stringify(user.permissions.map((p) => p.key))
+                JSON.stringify(res?.data?.data?.user?.permissions.map((p) => p.key))
               );
             } else {
-              localStorage.setItem("permissions", "[]");
+              localStorage.setItem("permissions", "all");
             }
+            localStorage.setItem("employeeId", res?.data?.data?.user?.id);
 
-            localStorage.setItem("employeeId", user?.id);
-
+            if (res?.data?.data?.user?.employeeOf) {
+              localStorage.setItem("isEmployee", "true"); 
+              localStorage.setItem("employeeOf", res?.data?.data?.user?.employeeOf);
+            }
             success_toaster("Login Successfully");
             if (type === "sales-rep") {
               localStorage.setItem(

@@ -292,7 +292,7 @@ export default function Leftbar(props) {
       if (messaging) {
         onMessage(messaging, (payload) => {
           setNewOrder(true);
-          success_toaster("Firebase notification Order placed");
+          // success_toaster("Firebase notification Order placed");
 
           setOrderData(payload);
           clearTimeout(timeoutId);

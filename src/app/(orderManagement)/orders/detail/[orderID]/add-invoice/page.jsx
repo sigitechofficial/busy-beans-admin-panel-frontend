@@ -6,7 +6,7 @@ import { useDataContext } from "@/utilities/DataContext";
 import GetAPI from "@/utilities/GetAPI";
 import { PatchAPI } from "@/utilities/PatchAPI";
 import { selectStyles2 } from "@/utilities/SelectStyle";
-import { success_toaster } from "@/utilities/Toaster";
+import { success_toaster, info_toaster } from "@/utilities/Toaster";
 import { useParams, useRouter } from "next/navigation";
 import { stringify } from "postcss";
 import { Dialog } from "primereact/dialog";
@@ -390,6 +390,19 @@ export default function AddInvoice() {
     extraCharges.filter((item) => item.checked).length;
 
   const handleCreateInvoice = async () => {
+    if (Number(total) <= 0) {
+      info_toaster("Invoice total must be greater than 0.");
+      return;
+    }
+
+    const hasEmptyExtraChargeName = (extraCharges || [])
+      .filter((c) => c.checked)
+      .some((c) => !String(c.name || "").trim());
+
+    if (hasEmptyExtraChargeName) {
+      info_toaster("Please enter a name for all extra charges.");
+      return;
+    }
     setLoading(true);
     // Prepare items for API
     const itemsForApi = [

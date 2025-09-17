@@ -378,7 +378,7 @@ const DrawerBeansGenerateInvoice = ({
                 <div className="bg-white text-black text-sm py-[1px] px-[7px] rounded-full">
                   {String(cartItems?.length).padStart(2)}
                 </div>
-                <p>Generate Invoice</p>
+                <p>Next</p>
               </div>
               ${" "}{(Number(totalPrice || 0) + Number(order?.shippingCharges || 0)).toFixed(2)}
             </button>

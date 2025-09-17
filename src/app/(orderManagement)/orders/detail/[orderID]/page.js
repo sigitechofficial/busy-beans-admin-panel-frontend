@@ -26,6 +26,7 @@ import { CiMenuBurger } from "react-icons/ci";
 import { useDataContext } from "@/utilities/DataContext";
 import { hasPermission } from "@/utilities/Permission";
 import { ORDER_DETAIL } from "../../orders.testids";
+import { FiCopy } from "react-icons/fi";
 
 export default function OrderDetail() {
   if (typeof window !== "undefined") {
@@ -812,13 +813,29 @@ export default function OrderDetail() {
                         data?.data?.order?.paymentIntentId ? (
                           <div className="flex items-center gap-2 border-b">
                             <p className="w-32">Payment Intent ID</p>
-                            <p>{data?.data?.order?.paymentIntentId}</p>
+                            <div className="flex items-center gap-2">
+                              <p>{data?.data?.order?.paymentIntentId}</p>
+                              <FiCopy
+                                className="cursor-pointer text-gray-500 hover:text-black"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(data?.data?.order?.paymentIntentId);
+                                }}
+                              />
+                            </div>
                           </div>
                         ) : (
                           data?.data?.order?.invoiceId && (
                             <div className="flex items-center gap-2 border-b">
                               <p className="w-32">Checkout Session ID</p>
-                              <p>{data?.data?.order?.invoiceId}</p>
+                              <div className="flex items-center gap-2">
+                                <p>{data?.data?.order?.invoiceId}</p>
+                                <FiCopy
+                                  className="cursor-pointer text-gray-500 hover:text-black"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(data?.data?.order?.invoiceId);
+                                  }}
+                                />
+                              </div>
                             </div>
                           )
                         )

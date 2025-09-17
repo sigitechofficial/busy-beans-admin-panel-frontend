@@ -141,6 +141,7 @@ export default function MyDataTable({
             onChange={onGlobalFilterChange}
             placeholder={placeholder}
             className="w-[280px] sm:w-[330px] md:w-[430px] h-10 md:h-12 bg-themeGray rounded-lg ps-10 pe-5 outline-none placeholder:font-inter placeholder:font-medium focus:bg-gray-200"
+            data-testid="search-input"
           />
           <LuSearch
             size={20}
@@ -164,6 +165,7 @@ export default function MyDataTable({
           <button
             onClick={handleDownload ?? handleDownloadCsv}
             className="flex items-center gap-x-2 px-5 md:px-8 py-1.5 md:py-3 rounded-lg border border-black text-white bg-black hover:text-black hover:bg-white duration-200 group"
+            data-testid="download-csv"
           >
             <RiFileDownloadLine size={24} />
             <span className="group-hover:text-black text-white font-inter">

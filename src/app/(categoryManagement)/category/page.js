@@ -237,6 +237,7 @@ export default function Category() {
               setName("");
               setModal("add");
             }}
+            data-testid={CATEGORY_MANAGEMENT.newCategory}
           >
             New Category
           </li> )}

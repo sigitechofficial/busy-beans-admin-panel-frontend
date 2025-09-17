@@ -26,6 +26,7 @@ import { CiMenuBurger } from "react-icons/ci";
 import { useDataContext } from "@/utilities/DataContext";
 import { hasPermission } from "@/utilities/Permission";
 import { ORDER_DETAIL } from "../../orders.testids";
+import { FiCopy } from "react-icons/fi";
 
 export default function OrderDetail() {
   if (typeof window !== "undefined") {
@@ -37,6 +38,7 @@ export default function OrderDetail() {
   const pathname = usePathname();
   const router = useRouter();
   const [chequeId, setChequeId] = useState("");
+  const [copiedId, setCopiedId] = useState(null);
   const [modal, setModal] = useState({
     type: "", // addCheque , editCheque
     status: false,
@@ -382,6 +384,26 @@ export default function OrderDetail() {
       ErrorHandler(error);
     }
   };
+
+  const shortId = (val) =>
+    val && val.length > 12 ? `${val.slice(0, 12)}..${val.slice(-4)}` : val || "";
+
+  const stripeUrlForUser = (id, userType, connectAccountId) => {
+    if (!id) return "#";
+    if (userType === "salesRepresentative" && connectAccountId) {
+      return `https://dashboard.stripe.com/payments/${id}?connected_account=${encodeURIComponent(connectAccountId)}`;
+    }
+    return `https://dashboard.stripe.com/payments/${id}`;
+  };
+
+  const copyLink = async (fullUrl, id, setCopiedId) => {
+    try {
+      await navigator.clipboard.writeText(fullUrl);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 1200);
+    } catch { }
+  };
+
   const { toggle, setToggle } = useDataContext();
   return data?.length === 0 ? (
     <Loader data-testid={ORDER_DETAIL.pageLoader}/>
@@ -808,21 +830,65 @@ export default function OrderDetail() {
                       <p>{data?.data?.order?.pulloutIntentId}</p>
                     </div>
                   )}
+        
                       {data?.data?.order?.paymentStatus === "done" && (
-                        data?.data?.order?.paymentIntentId ? (
-                          <div className="flex items-center gap-2 border-b">
-                            <p className="w-32">Payment Intent ID</p>
-                            <p>{data?.data?.order?.paymentIntentId}</p>
-                          </div>
-                        ) : (
-                          data?.data?.order?.invoiceId && (
-                            <div className="flex items-center gap-2 border-b">
-                              <p className="w-32">Checkout Session ID</p>
-                              <p>{data?.data?.order?.invoiceId}</p>
-                            </div>
+                        data?.data?.order?.paymentIntentId
+                          ? (() => {
+                            const intentId = data?.data?.order?.paymentIntentId;
+                            const connectAccountId = data?.data?.order?.salesRep?.connectAccountId;
+                            const intentUrl = stripeUrlForUser(intentId, userType, connectAccountId);
+
+                            return (
+                              <div className="flex items-center gap-2 border-b">
+                                <p className="w-32">Payment Intent ID</p>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    className={`underline text-blue-600 hover:text-blue-800 transition ${copiedId === intentId ? "animate-pulse" : ""}`}
+                                    title="Open in Stripe Dashboard"
+                                    onClick={() => window.open(intentUrl, "_blank", "noopener,noreferrer")}
+                                  >
+                                    {shortId(intentId)}
+                                  </button>
+                                  <FiCopy
+                                    className={`cursor-pointer text-gray-500 hover:text-black ${copiedId === intentId ? "animate-pulse" : ""}`}
+                                    onClick={() => copyLink(intentUrl, intentId, setCopiedId)}
+                                    title="Copy Stripe dashboard link"
+                                  />
+                                </div>
+                              </div>
+                            );
+                          })()
+                          : (
+                            data?.data?.order?.invoiceId && (() => {
+                              const sessionId = data?.data?.order?.invoiceId;
+                              const connectAccountId = data?.data?.order?.salesRep?.connectAccountId;
+                              const sessionUrl = stripeUrlForUser(sessionId, userType, connectAccountId);
+
+                              return (
+                                <div className="flex items-center gap-2 border-b">
+                                  <p className="w-32">Checkout Session ID</p>
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      type="button"
+                                      className={`underline text-blue-600 hover:text-blue-800 transition ${copiedId === sessionId ? "animate-pulse" : ""}`}
+                                      title="Open in Stripe Dashboard"
+                                      onClick={() => window.open(sessionUrl, "_blank", "noopener,noreferrer")}
+                                    >
+                                      {shortId(sessionId)}
+                                    </button>
+                                    <FiCopy
+                                      className={`cursor-pointer text-gray-500 hover:text-black ${copiedId === sessionId ? "animate-pulse" : ""}`}
+                                      onClick={() => copyLink(sessionUrl, sessionId, setCopiedId)}
+                                      title="Copy Stripe dashboard link"
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            })()
                           )
-                        )
                       )}
+
                   {data?.data?.order?.shippingCompany && (
                     <div className="flex items-center gap-2 border-b" data-testid={ORDER_DETAIL.summaryCard.shippingCompanyRow}>
                       <p className="w-29">Shipping Company</p>

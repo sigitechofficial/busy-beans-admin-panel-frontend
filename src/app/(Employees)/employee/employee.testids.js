@@ -4,6 +4,7 @@ const EMPLOYEES = {
   root: "employees-root",
   headerBar: "employees-header-bar",
   title: "employees-title",
+  newEmployee: "new-employee-btn",
 
   // loader
   pageLoader: "employees-page-loader",

@@ -355,7 +355,7 @@ export default function Employee() {
           </p>
           <h2 className="text-xl font-inter font-semibold" data-testid={EMPLOYEES.title}>All Employees</h2>
         </div>
-        <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
+        <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative" data-testid={EMPLOYEES.newEmployee}>
           {hasPermission("employees_create") && (
           <li
             onClick={() => {

@@ -219,7 +219,7 @@ const DrawerBeansGenerateInvoice = ({
 
       if (res?.data?.status === "success") {
         const orderId = res?.data?.data?.id;
-        success_toaster("Invoice generated successfully");
+        // success_toaster("Invoice generated successfully");
         localStorage.setItem("createOrderData", JSON.stringify([]));
         setInvoiceData?.([]);
         setOpen(false);
@@ -378,7 +378,7 @@ const DrawerBeansGenerateInvoice = ({
                 <div className="bg-white text-black text-sm py-[1px] px-[7px] rounded-full">
                   {String(cartItems?.length).padStart(2)}
                 </div>
-                <p>Generate Invoice</p>
+                <p>Next</p>
               </div>
               ${" "}{(Number(totalPrice || 0) + Number(order?.shippingCharges || 0)).toFixed(2)}
             </button>

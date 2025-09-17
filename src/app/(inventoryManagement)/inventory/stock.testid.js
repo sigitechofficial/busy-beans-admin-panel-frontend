@@ -1,62 +1,62 @@
 // --------- (Inventory Management - Stock) ----------
 const INVENTORY_MANAGEMENT = {
   // page
-  root: "inventory-management-root",
-  headerBar: "inventory-management-header-bar",
-  title: "inventory-management-title",
+  root: "root",
+  headerBar: "header-bar",
+  title: "title",
 
   // filter
-  categoryFilter: "inventory-management-category-filter",
+  categoryFilter: "category-filter",
   
   // stats
-  statsGrid: "inventory-management-stats-grid",
-  totalStocksCard: "inventory-management-total-stocks-card",
+  statsGrid: "stats-grid",
+  totalStocksCard: "total-stocks-card",
 
   // main table
-  row: (id) => `inventory-management-row-${id}`,
+  row: (id) => `row-${id}`,
 
   // actions
-  addProductBtn: "inventory-management-add-product-btn",
-  importProductBtn: "inventory-management-import-product-btn",
-  exportProductBtn: "inventory-management-export-product-btn",
+  addProductBtn: "add-product-btn",
+  importProductBtn: "import-product-btn",
+  exportProductBtn: "export-product-btn",
 
   // product card actions
-  productCardEditBtn: (id) => `inventory-management-product-card-${id}-edit-btn`,
-  productCardDeleteBtn: (id) => `inventory-management-product-card-${id}-delete-btn`,
-  productCardStatusToggle: (id) => `inventory-management-product-card-${id}-status-toggle`,
+  productCardEditBtn: (id) => `product-card-${id}-edit-btn`,
+  productCardDeleteBtn: (id) => `product-card-${id}-delete-btn`,
+  productCardStatusToggle: (id) => `product-card-${id}-status-toggle`,
 
   // table actions
-  tableWrapper: "inventory-management-table-wrapper",
-  table: "inventory-management-table",
-  tableRow: (id) => `inventory-management-table-row-${id}`,
-  tableRowEditBtn: (id) => `inventory-management-table-row-${id}-edit-btn`,
-  tableRowDeleteBtn: (id) => `inventory-management-table-row-${id}-delete-btn`,
-  tableRowStatusToggle: (id) => `inventory-management-table-row-${id}-status-toggle`,
+  tableWrapper: "table-wrapper",
+  table: "table",
+  tableRow: (id) => `table-row-${id}`,
+  tableRowEditBtn: (id) => `table-row-${id}-edit-btn`,
+  tableRowDeleteBtn: (id) => `table-row-${id}-delete-btn`,
+  tableRowStatusToggle: (id) => `table-row-${id}-status-toggle`,
 
   // modal actions
-  stockModal: "inventory-management-stock-modal",
-  stockModalTitle: "inventory-management-stock-modal-title",
-  stockModalCancelBtn: "inventory-management-stock-modal-cancel-btn",
-  stockModalSubmitBtn: "inventory-management-stock-modal-submit-btn",
-  stockImageInput: "inventory-management-stock-image-input",
-  stockNameInput: "inventory-management-stock-name-input",
-  stockDescInput: "inventory-management-stock-desc-input",
-  stockCategorySelect: "inventory-management-stock-category-select",
-  stockQuantityInput: "inventory-management-stock-quantity-input",
-  stockPriceInput: "inventory-management-stock-price-input",
-  stockWeightInput: "inventory-management-stock-weight-input",
-  stockWholesalePriceInput: "inventory-management-stock-wholesale-price-input",
-  stockProductCodeInput: "inventory-management-stock-product-code-input",
-  stockSkuInput: "inventory-management-stock-sku-input",
-  stockGrindInput: "inventory-management-stock-grind-input",
+  stockModal: "stock-modal",
+  stockModalTitle: "stock-modal-title",
+  stockModalCancelBtn: "stock-modal-cancel-btn",
+  stockModalSubmitBtn: "stock-modal-submit-btn",
+  stockImageInput: "stock-image-input",
+  stockNameInput: "stock-name-input",
+  stockDescInput: "stock-desc-input",
+  stockCategorySelect: "stock-category-select",
+  stockQuantityInput: "stock-quantity-input",
+  stockPriceInput: "stock-price-input",
+  stockWeightInput: "stock-weight-input",
+  stockWholesalePriceInput: "stock-wholesale-price-input",
+  stockProductCodeInput: "stock-product-code-input",
+  stockSkuInput: "stock-sku-input",
+  stockGrindInput: "stock-grind-input",
 
   // supplier SKUs
-  supplierSkuInput: (id) => `inventory-management-supplier-sku-input-${id}`,
-  supplierSkuLabel: (id) => `inventory-management-supplier-sku-label-${id}`,
+  supplierSkuInput: (id) => `supplier-sku-input-${id}`,
+  supplierSkuLabel: (id) => `supplier-sku-label-${id}`,
 
   // loader
-  loader: "inventory-management-loader",
-  miniLoader: "inventory-management-mini-loader",
+  loader: "loader",
+  miniLoader: "mini-loader",
 };
 
-export {INVENTORY_MANAGEMENT};
+export { INVENTORY_MANAGEMENT };

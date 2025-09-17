@@ -219,6 +219,7 @@ export default function SaleRepresentative() {
             <button
               onClick={() => router.push("/sale-representative/add")}
               className="rounded-lg font-inter font-medium border border-theme text-white bg-theme hover:bg-white hover:text-theme duration-150 px-2 sm:px-3 py-2.5 sm:py-4"
+              data-testid={SALES_REPRESENTATIVE.newLocalPartner}
             >
               + Add New Local Partner
             </button> )}

@@ -556,7 +556,7 @@ export default function Stock() {
             </button>
           </div> */}
         {/* </div> */}
-        <div className="w-72 ml-auto">
+        <div className="w-72 ml-auto" data-testid={INVENTORY_MANAGEMENT.categoryFilter}>
           <Select
             placeholder="Select Category"
             options={catOptions}

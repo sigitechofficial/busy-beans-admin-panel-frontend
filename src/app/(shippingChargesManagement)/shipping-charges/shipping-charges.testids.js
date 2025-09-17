@@ -1,26 +1,25 @@
-
 // --------- (Shipping Charges Management) ----------
 const SHIPPING_CHARGES = {
   // page
-  root: "shipping-charges-root",
-  headerBar: "shipping-charges-header-bar",
-  title: "shipping-charges-title",
+  root: "root",
+  headerBar: "header-bar",
+  title: "title",
 
   // loaders
-  pageLoader: "shipping-charges-page-loader",
-  miniLoader: "shipping-charges-mini-loader",
+  pageLoader: "page-loader",
+  miniLoader: "mini-loader",
 
   // rows
-  rowsContainer: "shipping-charges-rows-container",
-  row: (index) => `shipping-charges-row-${index}`,
-  minInput: (index) => `shipping-charges-row-${index}-min-input`,
-  maxInput: (index) => `shipping-charges-row-${index}-max-input`,
-  chargeInput: (index) => `shipping-charges-row-${index}-charge-input`,
-  deleteBtn: (index) => `shipping-charges-row-${index}-delete-btn`,
+  rowsContainer: "rows-container",
+  row: (index) => `row-${index}`,
+  minInput: (index) => `row-${index}-min-input`,
+  maxInput: (index) => `row-${index}-max-input`,
+  chargeInput: (index) => `row-${index}-charge-input`,
+  deleteBtn: (index) => `row-${index}-delete-btn`,
 
   // actions
-  addRowBtn: "shipping-charges-add-row-btn",
-  saveBtn: "shipping-charges-save-btn",
+  addRowBtn: "add-row-btn",
+  saveBtn: "save-btn",
 };
 
 export { SHIPPING_CHARGES };

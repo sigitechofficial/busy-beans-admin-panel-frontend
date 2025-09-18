@@ -347,6 +347,12 @@ function CustomerDetails() {
 
   const discountsToShow = showAllDiscounts ? normalizedDiscounts : normalizedDiscounts.slice(0, previewCount);
 
+  const isAdmin = userType === "admin";
+  const isLocalPartner = userType === "salesRepresentative" && !isEmployee;
+  const customerHasEmployee = Boolean(data?.data?.customer?.employeeId || data?.data?.customer?.employee);
+  // LP assigned employee only if admin NONE assigned yet
+  const canAssignEmployee = (isAdmin && !isEmployee) || (isLocalPartner && !customerHasEmployee); 
+
   return data?.length === 0 ? (
     <Loader />
   ) : (
@@ -420,7 +426,7 @@ function CustomerDetails() {
           </li>
         </ul> */}
           <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative text-blue-500">
-            {(userType === "admin" && !isEmployee) &&
+            {canAssignEmployee && (
                 <li
                   onClick={() =>
                     setUserData({ ...userData, modal: true, type: "employee" })
@@ -428,7 +434,7 @@ function CustomerDetails() {
                 >
                   Assign Employee
                 </li>
-            }
+            )}
 
             {(userType === "admin" && !isEmployee) &&(
               <li

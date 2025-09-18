@@ -85,8 +85,9 @@ export default function AddInvoice() {
     emailInvoiceToCustomer: false,
     // invoiceDate: "",
     invoicePdf: "",
+    shippingCharges: "",
   });
-
+  const [initialShippingCharges, setInitialShippingCharges] = useState("");
   // Items state (for main items)
   const [items, setItems] = useState([]);
 
@@ -111,6 +112,7 @@ export default function AddInvoice() {
   // On API data load, set invoice fields and items
   useEffect(() => {
     if (data?.data?.order) {
+      const sc = (data.data.order.shippingCharges ?? "").toString();
       setInvoiceFields((prev) => ({
         ...prev,
         invoiceNumber: data?.data?.order?.invoiceNumber || "",
@@ -118,12 +120,14 @@ export default function AddInvoice() {
         invoiceDate: prev?.invoiceDate || getToday(),
         dueDate: prev?.dueDate || getDueDate(),
         note: data?.data?.order?.note,
-        shippingCharges: data?.data?.order?.shippingCharges,
+        // shippingCharges: data?.data?.order?.shippingCharges,
         invoiceDate: data?.data?.order?.invoiceDate,
         invoicePdf: data?.data?.order?.invoicePdf,
         discountPercentage: Number(data?.data?.order?.discountPercentage ?? 0),
+        shippingCharges: sc,
         // You can set invoiceDate, dueDate, terms, etc. from API if available
       }));
+      setInitialShippingCharges(sc); 
       setItems(
         (data?.data?.order?.items || [])
         .filter((item) => item.type === "product")
@@ -263,20 +267,12 @@ export default function AddInvoice() {
     );
   };
 
-  // Invoice fields change handler
-  // const handleInvoiceFieldChange = (field, value) => {
-  //   setInvoiceFields((prev) => ({
-  //     ...prev,
-  //     [field]: value,
-  //   }));
-  // };
-
   const handleInvoiceFieldChange = (field, value) => {
     if (field === "emailInvoiceToCustomer" && value) {
       setInvoiceFields((prev) => ({
         ...prev,
         [field]: value,
-        invoiceDate: Date.now(),  // Set invoiceDate to current date if checkbox is checked
+        invoiceDate: Date.now(),  
       }));
     } else {
       setInvoiceFields((prev) => ({
@@ -434,6 +430,8 @@ export default function AddInvoice() {
         })),
     ];
     const paymentCardId = invoiceFields.paymentOption ? selectedCardId : null;
+    const norm = v => (v ?? "").toString().trim();
+    const includeShipping = manual.show === false && norm(invoiceFields.shippingCharges) !== norm(initialShippingCharges);
     // Prepare order object
     const orderObj = {
       invoiceNumber: invoiceFields.invoiceNumber,
@@ -451,10 +449,7 @@ export default function AddInvoice() {
       // invoiceDate: invoiceFields?.invoiceDate ? undefined : Date.now(),
       // invoiceReminder: invoiceFields?.invoiceDate ? Date.now() : undefined,
       discountPercentage: Number(invoiceFields.discountPercentage || 0),
-      // shippingCharges: manual?.shippingCharge,
-      ...(manual?.show === false && {
-        shippingCharges: invoiceFields.shippingCharges,
-      }),
+      ...(includeShipping ? { shippingCharges: invoiceFields.shippingCharges } : {}),
       paymentCardId: paymentCardId,
     };
     if (data?.data?.order?.invoiceDate) {
@@ -955,14 +950,11 @@ export default function AddInvoice() {
                     {!manual?.show ? (
                       <input
                         className="w-20 border border-gray-200 rounded px-1 py-1 text-right"
-                        value={invoiceFields?.shippingCharges}
+                        value={invoiceFields?.shippingCharges ?? ""}
                         type="text"
-                        onChange={(e) =>
-                          setInvoiceFields({
-                            ...invoiceFields,
-                            shippingCharges: e.target.value,
-                          })
-                        }
+                          onChange={e =>
+                            setInvoiceFields(prev => ({ ...prev, shippingCharges: e.target.value }))
+                          }
                       />
                     ) : shippingCharge ? (
                       "$" + parseFloat(shippingCharge)?.toFixed(2)

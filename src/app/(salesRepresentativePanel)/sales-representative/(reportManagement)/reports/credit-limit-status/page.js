@@ -106,7 +106,7 @@ export default function CreditLimitStatusReport() {
               Credit Limit Status Report
             </h2> */}
           </div>
-          <div className="min-w-40">
+          {/* <div className="min-w-40">
             {displayCustomFilters ? (
               <div className="flex gap-x-2 items-center h-[42px]">
                 <div className=" space-x-2">
@@ -164,7 +164,7 @@ export default function CreditLimitStatusReport() {
                 />
               </div>
             )}
-          </div>
+          </div> */}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">

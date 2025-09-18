@@ -244,39 +244,12 @@ export default function Category() {
         </ul>
       </div>
       <div className="space-y-8 pt-32 px-6 2xl:px-12 ">
-        {/* <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-              All Categories
-            </h2>
-
-            <Select
-            placeholder="Filters"
-            className="w-40"
-            styles={selectStyles}
-          />
-          </div>
-          <div className="flex justify-end">
-            <button
-              onClick={() => {
-                setName("");
-                setModal("add");
-              }}
-              className="rounded-lg font-inter font-medium text-white px-5 sm:px-8 py-2.5 sm:py-4 bg-theme"
-            >
-              + Add Category
-            </button>
-          </div>
-        </div> */}
-
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5" data-testid={CATEGORY_MANAGEMENT.statsGrid}>
           <ManagementTab
             title="Total Categories"
             desc={data?.data?.data?.length}
             data-testid={CATEGORY_MANAGEMENT.totalCategoriesCard}
           />
-          {/* <ManagementTab title="Total Countries" desc="5000" /> */}
-          {/* <ManagementTab title="Total Cities" desc="55000" /> */}
         </div>
 
         <div data-testid={CATEGORY_MANAGEMENT.tableWrapper}>
@@ -321,9 +294,6 @@ export default function Category() {
             ) : (
               <div className="w-full space-y-4">
                 {modal === "delete" ? (
-                  // <p className="text-labelColor font-nunito font-medium text-lg text-center">
-                  //   Are you sure you want to delete this Category ?
-                  // </p>
                       <p className="text-labelColor font-nunito font-medium text-lg text-center">
                         Are you sure you want to delete this Category
                         {data?.data?.data?.find((cat) => cat.id === categoryID)?.numberOfProducts > 0 && (

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 "use client";
 import ReportCard from "@/components/ui/ReportCard";
 import { useDataContext } from "@/utilities/DataContext";

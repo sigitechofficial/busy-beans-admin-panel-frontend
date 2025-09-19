@@ -931,8 +931,7 @@ export default function OrderDetail() {
                       </p>
                     </div>
                   )}
-                </div>
-                {data?.data?.order?.pulloutDate && (
+                  {data?.data?.order?.pulloutDate && (
                     <div className="flex items-center gap-5 border-b">
                       <p className="w-28">Pullout Date: </p>
                       <p>
@@ -944,6 +943,7 @@ export default function OrderDetail() {
                       </p>
                     </div>
                   )}
+                </div>
                 {/* ================ */}
                 <div className="w-full grid grid-cols-2 gap-10 text-xs lg:text-sm">
                   {/* Deliver To */}

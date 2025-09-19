@@ -41,11 +41,11 @@ export default function Header() {
     state: "",
     city: "",
     zipCode: "",
-    password: "", 
+    password: "",
   });
 
   const readonlyInfo = useMemo(() => {
-    const d = profileResp?.data || {};
+    const d = userType === "salesRepresentative" ? profileResp?.data?.data : profileResp?.data || {};
     return {
       id: d.id ?? "",
       latestOtp: d.latestOtp ?? "",
@@ -65,29 +65,37 @@ export default function Header() {
 
   useEffect(() => {
     if (!profileResp?.data) return;
-    const admin = profileResp.data;
+
+    const userData = userType === "salesRepresentative" ? profileResp?.data?.data : profileResp?.data;
     setForm({
-      name: admin.name ?? "",
-      email: admin.email ?? "",
-      supportEmail: admin.supportEmail ?? "",
-      countryCode: admin.countryCode ?? "",
-      phoneNumber: admin.phoneNumber ?? "",
-      address: admin.address ?? "",
-      country: admin.country ?? "",
-      state: admin.state ?? "",
-      city: admin.city ?? "",
-      zipCode: admin.zipCode ?? "",
+      name: userData.srName ?? userData.name ?? "",
+      email: userData.email ?? "",
+      supportEmail: userData.supportEmail ?? "",
+      countryCode: userData.countryCode ?? "",
+      phoneNumber: userData.phoneNumber ?? "",
+      address: userData.address ?? "",
+      country: userData.country ?? "",
+      state: userData.state ?? "",
+      city: userData.city ?? "",
+      zipCode: userData.zipCode ?? "",
       password: "",
     });
-  }, [profileResp]);
+  }, [profileResp, userType]);
+
+  useEffect(() => {
+    if (userType === "salesRepresentative") {
+      setProfileKey(`api/v1/admin/sales-rep/${userID}`);
+    } else if (userType === "admin") {
+      setProfileKey("api/v1/admin/profile");
+    }
+  }, [userType, userID]);
 
   const handleOpenProfile = () => {
-    if (isEmployee) return; 
-    if (userType !== "admin") {
-      info_toaster("Only admin can view profile");
+    if (isEmployee) return;
+    if (userType !== "admin" && userType !== "salesRepresentative") {
+      info_toaster("Only admin or Local Partner can view profile");
       return;
     }
-    setProfileKey("api/v1/admin/profile"); 
     setOpenProfile(true);
   };
 
@@ -117,11 +125,21 @@ export default function Header() {
 
     setSaving(true);
     try {
-      const res = await PatchAPI(
-        `api/v1/admin/profile-update/${userID}`,
-        payload,
-        "profile"
-      );
+      let res;
+      if (userType === "salesRepresentative") {
+        res = await PatchAPI(
+          `api/v1/admin/sales-rep/${userID}`,
+          payload,
+          "profile"
+        );
+      } else {
+        res = await PatchAPI(
+          `api/v1/admin/profile-update/${userID}`,
+          payload,
+          "profile"
+        );
+      }
+
       if (res?.data?.status === "success") {
         success_toaster("Profile updated successfully");
         if (profileKey) reFetch?.();
@@ -153,16 +171,14 @@ export default function Header() {
             <CiMenuBurger color="black" size={22} />
           </button>
           <div className="flex-1" />
-          
           {/* Right (desktop) */}
-          {/* <div className="hidden md:flex items-center gap-x-3 ml-auto"> */}
           <div className="hidden md:flex items-center gap-x-3 ml-auto absolute md:right-14">
             <button
               type="button"
               className="size-10 2xl:size-12 bg-black rounded-full flex items-center justify-center cursor-pointer"
               onClick={handleOpenProfile}
-              title="Admin Profile"
-              aria-label="Admin Profile"
+              title={userType === "admin" ? "Admin Profile" : userType === "salesRepresentative" ? "Local Partner Profile" : ""}
+              aria-label={userType === "admin" ? "Admin Profile" : userType === "salesRepresentative" ? "Local Partner Profile" : ""}
             >
               <PiUserBold size={28} color="white" />
             </button>
@@ -180,24 +196,28 @@ export default function Header() {
             </div>
           </div>
           {!isEmployee && (
-          <button
-            type="button"
-            className="md:hidden inline-flex items-center justify-center rounded p-1.5 ml-3"
-            onClick={handleOpenProfile}
-            title="Admin Profile"
-            aria-label="Admin Profile"
-          >
-            <div className="size-9 bg-black rounded-full flex items-center justify-center">
-              <PiUserBold size={22} color="white" />
-            </div>
-          </button> )}
+            <button
+              type="button"
+              className="md:hidden inline-flex items-center justify-center rounded p-1.5 ml-3"
+              onClick={handleOpenProfile}
+              title={userType === "admin" ? "Admin Profile" : userType === "salesRepresentative" ? "Local Partner Profile" : ""}
+              aria-label={userType === "admin" ? "Admin Profile" : userType === "salesRepresentative" ? "Local Partner Profile" : ""}
+            >
+              <div className="size-9 bg-black rounded-full flex items-center justify-center">
+                <PiUserBold size={22} color="white" />
+              </div>
+            </button>
+          )}
         </nav>
       </header>
 
       <Dialog
         visible={openProfile}
         onHide={() => setOpenProfile(false)}
-        header={<div className="font-bold text-lg">Admin Profile</div>}
+        header={
+        <div className="font-bold text-lg">
+          {userType === "admin" ? "Admin Profile" : "Local Partner Profile"}
+        </div>}
         className="w-screen max-w-none sm:w-[95%] sm:max-w-lg !m-0 sm:!m-auto font-satoshi"
         contentClassName="!p-4 sm:!p-5"
       >
@@ -210,7 +230,7 @@ export default function Header() {
             {/* Readonly fields*/}
             <div className="grid grid-cols-2 gap-3 text-xs text-gray-500">
               <div>
-                <span className="block">Admin ID</span>
+                <span className="block">User ID</span>
                 <span className="font-medium text-gray-700">{readonlyInfo.id}</span>
               </div>
               <div>
@@ -259,7 +279,7 @@ export default function Header() {
                   className="border rounded px-3 py-2 outline-none"
                 />
               </div>
-
+              {userType === "admin" && (
               <div className="flex flex-col gap-1">
                 <label className="font-medium text-sm">Support Email</label>
                 <input
@@ -270,7 +290,7 @@ export default function Header() {
                   className="border rounded px-3 py-2 outline-none"
                 />
               </div>
-
+              )}
               <div className="flex flex-col gap-1">
                 <label className="font-medium text-sm">Phone</label>
                 <div className="flex gap-2">

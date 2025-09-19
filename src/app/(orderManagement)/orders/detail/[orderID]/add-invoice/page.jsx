@@ -470,6 +470,7 @@ export default function AddInvoice() {
       setExtraRows([]);
       success_toaster("success");
       reFetch();
+      router.push(`/orders/detail/${orderID}`);
     } else {
       info_toaster("something went wrong");
       setLoading(false);
@@ -851,8 +852,9 @@ export default function AddInvoice() {
                     <td className="py-2 px-2 border border-gray-200">
                       <input
                         type="text"
-                        className="w-full border rounded px-1 py-1"
+                        className="w-full rounded px-1 py-1 border border-gray-200 bg-gray-50 cursor-default select-text focus:outline-none focus:ring-0 focus:border-gray-200"
                         value={item.code}
+                        readOnly
                         onChange={(e) => handleChargeInputChange(idx, "code", e.target.value)}
                         placeholder="Code"
                       />

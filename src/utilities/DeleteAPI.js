@@ -1,19 +1,33 @@
 "use client";
 import api from "./StatusErrorHandler";
 
-export const DeleteAPI = async (url, feature = "", options = {}) => {
-  const config = {
+export const DeleteAPI = async (url, feature='') => {
+  let config = {
     headers: {
+      // accessToken: localStorage.getItem("accessToken"),
       feature,
       Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
     },
-    ...(options?.suppressSuccessToast ? { suppressSuccessToast: true } : {}),
   };
-
   try {
-    const response = await api.delete(url, config);
+    let response = await api.delete(`${url}`, config);
+    if (!response) {
+      throw new Error("No response from server.");
+    } else if (response?.status == "error") {
+      throw new Error(response?.message || "Somethong went wrong.");
+    }
     return response;
-  } catch (err) {
-    throw err;
+  } catch (error) {
+    if (error.response) {
+      const errorMessage =
+        error.response.data?.message ||
+        error.response.statusText ||
+        "Server Error";
+      throw new Error(`HTTP Error: - ${errorMessage}`);
+    } else if (error.request) {
+      throw new Error("Network Error: No response received from the server.");
+    } else {
+      throw new Error(`Error: ${error.message}`);
+    }
   }
 };

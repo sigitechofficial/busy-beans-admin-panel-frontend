@@ -1,38 +1,30 @@
 "use client";
 import { useEffect, useState } from "react";
-import { MdDashboard, MdOutlineMailOutline } from "react-icons/md";
-import { BsCardList } from "react-icons/bs";
-import { FiUsers } from "react-icons/fi";
-import { GiSaloon } from "react-icons/gi";
-import { BiCategory } from "react-icons/bi";
-import { TbAlignBoxBottomCenter } from "react-icons/tb";
+import {
+  MdDashboard,
+  MdListAlt,
+  MdStore,
+  MdGroups,
+  MdPeopleAlt,
+  MdInventory,
+  MdCategory,
+  MdManageAccounts,
+  MdPublic,
+  MdLocalShipping,
+  MdInsights,
+  MdRequestQuote,
+  MdPayments,
+  MdAccountCircle,
+  MdSavings,
+  MdLogout,
+  MdReceiptLong,
+  MdCoffeeMaker
+} from "react-icons/md";
 import {
   FaAngleDown,
-  FaUserEdit,
   FaAngleUp,
-  FaShippingFast,
 } from "react-icons/fa";
-import { SlDrawer } from "react-icons/sl";
-import { RiCouponLine } from "react-icons/ri";
-import { MdOutlineSubscriptions } from "react-icons/md";
-import { FaRegBell } from "react-icons/fa";
-import { BiSupport } from "react-icons/bi";
-import { MdLogout } from "react-icons/md";
-import { PiChartBar, PiInvoiceBold } from "react-icons/pi";
-import { RiAdminLine } from "react-icons/ri";
-import { MdInventory } from "react-icons/md";
-import { GiProgression } from "react-icons/gi";
-import { GoPeople } from "react-icons/go";
-import { RiTimeZoneLine } from "react-icons/ri";
-import { AiOutlineUnorderedList } from "react-icons/ai";
-import { MdPayment } from "react-icons/md";
-import { BsFillCollectionFill } from "react-icons/bs";
-import { IoNotifications } from "react-icons/io5";
 import { IoClose } from "react-icons/io5";
-import { MdManageAccounts } from "react-icons/md";
-import { TbReportAnalytics } from "react-icons/tb";
-import { GiHumanTarget } from "react-icons/gi";
-import { ImCross } from "react-icons/im";
 import { usePathname, useRouter } from "next/navigation";
 import ListHead from "./ListHead";
 import ListItems from "./ListItems";
@@ -110,10 +102,10 @@ export default function Leftbar(props) {
       tab: "",
       status: false,
     },
-    // machineSubscriptions: {
-    //   tab: "",
-    //   status: false,
-    // },
+    machineSubscriptions: {
+      tab: "",
+      status: false,
+    },
     inventoryManagement: {
       tab: "",
       status: false,
@@ -374,7 +366,7 @@ export default function Leftbar(props) {
           {hasPermission("orders_view") && (
           <ListHead
             title="Order Management"
-            Icon={AiOutlineUnorderedList}
+            Icon={MdListAlt}
             active={pathname.includes("/orders")}
             Angle={
               active?.orderManagement?.tab === "orderManagement" &&
@@ -446,7 +438,7 @@ export default function Leftbar(props) {
           {hasPermission("supplier_view") && (
           <ListHead
             title="Supplier Management"
-            Icon={GiHumanTarget}
+            Icon={MdStore}
             data-testid={LEFTBAR.supplierManagementSection}
             active={
               pathname === "/suppliers" || pathname === "/add-new-supplier"
@@ -482,7 +474,7 @@ export default function Leftbar(props) {
           {(hasPermission("customer_view") || hasPermission("selected-customer_view")) && (
           <ListHead
             title="Client Management"
-            Icon={GoPeople}
+            Icon={MdGroups}
             data-testid={LEFTBAR.clientManagementSection}
             active={pathname.includes("/customers")}
             Angle={
@@ -509,7 +501,7 @@ export default function Leftbar(props) {
           {hasPermission("local-partner_view") && (
           <ListHead
             title="Local Partners"
-            Icon={GoPeople}
+            Icon={MdPeopleAlt}
             data-testid={LEFTBAR.localPartnersSection}
             active={pathname === "/sale-representative"}
             Angle={
@@ -544,7 +536,7 @@ export default function Leftbar(props) {
             title="Machine Subscriptions"
             active={pathname === "/subscription"}
             data-testid={LEFTBAR.subscriptionManagementSection}
-            Icon={GiHumanTarget}
+            Icon={MdCoffeeMaker}
             Angle={
               active?.subscription?.tab === "subscription" &&
               active?.subscription?.status
@@ -573,7 +565,7 @@ export default function Leftbar(props) {
           {hasPermission("invoice_view") && (
           <ListHead
             title="Invoice Management"
-            Icon={PiInvoiceBold}
+            Icon={MdRequestQuote}
             data-testid={LEFTBAR.invoiceManagementSection}
             Angle={
               active?.invoiceManagement?.tab === "invoiceManagement" &&
@@ -605,7 +597,7 @@ export default function Leftbar(props) {
             title="Payment Pullouts"
             active={pathname === "/pullouts"}
             data-testid={LEFTBAR.pulloutsManagementSection}
-            Icon={SlDrawer}
+            Icon={MdPayments}
             Angle={
               active?.pullouts?.tab === "pullouts" &&
               active?.pullouts?.status
@@ -818,7 +810,7 @@ export default function Leftbar(props) {
             // to="/inventory/stock"
             active={pathname === "/category" || pathname === "/sub-category"}
             data-testid={LEFTBAR.categoryManagementSection}
-            Icon={MdInventory}
+            Icon={MdCategory}
             Angle={
               active?.categoryManagement?.tab === "categoryManagement" &&
               active?.categoryManagement?.status
@@ -848,7 +840,7 @@ export default function Leftbar(props) {
             title="Employee Management"
             active={pathname === "/employee"}
             data-testid={LEFTBAR.employeeManagementSection}
-            Icon={GiHumanTarget}
+            Icon={MdManageAccounts}
             Angle={
               active?.employees?.tab === "employees" &&
               active?.employees?.status
@@ -916,7 +908,7 @@ export default function Leftbar(props) {
           {hasPermission("country_view") && (
           <ListHead
             title="Zone Management"
-            Icon={RiTimeZoneLine}
+            Icon={MdPublic}
             data-testid={LEFTBAR.zoneManagementSection}
             active={
               pathname === "/zones" ||
@@ -976,7 +968,7 @@ export default function Leftbar(props) {
           {hasPermission("charges_view") &&
           <ListHead
             title="Shipping Charges Management"
-            Icon={FaShippingFast}
+            Icon={MdLocalShipping}
             to={"/shipping-charges"}
             active={pathname.includes("/shipping-charges")}
             data-testid={LEFTBAR.shippingChargesManagementSection}
@@ -984,7 +976,7 @@ export default function Leftbar(props) {
           {hasPermission("report_view") &&
           <ListHead
             title="Report Management"
-            Icon={PiChartBar}
+            Icon={MdInsights}
             to={"/reports"}
             active={pathname.includes("/reports")}
             data-testid={LEFTBAR.reportManagementSection}
@@ -1007,7 +999,7 @@ export default function Leftbar(props) {
 
           <ListHead
             title="Order Management"
-            Icon={AiOutlineUnorderedList}
+            Icon={MdListAlt}
             data-testid={LEFTBAR.orderManagementSection}
             active={
               pathname === "/supplier/assigned-orders" ||
@@ -1066,7 +1058,7 @@ export default function Leftbar(props) {
 
           <ListHead
             title="Report Management"
-            Icon={PiChartBar}
+            Icon={MdInsights}
             to={"/supplier/reports"}
             active={pathname.includes("/reports")}
             data-testid={LEFTBAR.reportManagementSection}
@@ -1090,7 +1082,7 @@ export default function Leftbar(props) {
           <ListHead
             title="Quotation Management"
             active={pathname === "/sales-representative/quotation"}
-            Icon={MdInventory}
+            Icon={MdReceiptLong}
             data-testid={LEFTBAR.quotationManagementSection}
             Angle={
               active?.inventoryManagement?.tab === "inventoryManagement" &&
@@ -1123,7 +1115,7 @@ export default function Leftbar(props) {
           {(hasPermission("customer_view") || hasPermission("selected-customer_view")) && (
           <ListHead
             title="Client Management"
-            Icon={GoPeople}
+            Icon={MdGroups}
             data-testid={LEFTBAR.clientManagementSection}
             active={pathname === "/sales-representative/customers"}
             Angle={
@@ -1171,7 +1163,7 @@ export default function Leftbar(props) {
           {hasPermission("orders_view") && (
           <ListHead
             title="Order Management"
-            Icon={AiOutlineUnorderedList}
+            Icon={MdListAlt}
             data-testid={LEFTBAR.orderManagementSection}
             active={pathname.includes("/orders") || pathname.includes("-order")}
             Angle={
@@ -1245,7 +1237,7 @@ export default function Leftbar(props) {
             title="Machine Subscriptions"
             active={pathname === "/subscription"}
             data-testid={LEFTBAR.subscriptionManagementSection}
-            Icon={GiHumanTarget}
+            Icon={MdCoffeeMaker}
             Angle={
               active?.subscription?.tab === "subscription" &&
               active?.subscription?.status
@@ -1274,7 +1266,7 @@ export default function Leftbar(props) {
           {hasPermission("invoice_view") && (
           <ListHead
             title="Invoice Management"
-            Icon={PiInvoiceBold}
+            Icon={MdRequestQuote}
             data-testid={LEFTBAR.invoiceManagementSection}
             Angle={
               active?.invoiceManagement?.tab === "invoiceManagement" &&
@@ -1308,7 +1300,7 @@ export default function Leftbar(props) {
           <ListHead
             title="Payment Pullouts"
             active={pathname === "/pullouts"}
-            Icon={SlDrawer}
+            Icon={MdPayments}
             data-testid={LEFTBAR.pulloutsManagementSection}
             Angle={
               active?.pullouts?.tab === "pullouts" &&
@@ -1338,7 +1330,7 @@ export default function Leftbar(props) {
           <ListHead
             title="Employee Management"
             active={pathname === "/employee"}
-            Icon={GiHumanTarget}
+            Icon={MdManageAccounts}
             data-testid={LEFTBAR.employeeManagementSection}
             Angle={
               active?.employees?.tab === "employees" &&
@@ -1367,7 +1359,7 @@ export default function Leftbar(props) {
           {hasPermission("account_view") &&
           <ListHead
             title="Account Management"
-            Icon={AiOutlineUnorderedList}
+            Icon={MdAccountCircle}
             active={pathname.includes("/account")}
             data-testid={LEFTBAR.accountManagementSection}
             Angle={
@@ -1407,7 +1399,7 @@ export default function Leftbar(props) {
           {hasPermission("wallet_view") &&
           <ListHead
             title="Wallet Management"
-            Icon={AiOutlineUnorderedList}
+            Icon={MdSavings}
             to={"/sales-representative/wallet"}
             data-testid={LEFTBAR.walletManagementSection}
             active={pathname === "/sales-representative/wallet"}
@@ -1424,7 +1416,7 @@ export default function Leftbar(props) {
           {hasPermission("report_view") && (
           <ListHead
             title="Report Management"
-            Icon={PiChartBar}
+            Icon={MdInsights}
             to={"/sales-representative/reports"}
             active={pathname.includes("/reports")}
             data-testid={LEFTBAR.reportManagementSection}

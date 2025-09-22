@@ -29,7 +29,7 @@ export default function CreateOrder() {
   const [visibleRight, setVisibleRight] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: category } = GetAPI(`api/v1/admin/category`);
+  const { data: category } = GetAPI(`api/v1/admin/category?status=1`);
   let categoryList = [{ value: "", label: "All" }];
   if (category) {
     category?.data?.data?.map((cat) => {
@@ -38,7 +38,7 @@ export default function CreateOrder() {
   }
   const url = filterId
     ? `api/v1/admin/product?categoryId=${filterId}`
-    : `api/v1/admin/product`;
+    : `api/v1/admin/product?status=1`;
 
   const { data, reFetch } = GetAPI(url);
   

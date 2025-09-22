@@ -6,14 +6,18 @@ import MyDataTable from "@/components/ui/MyDataTable";
 import { useDataContext } from "@/utilities/DataContext";
 import { DeleteAPI } from "@/utilities/DeleteAPI";
 import ErrorHandler from "@/utilities/ErrorHandler";
+import { drawerSelectStyles } from "@/utilities/SelectStyle";
 import GetAPI from "@/utilities/GetAPI";
 import { PatchAPI } from "@/utilities/PatchAPI";
 import { PostAPI } from "@/utilities/PostAPI";
 import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import dayjs from "dayjs";
+import axios from "axios";
+import { BASE_URL } from "@/utilities/URL";
 import { useParams, useRouter } from "next/navigation";
 import { Dialog } from "primereact/dialog";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
+import Select from "react-select";
 import { CiMenuBurger } from "react-icons/ci";
 import { hasPermission } from "@/utilities/Permission";
 
@@ -347,11 +351,157 @@ function CustomerDetails() {
 
   const discountsToShow = showAllDiscounts ? normalizedDiscounts : normalizedDiscounts.slice(0, previewCount);
 
-  const isAdmin = userType === "admin";
-  const isLocalPartner = userType === "salesRepresentative" && !isEmployee;
-  const customerHasEmployee = Boolean(data?.data?.customer?.employeeId || data?.data?.customer?.employee);
-  // LP assigned employee only if admin NONE assigned yet
-  const canAssignEmployee = (isAdmin && !isEmployee) || (isLocalPartner && !customerHasEmployee); 
+  const { data: countriesData } = GetAPI("api/v1/admin/address-management/country");
+  const allCountries = React.useMemo(() => {
+    const arr = [];
+    countriesData?.data?.data?.map((country) =>
+      arr.push({ value: country?.name, label: country?.name, id: country?.id })
+    );
+    return arr;
+  }, [countriesData]);
+
+  const [allStates, setAllStates] = useState([]);
+  const [allCities, setAllCities] = useState([]);
+
+  const handleSelectedCountryStates = async (countryName) => {
+    const selectedCountry = countriesData?.data?.data?.find(
+      (country) => country?.name === countryName
+    );
+    try {
+      const res = await axios.get(
+        BASE_URL + `api/v1/admin/address-management/state?countryInSystemId=${selectedCountry?.id}`
+      );
+      if (res?.data?.status === "success") {
+        const tempAllStates = [];
+        res?.data?.data?.data?.map((state) =>
+          tempAllStates.push({ value: state?.id, label: state?.name })
+        );
+        setAllStates([...tempAllStates]);
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
+    }
+  };
+
+  const handleSelectedCountryStatesCities = async (stateID) => {
+    try {
+      const res = await axios.get(
+        BASE_URL + `api/v1/admin/address-management/city?stateInSystemId=${stateID}`
+      );
+      if (res?.data?.status === "success") {
+        const tempAllCities = [];
+        res?.data?.data?.data?.map((state) =>
+          tempAllCities.push({ value: state?.name, label: state?.name })
+        );
+        setAllCities([...tempAllCities]);
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
+    }
+  };
+
+  const [addrDialogOpen, setAddrDialogOpen] = useState(false);
+  const [addrSaving, setAddrSaving] = useState(false);
+  const [addrMode, setAddrMode] = useState("create"); 
+  const [editingAddress, setEditingAddress] = useState(null);
+
+  const emptyAddress = {
+    id: undefined,
+    // companyaddress: "",
+    addressLineOne: "",
+    addressLineTwo: "",
+    town: "",
+    country: "",
+    state: "",
+    zipCode: "",
+    status: true,
+  };
+  const [addressForm, setAddressForm] = useState(emptyAddress);
+
+  const openCreateAddress = () => {
+    setAddrMode("create");
+    setAddressForm(emptyAddress);
+    setAllStates([]); setAllCities([]);
+    setAddrDialogOpen(true);
+  };
+  
+  const handleAddrInput = (eOrName, maybeValue) => {
+    if (eOrName && eOrName.target) {
+      const { name, value } = eOrName.target;
+      setAddressForm((prev) => ({ ...prev, [name]: value }));
+    } else {
+      const name = eOrName;
+      const value = maybeValue;
+      setAddressForm((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const openEditAddress = (addr) => {
+    setAddrMode("edit");
+    setEditingAddress(addr || null);
+    setAddressForm({
+      id: addr?.id, 
+      addressLineOne: addr?.addressLineOne || "",
+      addressLineTwo: addr?.addressLineTwo || "",
+      town: addr?.town || "",
+      country: addr?.country || "",
+      state: addr?.state || "",
+      zipCode: addr?.zipCode || "",
+      status: addr?.status ?? true,
+    });
+    if (addr?.country) handleSelectedCountryStates(addr.country);
+    setAddrDialogOpen(true);
+  };
+
+  const saveAddress = async () => {
+    const baseAddress = {
+      userId,
+      ...(addressForm.id ? { id: addressForm.id } : {}),
+      addressLineOne: addressForm.addressLineOne,
+      addressLineTwo: addressForm.addressLineTwo,
+      town: addressForm.town,
+      country: addressForm.country,
+      state: addressForm.state,
+      zipCode: addressForm.zipCode,
+      status: Boolean(addressForm.status),
+    };
+
+    const payload =
+      addrMode === "edit"
+        ? { addresses: baseAddress }     
+        : { newAddressess: [baseAddress] }; 
+
+    try {
+      setAddrSaving(true);
+      const res = await PatchAPI(
+        `api/v1/admin/customer-update/${userId}`,
+        payload,
+        "customer"
+      );
+      if (res?.data?.status === "success") {
+        success_toaster(addrMode === "create" ? "Address added." : "Address updated.");
+        setAddrDialogOpen(false);
+        setEditingAddress(null);
+        setAddressForm(emptyAddress);
+        reFetch();
+      } else {
+        throw new Error(res?.data?.message || "Failed to save address");
+      }
+    } catch (err) {
+      ErrorHandler(err);
+    } finally {
+      setAddrSaving(false);
+    }
+  };
+  
+  const employeeOf = (data?.data?.customer?.employeeOf || "").toLowerCase();
+  const canShowAssignEmployee =
+    (!isEmployee && userType === "admin") ||
+    (!isEmployee && userType === "salesRepresentative" && employeeOf !== "admin");
 
   return data?.length === 0 ? (
     <Loader />
@@ -426,7 +576,7 @@ function CustomerDetails() {
           </li>
         </ul> */}
           <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative text-blue-500">
-            {canAssignEmployee && (
+            {canShowAssignEmployee && (
                 <li
                   onClick={() =>
                     setUserData({ ...userData, modal: true, type: "employee" })
@@ -550,21 +700,29 @@ function CustomerDetails() {
                     {data?.data?.customer?.salesRepName ?? "Not Assigned"}
                   </div>
               </div>
-
                 <div className="flex items-center h-12 border-b [&>span]:w-44">
                   <span className="text-gray-500 font-medium">Employee</span>
                   <div
                     onClick={() => {
-                      if (userType === "admin" && !isEmployee) {
+                      if (canShowAssignEmployee) {
                         setUserData({ ...userData, type: "employee", modal: true });
                       }
                     }}
-                    className={`${userType === "admin" && !isEmployee? "text-blue-500 cursor-pointer" : "cursor-default text-gray-600"}`}
+                    className={`${canShowAssignEmployee
+                      ? "text-blue-500 cursor-pointer"
+                      : "cursor-default text-gray-600"
+                      }`}
+                    title={
+                      !canShowAssignEmployee &&
+                        userType === "salesRepresentative" &&
+                        employeeOf === "admin"
+                        ? "Employee managed by Admin"
+                        : ""
+                    }
                   >
                     {data?.data?.customer?.employee ?? "Not Assigned"}
                   </div>
                 </div>
-
               <div className="flex items-center h-12 border-b [&>span]:w-44">
                 <span className="text-gray-500 font-medium">Price List</span>
                 <div className="font-semibold">
@@ -575,7 +733,7 @@ function CustomerDetails() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 pt-1">
               <div>
-                <h3 className="text-sm font-bold text-gray-700 mb-1">
+                  <h3 className="text-sm font-bold text-gray-700 mb-1">
                   SHIPPING
                 </h3>
                 {data?.data?.customer?.addresses?.[0] ? (
@@ -742,7 +900,14 @@ function CustomerDetails() {
             </div>
           </div>
 
-          <div className="w-full flex justify-end">
+          <div className="w-full flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={openCreateAddress}
+                className="rounded-lg border border-theme text-theme hover:bg-theme hover:text-white duration-150 shadow-buttonShadow px-6 font-nunito py-3 font-medium"
+              >
+                Add New Address
+              </button>
             {hasPermission("customer_update") && (
             <button
               disabled={isDisable}
@@ -759,7 +924,61 @@ function CustomerDetails() {
               Invoice Reminder
             </button> )}
           </div>
+            {/* ---- Additional Shipping Addresses ---- */}
+            {(data?.data?.customer?.addresses?.length ?? 0) > 1 && (
+              <div className="pt-6">
+                <h2 className="text-lg font-semibold text-gray-800 mb-2">
+                  Additional Shipping Addresses
+                </h2>
 
+                <div className="space-y-3">
+                  {data?.data?.customer?.addresses
+                    ?.slice(1) // skip the primary address already shown above
+                    ?.map((addr, i) => (
+                      <div
+                        key={addr?.id ?? `extra-addr-${i}`}
+                        className="bg-gray-50 p-4 rounded-md flex justify-between items-start"
+                      >
+                        <div className="text-sm text-gray-700 space-y-1 uppercase">
+                          {/* Company (optional) */}
+                          {addr?.companyaddress?.trim() && <div>{addr.companyaddress}</div>}
+
+                          {/* Address lines */}
+                          {addr?.addressLineOne?.trim() && (
+                            <div>{addr.addressLineOne}</div>
+                          )}
+                          {addr?.addressLineTwo?.trim() && (
+                            <div>{addr.addressLineTwo}</div>
+                          )}
+
+                          {/* Town, State, ZIP */}
+                          {(addr?.town || addr?.state || addr?.zipCode) && (
+                            <div>
+                              {addr?.town || ""}
+                              {addr?.town && addr?.state ? ", " : ""}
+                              {addr?.state || ""}
+                              {addr?.zipCode ? ` ${addr.zipCode}` : ""}
+                            </div>
+                          )}
+
+                          {/* Country */}
+                          {addr?.country?.trim() && <div>{addr.country}</div>}
+                        </div>
+
+                        <div className="pt-1">
+                          <button
+                            type="button"
+                            onClick={() => openEditAddress(addr)}
+                            className="text-xs px-2 py-1 rounded border hover:bg-gray-100"
+                          >
+                            Edit
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
           {userOrders?.data?.data?.length > 0 && (
             <div className="bg-white">
               <div className="flex items-center justify-between mb-8">
@@ -975,6 +1194,132 @@ function CustomerDetails() {
           ""
         )}
       </Dialog>
+        <Dialog
+          visible={addrDialogOpen}
+          onHide={() => setAddrDialogOpen(false)}
+          header={<div className="font-bold text-lg">{addrMode === "create" ? "Add New Address" : "Edit Address"}</div>}
+          className="w-screen max-w-none sm:w-[95%] sm:max-w-lg !m-0 sm:!m-auto font-satoshi"
+          contentClassName="!p-4 sm:!p-5"
+        >
+          <div className="grid gap-4">
+            {/* <div className="flex flex-col gap-y-2">
+              <label className="text-labelColor font-medium">Company</label>
+              <input
+                name="companyaddress"
+                value={addressForm.companyaddress}
+                onChange={handleAddrInput}
+                placeholder="Company / Optional"
+                className="border rounded px-3 py-2 outline-none"
+              />
+            </div> */}
+
+            <div className="flex flex-col gap-y-2">
+              <label className="text-labelColor font-medium">Address Line 1</label>
+              <input
+                name="addressLineOne"
+                value={addressForm.addressLineOne}
+                onChange={handleAddrInput}
+                placeholder="Address line 1"
+                className="border rounded px-3 py-2 outline-none"
+              />
+            </div>
+
+            <div className="flex flex-col gap-y-2">
+              <label className="text-labelColor font-medium">Address Line 2</label>
+              <input
+                name="addressLineTwo"
+                value={addressForm.addressLineTwo}
+                onChange={handleAddrInput}
+                placeholder="Address line 2"
+                className="border rounded px-3 py-2 outline-none"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex flex-col gap-y-2">
+                <label className="text-labelColor font-medium">Country</label>
+                <Select
+                  placeholder="Select Country"
+                  className="w-full"
+                  styles={drawerSelectStyles}
+                  value={addressForm.country ? { value: addressForm.country, label: addressForm.country } : null}
+                  options={allCountries ?? []}
+                  onChange={(opt) => {
+                    setAddressForm((prev) => ({ ...prev, country: opt?.label || "", state: "", town: "" }));
+                    if (opt?.label) handleSelectedCountryStates(opt.label);
+                  }}
+                />
+              </div>
+
+              <div className="flex flex-col gap-y-2">
+                <label className="text-labelColor font-medium">State</label>
+                <Select
+                  placeholder="Select State"
+                  className="w-full"
+                  styles={drawerSelectStyles}
+                  value={addressForm.state ? { value: addressForm.state, label: addressForm.state } : null}
+                  options={allStates ?? []}
+                  onChange={(opt) => {
+                    setAddressForm((prev) => ({ ...prev, state: opt?.label || "", town: "" }));
+                    if (opt?.value) handleSelectedCountryStatesCities(opt.value);
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex flex-col gap-y-2">
+                <label className="text-labelColor font-medium">Town / City</label>
+                <input
+                  name="town"
+                  value={addressForm.town}
+                  onChange={handleAddrInput}
+                  placeholder="Town / City"
+                  className="border rounded px-3 py-2 outline-none"
+                />
+              </div>
+
+              <div className="flex flex-col gap-y-2">
+                <label className="text-labelColor font-medium">Zip Code</label>
+                <input
+                  name="zipCode"
+                  value={addressForm.zipCode}
+                  onChange={handleAddrInput}
+                  placeholder="Zip / Postal Code"
+                  className="border rounded px-3 py-2 outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={!!addressForm.status}
+                onChange={(e) => setAddressForm((prev) => ({ ...prev, status: e.target.checked }))}
+                className="size-4"
+              />
+              <span className="text-sm">Active</span>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-2">
+              <button
+                type="button"
+                onClick={() => setAddrDialogOpen(false)}
+                className="px-4 py-2 border rounded hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={addrSaving}
+                onClick={saveAddress}
+                className="px-4 py-2 bg-theme text-white rounded hover:bg-themeDark disabled:opacity-70"
+              >
+                {addrSaving ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </div>
+        </Dialog>
     </div>
   );
 }

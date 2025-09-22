@@ -183,7 +183,7 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
               {/* Sales Rep Section */}
               {invoiceData?.salesRep ? (
                 <div>
-                  <div className="font-bold">From</div>
+                  <div className="font-bold">Remit To</div>
                   <div className="uppercase">{invoiceData?.salesRepName}</div>
                   <div className="uppercase">
                     {invoiceData?.salesRep?.territoryName}

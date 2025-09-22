@@ -131,10 +131,6 @@ export default function Category() {
     { field: "name", header: "Name" },
     { field: "numberOfProducts", header: "No. of products" },
     {
-      field: "currentStatus",
-      header: "Current Status",
-    },
-    {
       field: "changeStatus",
       header: "Change Status",
     },
@@ -147,22 +143,20 @@ export default function Category() {
       sl: i + 1,
       name: cat?.name,
       numberOfProducts: cat?.numberOfProducts,
-      currentStatus: (
-        <div>
-          {cat?.status ? (
-            <div className="w-24 bg-theme text-white font-semibold p-2 rounded-md flex justify-center">
-              Active
-            </div>
-          ) : (
-            <div className="w-24 bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
-              Inactive
-            </div>
-          )}
-        </div>
-      ),
       changeStatus: (
         hasPermission("category_update") ? (
-          <label>
+        <label className="flex items-center gap-2">
+          <div>
+            {cat?.status ? (
+              <div className="w-max text-xs bg-theme text-white font-semibold p-2 rounded-md flex justify-center">
+                Active
+              </div>
+            ) : (
+              <div className="w-max text-xs bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+                Inactive
+              </div>
+            )}
+          </div>
             <Switch
               onChange={() => {
                 handleStatus(cat?.id, cat?.status);

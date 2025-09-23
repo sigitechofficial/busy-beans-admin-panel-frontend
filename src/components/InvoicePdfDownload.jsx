@@ -113,6 +113,13 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
       poNumber: invoiceData?.poNumber,
     });
   }, [invoiceData]);
+  
+  const bill = invoiceData?.user || {};
+  const billAddr = bill?.billingAddresses?.[0] || {};
+  const phoneText = [bill?.countryCode || "+1", bill?.phoneNumber]
+    .filter(Boolean)
+    .join(" ");
+  const invoiceEmail = bill?.emailToSendInvoices || bill?.email || "";
 
   return (
     <div className="w-full max-w-[800px] mx-auto px-6 pt-28 2xl:pt-32 min-w-[700px] overflow-auto">
@@ -222,73 +229,37 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
                 <div className="font-bold capitalize">Bill to</div>
 
                 {/* Company address or name */}
-                {invoiceData?.user?.billingAddresses?.[0]?.companyaddress && (
-                  <div>
-                    {invoiceData.user.billingAddresses[0].companyaddress}
-                  </div>
-                )}
+                {billAddr?.companyaddress && <div>{billAddr.companyaddress}</div>}
 
                 {/* Company name if available */}
-                {invoiceData?.user?.companyName && (
-                  <div>{invoiceData.user.companyName}</div>
-                )}
+                {bill?.companyName && <div>{bill.companyName}</div>}
 
                 {/* Address lines */}
-                {invoiceData?.user?.billingAddresses?.[0]?.addressLineOne && (
+                {(billAddr?.addressLineOne || billAddr?.addressLineTwo) && (
                   <div>
-                    {invoiceData.user.billingAddresses[0].addressLineOne +
-                      ", " +
-                      invoiceData?.user?.billingAddresses?.[0]?.addressLineTwo}
+                    {[billAddr?.addressLineOne, billAddr?.addressLineTwo]
+                      .filter(Boolean)
+                      .join(", ")}
                   </div>
                 )}
-                {/* {invoiceData?.user?.billingAddresses?.[0]?.addressLineTwo && (
-                  <div>
-                    {invoiceData.user.billingAddresses[0].addressLineTwo}
-                  </div>
-                )} */}
 
                 {/* Town, State, Zip */}
-                {(invoiceData?.user?.billingAddresses?.[0]?.town ||
-                  invoiceData?.user?.billingAddresses?.[0]?.state ||
-                  invoiceData?.user?.billingAddresses?.[0]?.zipCode) && (
+                {(billAddr?.town || billAddr?.state || billAddr?.zipCode) && (
                   <div>
-                    {[
-                      invoiceData.user.billingAddresses[0].town,
-                      invoiceData.user.billingAddresses[0].state,
-                      invoiceData.user.billingAddresses[0].zipCode,
-                    ]
+                    {[billAddr?.town, billAddr?.state, billAddr?.zipCode]
                       .filter(Boolean)
                       .join(", ")}
                   </div>
                 )}
 
                 {/* Country */}
-                {invoiceData?.user?.billingAddresses?.[0]?.country && (
-                  <div>{invoiceData.user.billingAddresses[0].country}</div>
-                )}
+                {billAddr?.country && <div>{billAddr.country}</div>}
 
                 {/* Phone */}
-                {(invoiceData?.user?.countryCode ||
-                  "+1" ||
-                  invoiceData?.user?.phoneNumber) && (
-                  <div>
-                    {invoiceData.user.countryCode ||
-                      "+1" + invoiceData.user.phoneNumber}
-                    {/* {[
-                      invoiceData.user.countryCode,
-                      invoiceData.user.phoneNumber,
-                    ]
-                      .filter(Boolean)
-                      .join(" ")} */}
-                  </div>
-                )}
+                {phoneText && <div>{phoneText}</div>}
 
-                {/* Email */}
-                {invoiceData?.user?.email && (
-                  <div className="lowercase">
-                    {invoiceData.user.emailToSendInvoices}
-                  </div>
-                )}
+                {/* Email (prefer invoice email, fallback to user email) */}
+                {invoiceEmail && <div className="lowercase">{invoiceEmail}</div>}
               </div>
             </div>
           </div>

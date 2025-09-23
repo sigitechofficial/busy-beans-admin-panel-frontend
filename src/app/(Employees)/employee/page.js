@@ -661,17 +661,17 @@ export default function Employee() {
                           </div>
                   </>
                 )}
-                <div className="flex items-center justify-end gap-x-4">
+                <div className="flex justify-end gap-3 mt-2">
                   <button
                     type="button"
                     onClick={handleModalClose}
-                    className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow px-6"
+                    className="px-4 py-2 border rounded hover:bg-gray-100"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="rounded-lg border border-theme text-white px-10 bg-theme"
+                    className="px-4 py-2 bg-theme text-white rounded hover:bg-themeDark disabled:opacity-70"
                     data-testid={EMPLOYEES.modalSubmitBtn}
                   >
                     {modal === "add"

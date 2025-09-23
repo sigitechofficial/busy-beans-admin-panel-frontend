@@ -5,25 +5,16 @@ import { info_toaster, success_toaster, error_toaster } from "./Toaster";
 
 export const handleError = (errorResponse) => {
   if (typeof errorResponse === "string") return errorResponse;
-
   if (errorResponse?.Message) return errorResponse.Message;
   if (errorResponse?.message) return errorResponse.message;
   if (errorResponse?.response?.data?.message) return errorResponse.response.data.message;
 
-  if (
-    Array.isArray(errorResponse?.errors) &&
-    errorResponse?.errors?.every((ere) => typeof ere === "string")
-  ) {
+  if (Array.isArray(errorResponse?.errors) && errorResponse.errors.every((e) => typeof e === "string")) {
     return errorResponse.errors.join(", ");
   }
-
-  if (
-    Array.isArray(errorResponse?.errors) &&
-    errorResponse?.errors?.every((ere) => typeof ere?.message === "string")
-  ) {
-    return errorResponse.errors.map((ere) => ere.message).join(", ");
+  if (Array.isArray(errorResponse?.errors) && errorResponse.errors.every((e) => typeof e?.message === "string")) {
+    return errorResponse.errors.map((e) => e.message).join(", ");
   }
-
   return "";
 };
 
@@ -38,6 +29,10 @@ const shouldLogout = (error) => {
     /not logged in/i.test(r?.data?.message ?? "")
   );
 };
+
+let LOGOUT_IN_PROGRESS = false;
+let LAST_SESSION_TOAST_AT = 0;
+const SESSION_TOAST_TTL = 4000; 
 
 api.interceptors.request.use(
   (config) => {
@@ -61,15 +56,32 @@ api.interceptors.response.use(
     } catch {}
     return res;
   },
-
   (err) => {
+    // If token invalid / session expired
     if (typeof window !== "undefined" && shouldLogout(err)) {
-      try {
-        info_toaster("Session expired. Please log in again.");
-      } catch {}
-      localStorage.clear();
-      window.location.href = "/sign-in";
-      return Promise.reject(err);
+      const now = Date.now();
+      const shouldToast = now - LAST_SESSION_TOAST_AT > SESSION_TOAST_TTL;
+
+      if (!LOGOUT_IN_PROGRESS) {
+        LOGOUT_IN_PROGRESS = true;
+        if (shouldToast) {
+          try {
+            info_toaster("Session expired. Please log in again.");
+          } catch {}
+          LAST_SESSION_TOAST_AT = now;
+        }
+        try {
+          localStorage.clear();
+        } catch {}
+        Promise.resolve().then(() => {
+          window.location.href = "/sign-in";
+        });
+      }
+      return Promise.reject({ ...err, normalizedMessage: "Session expired" });
+    }
+
+    if (LOGOUT_IN_PROGRESS) {
+      return Promise.reject({ ...err, normalizedMessage: "Session expired" });
     }
 
     const msgFromPayload = handleError(err?.response?.data || err);

@@ -10,9 +10,25 @@ import { BASE_URL } from "@/utilities/URL";
 import axios from "axios";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { BsCardList } from "react-icons/bs";
-import { FaChartLine } from "react-icons/fa";
 import { PiHandbagFill, PiUsersThreeBold } from "react-icons/pi";
-import { MdCancel } from 'react-icons/md'; 
+import { MdDashboard, 
+  MdCancel, 
+  MdPublic, 
+  MdMap, 
+  MdLocationCity, 
+  MdCheckCircle,
+  MdGroups, 
+  MdLocalShipping, 
+  MdPeopleAlt, 
+  MdAttachMoney, 
+  MdTrendingUp, 
+  MdPaid, 
+  MdListAlt, 
+  MdAssignment, 
+  MdAssignmentTurnedIn, 
+  MdPendingActions  
+} from "react-icons/md";
+import { FaChartLine, FaBox, FaHandshake, FaUserFriends } from "react-icons/fa";
 import { loadStripe } from "@stripe/stripe-js";
 import Loader from "@/components/ui/Loader";
 import api from "@/utilities/StatusErrorHandler";
@@ -64,7 +80,7 @@ export default function Home() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userType, userID, isEmployee]);
 
-  const { data } = dashboardEndpoint ? GetAPI(dashboardEndpoint, 'dashboard') : { data: null };
+  const { data, isLoading } = dashboardEndpoint ? GetAPI(dashboardEndpoint, 'dashboard') : { data: null, isLoading: false };
   
   const supplierDashboard = data?.data?.dashboard || {}; 
   const { totalOrders, dispatchedToSupplierOrders, acknowledgedOrders, shippedOrders, deliveredOrders, cancelledOrders } = supplierDashboard;
@@ -531,9 +547,9 @@ export default function Home() {
     }
   }, [userType, userID, isEmployee]);
 
-  return data?.length === 0 ? (
-    <Loader />
-  ) : (userType === "admin" && !isEmployee) ? (
+  return (isLoading || !data) ? (
+  <Loader />
+  )  : (userType === "admin" && !isEmployee) ? (
     <>
       {/* <div
         className={`bg-red-500 z-10 text-center text-white py-2 ${
@@ -636,7 +652,7 @@ export default function Home() {
               title="Total Countries"
               // description="Upcoming bookings + completed bookings + Cancelled bookings"
               total={data?.data?.totalCountries}
-              Icon={BsCardList}
+              Icon={MdPublic}
               bgColor="bg-homeCards"
               iconBg="bg-white"
               data-testid="dashboard-total-countries-card"
@@ -646,7 +662,7 @@ export default function Home() {
               title="Total States"
               // description="Total of all the completed bookings only"
               total={data?.data?.totalStates}
-              Icon={FaChartLine}
+              Icon={MdMap}
               bgColor="bg-homeCards"
               iconBg="bg-white"
               data-testid="dashboard-total-states-card"
@@ -655,7 +671,7 @@ export default function Home() {
               title="Total Cities"
               // description="All active and inactive Customers"
               total={data?.data?.totalCities}
-              Icon={PiUsersThreeBold}
+              Icon={MdLocationCity}
               bgColor="bg-homeCards"
               iconBg="bg-white"
               data-testid="dashboard-total-cities-card"
@@ -664,7 +680,7 @@ export default function Home() {
               title="Total Local Partners"
               // description="Salons that have completed at least one registration step. Specifically Add your business address and team size"
               total={data?.data?.totalPatners}
-              Icon={PiHandbagFill}
+              Icon={MdGroups}
               bgColor="bg-homeCards"
               iconBg="bg-white"
               data-testid="dashboard-total-local-partners-card"
@@ -673,7 +689,7 @@ export default function Home() {
               title="Total Suppliers"
               // description="Salons that have completed at least one registration step. Specifically Add your business address and team size"
               total={data?.data?.totalSupplier}
-              Icon={PiHandbagFill}
+              Icon={MdLocalShipping}
               bgColor="bg-homeCards"
               iconBg="bg-white"
               data-testid="dashboard-total-suppliers-card"
@@ -682,7 +698,7 @@ export default function Home() {
               title="Total Clients"
               // description="Salons that have completed at least one registration step. Specifically Add your business address and team size"
               total={data?.data?.totalUser}
-              Icon={PiHandbagFill}
+              Icon={MdPeopleAlt}
               bgColor="bg-homeCards"
               iconBg="bg-white"
               data-testid="dashboard-total-clients-card"
@@ -904,7 +920,7 @@ export default function Home() {
               title="Total Sale"
               // description="Upcoming bookings + completed bookings + Cancelled bookings"
               total={`$${data?.data?.salesSummary?.sales ?? 0}`}
-              Icon={BsCardList}
+              Icon={MdAttachMoney}
               bgColor="bg-homeCards"
               iconBg="bg-white"
               data-testid="dashboard-total-sales-card"
@@ -914,7 +930,7 @@ export default function Home() {
               title="Total Whole Sale"
               // description="Total of all the completed bookings only"
               total={`$${data?.data?.salesSummary?.wholesalePriceTotal ?? 0}`}
-              Icon={FaChartLine}
+              Icon={MdTrendingUp}
               bgColor="bg-homeCards"
               iconBg="bg-white"
               data-testid="dashboard-total-whole-sales-card"
@@ -1034,7 +1050,7 @@ export default function Home() {
           <HomeCards
             title="Total Orders"
             total={totalOrders}
-            Icon={BsCardList}
+            Icon={MdListAlt}
             bgColor="bg-homeCards"
             iconBg="bg-white"
             data-testid="dashboard-total-orders"
@@ -1042,7 +1058,7 @@ export default function Home() {
           <HomeCards
             title="Shipped Orders"
             total={shippedOrders}
-            Icon={FaChartLine}
+            Icon={MdLocalShipping}
             bgColor="bg-homeCards"
             iconBg="bg-white"
             data-testid="dashboard-total-shipped-orders"
@@ -1050,7 +1066,7 @@ export default function Home() {
           <HomeCards
             title="Acknowledged Orders"
             total={acknowledgedOrders}
-            Icon={PiUsersThreeBold}
+            Icon={MdAssignmentTurnedIn}
             bgColor="bg-homeCards"
             iconBg="bg-white"
             data-testid="dashboard-total-acknowledged-orders"
@@ -1058,7 +1074,7 @@ export default function Home() {
           <HomeCards
             title="Dispatched To Suppliers"
             total={dispatchedToSupplierOrders}
-            Icon={FaChartLine}
+            Icon={MdAssignment}
             bgColor="bg-homeCards"
             iconBg="bg-white"
             data-testid="dashboard-total-dispatched-orders"
@@ -1066,7 +1082,7 @@ export default function Home() {
           <HomeCards
             title="Delivered Orders"
             total={deliveredOrders}
-            Icon={PiHandbagFill}
+            Icon={MdCheckCircle}
             bgColor="bg-homeCards"
             iconBg="bg-white"
             data-testid="dashboard-total-delivered-orders"
@@ -1122,10 +1138,19 @@ export default function Home() {
               key={item.id}
               title={item.orderStatus}
               total={item.count}
+              // Icon={
+              //   item.orderStatus.toLowerCase().includes("cancel")
+              //     ? MdCancel
+              //     : BsCardList
+              // }
               Icon={
-                item.orderStatus.toLowerCase().includes("cancel")
-                  ? MdCancel
-                  : BsCardList
+                /cancel/i.test(item.orderStatus) ? MdCancel :
+                /ship|dispatch/i.test(item.orderStatus) ? MdLocalShipping :
+                /deliver/i.test(item.orderStatus) ? MdCheckCircle :
+                /acknowledge/i.test(item.orderStatus) ? MdAssignmentTurnedIn :
+                /unpaid|pending/i.test(item.orderStatus) ? MdPendingActions :
+                /assign/i.test(item.orderStatus) ? MdAssignment :
+                MdListAlt
               }
               bgColor="bg-homeCards"
               iconBg="bg-white"

@@ -116,8 +116,8 @@ export default function Stock() {
     if (desc.length === 0) return "Product description cannot be empty";
     if (!categoryVal) return "Please select a category";
 
-    if (wholesaleNum > priceNum) {
-      return "Whole Sale Price cannot be greater than Actual Price";
+    if (wholesaleNum >= priceNum) {
+      return "Whole sale price must be less than product price";
     }
 
     if (mode === "add" && !productDetail?.image) {

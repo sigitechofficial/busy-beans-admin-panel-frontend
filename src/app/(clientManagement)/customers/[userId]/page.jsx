@@ -926,18 +926,18 @@ function CustomerDetails() {
           </div>
             {/* ---- Additional Shipping Addresses ---- */}
             {(data?.data?.customer?.addresses?.length ?? 0) > 1 && (
-              <div className="pt-6">
+              <div className="pt-4">
                 <h2 className="text-lg font-semibold text-gray-800 mb-2">
                   Additional Shipping Addresses
                 </h2>
 
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   {data?.data?.customer?.addresses
                     ?.slice(1) // skip the primary address already shown above
                     ?.map((addr, i) => (
                       <div
                         key={addr?.id ?? `extra-addr-${i}`}
-                        className="bg-gray-50 p-4 rounded-md flex justify-between items-start"
+                        className="bg-gray-50 p-4 rounded-md flex flex-col justify-between"
                       >
                         <div className="text-sm text-gray-700 space-y-1 uppercase">
                           {/* Company (optional) */}
@@ -965,7 +965,7 @@ function CustomerDetails() {
                           {addr?.country?.trim() && <div>{addr.country}</div>}
                         </div>
 
-                        <div className="pt-1">
+                        <div className="pt-3">
                           <button
                             type="button"
                             onClick={() => openEditAddress(addr)}
@@ -1116,7 +1116,7 @@ function CustomerDetails() {
           ? "Assign Employee"
           : userData?.type === "delete"
           ? (
-            <div className="font-bold text-2xl text-center text-red-600">
+            <div className="font-bold text-2xl text-center text-theme-600">
               Confirm Deletion
             </div>
           )
@@ -1135,7 +1135,7 @@ function CustomerDetails() {
               </button>
             </div>
           ) : userData?.type === "delete" ? (
-            <div className="flex justify-end gap-3 pt-6">
+            <div className="flex justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setUserData({ ...userData, modal: false })}
@@ -1146,8 +1146,8 @@ function CustomerDetails() {
               <button
                 type="button"
                 onClick={handleDelete}
-                className="rounded-md bg-red-600 text-white hover:bg-red-700 px-5 py-2 font-medium transition shadow-md"
-              >
+                className="rounded-md bg-theme text-white hover:bg-red-700 px-5 py-2 font-medium transition shadow-md"
+              > 
                 Delete
               </button>
             </div>
@@ -1186,7 +1186,7 @@ function CustomerDetails() {
               Are you sure you want to delete this customer?
             </div>
             <div className="text-sm text-gray-500">
-              This action cannot be undone. The customer’s account and related
+              The customer’s account and related
               data will be permanently removed.
             </div>
           </div>

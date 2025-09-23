@@ -1,83 +1,41 @@
 "use client";
 import api from "./StatusErrorHandler";
-import { error_toaster } from "./Toaster";
 
-export const PostAPI = async (url, postData, feature='') => {
-  let config = {
+export const PostAPI = async (url, postData, feature = "", options = {}) => {
+  const config = {
     headers: {
-      // accessToken: localStorage.getItem("accessToken"),
       feature,
       Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
     },
+    ...(options?.suppressSuccessToast ? { suppressSuccessToast: true } : {}),
   };
 
   try {
-    let response = await api.post(url, postData, config);
-    if (!response) {
-      throw new Error("No response from server.");
-    } else if (response?.status == "error") {
-      throw new Error(response?.message || "Somethong went wrong.");
-    }
+    const response = await api.post(url, postData, config);
     return response;
-  } catch (error) {
-    if (error.response) {
-      const errorMessage =
-        error.response.data?.message ||
-        error.response.statusText ||
-        "Server Error";
-      throw new Error(`${errorMessage}`);
-    } else if (error.request) {
-      throw new Error("Network Error: No response received from the server.");
-    } else {
-      throw new Error(`${error.message}`);
-    }
+  } catch (err) {
+    throw err;
   }
 };
 
-export const SignupAPI = async (url, postData) => {
+export const SignupAPI = async (url, postData, options = {}) => {
   try {
-    let response = await api.post(url, postData);
-    if (!response) {
-      throw new Error("No response from server.");
-    } else if (response?.status == "error") {
-      throw new Error(response?.message || "Somethong went wrong.");
-    }
+    const response = await api.post(url, postData, {
+      ...(options?.suppressSuccessToast ? { suppressSuccessToast: true } : {}),
+    });
     return response;
-  } catch (error) {
-    if (error.response) {
-      const errorMessage =
-        error.response.data?.message ||
-        error.response.statusText ||
-        "Server Error";
-      throw new Error(`${errorMessage}`);
-    } else if (error.request) {
-      throw new Error("Network Error: No response received from the server.");
-    } else {
-      throw new Error(`${error.message}`);
-    }
+  } catch (err) {
+    throw err;
   }
 };
 
-export const loginAPI = async (url, postData) => {
+export const loginAPI = async (url, postData, options = {}) => {
   try {
-    const response = await api.post(url, postData);
-    if (!response) {
-      throw new Error("No response from server.");
-    } else if (response?.status == "error") {
-      throw new Error(response?.message || "Somethong went wrong.");
-    }
+    const response = await api.post(url, postData, {
+      ...(options?.suppressSuccessToast ? { suppressSuccessToast: true } : {}),
+    });
     return response;
-  } catch (error) {
-    if (error.response) {
-      const errorMessage =
-        error.response.data?.message ||
-        error.response.statusText ||
-        "Server Error";
-      throw new Error(`${errorMessage}`);
-    } else if (error.request) {
-      throw new Error("Network Error: No response received from the server.");
-    } else {
-      throw new Error(`${error.message}`);
-    }
+  } catch (err) {
+    throw err;
   }
 };

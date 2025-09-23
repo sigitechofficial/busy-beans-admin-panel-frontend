@@ -556,6 +556,7 @@ export default function Leftbar(props) {
               <>
                 <div className="m-2 relative space-y-1">
                   <ListItems title="Subscription" to="/subscription" data-testid={LEFTBAR.listItem("subscription", "Subscription")} />
+                  <ListItems title="Requests" to="/subscription-requests" data-testid={LEFTBAR.listItem("subscription-requests", "Requests")} />
                   <ListItems title="Add-Ons" to="/add-ons" data-testid={LEFTBAR.listItem("add-ons", "Add-Ons")} />
                 </div>
                 <hr className="w-full" />
@@ -1257,6 +1258,7 @@ export default function Leftbar(props) {
               <>
                 <div className="m-2 relative space-y-1">
                   <ListItems title="Subscription" to="/subscription" data-testid={LEFTBAR.listItem("subscription", "Subscription")} />
+                  <ListItems title="Requests" to="/subscription-requests" data-testid={LEFTBAR.listItem("subscription-requests", "Requests")} />
                   <ListItems title="Add-Ons" to="/add-ons" data-testid={LEFTBAR.listItem("add-ons", "Add-Ons")} />
                 </div>
                 <hr className="w-full" />

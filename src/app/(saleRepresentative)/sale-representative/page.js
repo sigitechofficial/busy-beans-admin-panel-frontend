@@ -28,7 +28,7 @@ export default function SaleRepresentative() {
   const [saleRepresentativeID, setSaleRepresentativeID] = useState("");
   const [loader, setLoader] = useState("");
 
-  const { data, reFetch } = GetAPI("api/v1/admin/sales-rep", "sales-rep");
+  const { data, reFetch, isLoading } = GetAPI("api/v1/admin/sales-rep", "sales-rep");
 
   const handleStatus = async (id, status) => {
     try {
@@ -184,10 +184,10 @@ export default function SaleRepresentative() {
     });
   });
   const { toggle, setToggle } = useDataContext();
-
-  return data?.length === 0 ? (
-    <Loader />
-  ) : (
+  if (isLoading) {
+    return <Loader />;
+  }
+  return (
     <div data-testid={SALES_REPRESENTATIVE.root}>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
        data-testid={SALES_REPRESENTATIVE.headerBar}>
@@ -257,6 +257,7 @@ export default function SaleRepresentative() {
           style={{ width: "40vw" }}
           className="font-nunito"
           onHide={handleModalClose}
+          dismissableMask={true}
           header={
             <div className="font-nunito font-bold text-2xl text-center">
               Delete Local Partner

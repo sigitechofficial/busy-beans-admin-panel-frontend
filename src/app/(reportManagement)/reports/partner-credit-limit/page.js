@@ -22,7 +22,7 @@ export default function PartnerCreditLimit() {
   });
   const [displayCustomFilters, setDisplayCustomFilters] = useState(false);
 
-  const { data } = GetAPI("api/v1/admin/admin-reports/partner-creadit-limit");
+  const { data, isLoading } = GetAPI("api/v1/admin/admin-reports/partner-creadit-limit");
   console.log("🚀 ~ PartnerCommissionReport ~ data:", data?.data);
 
   const options = [
@@ -87,10 +87,10 @@ export default function PartnerCreditLimit() {
     setCustomDates({ ...customDates, [e.target.name]: e.target.value });
   };
   const { toggle, setToggle } = useDataContext();
-
-  return data?.length === 0 ? (
-    <Loader />
-  ) : (
+  if (isLoading) {
+    return <Loader />;
+  }
+  return (
     <div data-testid={PARTNER_CREDIT_LIMIT_REPORT.root}>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
        data-testid={PARTNER_CREDIT_LIMIT_REPORT.headerBar}>

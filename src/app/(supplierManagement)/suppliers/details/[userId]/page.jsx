@@ -19,7 +19,7 @@ export default function LocalPartnerSupplierDetails() {
   const { userId } = useParams();
   const pathname = usePathname();
   const router = useRouter();
-  const { data, reFetch } = GetAPI(`api/v1/admin/supplier/${userId}`, "supplier");
+  const { data, reFetch, isLoading } = GetAPI(`api/v1/admin/supplier/${userId}`, "supplier");
   const { toggle, setToggle } = useDataContext();
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [loader, setLoader] = useState("");
@@ -40,10 +40,10 @@ export default function LocalPartnerSupplierDetails() {
       setLoader("");
     }
   };
-
-  return data?.length === 0 ? (
-    <Loader />
-  ) : (
+  if (isLoading) {
+    return <Loader />;
+  }
+  return (
     <div className="w-full" data-testid={DETAIL_SUPPLIER.root}>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
        data-testid={DETAIL_SUPPLIER.headerBar}>

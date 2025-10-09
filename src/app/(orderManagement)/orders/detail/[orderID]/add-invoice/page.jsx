@@ -26,7 +26,7 @@ export default function AddInvoice() {
     show: false,
   });
   const { orderID } = useParams();
-  const { data, reFetch } = GetAPI(`api/v1/admin/order-details/${orderID}`);
+  const { data, reFetch, isLoading } = GetAPI(`api/v1/admin/order-details/${orderID}`);
   const userId = data?.data?.order?.user?.id ?? null;
   const [cardsUrl, setCardsUrl] = useState(null);
   useEffect(() => {
@@ -478,9 +478,11 @@ export default function AddInvoice() {
   };
   const { toggle, setToggle } = useDataContext();
 
-  return data?.length === 0 ? (
-    <Loader data-testid={ORDER_ADD_INVOICE.pageLoader} />
-  ) : (
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  return (
     <div data-testid={ORDER_ADD_INVOICE.root}>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
        data-testid={ORDER_ADD_INVOICE.headerBar}>
@@ -1124,6 +1126,7 @@ export default function AddInvoice() {
         style={{ width: "40vw" }}
         // breakpoints={{ "1496px": "40vw", "1024px": "70vw", "641px": "80vw" }}
         className="font-nunito"
+        dismissableMask={true}
         onHide={() => setModal(false)}
         header={
           <div className="font-nunito font-bold text-2xl text-center">

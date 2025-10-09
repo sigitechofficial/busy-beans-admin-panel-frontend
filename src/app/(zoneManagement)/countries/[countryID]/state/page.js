@@ -35,7 +35,7 @@ export default function States() {
     value: "",
     label: "",
   });
-  const { data } = GetAPI(
+  const { data, isLoading } = GetAPI(
     `api/v1/admin/address-management/country/${countryID}`
   );
   const { data: countryStates, reFetch } = GetAPI(
@@ -168,10 +168,10 @@ export default function States() {
       }
     }
   };
-
-  return data?.length === 0 ? (
-    <Loader />
-  ) : (
+  if (isLoading) {
+    return <Loader />;
+  }
+  return (
     <div className="w-full" data-testid={STATES.root}>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
        data-testid={STATES.headerBar}>
@@ -227,6 +227,7 @@ export default function States() {
         style={{ width: "40vw" }}
         className="font-nunito"
         onHide={() => setModal(false)}
+        dismissableMask={true}
         data-testid={STATES.stateModal}
         header={
           <div className="font-nunito font-bold text-2xl text-center" data-testid={STATES.stateModalTitle}>

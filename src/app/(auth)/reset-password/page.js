@@ -238,6 +238,7 @@ export default function ResetPassword() {
         }}
         // onHide={() => setModal(false)}
         closeIcon
+        dismissableMask={true}
         header={
           <div className="text-white bg-[#28922E] size-16 rounded-full flex items-center justify-center mx-auto mt-5">
             <IoCheckmark size={50} />

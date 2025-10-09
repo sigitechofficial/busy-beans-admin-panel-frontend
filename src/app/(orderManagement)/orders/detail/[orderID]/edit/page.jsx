@@ -13,7 +13,7 @@ import Loader from "@/components/ui/Loader";
 
 function EditPage() {
   const { orderID } = useParams();
-  const { data: orderData, reFetch } =
+  const { data: orderData, reFetch, isLoading } =
     orderID && GetAPI(`api/v1/admin/order-details/${orderID}`);
 
   const { data } = GetAPI("api/v1/admin/address-management/country");
@@ -261,10 +261,12 @@ function EditPage() {
     }
     // eslint-disable-next-line
   }, [data]);
+  
+  if (isLoading) {
+    return <Loader />;
+  }
 
-  return data?.length === 0 ? (
-    <Loader />
-  ) : (
+  return (
     <div>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl font-inter font-semibold">

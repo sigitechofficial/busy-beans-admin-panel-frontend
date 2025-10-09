@@ -552,6 +552,7 @@ export default function OrderCard(props) {
           props?.modal?.type === "dispatchOrder" && props?.modal?.status
         }
         style={{ width: "30vw" }}
+        dismissableMask={true}
         className="font-nunito"
         onHide={() => {
           props?.setModal({

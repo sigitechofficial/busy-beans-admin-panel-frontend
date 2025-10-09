@@ -22,7 +22,7 @@ export default function ProductSale() {
   });
   const [displayCustomFilters, setDisplayCustomFilters] = useState(false);
 
-  const { data } = GetAPI("api/v1/admin/admin-reports/product-sales");
+  const { data, isLoading } = GetAPI("api/v1/admin/admin-reports/product-sales");
   console.log("🚀 ~ PartnerCommissionReport ~ data:", data?.data);
 
   const options = [
@@ -91,10 +91,10 @@ export default function ProductSale() {
     setCustomDates({ ...customDates, [e.target.name]: e.target.value });
   };
   const { toggle, setToggle } = useDataContext();
-
-  return data?.length === 0 ? (
-    <Loader />
-  ) : (
+  if (isLoading) {
+    return <Loader />;
+  }
+  return (
     <div data-testid={PRODUCT_SALE_REPORT.root}>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
        data-testid={PRODUCT_SALE_REPORT.headerBar}>

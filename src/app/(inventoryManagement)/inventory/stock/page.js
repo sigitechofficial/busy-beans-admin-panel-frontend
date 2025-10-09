@@ -35,7 +35,7 @@ export default function Stock() {
   const url = filterId
     ? `api/v1/admin/product?categoryId=${filterId}`
     : `api/v1/admin/product`;
-  const { data, reFetch } = GetAPI(url, "product");
+  const { data, reFetch, isLoading } = GetAPI(url, "product");
 
   const { data: category, reFetch: categoryRefetch } = GetAPI(
     "api/v1/admin/category"
@@ -492,10 +492,12 @@ export default function Stock() {
     });
   });
   const { toggle, setToggle } = useDataContext();
+  
+  if (isLoading) {
+    return <Loader />;
+  }
 
-  return data?.length === 0 ? (
-    <Loader />
-  ) : (
+  return (
     <div data-testid={INVENTORY_MANAGEMENT.root}>
       <div className="w-full md:w=[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
        data-testid={INVENTORY_MANAGEMENT.headerBar}>
@@ -604,6 +606,7 @@ export default function Stock() {
           // breakpoints={{ "1496px": "40vw", "1024px": "70vw", "641px": "80vw" }}
           className="font-nunito w-[80%] lg:w-[40vw]"
           data-testid={INVENTORY_MANAGEMENT.stockModal}
+          dismissableMask={true}
           onHide={handleCancel}
           header={
             <div className="font-nunito font-bold lg:text-2xl text-center" data-testid={INVENTORY_MANAGEMENT.stockModalTitle}>

@@ -52,7 +52,7 @@ export default function Countries() {
     })
   );
 
-  const { data, reFetch } = GetAPI("api/v1/admin/address-management/country", "country");
+  const { data, reFetch, isLoading } = GetAPI("api/v1/admin/address-management/country", "country");
 
   const handleAddCountry = async (e) => {
     e.preventDefault();
@@ -110,10 +110,10 @@ export default function Countries() {
     }
   };
   const { toggle, setToggle } = useDataContext();
-
-  return data?.length === 0 ? (
-    <Loader />
-  ) : (
+  if (isLoading) {
+    return <Loader />;
+  }
+  return (
     <div data-testid={COUNTRIES.root}>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
        data-testid={COUNTRIES.headerBar}>
@@ -179,6 +179,7 @@ export default function Countries() {
           // style={{ width: "40vw" }}
           className="font-nunito w-[80%] lg:w-[40vw]"
           onHide={() => setModal(false)}
+          dismissableMask={true}
           data-testid={COUNTRIES.countryModal}
           header={
             <div className="font-nunito font-bold text-sm lg:text-2xl text-center" data-testid={COUNTRIES.countryModalTitle}>

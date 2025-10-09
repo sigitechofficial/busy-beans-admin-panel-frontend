@@ -17,7 +17,7 @@ export default function ShippingChargesManagement() {
   const [loader, setLoader] = useState(false);
   const [modal, setModal] = useState(false);
 
-  const { data, reFetch } = GetAPI("api/v1/admin/shipping-charges-list", "charges");
+  const { data, reFetch, isLoading } = GetAPI("api/v1/admin/shipping-charges-list", "charges");
 
   useEffect(() => {
     if (data?.data?.data?.length > 0) {
@@ -141,10 +141,10 @@ export default function ShippingChargesManagement() {
   //   setModal(false);
   // };
   const { toggle, setToggle } = useDataContext();
-
-  return data?.length === 0 ? (
-    <Loader data-testid={SHIPPING_CHARGES.pageLoader}/>
-  ) : (
+  if (isLoading) {
+    return <Loader />;
+  }
+  return (
     <div data-testid={SHIPPING_CHARGES.root}>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
        data-testid={SHIPPING_CHARGES.headerBar}>

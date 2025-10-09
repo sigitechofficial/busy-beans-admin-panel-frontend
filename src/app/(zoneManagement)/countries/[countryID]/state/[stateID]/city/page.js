@@ -34,7 +34,7 @@ export default function Cities() {
     label: "",
   });
 
-  const { data, reFetch } = GetAPI(
+  const { data, reFetch, isLoading } = GetAPI(
     `api/v1/admin/address-management/city?stateInSystemId=${stateID}`
   );
 
@@ -138,10 +138,10 @@ export default function Cities() {
       }
     }
   };
-
-  return data?.length === 0 ? (
-    <Loader />
-  ) : (
+  if (isLoading) {
+    return <Loader />;
+  }
+  return (
     <div className="w-full" data-testid={CITIES.root}>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
        data-testid={CITIES.headerBar}>

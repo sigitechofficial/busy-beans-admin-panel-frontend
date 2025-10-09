@@ -28,7 +28,7 @@ export default function Suppliers() {
   const [loader, setLoader] = useState("");
   const [modal, setModal] = useState("");
 
-  const { data, reFetch } = GetAPI("api/v1/admin/supplier/?sort=-createdAt", "supplier");
+  const { data, reFetch, isLoading } = GetAPI("api/v1/admin/supplier/?sort=-createdAt", "supplier");
 
   const handleStatus = async (id, status) => {
     try {
@@ -183,10 +183,10 @@ export default function Suppliers() {
     });
   });
   const { toggle, setToggle } = useDataContext();
-
-  return data?.length === 0 ? (
-    <Loader />
-  ) : (
+  if (isLoading) {
+    return <Loader />;
+  }
+  return (
     <div data-testid={SUPPLIER_MANAGEMENT.root}>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
        data-testid={SUPPLIER_MANAGEMENT.headerBar}>
@@ -285,6 +285,7 @@ export default function Suppliers() {
           style={{ width: "40vw" }}
           className="font-nunito"
           onHide={handleModalClose}
+          dismissableMask={true}
           header={
             <div className="font-nunito font-bold text-2xl text-center">
               Delete Supplier

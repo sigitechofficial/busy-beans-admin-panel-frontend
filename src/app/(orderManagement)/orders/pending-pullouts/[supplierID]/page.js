@@ -20,7 +20,7 @@ export default function PendingPulloutsOrders() {
   const [selectedRows, setSelectedRows] = useState([]);
   const [loader, setLoader] = useState(false);
 
-  const { data, reFetch } = GetAPI(
+  const { data, reFetch, isLoading } = GetAPI(
     `api/v1/admin/orders-pending-pullouts/${supplierID}`
   );
 
@@ -113,10 +113,10 @@ export default function PendingPulloutsOrders() {
       setLoader(false);
     }
   };
-
-  return data?.length === 0 ? (
-    <Loader />
-  ) : (
+  if (isLoading) {
+    return <Loader />;
+  }
+  return (
     <div>
       <div className="w-full mdm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <div className="flex items-center gap-x-2">

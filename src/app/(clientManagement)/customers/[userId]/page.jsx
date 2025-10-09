@@ -44,7 +44,7 @@ function CustomerDetails() {
     userType === "admin"
       ? `api/v1/admin/orders?userid=${userId}&statusId[ne]=6`
       : `api/v1/admin/orders?userid=${userId}&salesRepId=${salesRepId}&statusId[ne]=6`;
-  const { data: userOrders } = GetAPI(url);
+  const { data: userOrders, isLoading } = GetAPI(url);
   
   const { data: employeesData } = GetAPI("api/v1/admin/employees", "employee");
 
@@ -501,11 +501,13 @@ function CustomerDetails() {
   const employeeOf = (data?.data?.customer?.employeeOf || "").toLowerCase();
   const canShowAssignEmployee =
     (!isEmployee && userType === "admin") ||
-    (!isEmployee && userType === "salesRepresentative" && employeeOf !== "admin");
+    (!isEmployee && userType === "salesRepresentative" && employeeOf !== "admin"); 
 
-  return data?.length === 0 ? (
-    <Loader />
-  ) : (
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  return (
     <div className="w-full">
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <div className="text-xl font-inter font-semibold flex items-center gap-2 [&>p]:cursor-pointer">

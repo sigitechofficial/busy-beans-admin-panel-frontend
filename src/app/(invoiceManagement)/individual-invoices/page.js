@@ -16,7 +16,7 @@ export default function IndividualInvoices() {
   }
 
   const router = useRouter();
-  const { data } = GetAPI(
+  const { data, isLoading } = GetAPI(
     userType === "salesRepresentative"
       ? `api/v1/admin/orders?salesRepId=${userID}`
       : `api/v1/admin/orders`
@@ -47,9 +47,11 @@ export default function IndividualInvoices() {
 
   const { toggle, setToggle } = useDataContext();
 
-  return data?.length === 0 ? (
-    <Loader />
-  ) : (
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  return (
     <div className="w-full" data-testid={INDIVIDUAL_INVOICES.root}>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
        data-testid={INDIVIDUAL_INVOICES.headerBar}>

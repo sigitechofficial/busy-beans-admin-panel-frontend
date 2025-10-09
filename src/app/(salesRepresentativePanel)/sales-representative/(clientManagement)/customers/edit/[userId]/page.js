@@ -155,7 +155,7 @@ export default function UpdateCustomer() {
   );
 
   // Fetch customer details and prefill
-  const { data: customerData } = GetAPI(
+  const { data: customerData, isLoading } = GetAPI(
     `api/v1/admin/view-customer-detail/${userId}`, "customer"
   );
 
@@ -528,10 +528,10 @@ export default function UpdateCustomer() {
       ErrorHandler(error);
     }
   };
-
-  return customerData?.length === 0 ? (
-    <Loader />
-  ) : (
+  if (isLoading) {
+    return <Loader />;
+  }
+  return (
     <div data-testid={UPDATE_CUSTOMER.root}>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
        data-testid={UPDATE_CUSTOMER.headerBar}>

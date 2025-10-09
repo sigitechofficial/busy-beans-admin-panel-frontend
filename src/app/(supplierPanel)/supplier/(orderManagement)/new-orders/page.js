@@ -17,7 +17,7 @@ export default function NewOrders() {
   console.log("🚀 ~ NewOrders ~ userType:", userType,userID)
   
   const router = useRouter();
-  const { data } = GetAPI(
+  const { data, isLoading } = GetAPI(
     userType === "salesRepresentative"
       ? `api/v1/admin/orders?salesRepId=${userID}&statusId=1`
       : "api/v1/admin/orders?statusId=1"
@@ -77,10 +77,10 @@ export default function NewOrders() {
       ),
     });
   });
-
-  return data?.length === 0 ? (
-    <Loader />
-  ) : (
+  if (isLoading) {
+    return <Loader />;
+  }
+  return (
     <div>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold">

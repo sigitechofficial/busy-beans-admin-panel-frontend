@@ -78,7 +78,7 @@ export default function OrderDetail() {
     { value: "cashier's check", label: "Cashier's check" },
   ];
 
-  const { data, reFetch } = GetAPI(`api/v1/admin/order-details/${orderID}`, "orders");
+  const { data, reFetch, isLoading } = GetAPI(`api/v1/admin/order-details/${orderID}`, "orders");
 
   const handleSupplierAcknowledgement = async () => {
     setLoader("acknowledgeSupplier");
@@ -405,9 +405,12 @@ export default function OrderDetail() {
   };
 
   const { toggle, setToggle } = useDataContext();
-  return data?.length === 0 ? (
-    <Loader data-testid={ORDER_DETAIL.pageLoader}/>
-  ) : (
+
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  return (
     <div data-testid={ORDER_DETAIL.root}>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
        data-testid={ORDER_DETAIL.headerBar}>

@@ -52,7 +52,7 @@ export default function EditsSalesRepresentative() {
   const [changePasswordStatus, setChangePasswordStatus] = useState(false);
   const [customCityMode, setCustomCityMode] = useState(false);
 
-  const { data: countriesData } = GetAPI(
+  const { data: countriesData, isLoading } = GetAPI(
     "api/v1/admin/address-management/country"
   );
 
@@ -251,10 +251,10 @@ export default function EditsSalesRepresentative() {
     });
     setImagePreview(data?.data?.data?.image);
   }, [data]);
-
-  return data?.length === 0 ? (
-    <Loader />
-  ) : (
+  if (isLoading) {
+    return <Loader />;
+  }
+  return (
     <form onSubmit={handleSubmit} className="">
       {/* <div className="flex items-center justify-between">
         <div className="flex items-center gap-x-2">

@@ -17,7 +17,7 @@ export default function AssignedOrders() {
     var userType = localStorage.getItem("userType");
   }
   const router = useRouter();
-  const { data } = GetAPI(
+  const { data, isLoading } = GetAPI(
     userType === "salesRepresentative"
       ? `api/v1/admin/orders?salesRepId=${userID}&statusId=2`
       : "api/v1/admin/orders?statusId=2"
@@ -88,9 +88,11 @@ export default function AssignedOrders() {
   });
   const { toggle, setToggle } = useDataContext();
 
-  return data?.length === 0 ? (
-    <Loader />
-  ) : (
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  return (
     <div>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <div className="flex items-center gap-2">

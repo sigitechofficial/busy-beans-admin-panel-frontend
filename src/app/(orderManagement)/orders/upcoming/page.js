@@ -24,7 +24,7 @@ export default function UpcomingOrders() {
   const [items, setItems] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
 
-  const { data, reFetch } = GetAPI(
+  const { data, reFetch, isLoading } = GetAPI(
     "api/v1/admin/order-frequency/upcomming-orders"
   );
 
@@ -130,10 +130,10 @@ export default function UpcomingOrders() {
     });
   });
   const { toggle, setToggle } = useDataContext();
-
-  return data?.length === 0 ? (
-    <Loader />
-  ) : (
+  if (isLoading) {
+    return <Loader />;
+  }
+  return (
     <>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
         data-testid={UPCOMING_ORDERS.headerBar}>

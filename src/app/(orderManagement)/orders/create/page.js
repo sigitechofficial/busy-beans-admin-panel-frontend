@@ -29,7 +29,7 @@ export default function CreateOrder() {
   const [visibleRight, setVisibleRight] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: category } = GetAPI(`api/v1/admin/category?status=1`);
+  const { data: category, isLoading } = GetAPI(`api/v1/admin/category?status=1`);
   let categoryList = [{ value: "", label: "All" }];
   if (category) {
     category?.data?.data?.map((cat) => {
@@ -167,9 +167,11 @@ export default function CreateOrder() {
     );
   });
 
-  return data?.length === 0 ? (
-    <Loader />
-  ) : (
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  return (
     <div data-testid={ORDERS_CREATE.root}>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
         data-testid={ORDERS_CREATE.headerBar} >

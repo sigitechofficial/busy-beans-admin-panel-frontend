@@ -1107,6 +1107,7 @@ function CustomerDetails() {
           width: "90vw",
           maxWidth: userData?.type === "localPartner" || userData?.type === "employee" ? "1200px" : "500px",
         }}
+        dismissableMask={true}
         className="font-nunito"
         onHide={() => setUserData({ ...userData, modal: false })}
         header={
@@ -1197,6 +1198,7 @@ function CustomerDetails() {
         <Dialog
           visible={addrDialogOpen}
           onHide={() => setAddrDialogOpen(false)}
+          dismissableMask={true}
           header={<div className="font-bold text-lg">{addrMode === "create" ? "Add New Address" : "Edit Address"}</div>}
           className="w-screen max-w-none sm:w-[95%] sm:max-w-lg !m-0 sm:!m-auto font-satoshi"
           contentClassName="!p-4 sm:!p-5"

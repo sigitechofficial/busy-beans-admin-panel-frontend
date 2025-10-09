@@ -1124,6 +1124,7 @@ export default function AddInvoice() {
         style={{ width: "40vw" }}
         // breakpoints={{ "1496px": "40vw", "1024px": "70vw", "641px": "80vw" }}
         className="font-nunito"
+        dismissableMask={true}
         onHide={() => setModal(false)}
         header={
           <div className="font-nunito font-bold text-2xl text-center">

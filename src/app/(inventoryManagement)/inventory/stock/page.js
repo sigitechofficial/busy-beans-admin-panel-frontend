@@ -604,6 +604,7 @@ export default function Stock() {
           // breakpoints={{ "1496px": "40vw", "1024px": "70vw", "641px": "80vw" }}
           className="font-nunito w-[80%] lg:w-[40vw]"
           data-testid={INVENTORY_MANAGEMENT.stockModal}
+          dismissableMask={true}
           onHide={handleCancel}
           header={
             <div className="font-nunito font-bold lg:text-2xl text-center" data-testid={INVENTORY_MANAGEMENT.stockModalTitle}>

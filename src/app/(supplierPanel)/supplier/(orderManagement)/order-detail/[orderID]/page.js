@@ -461,6 +461,7 @@ export default function OrderDetail() {
               status: false,
             })
           }
+          dismissableMask={true}
           header={
             <div className="font-nunito font-bold text-2xl text-center">
               {/* {modal?.type === "cancelOrder"

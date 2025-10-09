@@ -264,6 +264,7 @@ export default function Category() {
           // style={{ width: "40vw" }}
           className="font-nunito w-[80%] lg:w-[40vw]"
           onHide={handleModalClose}
+          dismissableMask={true}
           data-testid={CATEGORY_MANAGEMENT.modal}
           header={
             <div className="font-nunito font-bold text-sm lg:text-2xl text-center" data-testid={CATEGORY_MANAGEMENT.modalTitle}>

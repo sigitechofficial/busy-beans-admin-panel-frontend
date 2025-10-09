@@ -204,6 +204,7 @@ export default function UpcomingOrders() {
           style={{ width: "60vw" }}
           // breakpoints={{ "1496px": "40vw", "1024px": "70vw", "641px": "80vw" }}
           className="font-nunito"
+          dismissableMask={true}
           onHide={handleCancel}
           header={
             <div className="font-nunito font-bold text-2xl text-center" data-testid={UPCOMING_ORDERS.itemsDialogHeader}>

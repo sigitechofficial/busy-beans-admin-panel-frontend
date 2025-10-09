@@ -513,6 +513,7 @@ export default function Customers() {
           // breakpoints={{ "1496px": "40vw", "1024px": "70vw", "641px": "80vw" }}
           className="font-nunito"
           onHide={handleCancel}
+          dismissableMask={true}
           header={
             <div className="font-nunito font-bold text-2xl text-center">
               Assign Local Partner

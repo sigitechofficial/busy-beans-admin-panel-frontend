@@ -1203,7 +1203,7 @@ export default function UpdateCustomer() {
               : ""
             }`}
             // className="w-[95vw] md:w-[720px]"
-            dismissableMask
+            dismissableMask={true}
             style={{ maxHeight: "90vh", overflowY: "auto" }}
             data-testid={UPDATE_CUSTOMER.discountDlgOpen}
           >

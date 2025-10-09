@@ -1162,6 +1162,7 @@ export default function OrderDetail() {
           }
           style={{ width: "40vw" }}
           className="font-nunito"
+          dismissableMask={true}
           onHide={() =>
             setModal({
               type: "",

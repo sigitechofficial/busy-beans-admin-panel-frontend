@@ -227,6 +227,7 @@ export default function States() {
         style={{ width: "40vw" }}
         className="font-nunito"
         onHide={() => setModal(false)}
+        dismissableMask={true}
         data-testid={STATES.stateModal}
         header={
           <div className="font-nunito font-bold text-2xl text-center" data-testid={STATES.stateModalTitle}>

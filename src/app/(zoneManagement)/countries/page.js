@@ -179,6 +179,7 @@ export default function Countries() {
           // style={{ width: "40vw" }}
           className="font-nunito w-[80%] lg:w-[40vw]"
           onHide={() => setModal(false)}
+          dismissableMask={true}
           data-testid={COUNTRIES.countryModal}
           header={
             <div className="font-nunito font-bold text-sm lg:text-2xl text-center" data-testid={COUNTRIES.countryModalTitle}>

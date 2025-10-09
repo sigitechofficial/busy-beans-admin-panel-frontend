@@ -397,6 +397,7 @@ export default function Employee() {
           visible={modal === "add" || modal === "edit" || modal === "delete"}
           className="font-nunito w-[80%] lg:w-[40vw]"
           data-testid={EMPLOYEES.modal}
+          dismissableMask={true}
           onHide={handleModalClose}
           header={
             <div className="font-nunito font-bold text-sm lg:text-2xl text-center" data-testid={EMPLOYEES.modalTitle}>

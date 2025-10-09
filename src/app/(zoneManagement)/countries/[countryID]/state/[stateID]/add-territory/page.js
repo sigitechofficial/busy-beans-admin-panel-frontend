@@ -282,7 +282,8 @@ export default function AddTerritory() {
         style={{ width: "50vw" }}
         className="font-nunito"
         onHide={() => setModal(false)}
-         data-testid={TERRITORY.territoryModal}
+        dismissableMask={true}
+        data-testid={TERRITORY.territoryModal}
         header={
           <div className="font-nunito font-bold text-2xl text-center" data-testid={TERRITORY.territoryModalTitle}>
             {modal === "territory"

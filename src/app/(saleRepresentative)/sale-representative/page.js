@@ -257,6 +257,7 @@ export default function SaleRepresentative() {
           style={{ width: "40vw" }}
           className="font-nunito"
           onHide={handleModalClose}
+          dismissableMask={true}
           header={
             <div className="font-nunito font-bold text-2xl text-center">
               Delete Local Partner

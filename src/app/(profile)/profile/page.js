@@ -27,7 +27,7 @@ export default function Profile() {
   });
   const [profileKey, setProfileKey] = useState(null);
 
-  const { data: profileResp, isLoading } = GetAPI(profileKey, "profile");
+  const { data: profileResp, isLoading, reFetch  } = GetAPI(profileKey, "profile");
 
   const [isEditing, setIsEditing] = useState(false);
 
@@ -107,7 +107,8 @@ export default function Profile() {
 
       if (res?.data?.status === "success") {
         success_toaster("Profile updated successfully");
-        router.push("/");
+        reFetch();
+        setIsEditing(false);
       } else {
         throw new Error(res?.data?.message || "Failed to update profile");
       }

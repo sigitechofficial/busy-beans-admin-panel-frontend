@@ -35,6 +35,7 @@ export default function AddSaleRepresentative() {
     countryCode: "+1",
     creditLimit: "",
     status: true,
+    partnerType: "",
   });
 
   const [imagePreview, setImagePreview] = useState("");
@@ -165,6 +166,8 @@ export default function AddSaleRepresentative() {
       info_toaster("Enter Territory");
     } else if (!saleRepresentative?.creditLimit?.trim()) {
       info_toaster("Enter Credit Limit");
+    } else if (!saleRepresentative?.partnerType?.trim()) {
+      info_toaster("Select Partner Type");
     } else if (saleRepresentative?.status === "") {
       info_toaster("Select Status");
     } else if (!saleRepresentative?.email?.trim()) {
@@ -182,6 +185,7 @@ export default function AddSaleRepresentative() {
         formData.append("srName", saleRepresentative?.srName);
         formData.append("email", saleRepresentative?.email);
         formData.append("creditLimit", saleRepresentative?.creditLimit);
+        formData.append("partnerType", saleRepresentative?.partnerType);
         formData.append("password", saleRepresentative?.password);
         formData.append("country", saleRepresentative?.country);
         formData.append("city", saleRepresentative?.city);
@@ -213,6 +217,7 @@ export default function AddSaleRepresentative() {
             image: "",
             phoneNumber: "",
             status: true,
+            partnerType: "",
           });
           setImagePreview("");
           router.push("/sale-representative");
@@ -314,6 +319,27 @@ export default function AddSaleRepresentative() {
                   onChange={handleChange}
                 />
               </div> */}
+                <div className="flex flex-col gap-y-2 w-full">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Partner Type
+                  </label>
+                  <Select
+                    placeholder="Select Partner Type"
+                    options={[
+                      { label: "Dropship Partner", value: "dropship-partner" },
+                      { label: "Direct Partner", value: "direct-partner" },
+                    ]}
+                    onChange={(e) =>
+                      setSaleRepresentative({
+                        ...saleRepresentative,
+                        partnerType: e.value,
+                      })
+                    }
+                    className="w-full"
+                    styles={selectStyles2}
+                    data-testid={ADD_LOCAL_PARTNER.partnerTypeSelect} 
+                  />
+                </div>
                 <div className="flex flex-col gap-y-2 w-full">
                   <label className="text-labelColor font-medium font-satoshi">
                     Status

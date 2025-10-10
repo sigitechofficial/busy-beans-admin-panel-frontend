@@ -3,7 +3,6 @@ import ManagementTab from "@/components/ui/ManagementTab";
 import MyDataTable from "@/components/ui/MyDataTable";
 import Select from "react-select";
 import selectStyles from "@/utilities/SelectStyle";
-import { useState } from "react";
 import GetAPI from "@/utilities/GetAPI";
 import Loader from "@/components/ui/Loader";
 import { FaEye } from "react-icons/fa";
@@ -11,10 +10,9 @@ import { useRouter } from "next/navigation";
 import dayjs from "dayjs";
 import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
-import { NEW_ORDERS } from "../orders.testids"
+import { NEW_ORDERS } from "../../orders.testids"
 
 export default function NewOrders() {
-  const [type, setType] = useState("dropship");
   if (typeof window !== "undefined") {
     var userID = localStorage.getItem("userID");
     var userType = localStorage.getItem("userType");
@@ -23,20 +21,17 @@ export default function NewOrders() {
   console.log("🚀 ~ NewOrders ~ userType:", userType, userID);
 
   const router = useRouter();
-  const ordersEndpoint =
-    type === "direct-partner"
-      ? `api/v1/admin/partner-order/orders-list`
-      : (userType === "salesRepresentative"
-          ? `api/v1/admin/orders?salesRepId=${userID}&statusId=1`
-          : `api/v1/admin/orders?statusId=1`);
-
-  const { data, isLoading } = GetAPI(ordersEndpoint);
+  const { data } = GetAPI(
+    userType === "salesRepresentative"
+      ? `api/v1/admin/orders?salesRepId=${userID}&statusId=1`
+      : "api/v1/admin/partner-order/orders-list?statusId=1"
+  );
 
   const columns = [
     // { field: "sl", header: "SL", sort: true },
     { field: "id", header: "#", sort: true },
     // { field: "customerName", header: "Customer" },
-    { field: type === "direct-partner" ? "salesRepName" : "companyName", header: type === "direct-partner" ? "Partner Name" : "Company Name" },
+    { field: "salesRepName", header: "Partner Name" },
     { field: "orderDate", header: "Order Date", sort: true },
     { field: "deliveredOn", header: "Deliver On" },
     // { field: "salesRepName", header: "Local Partner Name" },
@@ -64,7 +59,6 @@ export default function NewOrders() {
     return datas.push({
       sl: i + 1,
       id: detail?.id,
-      companyName: detail?.companyName,
       salesRepName: detail?.salesRepName,
       orderDate: dayjs(detail?.on).format("MM/DD/YYYY"),
       totalBill: "$" + detail?.totalBill,
@@ -95,9 +89,9 @@ export default function NewOrders() {
   });
   const { toggle, setToggle } = useDataContext();
 
-  return isLoading ? (
-      <Loader />
-    ) : (
+  return data?.length === 0 ? (
+    <Loader />
+  ) : (
     <div data-testid={NEW_ORDERS.root}>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
         data-testid={NEW_ORDERS.headerBar}>
@@ -120,27 +114,6 @@ export default function NewOrders() {
         </ul> */}
       </div>
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
-        {/* <div className="flex justify-between items-center mt-6">
-          <div>
-            <button
-              onClick={() => setType("dropship")}
-              className={`${type === "dropship" ? "bg-black text-white" : "bg-white text-black"
-                } font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 duration-200`}
-            >
-              Dropship Orders
-            </button>
-
-            <button
-              onClick={() => setType("direct-partner")}
-              className={`${type === "direct-partner"
-                ? "bg-black text-white"
-                : "bg-white text-black"
-                } font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 duration-200`}
-            >
-              Partner Orders
-            </button>
-          </div>
-        </div> */}
         {/* <div className="flex items-center justify-between">
           <h2 className="text-xl lg:text-2xl font-inter font-semibold">
             Dispatched Orders
@@ -166,9 +139,9 @@ export default function NewOrders() {
             placeholder={"Search ..."}
             pagination={true}
             search={true}
-            onRowClick={(e) => {
-              router.push(`/orders/detail/${e?.data?.id}`);
-            }}
+            // onRowClick={(e) => {
+            //   router.push(`/orders/partnerOrders/detail/${e?.data?.id}`);
+            // }}
             rowTestId={(row) => `data-testid-${NEW_ORDERS.row(row.id)}`}
           />
         </div>

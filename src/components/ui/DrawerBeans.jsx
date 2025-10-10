@@ -5,6 +5,7 @@ import { RiSubtractFill } from "react-icons/ri";
 import { BiPlus, BiTrash } from "react-icons/bi";
 import { IoMdClose } from "react-icons/io";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 import { BASE_URL } from "@/utilities/URL";
 import { Sidebar } from "primereact/sidebar";
 import { Button } from "primereact/button";
@@ -23,6 +24,7 @@ import MiniLoader from "./MiniLoader";
 import { MdInsertComment, MdOutlineConfirmationNumber } from "react-icons/md";
 import { ORDERS_CREATE_DRAWER } from "../../app/(orderManagement)/orders/orders.testids"
 import { hasPermission } from "@/utilities/Permission";
+import Switch from "react-switch"; 
 
 const DrawerBeans = ({
   drawerOpen: open,
@@ -56,6 +58,12 @@ const DrawerBeans = ({
   const [email, setEmail] = useState("");
   const [emailType, setEmailType] = useState(true);
   const [loader, setLoader] = useState(false);
+
+  // ✅ NEW: direct partner state
+  const [isDirectPartner, setIsDirectPartner] = useState(false);
+  const [partners, setPartners] = useState([]);
+  const [srNameOptions, setSrNameOptions] = useState([]);
+
   const [order, setOrder] = useState({
     note: "",
     paymentMethod: "",
@@ -63,6 +71,7 @@ const DrawerBeans = ({
     orderFrequency: "",
     addressId: "",
     userId: "",
+    salesRepId: "", 
     shippingCharges: "",
     // discountPercentage: "",
     categoryDiscounts: [],
@@ -104,16 +113,67 @@ const DrawerBeans = ({
     })
   );
 
+  // ✅ UPDATED: use GetAPI (not axios) to fetch direct partners
+  const fetchDirectPartnerData = async () => {
+    try {
+      const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
+      const res = await axios.get(`${BASE_URL}api/v1/admin/sales-rep?partnerType=direct-partner`, {
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+      if (res?.data?.status === "success") {
+        const list = res?.data?.data?.data || [];
+        setPartners(list);
+        setSrNameOptions(
+          list.map((p) => ({ value: p?.id, label: p?.srName }))
+        );
+      } else {
+        throw new Error(res?.data?.message || "Failed to fetch direct partner data.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
+    }
+  };
+
+  // ✅ UPDATED: Switch gives boolean `checked`
+  const handleDirectPartnerToggle = (checked) => {
+    setIsDirectPartner(checked);
+    if (checked) {
+      fetchDirectPartnerData();
+      setOrder((prev) => ({
+        ...prev,
+        salesRepId: "",
+        userId: "",
+        addressId: "",
+      }));
+      setEmail("");
+      setAddressOptions([]);
+    } else {
+      setOrder((prev) => ({
+        ...prev,
+        salesRepId: "",
+      }));
+      setEmail("");
+    }
+  };
+
+  const handleSrNameSelect = (selectedOption) => {
+    const selectedPartner = partners.find(p => p?.id === selectedOption?.value);
+    setEmail(selectedPartner?.email || "");
+    setOrder((prev) => ({
+      ...prev,
+      salesRepId: selectedPartner?.id, 
+      userId: "",
+      addressId: "", 
+    }));
+  };
+
   const handleCounterClick = (index) => {
     setCounter(index);
   };
-
-  // const drawerBodyRef = useRef(null);
-
-  // const handleDrawerScroll = (event) => {
-  //   const scrollTop = event.target.scrollTop;
-  //   setDrawerScroll(scrollTop);
-  // };
 
   const handleItemClick = (actionType, id) => {
     if (actionType === "plus") {
@@ -181,51 +241,53 @@ const DrawerBeans = ({
     const totalBillCalc = subTotalAfterDiscount + Number(order?.shippingCharges || 0);
 
     if (type === "createOrder") {
-      const createOrderData = JSON.parse(
-        localStorage.getItem("createOrderData")
-      );
+      const createOrderData = JSON.parse(localStorage.getItem("createOrderData"));
       if (createOrderData?.length === 0) {
         info_toaster("No Product is selected");
       } else if (!email?.trim()) {
         info_toaster("Email cannot be empty");
-      } else if (!order?.addressId) {
+      } else if (isDirectPartner && !order?.salesRepId) {
+        info_toaster("Please select a partner");
+      } else if (!isDirectPartner && !order?.addressId) {
         info_toaster("Address cannot be empty");
       } else if (!order?.paymentMethod) {
         info_toaster("select payment method");
       } else if (!order?.orderFrequency) {
         info_toaster("Selectorder frequency");
-      }
-      // else if (!order?.note) {
-      //   info_toaster("Note cannot be empty");
-      // }
-      else {
+      } else {
         setLoader(true);
         try {
-          const res = await PostAPI(
-            userType === "admin"
+          const payloadOrder = {
+            totalBill: totalBillCalc.toFixed(2),
+            subTotal: subTotalAfterDiscount.toFixed(2),
+            discountPrice: discountAmt.toFixed(2),
+            discountPercentage: dp,
+            itemsPrice: Number(totalPrice || 0).toFixed(2),
+            vat: 0.0,
+            totalWeight: totalWeight,
+            note: order?.note,
+            paymentMethod: order?.paymentMethod,
+            poNumber: order?.poNumber,
+            frequency: order?.orderFrequency,
+            shippingCharges: Number(order?.shippingCharges || 0).toFixed(2),
+            ...(isDirectPartner
+              ? { salesRepId: order?.salesRepId }                   // direct-partner
+              : { userId: order?.userId, addressId: order?.addressId } // normal customer
+            ),
+          };
+          
+          const endpoint = isDirectPartner
+            ? `api/v1/admin/partner-order/book-new-order`  
+            : (userType === "admin"
               ? `api/v1/admin/book-new-order`
-              : `api/v1/admin/sales-rep/book-new-order/${userID}`,
-            {
-              //sales rep id in route
-              order: {
-                totalBill: totalBillCalc.toFixed(2),
-                subTotal: subTotalAfterDiscount.toFixed(2),
-                discountPrice: discountAmt.toFixed(2),
-                discountPercentage: dp,
-                itemsPrice: Number(totalPrice || 0).toFixed(2),
-                vat: 0.0,
-                totalWeight: totalWeight,
-                note: order?.note,
-                paymentMethod: order?.paymentMethod,
-                poNumber: order?.poNumber,
-                frequency: order?.orderFrequency, //  'just-onces','weekly','every-two-weeks','every-four-weeks',
-                addressId: order?.addressId,
-                userId: order?.userId,
-                shippingCharges: Number(order?.shippingCharges || 0).toFixed(2),
-              },
-              items: handleCreateOrderData(createOrderData),
-            }, "orders"
+              : `api/v1/admin/sales-rep/book-new-order/${userID}`);
+
+          const res = await PostAPI(
+            endpoint,
+            { order: payloadOrder, items: handleCreateOrderData(createOrderData) },
+            "orders"
           );
+
           if (res?.data?.status === "success") {
             success_toaster("order Created successfully");
             setLoader(false);
@@ -234,16 +296,15 @@ const DrawerBeans = ({
             setOrder({ ...order, note: "" });
             setOpen(false);
           } else {
-            throw new Error(
-              res?.data?.message || "An unexpected error occurred."
-            );
+            throw new Error(res?.data?.message || "An unexpected error occurred.");
           }
         } catch (error) {
           ErrorHandler(error);
           setLoader(false);
         }
       }
-    } else {
+    }
+     else {
       if (!email) {
         info_toaster("Email cannot be empty");
       } else if (cartItems.length === 0) {
@@ -259,6 +320,7 @@ const DrawerBeans = ({
               : Number(totalPrice || 0);
           const totalBillCalc =
             subTotalAfterDiscount + Number(order?.shippingCharges || 0);
+
           // const res = await PostAPI("api/v1/admin/send-quotation", {
           const res = await PostAPI(`api/v1/admin/send-quotation/sales-rep/${userID}`, {
             email: [email],
@@ -308,10 +370,11 @@ const DrawerBeans = ({
       (customer) => customer?.email === email
     );
 
-    setOrder({
-      ...order,
+    setOrder((prev) => ({
+      ...prev,
       userId: selectedEmail?.id,
-    });
+      salesRepId: "", 
+    }));
     const addressList = (selectedEmail?.addresses ?? []).map((address) => {
       const parts = [
         address.companyaddress,
@@ -367,6 +430,7 @@ const DrawerBeans = ({
     setOrder((prev) => ({
       ...prev,
       userId: selectedEmail?.id,
+      salesRepId: "",
       addressId: "",
       paymentMethod: selectedEmail?.preferredPaymentMethod || "",
     }));
@@ -490,81 +554,133 @@ const DrawerBeans = ({
             <div className="relative space-y-6 font-sf pb-20 bg-theme text-white">
               {type === "createOrder" ? (
                 <div className="space-y-4">
-                  <div className="flex flex-col gap-y-2">
-                    <label className="text-white font-medium font-satoshi">
-                      Company Name
-                    </label>
-                    <div className="flex items-center gap-x-2 min-h-full">
-                      <Select
-                        placeholder="Select Company"
-                        className="w-full"
-                        styles={drawerSelectStyles}
-                        options={companyNameOptions}
-                        onChange={(e) => {
-                          // setEmail(e.value);
-                          handleCompanyName(e.value);
-                        }}
-                        data-testid={ORDERS_CREATE_DRAWER.companySelect}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-y-2">
-                    {/* <label className="text-white font-medium font-satoshi">
-                      Email
-                    </label> */}
-                    <div className="flex items-center gap-x-2 min-h-full">
-                      {/* <Select
-                        placeholder="Select email"
-                        className="w-full"
-                        styles={drawerSelectStyles}
-                        value={{value: email, label: email}}
-                        options={options}
-                        onChange={(e) => {
-                          setEmail(e.value);
-                          handleEmail(e.value);
-                        }}
-                      /> */}
-                      <input
-                        type="text"
-                        value={email}
-                        name=""
-                        id=""
-                        placeholder="Email"
-                        className="w-full bg-white text-black rounded px-3 py-3 outline-none cursor-not-allowed font-satoshi placeholder-theme focus:ring-0 focus:border-theme"
-                        disabled
-                        data-testid={ORDERS_CREATE_DRAWER.emailInput}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-x-2 min-h-full">
-                    <Select
-                      placeholder="Select Address"
-                      className="w-full"
-                      styles={drawerSelectStyles}
-                      value={
-                        addressOptions.find(
-                          (opt) => opt.value === order.addressId
-                        ) || null
-                      }
-                      options={addressOptions}
-                      onChange={(e) => {
-                        setOrder({ ...order, addressId: e?.value || "" });
-                      }}
-                      data-testid={ORDERS_CREATE_DRAWER.addressSelect}
+                  {/* Switch for Direct Partner */}
+                  <div className="flex items-center gap-x-2 justify-end">
+                    <label className="text-white font-medium">Direct Partner</label>
+                    <Switch
+                      onChange={handleDirectPartnerToggle}
+                      checked={isDirectPartner}
+                      uncheckedIcon={false}
+                      checkedIcon={false}
+                      onColor="#3E342C"
+                      onHandleColor="#fff"
+                      className="react-switch"
+                      boxShadow="none"
+                      data-testid={ORDERS_CREATE_DRAWER.directPartnerSwitch}
                     />
                   </div>
+
+                  {/* Company flow */}
+                  {!isDirectPartner && (
+                    <div className="flex flex-col gap-y-2">
+                      <label className="text-white font-medium font-satoshi">
+                        Company Name
+                      </label>
+                      <div className="flex items-center gap-x-2 min-h-full">
+                        <Select
+                          placeholder="Select Company"
+                          className="w-full"
+                          styles={drawerSelectStyles}
+                          options={companyNameOptions}
+                          onChange={(e) => {
+                            // setEmail(e.value);
+                            handleCompanyName(e.value);
+                          }}
+                          data-testid={ORDERS_CREATE_DRAWER.companySelect}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Direct Partner flow */}
+                  {isDirectPartner && (
+                    <>
+                      <div className="flex flex-col gap-y-2">
+                        <label className="text-white font-medium font-satoshi">
+                          Select Partner
+                        </label>
+                        <div className="flex items-center gap-x-2 min-h-full">
+                          <Select
+                            placeholder="Select Local Partner"
+                            className="w-full"
+                            styles={drawerSelectStyles}
+                            options={srNameOptions}
+                            onChange={handleSrNameSelect}
+                            data-testid={ORDERS_CREATE_DRAWER.srNameSelect}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-y-2">
+                        <label className="text-white font-medium font-satoshi">
+                          Email
+                        </label>
+                        <input
+                          type="text"
+                          value={email}
+                          name="email"
+                          id="email"
+                          placeholder="Email"
+                          className="w-full bg-white text-black rounded px-3 py-3 outline-none cursor-not-allowed font-satoshi placeholder-theme focus:ring-0 focus:border-theme"
+                          disabled
+                          data-testid={ORDERS_CREATE_DRAWER.emailInput}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Email display for company flow */}
+                  {!isDirectPartner && (
+                    <div className="flex flex-col gap-y-2">
+                      {/* <label className="text-white font-medium font-satoshi">Email</label> */}
+                      <div className="flex items-center gap-x-2 min-h-full">
+                        <input
+                          type="text"
+                          value={email}
+                          name=""
+                          id=""
+                          placeholder="Email"
+                          className="w-full bg-white text-black rounded px-3 py-3 outline-none cursor-not-allowed font-satoshi placeholder-theme focus:ring-0 focus:border-theme"
+                          disabled
+                          data-testid={ORDERS_CREATE_DRAWER.emailInput}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Address is hidden in direct partner flow */}
+                  {!isDirectPartner && (
+                    <div className="flex items-center gap-x-2 min-h-full">
+                      <Select
+                        placeholder="Select Address"
+                        className="w-full"
+                        styles={drawerSelectStyles}
+                        value={
+                          addressOptions.find(
+                            (opt) => opt.value === order.addressId
+                          ) || null
+                        }
+                        options={addressOptions}
+                        onChange={(e) => {
+                          setOrder({ ...order, addressId: e?.value || "" });
+                        }}
+                        data-testid={ORDERS_CREATE_DRAWER.addressSelect}
+                      />
+                    </div>
+                  )}
+
                   <div>
                     <Select
                       placeholder="Select Payment Method"
                       className="w-full"
                       styles={drawerSelectStyles}
-                        value={
-                          order.paymentMethod
-                            ? paymentMethodOptions.find(
-                              (opt) => opt.value === order.paymentMethod
-                            ) || null
-                            : null
-                        }
+                      value={
+                        order.paymentMethod
+                          ? paymentMethodOptions.find(
+                            (opt) => opt.value === order.paymentMethod
+                          ) || null
+                          : null
+                      }
                       options={paymentMethodOptions}
                       onChange={(e) => {
                         setOrder({ ...order, paymentMethod: e.value });
@@ -584,7 +700,7 @@ const DrawerBeans = ({
                       data-testid={ORDERS_CREATE_DRAWER.frequencySelect}
                     />
                   </div>
-                    {/* <div className="flex flex-col gap-y-2">
+                  {/* <div className="flex flex-col gap-y-2">
                       <label className="text-white font-medium font-satoshi">
                         Discount (%)
                       </label>
@@ -627,6 +743,7 @@ const DrawerBeans = ({
                         className="w-full bg-white text-black rounded px-3 py-3 outline-none font-satoshi placeholder-theme focus:ring-0 focus:border-theme"
                       />
                     </div> */}
+
                   <div>
                     <div className="w-full font-sf font-normal text-base text-theme-black-2 flex items-center gap-3 px-5 py-[5px] duration-300 border-2 border-white hover:border-goldenLight focus-within:border-goldenLight rounded-t">
                       <MdInsertComment size={24} />
@@ -816,7 +933,8 @@ const DrawerBeans = ({
                         <h5 className="text-base text-white">Subtotal</h5>
                         <h6 data-testid={ORDERS_CREATE_DRAWER.subtotalValue}>$ {totalPrice?.toFixed(2)}</h6>
                       </div>
-                       {/* {discountPercentage > 0 && (
+
+                      {/* {discountPercentage > 0 && (
                         <div className="flex items-center justify-between gap-x-2">
                           <h5 className="text-base text-white">
                             Discount ({discountPercentage}%)
@@ -824,31 +942,30 @@ const DrawerBeans = ({
                           <h6>- $ {discountAmount.toFixed(2)}</h6>
                         </div>
                       )} */}
+                      {order?.categoryDiscounts?.length > 0 &&
+                        cartItems?.map((item, index) => {
+                          const catDiscount = order?.categoryDiscounts?.find(
+                            (d) => Number(d.categoryId) === Number(item.categoryId)
+                          );
+                          if (!catDiscount) return null;
 
-                        {order?.categoryDiscounts?.length > 0 &&
-                          cartItems?.map((item, index) => {
-                            const catDiscount = order?.categoryDiscounts?.find(
-                              (d) => Number(d.categoryId) === Number(item.categoryId)
-                            );
-                            if (!catDiscount) return null;
+                          const pct = Number(catDiscount.percentage);
+                          const itemSubtotal = Number(item.price) * Number(item.qty);
+                          const itemDiscount = (itemSubtotal * pct) / 100;
 
-                            const pct = Number(catDiscount.percentage);
-                            const itemSubtotal = Number(item.price) * Number(item.qty);
-                            const itemDiscount = (itemSubtotal * pct) / 100;
-
-                            return (
-                              <div
-                                key={index}
-                                className="flex justify-between text-sm text-gray-300"
-                                data-testid={ORDERS_CREATE_DRAWER.discountLine(item.categoryId)}
-                              >
-                                <span>
-                                  {item.name} ({pct}%)
-                                </span>
-                                <span>- $ {itemDiscount.toFixed(2)}</span>
-                              </div>
-                            );
-                          })}
+                          return (
+                            <div
+                              key={index}
+                              className="flex justify-between text-sm text-gray-300"
+                              data-testid={ORDERS_CREATE_DRAWER.discountLine(item.categoryId)}
+                            >
+                              <span>
+                                {item.name} ({pct}%)
+                              </span>
+                              <span>- $ {itemDiscount.toFixed(2)}</span>
+                            </div>
+                          );
+                        })}
 
                       <div className="flex items-center justify-between gap-x-2">
                         <h5 className="text-base text-white">
@@ -942,7 +1059,6 @@ const DrawerBeans = ({
     //                 <h2 className="text-[32px] font-black font-nunito text-theme-black-2">
     //                   Your Quotation
     //                 </h2>
-
     //                 <button
     //                   onClick={() => setOpen(false)}
     //                   className="absolute right-5 top-4 z-10 rounded-full bg-themeLight text-white w-10 h-10 text-xl flex justify-center items-center"
@@ -950,7 +1066,7 @@ const DrawerBeans = ({
     //                   <IoMdClose className="text-2xl" />
     //                 </button>
     //               </div>
-
+    
     //               <div className="flex justify-between my-3">
     //                 <h2 className="font-omnes  text-xl font-semibold ">
     //                   Order items

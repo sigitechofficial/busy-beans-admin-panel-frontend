@@ -40,6 +40,7 @@ export default function EditsSalesRepresentative() {
     countryCode: "+1",
     creditLimit: "",
     status: true,
+    partnerType: "",
   });
   console.log(
     "🚀 ~ EditsSalesRepresentative ~ saleRepresentative:",
@@ -185,6 +186,7 @@ export default function EditsSalesRepresentative() {
         formData.append("image", saleRepresentative?.image);
         formData.append("phoneNumber", saleRepresentative?.phoneNumber);
         formData.append("creditLimit", saleRepresentative?.creditLimit);
+        formData.append("partnerType", saleRepresentative?.partnerType);
         formData.append(
           "countryCode",
           saleRepresentative?.countryCode?.startsWith("+")
@@ -247,14 +249,15 @@ export default function EditsSalesRepresentative() {
       phoneNumber: data?.data?.data?.phoneNumber ?? "",
       countryCode: data?.data?.data?.countryCode ?? "",
       creditLimit: data?.data?.data?.creditLimit ?? "",
+      partnerType: data?.data?.data?.partnerType ?? "",
       status: data?.data?.data?.status ?? "",
     });
     setImagePreview(data?.data?.data?.image);
   }, [data]);
-  if (isLoading) {
-    return <Loader />;
-  }
-  return (
+
+  return isLoading ? (
+      <Loader />
+    ) : (
     <form onSubmit={handleSubmit} className="">
       {/* <div className="flex items-center justify-between">
         <div className="flex items-center gap-x-2">
@@ -323,6 +326,35 @@ export default function EditsSalesRepresentative() {
                   data-testid={UPDATE_LOCAL_PARTNER.partnerNameInput}
                 />
               </div>
+              <div className="flex flex-col gap-y-2 w-full">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Partner Type
+                  </label>
+                  <Select
+                    placeholder="Select Partner Type"
+                    options={[
+                      { label: "Dropship Partner", value: "dropship-partner" },
+                      { label: "Direct Partner", value: "direct-partner" },
+                    ]}
+                    value={
+                      saleRepresentative?.partnerType
+                      ? { 
+                          value: saleRepresentative.partnerType,
+                          label: saleRepresentative.partnerType === "direct-partner" ? "Direct Partner" : "Dropship Partner"
+                        }
+                      : null
+                    }
+                    onChange={(e) =>
+                      setSaleRepresentative({
+                        ...saleRepresentative,
+                        partnerType: e.value,
+                      })
+                    }
+                    className="w-full"
+                    styles={selectStyles2}
+                    data-testid={UPDATE_LOCAL_PARTNER.partnerTypeSelect} 
+                  />
+                </div>
               <div className="flex flex-col gap-y-2 w-full">
                 <label className="text-labelColor font-medium font-satoshi">
                   Status

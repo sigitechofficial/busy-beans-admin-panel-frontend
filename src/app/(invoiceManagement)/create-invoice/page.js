@@ -15,7 +15,7 @@ export default function CreateInvoice() {
     userType = localStorage.getItem("userType");
   }
 
-  const { data } = GetAPI(
+  const { data, isLoading } = GetAPI(
     userType === "salesRepresentative"
       ? `api/v1/admin/orders?salesRepId=${userID}`
       : `api/v1/admin/orders`

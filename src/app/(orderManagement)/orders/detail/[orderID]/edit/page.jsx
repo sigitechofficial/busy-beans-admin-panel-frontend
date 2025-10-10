@@ -261,12 +261,10 @@ function EditPage() {
     }
     // eslint-disable-next-line
   }, [data]);
-  
-  if (isLoading) {
-    return <Loader />;
-  }
 
-  return (
+  return isLoading ? (
+      <Loader />
+    ) : (
     <div>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl font-inter font-semibold">

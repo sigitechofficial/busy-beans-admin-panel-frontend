@@ -40,9 +40,9 @@ export default function CreateInvoice() {
   const [visibleRight, setVisibleRight] = useState(true);
   const [invoiceData, setInvoiceData] = useState([]); 
 
-  if (!data) return <Loader />;
-
-  return (
+  return isLoading ? (
+      <Loader />
+    ) : (
     <div className="w-full">
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <div className="flex items-center gap-2">

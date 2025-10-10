@@ -18,10 +18,10 @@ export default function SalesRepDetails() {
   const router = useRouter();
   const { data, reFetch, isLoading } = GetAPI(`api/v1/admin/sales-rep/${userId}`, "sales-rep");
   const { toggle, setToggle } = useDataContext();
-  if (isLoading) {
-    return <Loader />;
-  }
-  return (
+  
+  return isLoading ? (
+      <Loader />
+    ) : (
     <div className="w-full">
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold flex items-center gap-2">
@@ -81,6 +81,12 @@ export default function SalesRepDetails() {
               <div className="flex items-center h-12 border-b [&>span]:w-44">
                 <span className="text-gray-500 font-medium">Email</span>
                 <div className="text-blue-600">{data?.data?.data?.email}</div>
+              </div>
+              <div className="flex items-center h-12 border-b [&>span]:w-44">
+                <span className="text-gray-500 font-medium">Partner Type</span>
+                <div className="font-semibold">
+                  {data?.data?.data?.partnerType === "direct-partner" ? "Direct Partner" : "Dropship Partner"}
+                </div>
               </div>
               <div className="flex items-center h-12 border-b [&>span]:w-44">
                 <span className="text-gray-500 font-medium">Created At</span>

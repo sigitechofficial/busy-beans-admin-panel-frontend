@@ -236,10 +236,10 @@ export default function OrderDetail() {
   //   setAddCheque({ ...addCheque, [e.target.name]: e.target.value });
   // };
   const { toggle, setToggle } = useDataContext();
-  if (isLoading) {
-    return <Loader />;
-  }
-  return (
+  
+  return isLoading ? (
+      <Loader />
+    ) : (
     <div>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <div className="text-xl font-inter font-semibold flex items-center gap-2 [&>p]:cursor-pointer">

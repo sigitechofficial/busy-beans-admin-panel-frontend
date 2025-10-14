@@ -272,7 +272,7 @@ export default function AddInvoice() {
       setInvoiceFields((prev) => ({
         ...prev,
         [field]: value,
-        invoiceDate: Date.now(),  
+        invoiceDate: prev.invoiceDate || getToday(),
       }));
     } else {
       setInvoiceFields((prev) => ({
@@ -281,7 +281,7 @@ export default function AddInvoice() {
       }));
     }
   };
-
+  
   // Extra Charge Rows
   const [extraCharges, setExtraCharges] = useState([]);
 

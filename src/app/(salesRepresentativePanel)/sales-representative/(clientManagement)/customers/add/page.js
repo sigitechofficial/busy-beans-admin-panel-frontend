@@ -25,8 +25,6 @@ export default function AddCustomer() {
     var userType = localStorage.getItem("userType");
   }
   const allCountriesData = [];
-  // const autocompleteRef = useRef();
-  // const inputRef = useRef();
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loader, setLoader] = useState(false);
@@ -34,9 +32,6 @@ export default function AddCustomer() {
     pass: false,
     confirmPass: false,
   });
-  // const [billingAddressStatus, setBillingAddressStatus] = useState(false);
-  // const [selectedCountryCode, setSelectedCountryCode] = useState("us");
-  // const [selectedCountryCities, setSelectedCountryCities] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState({
     value: "",
     label: "",
@@ -91,16 +86,6 @@ export default function AddCustomer() {
       label: country?.name,
     })
   );
-
-  // const handleInfo = (e) => {
-  //   setUserData({
-  //     ...userData,
-  //     info: {
-  //       ...userData?.info,
-  //       [e.target.name]: e.target.value,
-  //     },
-  //   });
-  // };
 
   const handleInfo = (e) => {
     const { name, value } = e.target;
@@ -173,57 +158,6 @@ export default function AddCustomer() {
     }
   };
 
-  // const handleStep1 = () => {
-  //   if (userData?.address?.companyaddress.trim() === "") {
-  //     info_toaster("Company address cannot be empty");
-  //   }
-  //   // else if (userData?.address?.addressLineOne.trim() === "") {
-  //   //   info_toaster("address Line 1 cannot be empty");
-  //   // } else if (userData?.address?.addressLineTwo.trim() === "") {
-  //   //   info_toaster("address Line 2 cannot be empty");
-  //   // }
-  //   else if (userData?.address?.town.trim() === "") {
-  //     info_toaster("Town cannot be empty");
-  //   } else if (userData?.address?.zipCode.trim() === "") {
-  //     info_toaster("Zip code cannot be empty");
-  //   } else if (userData?.address?.country.trim() === "") {
-  //     info_toaster("Country name cannot be empty");
-  //   } else if (userData?.address?.state.trim() === "") {
-  //     info_toaster("State name cannot be empty");
-  //   } else if (userData?.billingAddress?.companyaddress.trim() === "") {
-  //     info_toaster("Billing Address cannot be empty");
-  //   } else if (userData?.billingAddress?.town.trim() === "") {
-  //     info_toaster("Billing Address Town cannot be empty");
-  //   } else if (userData?.billingAddress?.zipCode.trim() === "") {
-  //     info_toaster("Billing Address Zip code cannot be empty");
-  //   } else if (userData?.billingAddress?.country.trim() === "") {
-  //     info_toaster("Billing Address Country name cannot be empty");
-  //   } else if (userData?.billingAddress?.state.trim() === "") {
-  //     info_toaster("Billing Address State name cannot be empty");
-  //   } else {
-  //     success_toaster("Step 1 completed successfully");
-  //     setStep(2);
-  //   }
-  // };
-
-  // const handleStep2 = () => {
-  //   if (!userData?.info?.companyName.trim()) {
-  //     info_toaster("Company Name cannot be empty");
-  //   } else if (!userData?.info?.companyInfo.trim()) {
-  //     info_toaster("Company Info cannot be empty");
-  //   } else if (!userData?.info?.phoneNumber.trim()) {
-  //     info_toaster("Phone number cannot be empty");
-  //   } else if (!userData?.info?.emailToSendInvoices.trim()) {
-  //     info_toaster("Invoice email cannot be empty");
-  //   } else if (
-  //     !emailValidity.test(userData?.info?.emailToSendInvoices.trim())
-  //   ) {
-  //     info_toaster("Invalid email format");
-  //   } else {
-  //     success_toaster("Step 2 completed successfully");
-  //     setStep(3);
-  //   }
-  // };
 
   const validateCustomerForm = (userData) => {
     // --- Shipping Address ---
@@ -347,10 +281,6 @@ export default function AddCustomer() {
     if (result?.error) {
       info_toaster(result.message);
     } else {
-      // let cityStatus = selectedCountryCities.find(
-      //   (city) => city?.name === userData?.address?.town
-      // );
-      // if (cityStatus) {
       const dispatchEmails = userData.info.dispatchEmail.split(',').map(email => email.trim());
       const emails = userData.info.emailToSendInvoices.split(',').map(email => email.trim());
       try {
@@ -451,95 +381,6 @@ export default function AddCustomer() {
     // }
   };
 
-  // const calculateRoute = () => {
-  //   const place = autocompleteRef.current.getPlace();
-  //   if (!autocompleteRef.current) {
-  //     console.warn("Autocomplete not loaded yet");
-  //     return;
-  //   }
-
-  //   if (!place) {
-  //     console.warn("No place returned from getPlace()");
-  //     return;
-  //   }
-
-  //   const formattedAddress = place.formatted_address;
-
-  //   const addressComponents = place.address_components || [];
-
-  //   const getAddressComponent = (type) =>
-  //     addressComponents.find((component) => component.types.includes(type))
-  //       ?.long_name || "";
-
-  //   const countryName = getAddressComponent("country");
-  //   const countryShortName =
-  //     addressComponents.find((c) => c.types.includes("country"))?.short_name ||
-  //     "";
-  //   const city =
-  //     getAddressComponent("locality") ||
-  //     getAddressComponent("administrative_area_level_2");
-  //   const state = getAddressComponent("administrative_area_level_1");
-  //   const postalCode = getAddressComponent("postal_code");
-
-  //   if (!place?.geometry || !place?.geometry?.location) {
-  //     info_toaster("Please select an address");
-  //     return;
-  //   }
-  //   setUserData({
-  //     ...userData,
-  //     address: {
-  //       ...userData?.address,
-  //       companyaddress: formattedAddress,
-  //       town: city,
-  //       country: countryName,
-  //       state: state,
-  //       zipCode: postalCode,
-  //       lat: place?.geometry?.location.lat(),
-  //       lng: place?.geometry?.location.lng(),
-  //       status: true,
-  //     },
-  //   });
-  // };
-
-  // const handleCountryChange = (e) => {
-  //   setSelectedCountry(e);
-  //   setUserData({
-  //     ...userData,
-  //     address: {
-  //       ...userData?.address,
-  //       companyaddress: "",
-  //       town: "",
-  //       country: "",
-  //       state: "",
-  //       zipCode: "",
-  //       lat: "",
-  //       lng: "",
-  //       addressLineOne: "",
-  //       addressLineTwo: "",
-  //       status: true,
-  //     },
-  //   });
-  // };
-
-  // const handleSelectedCountryCities = async (countryName) => {
-  //   const selectedCountry = countriesData?.data?.data?.find(
-  //     (country) => country?.name === countryName
-  //   );
-  //   try {
-  //     const res = await axios.get(
-  //       BASE_URL +
-  //         `api/v1/admin/address-management/city?countryInSystemId=${selectedCountry?.id}`
-  //     );
-  //     if (res?.data?.status === "success") {
-  //       setSelectedCountryCities([...res?.data?.data?.data]);
-  //     } else {
-  //       throw new Error(res?.data?.message || "An unexpected error occurred.");
-  //     }
-  //   } catch (error) {
-  //     ErrorHandler(error);
-  //   }
-  // };
-
   const handleSelectedCountryStates = async (countryName) => {
     const selectedCountry = data?.data?.data?.find(
       (country) => country?.name === countryName
@@ -600,14 +441,6 @@ export default function AddCustomer() {
         <h2 className="text-xl font-inter font-semibold" data-testid={ADD_CUSTOMER.title}>
           Add New Customer
         </h2>
-
-        {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">
-          <li>Invoice</li>
-          <li>Quickbooks</li>
-          <li>Schedule</li>
-          <li>Bulk Modify</li>
-          <li>Export</li>
-        </ul> */}
       </div>
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
         <div className="flex items-center gap-x-2">
@@ -630,22 +463,6 @@ export default function AddCustomer() {
 
         {/* main section start */}
         <div className="lg:gap-x-12 xl:gap-16 relative px-5 md:px-10 xl:px-14 py-5 md:py-8 xl:py-10 shadow-tableShadow border border-borderColor rounded-sm gap-y-4">
-          {/* {(step === 2 || step === 3) && !loader && (
-            <button
-              onClick={() => setStep(step - 1)}
-              className="absolute left-5 top-2 flex justify-center items-center w-8 h-8 text-theme rounded-full hover:bg-theme hover:text-white  duration-200"
-            >
-              <FaLongArrowAltLeft size={30} />
-            </button>
-          )} */}
-          {/* <div className="w-60 md:w-72 lg:w-80">
-            <img
-              src="/images/logocoffee.png"
-              alt="logo"
-              className="h-full w-full object-contain"
-            />
-          </div> */}
-
           {loader ? (
             <MiniLoader />
           ) : (
@@ -661,61 +478,6 @@ export default function AddCustomer() {
                     </p>
                     <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
                       <div className="space-y-4">
-                        {/* <Select
-                      placeholder="Select Country"
-                      className="w-full"
-                      styles={drawerSelectStyles}
-                      options={allCountriesData}
-                      value={selectedCountry}
-                      onChange={(e) => {
-                        handleCountryChange(e);
-                        setSelectedCountryCode(e.value);
-                        handleSelectedCountryCities(e.label);
-                      }}
-                    /> */}
-                        {/* <div className="flex flex-col gap-y-2">
-                      <label className="text-labelColor font-medium font-satoshi">
-                        Company Address
-                      </label>
-                      <div className="space-y-2 w-full">
-                        <LoadScript
-                          googleMapsApiKey={googleApiKey}
-                          libraries={["places"]}
-                        >
-                          <Autocomplete
-                            onLoad={(autocomplete) =>
-                              (autocompleteRef.current = autocomplete)
-                            }
-                            options={{
-                              componentRestrictions: {
-                                country: [selectedCountryCode],
-                              },
-                            }}
-                            onPlaceChanged={calculateRoute}
-                          >
-                            <input
-                              ref={inputRef}
-                              type="text"
-                              placeholder="Choose a delivery address"
-                              className="w-full border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                            />
-                          </Autocomplete>
-                        </LoadScript>
-                      </div>
-                    </div> */}
-                        {/* <div className="flex flex-col gap-y-2">
-                          <label className="text-labelColor font-medium font-satoshi">
-                            Company Address{" "}
-                          </label>
-                          <input
-                            type="text"
-                            name="companyaddress"
-                            value={userData?.address?.companyaddress}
-                            placeholder="XYZ company address"
-                            className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                            onChange={handleAddress}
-                          />
-                        </div> */}
                         <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.addressLineOneInput}>
                           <label className="text-labelColor font-medium font-satoshi">
                             Address Line 1
@@ -751,14 +513,6 @@ export default function AddCustomer() {
                               <label className="text-labelColor font-medium font-satoshi">
                                 Country
                               </label>
-                              {/* <input
-                            type="text"
-                            name="country"
-                            onChange={handleAddress}
-                            value={userData?.address?.country}
-                            placeholder="Enter Country"
-                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                          /> */}
                               <Select
                                 placeholder="Select Country"
                                 className="w-full"
@@ -773,12 +527,6 @@ export default function AddCustomer() {
                                 }
                                 options={allCountries ?? []}
                                 onChange={(e) => {
-                                  // setSaleRepresentative({
-                                  //   ...saleRepresentative,
-                                  //   country: e.label,
-                                  //   state: "",
-                                  //   city: "",
-                                  // });
                                   setUserData({
                                     ...userData,
                                     address: {
@@ -821,14 +569,6 @@ export default function AddCustomer() {
                                   handleSelectedCountryStatesCities(e.value);
                                 }}
                               />
-                              {/* <input
-                            type="text"
-                            name="state"
-                            onChange={handleAddress}
-                            value={userData?.address?.state}
-                            placeholder="Enter State"
-                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                          /> */}
                             </div>
                           </div>
                           <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4" data-testid={ADD_CUSTOMER.addressTownInput}>
@@ -853,37 +593,6 @@ export default function AddCustomer() {
                                 placeholder="Enter town"
                                 className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                               />
-                              {/* <Select
-                              placeholder="Select City"
-                              className="w-full"
-                              styles={drawerSelectStyles}
-                              value={
-                                userData?.address?.town
-                                  ? {
-                                      value: userData.address.town,
-                                      label: userData.address.town,
-                                    }
-                                  : null
-                              }
-                              options={allCities ?? []}
-                              onChange={(e) => {
-                                setUserData({
-                                  ...userData,
-                                  address: {
-                                    ...userData?.address,
-                                    town: e.label,
-                                  },
-                                });
-                              }}
-                            /> */}
-                              {/* <input
-                            type="text"
-                            name="town"
-                            onChange={handleAddress}
-                            value={userData?.address?.town}
-                            placeholder="Enter Town / City"
-                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                          /> */}
                             </div>
                             <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.addressZipCodeInput}>
                               <label className="text-labelColor font-medium font-satoshi">
@@ -899,39 +608,7 @@ export default function AddCustomer() {
                               />
                             </div>
                           </div>
-                          {/* <div className="flex flex-col gap-y-2">
-                          <label className="text-labelColor font-medium font-satoshi">
-                            Billing Address
-                          </label>
-                          <input
-                            type="text"
-                            name="billingAddress"
-                            onChange={handleInfo}
-                            value={userData?.info?.billingAddress}
-                            placeholder="Enter Billing Address"
-                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                          />
-                          <div className="flex items-center justify-end gap-x-2">
-                            <label className="text-labelColor font-medium font-satoshi">
-                              Billing Address same as Shipping Address
-                            </label>
-                            <input
-                              type="checkbox"
-                              name="billingAddress"
-                              placeholder="Enter Billing Address"
-                              className="size-4 border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none"
-                            />
-                          </div>
-                        </div> */}
                         </div>
-                        {/* <div>
-                        <button
-                          onClick={handleStep1}
-                          className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
-                        >
-                          Next
-                        </button>
-                      </div> */}
                       </div>
                     </div>
                   </div>
@@ -948,8 +625,6 @@ export default function AddCustomer() {
                           ...userData,
                           isChecked: checked,
                         });
-
-                        // handleBillingShippingAddress(e);
                       }}
                       className="size-4 border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none"
                     />
@@ -963,61 +638,6 @@ export default function AddCustomer() {
                         <p className="font-black text-xl lg:text-2xl text-theme">Billing Address</p>
                         <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
                           <div className="space-y-4">
-                            {/* <Select
-                      placeholder="Select Country"
-                      className="w-full"
-                      styles={drawerSelectStyles}
-                      options={allCountriesData}
-                      value={selectedCountry}
-                      onChange={(e) => {
-                        handleCountryChange(e);
-                        setSelectedCountryCode(e.value);
-                        handleSelectedCountryCities(e.label);
-                      }}
-                    /> */}
-                          {/* <div className="flex flex-col gap-y-2">
-                      <label className="text-labelColor font-medium font-satoshi">
-                        Company Address
-                      </label>
-                      <div className="space-y-2 w-full">
-                        <LoadScript
-                          googleMapsApiKey={googleApiKey}
-                          libraries={["places"]}
-                        >
-                          <Autocomplete
-                            onLoad={(autocomplete) =>
-                              (autocompleteRef.current = autocomplete)
-                            }
-                            options={{
-                              componentRestrictions: {
-                                country: [selectedCountryCode],
-                              },
-                            }}
-                            onPlaceChanged={calculateRoute}
-                          >
-                            <input
-                              ref={inputRef}
-                              type="text"
-                              placeholder="Choose a delivery address"
-                              className="w-full border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                            />
-                          </Autocomplete>
-                        </LoadScript>
-                      </div>
-                    </div> */}
-                            {/* <div className="flex flex-col gap-y-2">
-                            <label className="text-labelColor font-medium font-satoshi">
-                              Billing Address{" "}
-                            </label>
-                            <input
-                              type="text"
-                              name="companyaddress"
-                              value={userData?.billingAddress?.companyaddress}
-                              placeholder="Enter Address"
-                              className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                              onChange={handleBillingAddress}
-                            />
-                          </div> */}
                             <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.billingAddressLineOneInput}>
                               <label className="text-labelColor font-medium font-satoshi">
                                 Address Line 1
@@ -1127,37 +747,6 @@ export default function AddCustomer() {
                                     placeholder="Enter town"
                                     className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                                   />
-                                  {/* <Select
-                              placeholder="Select City"
-                              className="w-full"
-                              styles={drawerSelectStyles}
-                              value={
-                                userData?.billingAddress?.state
-                                  ? {
-                                      value: userData.billingAddress.state,
-                                      label: userData.billingAddress.state,
-                                    }
-                                  : null
-                              }
-                              options={allCities ?? []}
-                              onChange={(e) => {
-                                setUserData({
-                                  ...userData,
-                                  billingAddress: {
-                                    ...userData?.billingAddress,
-                                    town: e.label,
-                                  },
-                                });
-                              }}
-                            /> */}
-                                {/* <input
-                            type="text"
-                            name="town"
-                            onChange={handleAddress}
-                            value={userData?.address?.town}
-                            placeholder="Enter Town / City"
-                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                          /> */}
                                 </div>
                                 {/* Zip Code Input */}
                                 <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.billingAddressZipCodeInput}>
@@ -1178,14 +767,6 @@ export default function AddCustomer() {
                                 </div>
                               </div>
                             </div>
-                            {/* <div>
-                            <button
-                              onClick={handleStep1}
-                              className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
-                            >
-                              Next
-                            </button>
-                          </div> */}
                           </div>
                         </div>
                       </div>
@@ -1225,29 +806,10 @@ export default function AddCustomer() {
                         className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       />
                     </div>
-                    {/* <div className="flex flex-col gap-y-2">
-                      <label className="text-labelColor font-medium font-satoshi">
-                        Phone Number
-                      </label>
-                      <input
-                        type="number"
-                        name="phoneNumber"
-                        onChange={handleInfo}
-                        value={userData?.info?.phoneNumber}
-                        placeholder="Enter Phone Number"
-                        className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      />
-                    </div> */}
                     <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.customerPhoneInput}>
                       <label className="text-labelColor font-medium font-satoshi">
                         Phone number
                       </label>
-                      {/* <input
-                  type="text"
-                  name=""
-                  placeholder="Enter Phone Number"
-                  className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                /> */}
                       <div className="grid grid-cols-10 gap-x-2">
                         <PhoneInput
                           focusBorderColor="none"

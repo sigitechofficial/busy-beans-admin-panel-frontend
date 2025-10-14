@@ -117,7 +117,7 @@ export default function AddInvoice() {
         ...prev,
         invoiceNumber: data?.data?.order?.invoiceNumber || "",
         poNumber: data?.data?.order?.poNumber || "",
-        invoiceDate: prev?.invoiceDate || getToday(),
+        invoiceDate: prev?.invoiceDate || data?.data?.order?.invoiceDate || getToday(),
         dueDate: prev?.dueDate || getDueDate(),
         note: data?.data?.order?.note,
         // shippingCharges: data?.data?.order?.shippingCharges,
@@ -272,7 +272,7 @@ export default function AddInvoice() {
       setInvoiceFields((prev) => ({
         ...prev,
         [field]: value,
-        invoiceDate: prev.invoiceDate || getToday(),
+        invoiceDate: value ? prev.invoiceDate || getToday() : prev.invoiceDate,
       }));
     } else {
       setInvoiceFields((prev) => ({
@@ -444,7 +444,7 @@ export default function AddInvoice() {
       otherPayment: invoiceFields.otherPayment,
       attemptImmediatePayment: invoiceFields.paymentOption,
       emailInvoiceToCustomer: invoiceFields.emailInvoiceToCustomer,
-      invoiceDate: invoiceFields.emailInvoiceToCustomer ? invoiceFields.invoiceDate : null, 
+      invoiceDate: invoiceFields.emailInvoiceToCustomer ? invoiceFields.invoiceDate : (data?.data?.order?.invoiceDate || null),
       reminder: invoiceFields?.invoicePdf ? true : false,
       // invoiceDate: invoiceFields?.invoiceDate ? undefined : Date.now(),
       // invoiceReminder: invoiceFields?.invoiceDate ? Date.now() : undefined,

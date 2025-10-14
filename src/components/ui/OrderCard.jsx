@@ -32,7 +32,7 @@ export default function OrderCard(props) {
 
   const [dispatchOrderData, setDispatchOrderData] = useState({
     trackingNumber: "",
-    shippingCompany: "fedex",
+    shippingCompany: "UPS",
   });
 
   const { data: suppliersData } = GetAPI(
@@ -651,9 +651,9 @@ export default function OrderCard(props) {
                       <Select
                         placeholder="Select dispatch order company"
                         className="w-full"
-                        defaultValue={{ value: "fedex", label: "FedEx" }}
+                        defaultValue={{ value: "UPS", label: "UPS" }}
                         styles={selectStyles2}
-                        options={[{ value: "fedex", label: "FedEx" }]}
+                        options={[{ value: "UPS", label: "UPS" }]}
                         onChange={(e) => {
                           setDispatchOrderData({
                             ...dispatchOrderData,

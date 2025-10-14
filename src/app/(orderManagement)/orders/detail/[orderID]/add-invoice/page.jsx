@@ -272,7 +272,7 @@ export default function AddInvoice() {
       setInvoiceFields((prev) => ({
         ...prev,
         [field]: value,
-        invoiceDate: Date.now(),  
+        invoiceDate: prev.invoiceDate || getToday(), 
       }));
     } else {
       setInvoiceFields((prev) => ({

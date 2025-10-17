@@ -87,10 +87,10 @@ export default function PartnerCommissionReport() {
     setCustomDates({ ...customDates, [e.target.name]: e.target.value });
   };
   const { toggle, setToggle } = useDataContext();
-  if (isLoading) {
-    return <Loader />;
-  }
-  return (
+ 
+  return isLoading ? (
+      <Loader />
+    ) : (
     <div data-testid={PARTNER_COMMISSION_REPORT.root}>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
        data-testid={PARTNER_COMMISSION_REPORT.headerBar}>
@@ -108,12 +108,12 @@ export default function PartnerCommissionReport() {
       </div>
       <div className="space-y-8 pt-28 2xl:pt-32 px-6 2xl:px-12 ">
         {/* to do this filters */}
-        {/* <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-x-2">
             <BackButton />
           </div>
 
-          <div className="min-w-40">
+          {/* <div className="min-w-40">
             {displayCustomFilters ? (
               <div className="flex gap-x-2 items-center h-[42px]">
                 <div className=" space-x-2">
@@ -130,7 +130,7 @@ export default function PartnerCommissionReport() {
                     value={customDates?.startDate}
                     onChange={handleCustomDates}
                     className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium 
-                            text-labelColor"
+                    text-labelColor"
                   />
                 </div>
                 <div className="space-x-2">
@@ -147,7 +147,7 @@ export default function PartnerCommissionReport() {
                     value={customDates?.endDate}
                     onChange={handleCustomDates}
                     className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium 
-                            text-labelColor"
+                    text-labelColor"
                   />
                 </div>
                 <div className="h-full flex items-center gap-x-2">
@@ -171,8 +171,8 @@ export default function PartnerCommissionReport() {
                 />
               </div>
             )}
-          </div>
-        </div> */}
+          </div> */}
+        </div>
 
         <div data-testid={PARTNER_COMMISSION_REPORT.tableWrapper}>
           <MyDataTable

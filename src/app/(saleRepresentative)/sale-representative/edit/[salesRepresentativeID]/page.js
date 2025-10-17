@@ -40,7 +40,9 @@ export default function EditsSalesRepresentative() {
     countryCode: "+1",
     creditLimit: "",
     status: true,
+    partnerType: "",
   });
+
   console.log(
     "🚀 ~ EditsSalesRepresentative ~ saleRepresentative:",
     saleRepresentative
@@ -137,7 +139,7 @@ export default function EditsSalesRepresentative() {
       ErrorHandler(error);
     }
   };
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     // if (!saleRepresentative?.image) {
@@ -185,6 +187,7 @@ export default function EditsSalesRepresentative() {
         formData.append("image", saleRepresentative?.image);
         formData.append("phoneNumber", saleRepresentative?.phoneNumber);
         formData.append("creditLimit", saleRepresentative?.creditLimit);
+        formData.append("partnerType", saleRepresentative?.partnerType);
         formData.append(
           "countryCode",
           saleRepresentative?.countryCode?.startsWith("+")
@@ -233,37 +236,30 @@ export default function EditsSalesRepresentative() {
 
   useEffect(() => {
     setSaleRepresentative({
-      srName: data?.data?.data?.srName ?? "",
-      email: data?.data?.data?.email ?? "",
-      // password: data?.data?.data?.password ?? "",
-      country: data?.data?.data?.country ?? "",
-      city: data?.data?.data?.city ?? "",
-      state: data?.data?.data?.state ?? "",
-      zipCode: data?.data?.data?.zipCode ?? "",
-      address: data?.data?.data?.address ?? "",
-      territory: data?.data?.data?.territoryName ?? "",
-      businessWeb: data?.data?.data?.businessWeb ?? "",
-      image: data?.data?.data?.image ?? "",
-      phoneNumber: data?.data?.data?.phoneNumber ?? "",
-      countryCode: data?.data?.data?.countryCode ?? "",
-      creditLimit: data?.data?.data?.creditLimit ?? "",
-      status: data?.data?.data?.status ?? "",
+      srName: data?.data?.srName ?? "",
+      email: data?.data?.email ?? "",
+      // password: data?.data?.password ?? "",
+      country: data?.data?.country ?? "",
+      city: data?.data?.city ?? "",
+      state: data?.data?.state ?? "",
+      zipCode: data?.data?.zipCode ?? "",
+      address: data?.data?.address ?? "",
+      territory: data?.data?.territoryName ?? "",
+      businessWeb: data?.data?.businessWeb ?? "",
+      image: data?.data?.image ?? "",
+      phoneNumber: data?.data?.phoneNumber ?? "",
+      countryCode: data?.data?.countryCode ?? "",
+      creditLimit: data?.data?.creditLimit ?? "",
+      partnerType: data?.data?.partnerType ?? "",
+      status: data?.data?.status ?? "",
     });
-    setImagePreview(data?.data?.data?.image);
+    setImagePreview(data?.data?.image);
   }, [data]);
-  if (isLoading) {
-    return <Loader />;
-  }
-  return (
+
+  return isLoading ? (
+      <Loader />
+    ) : (
     <form onSubmit={handleSubmit} className="">
-      {/* <div className="flex items-center justify-between">
-        <div className="flex items-center gap-x-2">
-          <BackButton />
-          <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-            Update Local Partner
-          </h2>
-        </div>
-      </div> */}
 
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
        data-testid={UPDATE_LOCAL_PARTNER.headerBar}>
@@ -324,6 +320,35 @@ export default function EditsSalesRepresentative() {
                 />
               </div>
               <div className="flex flex-col gap-y-2 w-full">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Partner Type
+                  </label>
+                  <Select
+                    placeholder="Select Partner Type"
+                    options={[
+                      { label: "Dropship Partner", value: "dropship-partner" },
+                      { label: "Direct Partner", value: "direct-partner" },
+                    ]}
+                    value={
+                      saleRepresentative?.partnerType
+                      ? { 
+                          value: saleRepresentative.partnerType,
+                          label: saleRepresentative.partnerType === "direct-partner" ? "Direct Partner" : "Dropship Partner"
+                        }
+                      : null
+                    }
+                    onChange={(e) =>
+                      setSaleRepresentative({
+                        ...saleRepresentative,
+                        partnerType: e.value,
+                      })
+                    }
+                    className="w-full"
+                    styles={selectStyles2}
+                    data-testid={UPDATE_LOCAL_PARTNER.partnerTypeSelect} 
+                  />
+                </div>
+              <div className="flex flex-col gap-y-2 w-full">
                 <label className="text-labelColor font-medium font-satoshi">
                   Status
                 </label>
@@ -375,14 +400,6 @@ export default function EditsSalesRepresentative() {
                     <label className="text-labelColor font-medium font-satoshi">
                       Country
                     </label>
-                    {/* <input
-                      type="text"
-                      name="country"
-                      value={saleRepresentative?.country}
-                      placeholder="Enter Country Name"
-                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      onChange={handleChange}
-                    /> */}
                     <Select
                       placeholder="Select Country"
                       className="w-full"
@@ -412,14 +429,6 @@ export default function EditsSalesRepresentative() {
                     <label className="text-labelColor font-medium font-satoshi">
                       State
                     </label>
-                    {/* <input
-                      type="text"
-                      name="state"
-                      value={saleRepresentative?.state}
-                      placeholder="Enter State Name"
-                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      onChange={handleChange}
-                    /> */}
                     <Select
                       placeholder="Select State"
                       className="w-full"
@@ -450,14 +459,6 @@ export default function EditsSalesRepresentative() {
                     <label className="text-labelColor font-medium font-satoshi">
                       City
                     </label>
-                    {/* <input
-                      type="text"
-                      name="city"
-                      value={saleRepresentative?.city}
-                      placeholder="Enter City Name"
-                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      onChange={handleChange}
-                    /> */}
                     {!customCityMode ? (
                       <>
                         <Select
@@ -686,248 +687,6 @@ export default function EditsSalesRepresentative() {
               Update Local Partner
             </button>
           </div>
-
-          {/* <div
-            onSubmit={handleSubmit}
-            className="px-5 md:px-10 xl:px-14 py-5 md:py-8 xl:py-10 shadow-tableShadow border border-borderColor rounded-sm space-y-6"
-          >
-            <button
-              type="button"
-              onClick={handleSelectImage}
-              className="rounded-xl border border-tabBorderColor border-opacity-40 size-20 flex items-center justify-center"
-            >
-              <input
-                type="file"
-                className="hidden selectImage"
-                onChange={handleImage}
-              />
-              {imagePreview ? (
-                <img
-                  src={
-                    !saleRepresentative?.image?.name
-                      ? BASE_URL + imagePreview
-                      : imagePreview
-                  }
-                  alt="supplier-image"
-                  className="object-cover object-center"
-                />
-              ) : (
-                <LuImageUp size={"60"} color="rgba(0, 0, 0, 0.6)" />
-              )}
-            </button>
-            <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
-              <div className="space-y-4">
-                <div className="grid md:grid-cols-2 max-md:gap-y-4 gap-x-6">
-                  <div className="flex flex-col gap-y-2">
-                    <label className="text-labelColor font-medium font-satoshi">
-                      Name
-                    </label>
-                    <input
-                      type="text"
-                      name="srName"
-                      value={saleRepresentative?.srName}
-                      placeholder="Enter Name"
-                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-y-2 w-full">
-                    <label className="text-labelColor font-medium font-satoshi">
-                      Country
-                    </label>
-                    <input
-                      type="text"
-                      name="country"
-                      value={saleRepresentative?.country}
-                      placeholder="Enter Country Name"
-                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-                <div className="grid md:grid-cols-2 max-md:gap-y-4 gap-x-6">
-                  <div className="flex flex-col gap-y-2 w-full">
-                    <label className="text-labelColor font-medium font-satoshi">
-                      City
-                    </label>
-                    <input
-                      type="text"
-                      name="city"
-                      value={saleRepresentative?.city}
-                      placeholder="Enter City Name"
-                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-y-2 w-full">
-                    <label className="text-labelColor font-medium font-satoshi">
-                      State
-                    </label>
-                    <input
-                      type="text"
-                      name="state"
-                      value={saleRepresentative?.state}
-                      placeholder="Enter State Name"
-                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-                <div className="grid md:grid-cols-2 max-md:gap-y-4 gap-x-6">
-                  <div className="flex flex-col gap-y-2">
-                    <label className="text-labelColor font-medium font-satoshi">
-                      Zip Code
-                    </label>
-                    <input
-                      type="text"
-                      name="zipCode"
-                      value={saleRepresentative?.zipCode}
-                      placeholder="Enter Zip code"
-                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-y-2">
-                    <label className="text-labelColor font-medium font-satoshi">
-                      Territory{" "}
-                    </label>
-                    <input
-                      type="text"
-                      name="territory"
-                      value={saleRepresentative?.territory}
-                      placeholder="Enter Territory name"
-                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-                <div className="flex flex-col gap-y-2">
-                  <label className="text-labelColor font-medium font-satoshi">
-                    Address{" "}
-                  </label>
-                  <input
-                    type="text"
-                    name="address"
-                    value={saleRepresentative?.address}
-                    placeholder="Enter Address"
-                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="flex flex-col gap-y-2">
-                  <label className="text-labelColor font-medium font-satoshi">
-                    Phone number
-                  </label>
-                  <div className="grid grid-cols-10 gap-x-2">
-                    <PhoneInput
-                      focusBorderColor="none"
-                      borderWidth="none"
-                      className="chakra_input col-span-2"
-                      inputStyle={{
-                        width: "90px",
-                        height: "45px",
-                        borderRadius: "4px",
-                        border: "1px solid #00000033",
-                        backgroundColor: "#ffffff",
-                        color: "#6f4e37",
-                        opacity: "20",
-                      }}
-                      buttonStyle={{
-                        backgroundColor: "#ffffff",
-                        border: "1px solid #86644C",
-                      }}
-                      containerStyle={{
-                        borderRadius: "12px",
-                        backgroundColor: "#6f4e37",
-                      }}
-                      dropdownStyle={{
-                        backgroundColor: "#86644C",
-                        borderRadius: "8px",
-                      }}
-                      country={"us"}
-                      onChange={(phone) =>
-                        setSaleRepresentative({
-                          ...saleRepresentative,
-                          countryCode: phone,
-                        })
-                      }
-                    />
-                    <input
-                      type="number"
-                      name="phoneNumber"
-                      value={saleRepresentative?.phoneNumber}
-                      placeholder="Enter Phone Number"
-                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5  w-full col-span-8"
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex flex-col gap-y-2 w-full">
-                  <label className="text-labelColor font-medium font-satoshi">
-                    Status
-                  </label>
-                  <Select
-                    placeholder="Active/ InActive"
-                    options={[
-                      { label: "Active", value: true },
-                      { label: "InActive", value: false },
-                    ]}
-                    value={
-                      saleRepresentative?.status
-                        ? { label: "Active", value: true }
-                        : { label: "InActive", value: false }
-                    }
-                    onChange={(e) =>
-                      setSaleRepresentative({
-                        ...saleRepresentative,
-                        status: e.value,
-                      })
-                    }
-                    className="w-full"
-                    styles={selectStyles2}
-                  />
-                </div>
-                <div className="flex flex-col gap-y-2">
-                  <label className="text-labelColor font-medium font-satoshi">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={saleRepresentative?.email}
-                    placeholder="Enter Email"
-                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="flex flex-col gap-y-2">
-                  <label className="text-labelColor font-medium font-satoshi">
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    name="password"
-                    value={saleRepresentative?.password}
-                    placeholder="Enter password"
-                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    onChange={handleChange}
-                  />
-                </div>
-                <div>
-                  <button
-                    type="submit"
-                    className="font-inter font-medium rounded-sm text-buttonTextColor bg-theme w-full py-3"
-                  >
-                    Update Local Partner
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div> */}
         </div>
       )}
     </form>

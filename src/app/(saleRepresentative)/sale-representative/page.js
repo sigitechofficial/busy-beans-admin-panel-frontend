@@ -75,6 +75,7 @@ export default function SaleRepresentative() {
     { field: "srName", header: "Name" },
     // { field: "email", header: "email" },
     { field: "teritoryName", header: "Teritory" },
+    { field: "partnerType", header: "Partner Type" },
     // { field: "address", header: "Address" },
     // { field: "phoneNum", header: "phoneNum" },
 
@@ -106,6 +107,7 @@ export default function SaleRepresentative() {
       registerDate: sR?.registerDate ?? "No date found",
       registerBy: sR?.registerBy,
       teritoryName: sR?.territoryName,
+      partnerType: sR?.partnerType === "direct-partner" ? "Direct Partner" : "Dropship Partner",
       creditLimit: `$${sR?.creditLimit}`,
       // currentStatus: (
       //   <div>
@@ -184,10 +186,10 @@ export default function SaleRepresentative() {
     });
   });
   const { toggle, setToggle } = useDataContext();
-  if (isLoading) {
-    return <Loader />;
-  }
-  return (
+  
+  return isLoading ? (
+      <Loader />
+    ) : (
     <div data-testid={SALES_REPRESENTATIVE.root}>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
        data-testid={SALES_REPRESENTATIVE.headerBar}>

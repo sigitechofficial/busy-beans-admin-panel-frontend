@@ -106,11 +106,9 @@ export default function Orders() {
   });
   const { toggle, setToggle } = useDataContext();
 
-  if (isLoading) {
-    return <Loader />;
-  }
-
-  return (
+  return isLoading ? (
+      <Loader />
+    ) : (
     <div className="w-full" data-testid={ALL_ORDERS.root}>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
         data-testid={ALL_ORDERS.headerBar}>

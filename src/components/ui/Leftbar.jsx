@@ -29,7 +29,7 @@ import { usePathname, useRouter } from "next/navigation";
 import ListHead from "./ListHead";
 import ListItems from "./ListItems";
 import Link from "next/link";
-import { info_toaster, success_toaster } from "@/utilities/Toaster";
+import { info_toaster, success_toaster, error_toaster } from "@/utilities/Toaster";
 import axios from "axios";
 import { BASE_URL } from "@/utilities/URL";
 import ErrorHandler from "@/utilities/ErrorHandler";
@@ -62,6 +62,10 @@ export default function Leftbar(props) {
   const pathname = usePathname();
   const router = useRouter();
   const [active, setActive] = useState({
+    quickbooks: {
+      tab: "",
+      status: false,
+    },
     orderManagement: {
       tab: "",
       status: false,
@@ -106,6 +110,10 @@ export default function Leftbar(props) {
       tab: "",
       status: false,
     },
+    quickbooks: {
+      tab: "",
+      status: false,
+    },
     inventoryManagement: {
       tab: "",
       status: false,
@@ -134,6 +142,7 @@ export default function Leftbar(props) {
       tab: "",
       status: false,
     },
+    partnerOrders: { tab: "", status: false },
   });
 
   const handleActive = (name, status) => {
@@ -154,6 +163,37 @@ export default function Leftbar(props) {
 
   const handleInvalidUser = () => {
     router.push("/sign-in");
+  };
+
+  const handlePartnerOrdersToggle = () => {
+    handleActive("partnerOrders", active?.partnerOrders?.status);
+  };
+  
+  const authenticateQuickbooks = async () => {
+    try {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("token") || localStorage.getItem("accessToken")
+          : "";
+
+      const res = await axios.get(BASE_URL + `qbo/auth/login`, {
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      if (res?.data?.status === "success") {
+        success_toaster("Redirecting to QuickBooks...");
+        window.open(res?.data?.data?.authUrl, "_self");
+      } else {
+        error_toaster("Failed to authenticate QuickBooks.");
+      }
+    } catch (error) {
+      console.error("Error during QuickBooks authentication:", error);
+      error_toaster("Error connecting to QuickBooks.");
+    }
   };
 
   const handleConnectAccount = async () => {
@@ -385,6 +425,49 @@ export default function Leftbar(props) {
               <>
                 <div className="m-2 relative space-y-1">
                   {hasPermission("orders_create") && ( <ListItems title="Create Order" to="/orders/create" /> )}
+                <ListHead
+                  title="Partner Orders"
+                  Icon={MdStore}
+                  active={pathname.includes("/orders/partnerOrders")}
+                  Angle={active?.partnerOrders?.status ? FaAngleUp : FaAngleDown}
+                  onClick={handlePartnerOrdersToggle}
+                />
+
+                {active?.partnerOrders?.status && (
+                  <div className="m-2 relative space-y-1">
+                    <ListItems
+                      title="New Partner Orders"
+                      to="/orders/partnerOrders/new-orders"
+                      data-testid={LEFTBAR.listItem("partnerOrders", "New Partner Orders")}
+                    />
+                    {/* <ListItems
+                      title="All Partner Orders"
+                      to="/orders/partnerOrders/all-orders"
+                      data-testid={LEFTBAR.listItem("partnerOrders", "All Partner Orders")}
+                    /> */}
+                    <ListItems
+                      title="Dispatched Orders"
+                      to="/orders/partnerOrders/dispatched"
+                      data-testid={LEFTBAR.listItem("partnerOrders", "Dispatched Orders")}
+                    />
+                    <ListItems
+                      title="Acknowledged Orders"
+                      to="/orders/partnerOrders/acknowledged"
+                      data-testid={LEFTBAR.listItem("partnerOrders", "Acknowledged Orders")}
+                    />
+                    <ListItems
+                      title="Shipped Orders"
+                      to="/orders/partnerOrders/shiped"
+                      data-testid={LEFTBAR.listItem("partnerOrders", "Shipped Orders")}
+                    />
+                    <ListItems
+                      title="Cancelled Orders"
+                      to="/orders/partnerOrders/cancelled"
+                      data-testid={LEFTBAR.listItem("partnerOrders", "Cancelled Orders")}
+                    />
+                    <hr className="w-full" />
+                  </div>
+                )}
                   <ListItems
                     title="New Orders"
                     to="/orders/new-orders"
@@ -983,6 +1066,33 @@ export default function Leftbar(props) {
             data-testid={LEFTBAR.reportManagementSection}
           /> }
 
+          <ListHead
+            title="QuickBooks"
+            Icon={MdAccountCircle}
+            onClick={() => handleActive("quickbooks", active?.quickbooks?.status)}
+            Angle={
+              active?.quickbooks?.tab === "clientManagement" &&
+              active?.quickbooks?.status
+                ? FaAngleUp
+                : FaAngleDown
+            }
+          />
+          {active?.quickbooks?.tab === "quickbooks" && active?.quickbooks?.status && (
+            <>
+            <div className="m-2 relative space-y-1">
+              <button 
+               onClick={authenticateQuickbooks} 
+               className="w-full flex gap-x-2 text-wrap items-center py-2 px-2 rounded-lg font-inter font-medium text-themeLightGray hover:bg-theme hover:text-white duration-200"
+              >
+                Go to QuickBooks
+              </button>
+              <ListItems title="Clients" to="/Quickbooks/clients" data-testid={LEFTBAR.listItem("quickbooks", "Clients")} />
+              {/* <ListItems title="Invoices" to="/Quickbooks/invoices" data-testid={LEFTBAR.listItem("quickbooks", "Invoices")} /> */}
+            </div>
+            <hr className="w-full" />
+            </>
+          )}
+
           <div className="mx-2 pb-7">
             <button
               className="w-full font-inter font-medium text-lg sm:text-sm lg:text-base flex items-center gap-x-2 px-2 py-3 rounded-lg text-black hover:bg-black hover:text-white 
@@ -1188,6 +1298,49 @@ export default function Leftbar(props) {
                     to="/sales-representative/create-order"
                     data-testid={LEFTBAR.listItem("orderManagement", "Create Orders")} 
                   />}
+                    <ListHead
+                      title="Partner Orders"
+                      Icon={MdStore}
+                      active={pathname.includes("/orders/partnerOrders")}
+                      Angle={active?.partnerOrders?.status ? FaAngleUp : FaAngleDown}
+                      onClick={handlePartnerOrdersToggle}
+                    />
+
+                    {active?.partnerOrders?.status && (
+                      <div className="m-2 relative space-y-1">
+                        <ListItems
+                          title="New Partner Orders"
+                          to="/orders/partnerOrders/new-orders"
+                          data-testid={LEFTBAR.listItem("partnerOrders", "New Partner Orders")}
+                        />
+                        {/* <ListItems
+                          title="All Partner Orders"
+                          to="/orders/partnerOrders/all-orders"
+                          data-testid={LEFTBAR.listItem("partnerOrders", "All Partner Orders")}
+                        /> */}
+                        <ListItems
+                          title="Dispatched Orders"
+                          to="/orders/partnerOrders/dispatched"
+                          data-testid={LEFTBAR.listItem("partnerOrders", "Dispatched Orders")}
+                        />
+                        <ListItems
+                          title="Acknowledged Orders"
+                          to="/orders/partnerOrders/acknowledged"
+                          data-testid={LEFTBAR.listItem("partnerOrders", "Acknowledged Orders")}
+                        />
+                        <ListItems
+                          title="Shipped Orders"
+                          to="/orders/partnerOrders/shiped"
+                          data-testid={LEFTBAR.listItem("partnerOrders", "Shipped Orders")}
+                        />
+                        <ListItems
+                          title="Cancelled Orders"
+                          to="/orders/partnerOrders/cancelled"
+                          data-testid={LEFTBAR.listItem("partnerOrders", "Cancelled Orders")}
+                        />
+                        <hr className="w-full" />
+                      </div>
+                    )}
                   <ListItems
                     title="New Orders"
                     to="/orders/new-orders"
@@ -1423,7 +1576,34 @@ export default function Leftbar(props) {
             active={pathname.includes("/reports")}
             data-testid={LEFTBAR.reportManagementSection}
           /> )}
-
+          
+          <ListHead
+            title="QuickBooks"
+            Icon={MdAccountCircle}
+            onClick={() => handleActive("quickbooks", active?.quickbooks?.status)}
+            Angle={
+              active?.quickbooks?.tab === "clientManagement" &&
+              active?.quickbooks?.status
+                ? FaAngleUp
+                : FaAngleDown
+            }
+          />
+          {active?.quickbooks?.tab === "quickbooks" && active?.quickbooks?.status && (
+            <>
+            <div className="m-2 relative space-y-1">
+              <button 
+               onClick={authenticateQuickbooks} 
+               className="w-full flex gap-x-2 text-wrap items-center py-2 px-2 rounded-lg font-inter font-medium text-themeLightGray hover:bg-theme hover:text-white duration-200"
+              >
+                Go to QuickBooks
+              </button>
+              <ListItems title="Clients" to="/Quickbooks/clients" data-testid={LEFTBAR.listItem("quickbooks", "Clients")} />
+              {/* <ListItems title="Invoices" to="/Quickbooks/invoices" data-testid={LEFTBAR.listItem("quickbooks", "Invoices")} /> */}
+            </div>
+            <hr className="w-full" />
+            </>
+          )}
+          
           <div className="mx-2 pb-7">
             <button
               className="w-full font-inter font-medium text-lg sm:text-sm lg:text-base flex items-center gap-x-2 px-2 py-3 rounded-lg text-black hover:bg-black hover:text-white 

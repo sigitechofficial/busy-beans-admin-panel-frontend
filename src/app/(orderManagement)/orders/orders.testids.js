@@ -19,7 +19,8 @@ const ORDERS_CREATE = {
 const ORDERS_CREATE_DRAWER = {
   modal: "drawer-modal",
   title: "drawer-title",
-
+  
+  directPartnerSwitch: "direct-partner-switch",
   companySelect: "company-select",
   emailInput: "email-input",
 

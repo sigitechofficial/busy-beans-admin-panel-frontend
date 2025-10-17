@@ -34,6 +34,11 @@ export default function OrderDetail() {
     var isEmployee = localStorage.getItem("isEmployee") ? true : false;
   }
   
+  
+  // Get accessToken and realmId from localStorage
+  const accessTokenQbo = typeof window !== "undefined" ? localStorage.getItem("accessTokenQbo") : "";
+  const realmId = typeof window !== "undefined" ? localStorage.getItem("realmId") : "";
+
   const { orderID } = useParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -301,6 +306,24 @@ export default function OrderDetail() {
       }
     }
   };
+  
+  const handleQBOInvoice = async () => {
+    try {
+      const payload = { orderId: orderID }; 
+      const res = await PostAPI(`qbo/order-invoice/create/${orderID}`, payload, '', {}, {
+        "x-qbo-access": accessTokenQbo, 
+        "x-qbo-realmid": realmId, 
+      });
+      if (res?.data?.status === "success") {
+        success_toaster("QBO Invoice Created Successfully");
+        reFetch();
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
+    }
+  };
 
   const handleAddChequeModel = () => {
     if (data?.data?.order?.chequeDetail) {
@@ -406,11 +429,9 @@ export default function OrderDetail() {
 
   const { toggle, setToggle } = useDataContext();
 
-  if (isLoading) {
-    return <Loader />;
-  }
-
-  return (
+  return isLoading ? (
+      <Loader />
+    ) : (
     <div data-testid={ORDER_DETAIL.root}>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
        data-testid={ORDER_DETAIL.headerBar}>
@@ -464,6 +485,16 @@ export default function OrderDetail() {
                 : "Send Invoice"}
             </button> )}
           </li>
+            {/* <li>
+              <button
+                onClick={handleQBOInvoice} 
+                type="button"
+                disabled={data?.data?.order?.statusId === 6 ? true : false} 
+                className="disabled:cursor-not-allowed"
+              >
+                QBO Invoice
+              </button>
+            </li> */}
           <li>
             <button
               onClick={() => router.push(`${pathname}/invoice`)}

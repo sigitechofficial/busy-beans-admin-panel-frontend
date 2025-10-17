@@ -125,11 +125,9 @@ export default function Profile() {
     setIsEditing(false);
   };
 
-  if (isLoading) {
-    return <Loader />;
-  }
-
-  return (
+  return isLoading ? (
+      <Loader />
+    ) : (
      <div className="w-full">
       <div className="w-full mdm:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <div className="flex items-center gap-x-2">
@@ -349,14 +347,7 @@ export default function Profile() {
 
            {/* Actions */}
           <div className="flex justify-end gap-3 mt-2">
-            {/* <button
-              type="button"
-              onClick={() => router.push("/")}
-              className="px-4 py-2 border rounded hover:bg-gray-100"
-            >
-              Cancel
-            </button> */}
-             {!isEditing && (
+            {!isEditing && (
             <button
               type="button"
               onClick={handleEdit}

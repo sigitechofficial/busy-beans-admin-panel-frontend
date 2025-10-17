@@ -41,6 +41,7 @@ const ADD_LOCAL_PARTNER = {
   // form fields - Basic Information
   partnerNameInput: "name-input",
   partnerStatusSelect: "status-select",
+  partnerTypeSelect: "partner-type-select",
   partnerCreditLimitInput: "credit-limit-input",
 
   // form fields - Contact Information
@@ -83,6 +84,7 @@ const UPDATE_LOCAL_PARTNER = {
   // form fields - Basic Information
   partnerNameInput: "name-input",
   partnerStatusSelect: "status-select",
+  partnerTypeSelect: "partner-type-select",
   partnerCreditLimitInput: "credit-limit-input",
 
   // form fields - Contact Information

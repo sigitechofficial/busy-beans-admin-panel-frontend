@@ -318,8 +318,8 @@ export default function Stock() {
     { field: "sl", header: "SL", sort: true },
     { field: "name", header: "Name" },
     { field: "quantity", header: "Quantity" },
-    { field: "weight", header: "Weight" },
-    { field: "price", header: "Price ($)" },
+    { field: "weight", header: "Weight", sort: true },
+    { field: "price", header: "Price ($)", sort: true },
     { field: "wholesalePrice", header: "Whole Sale Price ($)" },
     { field: "productCode", header: "Product Code" },
     { field: "sku", header: "SKU" },
@@ -492,12 +492,10 @@ export default function Stock() {
     });
   });
   const { toggle, setToggle } = useDataContext();
-  
-  if (isLoading) {
-    return <Loader />;
-  }
 
-  return (
+  return isLoading ? (
+    <Loader />
+  ) : (
     <div data-testid={INVENTORY_MANAGEMENT.root}>
       <div className="w-full md:w=[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
        data-testid={INVENTORY_MANAGEMENT.headerBar}>

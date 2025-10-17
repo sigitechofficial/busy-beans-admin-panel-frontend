@@ -118,6 +118,7 @@ export default function AddInvoice() {
         invoiceNumber: data?.data?.order?.invoiceNumber || "",
         poNumber: data?.data?.order?.poNumber || "",
         invoiceDate: prev?.invoiceDate || data?.data?.order?.invoiceDate || getToday(),
+        invoiceDate: prev?.invoiceDate || data?.data?.order?.invoiceDate || getToday(),
         dueDate: prev?.dueDate || getDueDate(),
         note: data?.data?.order?.note,
         // shippingCharges: data?.data?.order?.shippingCharges,
@@ -273,6 +274,7 @@ export default function AddInvoice() {
         ...prev,
         [field]: value,
         invoiceDate: value ? prev.invoiceDate || getToday() : prev.invoiceDate,
+        invoiceDate: value ? prev.invoiceDate || getToday() : prev.invoiceDate,
       }));
     } else {
       setInvoiceFields((prev) => ({
@@ -281,7 +283,7 @@ export default function AddInvoice() {
       }));
     }
   };
-
+  
   // Extra Charge Rows
   const [extraCharges, setExtraCharges] = useState([]);
 
@@ -478,11 +480,9 @@ export default function AddInvoice() {
   };
   const { toggle, setToggle } = useDataContext();
 
-  if (isLoading) {
-    return <Loader />;
-  }
-
-  return (
+  return isLoading ? (
+      <Loader />
+    ) : (
     <div data-testid={ORDER_ADD_INVOICE.root}>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
        data-testid={ORDER_ADD_INVOICE.headerBar}>

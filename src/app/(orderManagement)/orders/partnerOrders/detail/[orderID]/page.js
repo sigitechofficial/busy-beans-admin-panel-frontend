@@ -5,7 +5,7 @@ import CusSupInformationCard from "@/components/ui/CusSupInformationCard";
 import { RiArrowDownSLine } from "react-icons/ri";
 import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
-import OrderCard from "@/components/ui/OrderCard";
+import PartnerOrderCard from "@/components/ui/PartnerOrderCard";
 import TrackOrder from "@/components/ui/TrackOrder";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import GetAPI from "@/utilities/GetAPI";
@@ -25,7 +25,7 @@ import dayjs from "dayjs";
 import { CiMenuBurger } from "react-icons/ci";
 import { useDataContext } from "@/utilities/DataContext";
 import { hasPermission } from "@/utilities/Permission";
-import { ORDER_DETAIL } from "../../orders.testids";
+import { ORDER_DETAIL } from "../../../orders.testids";
 import { FiCopy } from "react-icons/fi";
 
 export default function OrderDetail() {
@@ -34,11 +34,6 @@ export default function OrderDetail() {
     var isEmployee = localStorage.getItem("isEmployee") ? true : false;
   }
   
-  
-  // Get accessToken and realmId from localStorage
-  const accessTokenQbo = typeof window !== "undefined" ? localStorage.getItem("accessTokenQbo") : "";
-  const realmId = typeof window !== "undefined" ? localStorage.getItem("realmId") : "";
-
   const { orderID } = useParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -83,13 +78,13 @@ export default function OrderDetail() {
     { value: "cashier's check", label: "Cashier's check" },
   ];
 
-  const { data, reFetch, isLoading } = GetAPI(`api/v1/admin/order-details/${orderID}`, "orders");
+  const { data, reFetch, isLoading } = GetAPI(`api/v1/admin/partner-order/order-details/${orderID}`, "orders");
 
   const handleSupplierAcknowledgement = async () => {
     setLoader("acknowledgeSupplier");
     try {
       const res = await PatchAPI("api/v1/admin/supplier-acknowledgement", {
-        orderId: data?.data?.order?.id,
+        partnerOrderId: data?.data?.order?.id,
         orderData: {
           statusId: 3,
         },
@@ -112,7 +107,7 @@ export default function OrderDetail() {
     setLoader("orderDelivered");
     try {
       const res = await PatchAPI("api/v1/admin/order-deliver", {
-        orderId: data?.data?.order?.id,
+        partnerOrderId: data?.data?.order?.id,
         orderData: {
           statusId: 5,
           paymentStaus: "done",
@@ -135,10 +130,6 @@ export default function OrderDetail() {
   const handleAssignSupplier = (statusId) => {
     if (statusId === 1) {
       AssignSupplierTravis();
-      // setModal({
-      //   type: "assignSupplier",
-      //   status: true,
-      // });
     } else if (statusId === 2) {
       handleSupplierAcknowledgement();
     } else if (statusId === 3) {
@@ -154,9 +145,9 @@ export default function OrderDetail() {
   const AssignSupplierTravis = async (e) => {
     try {
       const res = await PatchAPI("api/v1/admin/assign-supplier", {
-        orderId: orderID,
+        partnerOrderId: orderID,
         orderData: {
-          supplierId: 16, //Suppier name Travis
+          supplierId: 16, 
           statusId: 2,
         },
       });
@@ -191,17 +182,17 @@ export default function OrderDetail() {
       setLoader("addCheque");
       try {
         const res = await PatchAPI("api/v1/admin/add-cheque", {
-          orderId: orderID,
+          partnerOrderId: orderID,
           orderData: {
             paymentMethod: "cheque",
           },
           cheque: {
             chequeNumber: addCheque?.chequeNumber,
             chequeDate: addCheque?.chequeDate,
-            chequeStatus: addCheque?.chequeStatus?.value, // Pending, Cleared, Bounced
+            chequeStatus: addCheque?.chequeStatus?.value, 
             bankName: addCheque?.bankName,
             bankBranch: addCheque?.bankBranch,
-            chequeType: addCheque?.chequeType?.value, // personal check, business check, or cashier's check
+            chequeType: addCheque?.chequeType?.value, 
             chequeReceiptDate: addCheque?.chequeReceiptDate,
           },
         });
@@ -231,10 +222,10 @@ export default function OrderDetail() {
           cheque: {
             chequeNumber: addCheque?.chequeNumber,
             chequeDate: addCheque?.chequeDate,
-            chequeStatus: addCheque?.chequeStatus?.value, // Pending, Cleared, Bounced
+            chequeStatus: addCheque?.chequeStatus?.value, 
             bankName: addCheque?.bankName,
             bankBranch: addCheque?.bankBranch,
-            chequeType: addCheque?.chequeType?.value, // personal check, business check, or cashier's check
+            chequeType: addCheque?.chequeType?.value, 
             chequeReceiptDate: addCheque?.chequeReceiptDate,
           },
         });
@@ -279,7 +270,7 @@ export default function OrderDetail() {
       setLoader("cancelOrder");
       try {
         const res = await PatchAPI("api/v1/admin/order-cancel", {
-          orderId: orderID,
+          partnerOrderId: orderID,
           orderData: {
             statusId: 6,
             paymentStaus: "pending",
@@ -304,24 +295,6 @@ export default function OrderDetail() {
         setLoader("");
         ErrorHandler(error);
       }
-    }
-  };
-  
-  const handleQBOInvoice = async () => {
-    try {
-      const payload = { orderId: orderID }; 
-      const res = await PostAPI(`qbo/order-invoice/create/${orderID}`, payload, '', {}, {
-        "x-qbo-access": accessTokenQbo, 
-        "x-qbo-realmid": realmId, 
-      });
-      if (res?.data?.status === "success") {
-        success_toaster("QBO Invoice Created Successfully");
-        reFetch();
-      } else {
-        throw new Error(res?.data?.message || "An unexpected error occurred.");
-      }
-    } catch (error) {
-      ErrorHandler(error);
     }
   };
 
@@ -364,7 +337,7 @@ export default function OrderDetail() {
       const res = await PostAPI(`api/v1/admin/order-management/send-invoice/${orderID}`, {
         order:
         {
-          orderId: orderID,
+          partnerOrderId: orderID,
           reminder: data?.data?.order?.invoicePdf ? true : false,
           invoiceDate: data?.data?.order?.invoiceDate
             ? undefined
@@ -392,7 +365,7 @@ export default function OrderDetail() {
   const handlePaymentStatus = async (status) => {
     try {
       const res = await PatchAPI("api/v1/admin/edit-order", {
-        orderId: orderID,
+        partnerOrderId: orderID,
         orderData: {
           paymentStatus: status?.value, //"pending" , 'done'
         },
@@ -468,9 +441,6 @@ export default function OrderDetail() {
 
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative text-blue-500"
          data-testid={ORDER_DETAIL.actionsBar}>
-          {/* <li onClick={() => router.push(`${pathname}/add-invoice`)}>
-            {data?.data?.order?.invoicePdf ? "Update Invoice" : "Add Invoice"}
-          </li> */}
           <li>
             {(hasPermission("invoice_update")) && (
             <button
@@ -485,16 +455,6 @@ export default function OrderDetail() {
                 : "Send Invoice"}
             </button> )}
           </li>
-            {/* <li>
-              <button
-                onClick={handleQBOInvoice} 
-                type="button"
-                disabled={data?.data?.order?.statusId === 6 ? true : false} 
-                className="disabled:cursor-not-allowed"
-              >
-                QBO Invoice
-              </button>
-            </li> */}
           <li>
             <button
               onClick={() => router.push(`${pathname}/invoice`)}
@@ -504,95 +464,14 @@ export default function OrderDetail() {
               View PDF
             </button>
           </li>
-          {/* <li>Edit Details</li>
-          <li>Modify Items</li>
-          <li>Convert to Standing Order</li>
-          <li className="group flex items-center">
-            More
-            <RiArrowDownSLine />
-            <ul className="absolute top-5 right-0 bg-theme text-white rounded-lg p-3 space-y-2 hidden group-hover:block">
-              <li>Email</li>
-              <li>Export</li>
-              <li>Cancel Order</li>
-            </ul>
-          </li> */}
         </ul>
       </div>
 
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
         <div className="flex justify-end">
-          {/* <div className="flex items-center gap-x-2">
-            <BackButton />
-            <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-              Order/{data?.data?.order?.id}
-            </h2>
-
-            <div className="bg-themeGreen text-white rounded-lg py-2 px-4 font-medium text-sm">
-              {data?.data?.order?.orderCurrentStatus}
-            </div>
-          </div> */}
 
           <div className="flex items-center gap-x-2 sm:gap-x-4 [&>button]:py-2 sm:[&>button]:py-3 [&>button]:px-2 sm:[&>button]:px-5 [&>button]:rounded-lg [&>button]:font-nunito [&>button]:font-medium [&>button]:text-xs lg:[&>button]:text-sm"
            data-testid={ORDER_DETAIL.actionsBar}>
-            {/* <button
-            type="button"
-            onClick={handleAddChequeModel}
-            className="bg-black text-white disabled:cursor-not-allowed"
-          >
-            {data?.data?.order?.chequeDetail
-              ? "Edit Bank Check"
-              : "Add Bank Check"}
-          </button> */}
-            {/* {userType === "admin" && !isEmployee && data?.data?.order?.statusId !== 5 ? (
-              <button
-                type="button"
-                disabled={
-                  data?.data?.order?.statusId === 5 ||
-                  data?.data?.order?.statusId === 6
-                    ? true
-                    : false
-                }
-                className="bg-black text-white disabled:cursor-not-allowed"
-                onClick={() =>
-                  handleAssignSupplier(data?.data?.order?.statusId)
-                }
-              >
-                {data?.data?.order?.statusId === 1
-                  ? "Dispatch to Supplier"
-                  : data?.data?.order?.statusId === 2
-                  ? "Acknowledge Supplier"
-                  : data?.data?.order?.statusId === 3
-                  ? "Ship Order"
-                  : "Dispatch Order"}
-              </button>
-            ) : (
-              <button
-                type="button"
-                // disabled={
-                //   data?.data?.order?.statusId === 2 ||
-                //   data?.data?.order?.statusId === 3 ||
-                //   data?.data?.order?.statusId === 5 ||
-                //   data?.data?.order?.statusId === 6
-                //     ? true
-                //     : false
-                // }
-                className={`${
-                  // data?.data?.order?.statusId === 2 ||
-                  // data?.data?.order?.statusId === 3 ||
-                  data?.data?.order?.statusId === 1 ? "block" : "hidden"
-                } bg-black text-white disabled:cursor-not-allowed`}
-                onClick={() =>
-                  handleAssignSupplier(data?.data?.order?.statusId)
-                }
-              >
-                {data?.data?.order?.statusId === 1
-                  ? "Dispatch to Supplier"
-                  : data?.data?.order?.statusId === 2
-                  ? "Acknowledge Supplier"
-                  : ""}
-              </button> 
-            )} */}
-
               {/* Dispatch / Supplier Actions */}
               {(userType === "admin" || userType === "salesRepresentative") && !isEmployee && data?.data?.order?.statusId !== 5 && (
                 <button
@@ -615,16 +494,6 @@ export default function OrderDetail() {
                 </button>
               )}
 
-            {/* <button
-              type="button"
-              disabled={data?.data?.order?.statusId === 6 ? true : false}
-              className="bg-black text-white disabled:cursor-not-allowed"
-              onClick={() => handleSendInvoice(data?.data?.order?.statusId)}
-            >
-              {data?.data?.order?.invoicePdf
-                ? "Invoice reminder"
-                : "Send Invoice"}
-            </button> */}
             {(hasPermission("invoice_update")) && (
             <button
               type="button"
@@ -672,13 +541,6 @@ export default function OrderDetail() {
                 </button>
               )}
 
-            {/* <button
-              onClick={() => router.push(`${pathname}/invoice`)}
-              type="button"
-              className="border border-buttonBorderColor shadow-buttonShadow"
-            >
-              Edit Invoice
-            </button> */}
           </div>
         </div>
 
@@ -688,27 +550,6 @@ export default function OrderDetail() {
           <div className="grid grid-cols-1 gap-6 lg:gap-8 xl:gap-x-12">
             {/* Left side */}
             <div className="space-y-6">
-              {/* <CusSupInformationCard
-              heading="Customer Information"
-              image={data?.data?.order?.user?.image}
-              name={data?.data?.order?.user?.name}
-              email={data?.data?.order?.user?.email}
-              phoneNo={data?.data?.order?.user?.phoneNumber}
-              subHeading="Delivery Information"
-              subHeadingData={{
-                "Company Name": "Sigi Technologies",
-                "Sale Tax": data?.data?.order?.user?.saleTaxNumber,
-                Address: `
-                  ${data?.data?.order?.address?.companyaddress ?? ""}
-                  ${data?.data?.order?.address?.addressLineOne ?? ""}
-                  ${data?.data?.order?.address?.addressLineTwo ?? ""}
-                    ${data?.data?.order?.address?.town ?? ""}, ${
-                  data?.data?.order?.address?.state ?? ""
-                } - ${data?.data?.order?.address?.zipCode ?? ""}
-                  ${data?.data?.order?.address?.country ?? ""}`,
-              }}
-            /> */}
-
               <div className="bg-blue-50 rounded-md w-full px-4 lg:px-6 py-6 flex gap-x-2" data-testid={ORDER_DETAIL.infoBanner}>
                 <div>
                   <LuClipboardList size={25} />
@@ -779,12 +620,6 @@ export default function OrderDetail() {
                       <p>{dayjs(data?.data?.order?.on).format("MM/DD/YYYY")}</p>
                     </div>
                   )}
-                  {/* {data?.data?.order?.customerName && (
-                    <div className="flex items-center gap-5 border-b">
-                      <p className="w-28">Customer</p>
-                      <p>{data?.data?.order?.customerName}</p>
-                    </div>
-                  )} */}
                   {data?.data?.order?.customerName && (
                     <div
                       onClick={() =>
@@ -981,126 +816,77 @@ export default function OrderDetail() {
                 {/* ================ */}
                 <div className="w-full grid grid-cols-2 gap-10 text-xs lg:text-sm">
                   {/* Deliver To */}
-                  <div data-testid={ORDER_DETAIL.deliverTo.wrapper}>
-                    <h6 className="font-semibold">Deliver To</h6>
-                    <div className="items-center uppercase">
-                      {data?.data?.order?.address?.companyaddress && (
-                        <p>{data.data.order.address.companyaddress}</p>
-                      )}
-                      <p>{data?.data?.order?.address?.addressLineOne}</p>
-                      <p>{data?.data?.order?.address?.addressLineTwo}</p>
-                      <p>
-                        {data?.data?.order?.address?.town},{" "}
-                        {data?.data?.order?.address?.state}{" "}
-                        {data?.data?.order?.address?.zipCode}
-                      </p>
-                      <p>{data?.data?.order?.address?.country}</p>
-                      {data?.data?.order?.user?.phoneNumber && (
-                        <p>
-                          Phone: {data?.data?.order?.user?.countryCode || "+1"}{" "}
-                          {data?.data?.order?.user?.phoneNumber}
-                        </p>
-                      )}
-                    </div>
-                    <div className="lowercase break-all">
-                      {data?.data?.order?.user?.dispatchEmail}
-                    </div>
-                    {(hasPermission("customer_update") || hasPermission("selected-customer_update")) && (
+                      <div data-testid={ORDER_DETAIL.deliverTo.wrapper}>
+                        <h6 className="font-semibold">Deliver To</h6>
+                        <div className="items-center uppercase">
+                          {data?.data?.order?.salesRep?.billingAddresses?.[0]?.addressLineOne && (
+                            <p>{data?.data?.order?.salesRep?.billingAddresses[0].addressLineOne}</p>
+                          )}
+                          {data?.data?.order?.salesRep?.billingAddresses?.[0]?.addressLineTwo && (
+                            <p>{data?.data?.order?.salesRep?.billingAddresses[0].addressLineTwo}</p>
+                          )}
+                          {data?.data?.order?.salesRep?.billingAddresses?.[0]?.town && (
+                            <p>{data?.data?.order?.salesRep?.billingAddresses[0].town}</p>
+                          )}
+                          {data?.data?.order?.salesRep?.billingAddresses?.[0]?.state && (
+                            <p>{data?.data?.order?.salesRep?.billingAddresses[0].state}</p>
+                          )}
+                          {data?.data?.order?.salesRep?.billingAddresses?.[0]?.zipCode && (
+                            <p>{data?.data?.order?.salesRep?.billingAddresses[0].zipCode}</p>
+                          )}
+                          {data?.data?.order?.salesRep?.billingAddresses?.[0]?.country && (
+                            <p>{data?.data?.order?.salesRep?.billingAddresses[0].country}</p>
+                          )}
+                        </div>
+                         {/* {(hasPermission("customer_update") || hasPermission("selected-customer_update")) && (
                     <span
                       onClick={() => router.push(`${pathname}/edit`)}
                       className="text-blue-500 text-xs cursor-pointer"
                     >
                       Edit
-                    </span> )}
-                  </div>
+                    </span> )} */}
+                      </div>
 
                   {/* Bill To Section */}
-                  <div className="uppercase" data-testid={ORDER_DETAIL.invoiceTo.wrapper}>
-                    <div className="font-bold capitalize">Invoice to</div>
+                      <div className="uppercase" data-testid={ORDER_DETAIL.invoiceTo.wrapper}>
+                        <div className="font-bold capitalize">Invoice to</div>
+                        <div>
+                          {data?.data?.order?.salesRep?.address && (
+                            <div>
+                              {data?.data?.order?.salesRep?.address}
+                            </div>
+                          )}
 
-                    {/* Company address or name */}
-                    {data?.data?.order?.user?.billingAddresses?.[0]
-                      ?.companyaddress && (
-                      <div>
-                        {
-                          data?.data?.order?.user?.billingAddresses[0]
-                            .companyaddress
-                        }
-                      </div>
-                    )}
+                          {data?.data?.order?.salesRep?.city && (
+                            <div>{data?.data?.order?.salesRep?.city}</div>
+                          )}
 
-                    {/* Company name if available */}
-                    {data?.data?.order?.user?.companyName && (
-                      <div>{data?.data?.order?.user?.companyName}</div>
-                    )}
+                          {data?.data?.order?.salesRep?.state && (
+                            <div>{data?.data?.order?.salesRep?.state}</div>
+                          )}
 
-                    {/* Address lines */}
-                    {data?.data?.order?.user?.billingAddresses?.[0]
-                      ?.addressLineOne && (
-                      <div>
-                        {data?.data?.order?.user?.billingAddresses[0]
-                          .addressLineOne +
-                          ", " +
-                          data?.data?.order?.user?.billingAddresses?.[0]
-                            ?.addressLineTwo}
-                      </div>
-                    )}
-                    {/* {data?.data?.order?.user?.billingAddresses?.[0]?.addressLineTwo && (
-                  <div>
-                    {invoiceData.user.billingAddresses[0].addressLineTwo}
-                  </div>
-                )} */}
-
-                    {/* Town, State, Zip */}
-                    {(data?.data?.order?.user?.billingAddresses?.[0]?.town ||
-                      data?.data?.order?.user?.billingAddresses?.[0]?.state ||
-                      data?.data?.order?.user?.billingAddresses?.[0]
-                        ?.zipCode) && (
+                          {data?.data?.order?.salesRep?.country && (
+                            <div>{data?.data?.order?.salesRep?.country}</div>
+                          )}
+                        </div>
+                        {(data?.data?.order?.salesRep?.countryCode ||
+                      data?.data?.order?.salesRep?.phoneNumber) && (
                       <div>
                         {[
-                          data?.data?.order?.user?.billingAddresses[0].town,
-                          data?.data?.order?.user?.billingAddresses[0].state,
-                          data?.data?.order?.user?.billingAddresses[0].zipCode,
-                        ]
-                          .filter(Boolean)
-                          .join(", ")}
-                      </div>
-                    )}
-
-                    {/* Country */}
-                    {data?.data?.order?.user?.billingAddresses?.[0]
-                      ?.country && (
-                      <div>
-                        {data?.data?.order?.user?.billingAddresses[0].country}
-                      </div>
-                    )}
-
-                    {/* Phone */}
-                    {(data?.data?.order?.user?.countryCode ||
-                      data?.data?.order?.user?.phoneNumber) && (
-                      <div>
-                        {[
-                          data?.data?.order?.user?.countryCode || "+1",
-                          data?.data?.order?.user?.phoneNumber,
+                          data?.data?.order?.salesRep?.countryCode || "+1",
+                          data?.data?.order?.salesRep?.phoneNumber,
                         ]
                           .filter(Boolean)
                           .join(" ")}
                       </div>
                     )}
-
-                    {/* Email */}
-                    {data?.data?.order?.user?.email && (
-                      <div className="lowercase break-all">
-                        {data?.data?.order?.user?.emailToSendInvoices}
-                      </div>
-                    )}
-                    {(hasPermission("customer_update") || hasPermission("selected-customer_update")) && (
+                    {/* {(hasPermission("customer_update") || hasPermission("selected-customer_update")) && (
                     <span
                       onClick={() => router.push(`${pathname}/edit`)}
                       className="text-blue-500 text-xs cursor-pointer capitalize"
                     >
                       Edit
-                    </span> )}
+                    </span> )} */}
                   </div>
 
                   {data?.data?.order?.invoiceDate && (
@@ -1145,28 +931,6 @@ export default function OrderDetail() {
                   )}
                 </div>
               </div>
-              {/* {data?.data?.order?.statusId >= 2 && (
-              <CusSupInformationCard
-                heading="Supplier Information"
-                image={data?.data?.order?.supplier?.image}
-                name={data?.data?.order?.supplier?.supplierName}
-                email={data?.data?.order?.supplier?.email}
-                phoneNo={data?.data?.order?.supplier?.phoneNum}
-                subHeading="Supplier Information"
-                subHeadingData={{
-                  "Supplier Type": `${data?.data?.order?.supplier?.supplierType}`,
-                  "Business Tax No": `${data?.data?.order?.supplier?.businessRegistrationNumber}`,
-                  "Business Website": `${data?.data?.order?.supplier?.businessWeb}`,
-                  Address: `
-                ${data?.data?.order?.supplier?.addressOne ?? ""}
-                ${data?.data?.order?.supplier?.addressTwo ?? ""}
-                  ${data?.data?.order?.supplier?.city ?? ""}, ${
-                    data?.data?.order?.supplier?.state ?? ""
-                  } - ${data?.data?.order?.supplier?.zipCode ?? ""}
-                ${data?.data?.order?.supplier?.country ?? ""}`,
-                }}
-              />
-            )} */}
             </div>
 
             {/* Right side */}
@@ -1176,7 +940,7 @@ export default function OrderDetail() {
                 statusId={data?.data?.order?.statusId}
               />
               <div data-testid={ORDER_DETAIL.orderCardSection}>
-              <OrderCard
+              <PartnerOrderCard
                 reFetch={reFetch}
                 orderData={data?.data?.order}
                 modal={modal}
@@ -1272,15 +1036,6 @@ export default function OrderDetail() {
                       <label className="text-labelColor font-medium font-satoshi">
                         Bank Check Status
                       </label>
-                      {/* <input
-                      type="chequeStatus"
-                      name="desc"
-                      value={addCheque?.chequeStatus}
-                      onChange={handleChange}
-                      placeholder="Enter Description"
-                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      inputId={ORDER_DETAIL.dialog.chequeStatusSelect}
-                    /> */}
                       <Select
                         placeholder="Select Cheque Status"
                         className="w-full"
@@ -1329,14 +1084,6 @@ export default function OrderDetail() {
                       <label className="text-labelColor font-medium font-satoshi">
                         Bank Check Type
                       </label>
-                      {/* <input
-                      type="chequeType"
-                      name="desc"
-                      value={addCheque?.chequeType}
-                      onChange={handleChange}
-                      placeholder="Enter Description"
-                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    /> */}
                       <Select
                         placeholder="Select Bank Check Type"
                         className="w-full"

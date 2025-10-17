@@ -9,7 +9,7 @@ import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
 import { NEW_ORDERS } from "../../orders.testids"
 
-export default function NewOrders() {
+export default function DeliveredOrders() {
   if (typeof window !== "undefined") {
     var userID = localStorage.getItem("userID");
     var userType = localStorage.getItem("userType");
@@ -18,8 +18,8 @@ export default function NewOrders() {
   const router = useRouter();
   const { data } = GetAPI(
     userType === "salesRepresentative"
-      ? `api/v1/admin/orders?salesRepId=${userID}&statusId=1`
-      : "api/v1/admin/partner-order/orders-list?statusId=1"
+      ? `api/v1/admin/orders?salesRepId=${userID}&statusId=2`
+      : "api/v1/admin/partner-order/orders-list?statusId=2"
   );
 
   const columns = [
@@ -60,7 +60,7 @@ export default function NewOrders() {
           >
             <CiMenuBurger size={20} />
           </p>
-          <h2 className="text-xl font-inter font-semibold">New Orders</h2>
+          <h2 className="text-xl font-inter font-semibold">Dispatched Orders</h2>
         </div>
 
       </div>

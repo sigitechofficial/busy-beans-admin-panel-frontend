@@ -165,7 +165,7 @@ export default function CustomersByEmployee() {
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-theme text-white"
                 } px-6 py-3 rounded-lg font-inter font-medium`}>
-              {loading ? "Importing..." : "Import Customers"}
+              {loading ? "Importing..." : "Export Customers"}
             </button>
           )}
         </div>

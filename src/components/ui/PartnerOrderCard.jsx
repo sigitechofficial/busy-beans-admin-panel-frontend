@@ -12,7 +12,7 @@ import { selectStyles2 } from "@/utilities/SelectStyle";
 import MiniLoader from "./MiniLoader";
 import { useRouter } from "next/navigation";
 
-export default function OrderCard(props) {
+export default function PartnerOrderCard(props) {
   if (typeof window !== "undefined") {
     var userType = localStorage.getItem("userType");
   }
@@ -51,7 +51,7 @@ export default function OrderCard(props) {
   const handlePaymentStatus = async (status) => {
     try {
       const res = await PatchAPI("api/v1/admin/edit-order", {
-        orderId: props?.orderData?.id,
+        partnerOrderId: props?.orderData?.id,
         orderData: {
           paymentStatus: status?.value, //"pending" , 'done'
         },
@@ -78,7 +78,7 @@ export default function OrderCard(props) {
         setLoader("assignSupplier");
         try {
           const res = await PatchAPI("api/v1/admin/assign-supplier", {
-            orderId: props?.orderData?.id,
+            partnerOrderId: props?.orderData?.id,
             orderData: {
               supplierId: supplierID,
               statusId: 2,
@@ -116,7 +116,7 @@ export default function OrderCard(props) {
 
         setLoader("dispatchOrder");
         const res = await PatchAPI("api/v1/admin/order-dispatch", {
-          orderId: props?.orderData?.id,
+          partnerOrderId: props?.orderData?.id,
           orderData: {
             statusId: 4,
             trackingNumber: isTruck
@@ -140,7 +140,7 @@ export default function OrderCard(props) {
 
         // Deliver immediately
         const resDeliver = await PatchAPI("api/v1/admin/order-deliver", {
-          orderId: props?.orderData?.id,
+          partnerOrderId: props?.orderData?.id,
           orderData: {
             statusId: 5,
             orderStatus: props?.orderData?.orderCurrentStatus,
@@ -192,119 +192,10 @@ export default function OrderCard(props) {
       {/* Upper section */}
       {props?.orderData?.note && (
         <div className="space-y-4 font-inter">
-          {/* <div className="flex justify-between items-start">
-          <div className="space-y-0.5">
-            <p className="font-semibold text-3xl">
-              Order# {props?.orderData?.id}
-            </p>
-       
-            <p
-              className={`text-black ${
-                props?.orderData?.statusId === 4 ? "block" : "hidden"
-              }`}
-            >
-              Tracking No: {props?.orderData?.trackingNumber}
-            </p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm">Order Status</p>
-            <div className="bg-themeGreen text-white rounded-lg py-2 px-4 font-medium">
-              {props?.orderData?.orderCurrentStatus}
-            </div>
-          </div>
-
-          {(userType === "admin" || userType === "salesRepresentative") && (
-            <div className="flex">
-              <span className="text-black/60 w-2/4">Payment Status:</span>
-
-              {userType === "supplier" ||
-              (userType === "admin" &&
-                props?.orderData?.paymentMethod === "card") ||
-              props?.orderData?.statusId === 6 ? (
-                <div className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none">
-                  {props?.orderData?.paymentStatus === "done"
-                    ? "Paid"
-                    : "Unpaid"}
-                </div>
-              ) : (
-                <span className="w-40">
-                  <Select
-                    placeholder="Select Payment Status"
-                    className="w-full"
-                    value={
-                      props?.orderData?.paymentStatus === "pending"
-                        ? { value: "pending", label: "Unpaid" }
-                        : { value: "done", label: "Paid" }
-                    }
-                    styles={selectStyles2}
-                    options={paymentStausOptions}
-                    onChange={(e) => {
-                      handlePaymentStatus(e);
-                    }}
-                  />
-                </span>
-              )}
-            </div>
-          )}
-        </div> */}
-
           <div className="w-full space-y-4">
             <div className="w-full space-y-2">
               {/* <p className="font-semibold text-lg underline">Order Information</p> */}
               <div className="space-y-4 w-full">
-                {/* <p className="flex">
-                <span className="text-black/60 w-2/4">Payment Method:</span>
-                <span className="font-medium uppercase">
-                  {props?.orderData?.paymentMethod}
-                </span>
-              </p> */}
-                {/* <div className="flex">
-                <span className="text-black/60 w-2/4">Payment Status:</span>
-
-                {userType === "supplier" ||
-                (userType === "admin" &&
-                  props?.orderData?.paymentMethod === "card") ||
-                props?.orderData?.statusId === 6 ? (
-                  <div className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none">
-                    {props?.orderData?.paymentStatus === "done"
-                      ? "Paid"
-                      : "Unpaid"}
-                  </div>
-                ) : (
-                  <span className="w-40">
-                    <Select
-                      placeholder="Select Payment Status"
-                      className="w-full"
-                      value={
-                        props?.orderData?.paymentStatus === "pending"
-                          ? { value: "pending", label: "Unpaid" }
-                          : { value: "done", label: "Paid" }
-                      }
-                      styles={selectStyles2}
-                      options={paymentStausOptions}
-                      onChange={(e) => {
-                        handlePaymentStatus(e);
-                      }}
-                    />
-                  </span>
-                )}
-              </div> */}
-                {/* <p className="flex">
-                <span className="text-black/60 w-2/4">
-                  Expected Delivery Time:
-                </span>
-                <span className="font-medium">17-02-2025</span>
-              </p> */}
-                {/* <p
-                className={`${
-                  props?.userType === "supplier" ? "hidden" : "flex"
-                }`}
-              >
-                <span className="text-black/60 w-2/4">Total Amount:</span>
-                <span className="font-medium">
-                  $ {props?.orderData?.totalBill}
-                </span>
-              </p> */}
               </div>
             </div>
             <div className="bg-themeYellowDark text-black font-medium py-2 px-4 rounded-md flex gap-x-4">
@@ -316,59 +207,6 @@ export default function OrderCard(props) {
           </div>
         </div>
       )}
-      {/* Lower section */}
-      {/* <div>
-        <MyDataTable
-          data={datas}
-          columns={props?.userType === "supplier" ? supplierColumns : columns}
-          hide="hidden"
-          search={false}
-          pagination={true}
-        />
-        <div
-          className={`${
-            props?.userType === "supplier" ? "hidden" : "flex"
-          } font-inter  flex-col sm:items-end sm:[&>p]:w-2/4 [&>p]:flex [&>p]:justify-between pt-4 space-y-0.5`}
-        >
-          <p>
-            <span className="font-bold">Items Price:</span>{" "}
-            <span className="font-semibold">
-              ${props?.orderData?.itemsPrice}
-            </span>
-          </p>
-          <p>
-            <span className="font-bold">Whole Sale Price:</span>{" "}
-            <span className="font-semibold">${wholeSalePrice}</span>
-          </p>
-          <p>
-            <span className="font-bold">
-              Discount({props?.orderData?.discountPercentage}%):
-            </span>{" "}
-            <span className="font-semibold">
-              ${props?.orderData?.discountPrice}
-            </span>
-          </p>
-          <p>
-            <span className="font-bold">Vat/Tax:</span>{" "}
-            <span className="font-semibold">${props?.orderData?.vat}</span>
-          </p>
-
-          <p>
-            <span className="font-bold">Sub Total:</span>{" "}
-            <span className="font-semibold">${props?.orderData?.subTotal}</span>
-          </p>
-          <p>
-            <span className="font-bold">Shipping Charges:</span>{" "}
-            <span className="font-semibold">${props?.orderData?.shippingCharges}</span>
-          </p>
-          <p>
-            <span className="font-bold">Total:</span>{" "}
-            <span className="font-semibold">
-              ${props?.orderData?.totalBill}
-            </span>
-          </p>
-        </div>
-      </div> */}
 
       <div className="w-full overflow-auto">
         <table className="w-full border border-gray-200 text-sm border-collapse min-w-[750px]">
@@ -421,14 +259,6 @@ export default function OrderCard(props) {
             {props?.orderData?.items?.map((item) => {
               return (
                 <>
-                  {/* <tr>
-                    <td
-                      colSpan={8}
-                      className="font-semibold bg-gray-50 border border-gray-200"
-                    >
-                      category name
-                    </td>
-                  </tr> */}
                   <tr>
                     {userType !== "supplier" && (
                       <td className="py-2 px-2 border border-gray-200">

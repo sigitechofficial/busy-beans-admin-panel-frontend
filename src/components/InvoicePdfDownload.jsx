@@ -101,8 +101,8 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
   };
 
   useEffect(() => {
-    if (invoiceData?.items) {
-      const enrichedItems = invoiceData.items.map((item) => ({
+    if (invoiceData?.items || invoiceData?.partnerOrderItems) {
+      const enrichedItems = (invoiceData?.items || invoiceData?.partnerOrderItems)?.map((item) => ({
         ...item,
         unitPrice: item.qty ? item.price / item.qty : 0, // avoid NaN
       }));

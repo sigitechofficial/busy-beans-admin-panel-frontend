@@ -445,6 +445,26 @@ export default function Leftbar(props) {
                       to="/orders/partnerOrders/all-orders"
                       data-testid={LEFTBAR.listItem("partnerOrders", "All Partner Orders")}
                     /> */}
+                    <ListItems
+                      title="Dispatched Orders"
+                      to="/orders/partnerOrders/dispatched"
+                      data-testid={LEFTBAR.listItem("partnerOrders", "Dispatched Orders")}
+                    />
+                    <ListItems
+                      title="Acknowledged Orders"
+                      to="/orders/partnerOrders/acknowledged"
+                      data-testid={LEFTBAR.listItem("partnerOrders", "Acknowledged Orders")}
+                    />
+                    <ListItems
+                      title="Shipped Orders"
+                      to="/orders/partnerOrders/shiped"
+                      data-testid={LEFTBAR.listItem("partnerOrders", "Shipped Orders")}
+                    />
+                    <ListItems
+                      title="Cancelled Orders"
+                      to="/orders/partnerOrders/cancelled"
+                      data-testid={LEFTBAR.listItem("partnerOrders", "Cancelled Orders")}
+                    />
                     <hr className="w-full" />
                   </div>
                 )}
@@ -1294,10 +1314,30 @@ export default function Leftbar(props) {
                           data-testid={LEFTBAR.listItem("partnerOrders", "New Partner Orders")}
                         />
                         {/* <ListItems
-                      title="All Partner Orders"
-                      to="/orders/partnerOrders/all-orders"
-                      data-testid={LEFTBAR.listItem("partnerOrders", "All Partner Orders")}
-                    /> */}
+                          title="All Partner Orders"
+                          to="/orders/partnerOrders/all-orders"
+                          data-testid={LEFTBAR.listItem("partnerOrders", "All Partner Orders")}
+                        /> */}
+                        <ListItems
+                          title="Dispatched Orders"
+                          to="/orders/partnerOrders/dispatched"
+                          data-testid={LEFTBAR.listItem("partnerOrders", "Dispatched Orders")}
+                        />
+                        <ListItems
+                          title="Acknowledged Orders"
+                          to="/orders/partnerOrders/acknowledged"
+                          data-testid={LEFTBAR.listItem("partnerOrders", "Acknowledged Orders")}
+                        />
+                        <ListItems
+                          title="Shipped Orders"
+                          to="/orders/partnerOrders/shiped"
+                          data-testid={LEFTBAR.listItem("partnerOrders", "Shipped Orders")}
+                        />
+                        <ListItems
+                          title="Cancelled Orders"
+                          to="/orders/partnerOrders/cancelled"
+                          data-testid={LEFTBAR.listItem("partnerOrders", "Cancelled Orders")}
+                        />
                         <hr className="w-full" />
                       </div>
                     )}

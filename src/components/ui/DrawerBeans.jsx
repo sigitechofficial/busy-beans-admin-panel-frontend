@@ -84,7 +84,7 @@ const DrawerBeans = ({
         : JSON.parse(localStorage.getItem("quotationData")) || [];
   }
   const totalPrice = cartItems?.reduce((a, b) => {
-    return Number(a) + Number(b?.price) * Number(b?.qty);
+    return Number(a) + (isDirectPartner ? Number(b?.wholesalePrice) : Number(b?.price)) * Number(b?.qty);
   }, 0);
 
   const totalWeight = cartItems?.reduce((a, b) => {
@@ -117,7 +117,7 @@ const DrawerBeans = ({
   const fetchDirectPartnerData = async () => {
     try {
       const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
-      const res = await axios.get(`${BASE_URL}api/v1/admin/sales-rep?partnerType=direct-partner`, {
+      const res = await axios.get(`${BASE_URL}api/v1/admin/sales-rep/for-order-creation?partnerType=direct-partner`, {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
@@ -125,7 +125,7 @@ const DrawerBeans = ({
         },
       });
       if (res?.data?.status === "success") {
-        const list = res?.data?.data?.data || [];
+        const list = res?.data?.data || [];
         setPartners(list);
         setSrNameOptions(
           list.map((p) => ({ value: p?.id, label: p?.srName }))
@@ -141,16 +141,17 @@ const DrawerBeans = ({
   // ✅ UPDATED: Switch gives boolean `checked`
   const handleDirectPartnerToggle = (checked) => {
     setIsDirectPartner(checked);
+
     if (checked) {
-      fetchDirectPartnerData();
       setOrder((prev) => ({
         ...prev,
         salesRepId: "",
         userId: "",
         addressId: "",
       }));
-      setEmail("");
-      setAddressOptions([]);
+      setEmail(""); 
+      setAddressOptions([]); 
+      fetchDirectPartnerData();
     } else {
       setOrder((prev) => ({
         ...prev,
@@ -165,10 +166,28 @@ const DrawerBeans = ({
     setEmail(selectedPartner?.email || "");
     setOrder((prev) => ({
       ...prev,
-      salesRepId: selectedPartner?.id, 
-      userId: "",
+      salesRepId: selectedPartner?.id,
+      userId: "", 
       addressId: "", 
     }));
+
+    const addressList = (selectedPartner?.addresses ?? []).map((address) => {
+      const parts = [
+        address.companyaddress,
+        address.addressLineOne,
+        address.addressLineTwo,
+        address.town,
+        address.state,
+        address.zipCode,
+        address.country,
+      ].filter((part) => part && part.trim() !== "");
+      return {
+        value: address.id,
+        label: parts.length > 0 ? parts.join(", ") : "",
+      };
+    });
+
+    setAddressOptions([...addressList]);
   };
 
   const handleCounterClick = (index) => {
@@ -484,7 +503,7 @@ const DrawerBeans = ({
       fetchChargesForCustomer(order.userId, totalWeight);
     }
   }, [open, order.userId, totalWeight]);
-
+  
   const calculateDiscounts = () => {
     let subtotal = 0;
     let totalDiscount = 0;
@@ -494,11 +513,10 @@ const DrawerBeans = ({
         (d) => Number(d.categoryId) === Number(item.categoryId)
       );
 
-      const discountPct = categoryDiscount
-        ? Number(categoryDiscount.percentage)
-        : 0;
+      const discountPct = categoryDiscount ? Number(categoryDiscount.percentage) : 0;
+      const itemPrice = isDirectPartner ? Number(item.wholesalePrice) : Number(item.price);
 
-      const itemSubtotal = Number(item.price) * Number(item.qty);
+      const itemSubtotal = itemPrice * Number(item.qty);
       const itemDiscount = (itemSubtotal * discountPct) / 100;
 
       subtotal += itemSubtotal;
@@ -510,7 +528,7 @@ const DrawerBeans = ({
   
   const { subtotal, totalDiscount } = calculateDiscounts();
   const finalTotal = subtotal - totalDiscount + Number(order?.shippingCharges || 0);
-
+  
   // const discountPercentage = Number(order?.discountPercentage ?? 0);
   // const discountAmount = (Number(totalPrice || 0) * discountPercentage) / 100;
 
@@ -626,6 +644,19 @@ const DrawerBeans = ({
                           data-testid={ORDERS_CREATE_DRAWER.emailInput}
                         />
                       </div>
+                        <div className="flex items-center gap-x-2 min-h-full">
+                          <Select
+                            placeholder="Select Address"
+                            className="w-full"
+                            styles={drawerSelectStyles}
+                            value={addressOptions.find((opt) => opt.value === order.addressId) || null}
+                            options={addressOptions}  
+                            onChange={(e) => {
+                              setOrder({ ...order, addressId: e?.value || "" });
+                            }}
+                            data-testid={ORDERS_CREATE_DRAWER.addressSelect}
+                          />
+                        </div>
                     </>
                   )}
 
@@ -931,7 +962,7 @@ const DrawerBeans = ({
                     <div className="space-y-1">
                       <div className="flex items-center justify-between gap-x-2">
                         <h5 className="text-base text-white">Subtotal</h5>
-                        <h6 data-testid={ORDERS_CREATE_DRAWER.subtotalValue}>$ {totalPrice?.toFixed(2)}</h6>
+                        <h6 data-testid={ORDERS_CREATE_DRAWER.subtotalValue}>${isDirectPartner ? totalWholesale.toFixed(2) : totalPrice.toFixed(2)}</h6>
                       </div>
 
                       {/* {discountPercentage > 0 && (

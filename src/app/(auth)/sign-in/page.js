@@ -94,6 +94,7 @@ export default function SignIn() {
             );
 
             localStorage.setItem("email", res?.data?.data?.user?.email);
+            localStorage.setItem("partnerType", res?.data?.data?.user?.partnerType);
             localStorage.setItem("userID", res?.data?.data?.user?.id);
             localStorage.setItem(
               "userType",

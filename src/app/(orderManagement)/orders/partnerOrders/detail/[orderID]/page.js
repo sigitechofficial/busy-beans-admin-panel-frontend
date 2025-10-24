@@ -33,7 +33,7 @@ export default function OrderDetail() {
     var userType = localStorage.getItem("userType");
     var isEmployee = localStorage.getItem("isEmployee") ? true : false;
   }
-  
+
   const { orderID } = useParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -78,7 +78,10 @@ export default function OrderDetail() {
     { value: "cashier's check", label: "Cashier's check" },
   ];
 
-  const { data, reFetch, isLoading } = GetAPI(`api/v1/admin/partner-order/order-details/${orderID}`, "orders");
+  const { data, reFetch, isLoading } = GetAPI(
+    `api/v1/admin/partner-order/order-details/${orderID}`,
+    "orders"
+  );
 
   const handleSupplierAcknowledgement = async () => {
     setLoader("acknowledgeSupplier");
@@ -147,7 +150,7 @@ export default function OrderDetail() {
       const res = await PatchAPI("api/v1/admin/assign-supplier", {
         partnerOrderId: orderID,
         orderData: {
-          supplierId: 16, 
+          supplierId: 16,
           statusId: 2,
         },
       });
@@ -189,10 +192,10 @@ export default function OrderDetail() {
           cheque: {
             chequeNumber: addCheque?.chequeNumber,
             chequeDate: addCheque?.chequeDate,
-            chequeStatus: addCheque?.chequeStatus?.value, 
+            chequeStatus: addCheque?.chequeStatus?.value,
             bankName: addCheque?.bankName,
             bankBranch: addCheque?.bankBranch,
-            chequeType: addCheque?.chequeType?.value, 
+            chequeType: addCheque?.chequeType?.value,
             chequeReceiptDate: addCheque?.chequeReceiptDate,
           },
         });
@@ -222,10 +225,10 @@ export default function OrderDetail() {
           cheque: {
             chequeNumber: addCheque?.chequeNumber,
             chequeDate: addCheque?.chequeDate,
-            chequeStatus: addCheque?.chequeStatus?.value, 
+            chequeStatus: addCheque?.chequeStatus?.value,
             bankName: addCheque?.bankName,
             bankBranch: addCheque?.bankBranch,
-            chequeType: addCheque?.chequeType?.value, 
+            chequeType: addCheque?.chequeType?.value,
             chequeReceiptDate: addCheque?.chequeReceiptDate,
           },
         });
@@ -251,7 +254,10 @@ export default function OrderDetail() {
     } else if (modal?.type === "deleteOrder" && modal.status) {
       setLoader("deleteOrder");
       try {
-        const res = await DeleteAPI(`api/v1/admin/order-management/delete-order/${orderID}`, "orders");
+        const res = await DeleteAPI(
+          `api/v1/admin/order-management/delete-order/${orderID}`,
+          "orders"
+        );
 
         if (res?.data?.status === "success") {
           success_toaster("Order deleted successfully");
@@ -260,12 +266,14 @@ export default function OrderDetail() {
           router.push("/orders");
         } else {
           setLoader("");
-          throw new Error(res?.data?.message || "An unexpected error occurred.");
+          throw new Error(
+            res?.data?.message || "An unexpected error occurred."
+          );
         }
       } catch (error) {
         setLoader("");
         // ErrorHandler(error);
-      } 
+      }
     } else {
       setLoader("cancelOrder");
       try {
@@ -334,23 +342,25 @@ export default function OrderDetail() {
 
   const handleSendInvoice = async () => {
     try {
-      const res = await PostAPI(`api/v1/admin/order-management/send-invoice/${orderID}`, {
-        order:
+      const res = await PostAPI(
+        `api/v1/admin/order-management/send-invoice/${orderID}`,
         {
-          partnerOrderId: orderID,
-          reminder: data?.data?.order?.invoicePdf ? true : false,
-          invoiceDate: data?.data?.order?.invoiceDate
-            ? undefined
-            : Date.now(),
-          invoiceReminder: data?.data?.order?.invoiceDate
-            ? Date.now()
-            : undefined,
-        },
-        successUrl:
-          "https://main.d28wfx1ny3of09.amplifyapp.com/invoice-payment-success",
-        cancelUrl:
-          "https://main.d28wfx1ny3of09.amplifyapp.com/invoice-payment-failure",
-      });
+          order: {
+            partnerOrderId: orderID,
+            reminder: data?.data?.order?.invoicePdf ? true : false,
+            invoiceDate: data?.data?.order?.invoiceDate
+              ? undefined
+              : Date.now(),
+            invoiceReminder: data?.data?.order?.invoiceDate
+              ? Date.now()
+              : undefined,
+          },
+          successUrl:
+            "https://main.d28wfx1ny3of09.amplifyapp.com/invoice-payment-success",
+          cancelUrl:
+            "https://main.d28wfx1ny3of09.amplifyapp.com/invoice-payment-failure",
+        }
+      );
       if (res?.data?.status === "success") {
         success_toaster("Invoice Send Successfully");
         reFetch();
@@ -382,12 +392,16 @@ export default function OrderDetail() {
   };
 
   const shortId = (val) =>
-    val && val.length > 12 ? `${val.slice(0, 12)}..${val.slice(-4)}` : val || "";
+    val && val.length > 12
+      ? `${val.slice(0, 12)}..${val.slice(-4)}`
+      : val || "";
 
   const stripeUrlForUser = (id, userType, connectAccountId) => {
     if (!id) return "#";
     if (userType === "salesRepresentative" && connectAccountId) {
-      return `https://dashboard.stripe.com/payments/${id}?connected_account=${encodeURIComponent(connectAccountId)}`;
+      return `https://dashboard.stripe.com/payments/${id}?connected_account=${encodeURIComponent(
+        connectAccountId
+      )}`;
     }
     return `https://dashboard.stripe.com/payments/${id}`;
   };
@@ -397,25 +411,35 @@ export default function OrderDetail() {
       await navigator.clipboard.writeText(fullUrl);
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 1200);
-    } catch { }
+    } catch {}
   };
 
   const { toggle, setToggle } = useDataContext();
 
   return isLoading ? (
-      <Loader />
-    ) : (
+    <Loader />
+  ) : (
     <div data-testid={ORDER_DETAIL.root}>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
-       data-testid={ORDER_DETAIL.headerBar}>
+      <div
+        className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+        data-testid={ORDER_DETAIL.headerBar}
+      >
         <div className="text-xl font-inter font-semibold flex items-center gap-2 [&>p]:cursor-pointer [&>p]:whitespace-nowrap">
-          <p onClick={() => setToggle(!toggle)} className="cursor-pointer md:hidden">
+          <p
+            onClick={() => setToggle(!toggle)}
+            className="cursor-pointer md:hidden"
+          >
             <CiMenuBurger size={20} />
           </p>
-          <p onClick={() => router.push("/orders")} data-testid={ORDER_DETAIL.breadcrumbOrdersLink}>Order /</p>{" "}
-            <span data-testid={ORDER_DETAIL.orderIdText(data?.data?.order?.id)}>
-              {data?.data?.order?.id}
-            </span>
+          <p
+            onClick={() => router.push("/orders")}
+            data-testid={ORDER_DETAIL.breadcrumbOrdersLink}
+          >
+            Order /
+          </p>{" "}
+          <span data-testid={ORDER_DETAIL.orderIdText(data?.data?.order?.id)}>
+            {data?.data?.order?.id}
+          </span>
           <p
             className={`text-xs font-medium px-3 py-1 rounded-full text-white whitespace-nowrap ${
               data?.data?.order?.orderCurrentStatus?.includes("Cancelled")
@@ -439,21 +463,24 @@ export default function OrderDetail() {
           </p>
         </div>
 
-        <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative text-blue-500"
-         data-testid={ORDER_DETAIL.actionsBar}>
+        <ul
+          className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative text-blue-500"
+          data-testid={ORDER_DETAIL.actionsBar}
+        >
           <li>
-            {(hasPermission("invoice_update")) && (
-            <button
-              type="button"
-              disabled={data?.data?.order?.statusId === 6 ? true : false}
-              className="disabled:cursor-not-allowed"
-              onClick={() => handleSendInvoice(data?.data?.order?.statusId)}
-              data-testid={ORDER_DETAIL.sendInvoiceBtn}
-            >
-              {data?.data?.order?.invoiceDate
-                ? "Invoice reminder"
-                : "Send Invoice"}
-            </button> )}
+            {hasPermission("invoice_update") && (
+              <button
+                type="button"
+                disabled={data?.data?.order?.statusId === 6 ? true : false}
+                className="disabled:cursor-not-allowed"
+                onClick={() => handleSendInvoice(data?.data?.order?.statusId)}
+                data-testid={ORDER_DETAIL.sendInvoiceBtn}
+              >
+                {data?.data?.order?.invoiceDate
+                  ? "Invoice reminder"
+                  : "Send Invoice"}
+              </button>
+            )}
           </li>
           <li>
             <button
@@ -468,70 +495,81 @@ export default function OrderDetail() {
       </div>
 
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
-        <div className="flex justify-end">
-
-          <div className="flex items-center gap-x-2 sm:gap-x-4 [&>button]:py-2 sm:[&>button]:py-3 [&>button]:px-2 sm:[&>button]:px-5 [&>button]:rounded-lg [&>button]:font-nunito [&>button]:font-medium [&>button]:text-xs lg:[&>button]:text-sm"
-           data-testid={ORDER_DETAIL.actionsBar}>
+        {data?.data?.order?.selfOrder ? (
+          ""
+        ) : (
+          <div className="flex justify-end">
+            <div
+              className="flex items-center gap-x-2 sm:gap-x-4 [&>button]:py-2 sm:[&>button]:py-3 [&>button]:px-2 sm:[&>button]:px-5 [&>button]:rounded-lg [&>button]:font-nunito [&>button]:font-medium [&>button]:text-xs lg:[&>button]:text-sm"
+              data-testid={ORDER_DETAIL.actionsBar}
+            >
               {/* Dispatch / Supplier Actions */}
-              {(userType === "admin" || userType === "salesRepresentative") && !isEmployee && data?.data?.order?.statusId !== 5 && (
-                <button
-                  type="button"
-                  disabled={
-                    data?.data?.order?.statusId === 5 ||
-                    data?.data?.order?.statusId === 6
-                  }
-                  className="bg-black text-white disabled:cursor-not-allowed"
-                  onClick={() => handleAssignSupplier(data?.data?.order?.statusId)}
-                  data-testid={ORDER_DETAIL.dispatchFlowBtn}
-                >
-                  {data?.data?.order?.statusId === 1
-                    ? "Dispatch to Supplier"
-                    : data?.data?.order?.statusId === 2
+              {(userType === "admin" || userType === "salesRepresentative") &&
+                !isEmployee &&
+                data?.data?.order?.statusId !== 5 && (
+                  <button
+                    type="button"
+                    disabled={
+                      data?.data?.order?.statusId === 5 ||
+                      data?.data?.order?.statusId === 6
+                    }
+                    className="bg-black text-white disabled:cursor-not-allowed"
+                    onClick={() =>
+                      handleAssignSupplier(data?.data?.order?.statusId)
+                    }
+                    data-testid={ORDER_DETAIL.dispatchFlowBtn}
+                  >
+                    {data?.data?.order?.statusId === 1
+                      ? "Dispatch to Supplier"
+                      : data?.data?.order?.statusId === 2
                       ? "Acknowledge Supplier"
                       : data?.data?.order?.statusId === 3
-                        ? "Ship Order"
-                        : "Dispatch Order"}
+                      ? "Ship Order"
+                      : "Dispatch Order"}
+                  </button>
+                )}
+
+              {hasPermission("invoice_update") && (
+                <button
+                  type="button"
+                  onClick={() => router.push(`${pathname}/add-invoice`)}
+                  className="border border-buttonBorderColor shadow-buttonShadow"
+                  data-testid={ORDER_DETAIL.addOrUpdateInvoiceBtn}
+                >
+                  {data?.data?.order?.invoiceDate
+                    ? "Update Invoice"
+                    : "Add Invoice"}
                 </button>
               )}
 
-            {(hasPermission("invoice_update")) && (
-            <button
-              type="button"
-              onClick={() => router.push(`${pathname}/add-invoice`)}
-              className="border border-buttonBorderColor shadow-buttonShadow"
-              data-testid={ORDER_DETAIL.addOrUpdateInvoiceBtn}
-            >
-              {data?.data?.order?.invoiceDate
-                ? "Update Invoice"
-                : "Add Invoice"}
-            </button> )}
-
-            {(!isEmployee || hasPermission("orders_update")) &&  (
-              <button
-                disabled={
-                  data?.data?.order?.statusId === 5 ||
-                  data?.data?.order?.statusId === 6
-                    ? true
-                    : false
-                }
-                type="button"
-                onClick={handleCancelOrder}
-                className="bg-theme text-white disabled:cursor-not-allowed"
-                data-testid={ORDER_DETAIL.cancelOrderBtn}
-              >
-                Cancel Order
-              </button>
-            )}
+              {(!isEmployee || hasPermission("orders_update")) && (
+                <button
+                  disabled={
+                    data?.data?.order?.statusId === 5 ||
+                    data?.data?.order?.statusId === 6
+                      ? true
+                      : false
+                  }
+                  type="button"
+                  onClick={handleCancelOrder}
+                  className="bg-theme text-white disabled:cursor-not-allowed"
+                  data-testid={ORDER_DETAIL.cancelOrderBtn}
+                >
+                  Cancel Order
+                </button>
+              )}
               {(!isEmployee || hasPermission("orders_delete")) && (
                 <button
                   type="button"
                   onClick={handleDeleteOrder}
                   disabled={
-                    data?.data?.order?.statusId === 4 || data?.data?.order?.statusId === 5
+                    data?.data?.order?.statusId === 4 ||
+                    data?.data?.order?.statusId === 5
                   }
                   className="bg-red-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                   title={
-                    data?.data?.order?.statusId === 4 || data?.data?.order?.statusId === 5
+                    data?.data?.order?.statusId === 4 ||
+                    data?.data?.order?.statusId === 5
                       ? "Shipped orders cannot be deleted"
                       : ""
                   }
@@ -540,9 +578,9 @@ export default function OrderDetail() {
                   Delete Order
                 </button>
               )}
-
+            </div>
           </div>
-        </div>
+        )}
 
         {loader === "acknowledgeSupplier" || loader === "orderDelivered" ? (
           <MiniLoader />
@@ -550,7 +588,10 @@ export default function OrderDetail() {
           <div className="grid grid-cols-1 gap-6 lg:gap-8 xl:gap-x-12">
             {/* Left side */}
             <div className="space-y-6">
-              <div className="bg-blue-50 rounded-md w-full px-4 lg:px-6 py-6 flex gap-x-2" data-testid={ORDER_DETAIL.infoBanner}>
+              <div
+                className="bg-blue-50 rounded-md w-full px-4 lg:px-6 py-6 flex gap-x-2"
+                data-testid={ORDER_DETAIL.infoBanner}
+              >
                 <div>
                   <LuClipboardList size={25} />
                 </div>
@@ -583,13 +624,19 @@ export default function OrderDetail() {
                           userType === "salesRepresentative") &&
                           data?.data?.order?.paymentMethod === "card") ||
                         data?.data?.order?.statusId === 6 ? (
-                          <div className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none" data-testid={ORDER_DETAIL.paymentStatusReadonly}>
+                          <div
+                            className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none"
+                            data-testid={ORDER_DETAIL.paymentStatusReadonly}
+                          >
                             {data?.data?.order?.paymentStatus === "done"
                               ? "Paid"
                               : "Unpaid"}
                           </div>
                         ) : (
-                          <span className="w-40" data-testid={ORDER_DETAIL.paymentStatusSelect}>
+                          <span
+                            className="w-40"
+                            data-testid={ORDER_DETAIL.paymentStatusSelect}
+                          >
                             <Select
                               placeholder="Select Payment Status"
                               className="w-full"
@@ -612,10 +659,16 @@ export default function OrderDetail() {
                 </div>
               </div>
 
-              <div className="w-full grid xl:grid-cols-2 gap-10 xl:gap-20 py-4 px-4 2xl:px-8 space-y-4 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm" data-testid={ORDER_DETAIL.summaryCard.wrapper}>
+              <div
+                className="w-full grid xl:grid-cols-2 gap-10 xl:gap-20 py-4 px-4 2xl:px-8 space-y-4 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm"
+                data-testid={ORDER_DETAIL.summaryCard.wrapper}
+              >
                 <div className="w-full [&>div]:h-10 text-sm">
                   {data?.data?.order?.on && (
-                    <div className="flex items-center gap-5 border-b" data-testid={ORDER_DETAIL.summaryCard.orderedOnRow}>
+                    <div
+                      className="flex items-center gap-5 border-b"
+                      data-testid={ORDER_DETAIL.summaryCard.orderedOnRow}
+                    >
                       <p className="w-28">Ordered On </p>
                       <p>{dayjs(data?.data?.order?.on).format("MM/DD/YYYY")}</p>
                     </div>
@@ -635,14 +688,20 @@ export default function OrderDetail() {
                     </div>
                   )}
                   {data?.data?.order?.createdBy && (
-                    <div className="flex items-center gap-5 border-b" data-testid={ORDER_DETAIL.summaryCard.createdByRow}>
+                    <div
+                      className="flex items-center gap-5 border-b"
+                      data-testid={ORDER_DETAIL.summaryCard.createdByRow}
+                    >
                       <p className="w-28">Created By</p>
 
                       <p className="">{data?.data?.order?.createdBy}</p>
                     </div>
                   )}
                   {data?.data?.order?.supplier?.supplierName && (
-                    <div className="flex items-center gap-5 border-b" data-testid={ORDER_DETAIL.summaryCard.supplierRow}>
+                    <div
+                      className="flex items-center gap-5 border-b"
+                      data-testid={ORDER_DETAIL.summaryCard.supplierRow}
+                    >
                       <p className="w-28">Supplier</p>
                       <Link
                         href={
@@ -662,7 +721,10 @@ export default function OrderDetail() {
                     </div>
                   )}
                   {data?.data?.order?.salesRepName && (
-                    <div className="flex items-center gap-5 border-b" data-testid={ORDER_DETAIL.summaryCard.salesRepRow}>
+                    <div
+                      className="flex items-center gap-5 border-b"
+                      data-testid={ORDER_DETAIL.summaryCard.salesRepRow}
+                    >
                       <p className="w-28">Local Partner</p>
                       <Link
                         href={
@@ -682,13 +744,19 @@ export default function OrderDetail() {
                     </div>
                   )}
                   {data?.data?.order?.poNumber && (
-                    <div className="flex items-center gap-5 border-b" data-testid={ORDER_DETAIL.summaryCard.poNumberRow}>
+                    <div
+                      className="flex items-center gap-5 border-b"
+                      data-testid={ORDER_DETAIL.summaryCard.poNumberRow}
+                    >
                       <p className="w-28">P.O. # </p>
                       <p>{data?.data?.order?.poNumber}</p>
                     </div>
                   )}
                   {data?.data?.order?.invoiceNumber && (
-                    <div className="flex items-center gap-5 border-b" data-testid={ORDER_DETAIL.summaryCard.invoiceNumberRow}>
+                    <div
+                      className="flex items-center gap-5 border-b"
+                      data-testid={ORDER_DETAIL.summaryCard.invoiceNumberRow}
+                    >
                       <p className="w-28">Invoice No </p>
                       <p>{data?.data?.order?.invoiceNumber}</p>
                     </div>
@@ -699,85 +767,133 @@ export default function OrderDetail() {
                       <p>{data?.data?.order?.pulloutIntentId}</p>
                     </div>
                   )}
-        
-                      {data?.data?.order?.paymentStatus === "done" && (
-                        data?.data?.order?.paymentIntentId
-                          ? (() => {
-                            const intentId = data?.data?.order?.paymentIntentId;
-                            const connectAccountId = data?.data?.order?.salesRep?.connectAccountId;
-                            const intentUrl = stripeUrlForUser(intentId, userType, connectAccountId);
 
-                            return (
-                              <div className="flex items-center gap-2 border-b">
-                                <p className="w-32">Payment Intent ID</p>
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    type="button"
-                                    className={`underline text-blue-600 hover:text-blue-800 transition ${copiedId === intentId ? "animate-pulse" : ""}`}
-                                    title="Open in Stripe Dashboard"
-                                    onClick={() => window.open(intentUrl, "_blank", "noopener,noreferrer")}
-                                  >
-                                    {shortId(intentId)}
-                                  </button>
-                                  <FiCopy
-                                    className={`cursor-pointer text-gray-500 hover:text-black ${copiedId === intentId ? "animate-pulse" : ""}`}
-                                    onClick={() => copyLink(intentUrl, intentId, setCopiedId)}
-                                    title="Copy Stripe dashboard link"
-                                  />
-                                </div>
+                  {data?.data?.order?.paymentStatus === "done" &&
+                    (data?.data?.order?.paymentIntentId
+                      ? (() => {
+                          const intentId = data?.data?.order?.paymentIntentId;
+                          const connectAccountId =
+                            data?.data?.order?.salesRep?.connectAccountId;
+                          const intentUrl = stripeUrlForUser(
+                            intentId,
+                            userType,
+                            connectAccountId
+                          );
+
+                          return (
+                            <div className="flex items-center gap-2 border-b">
+                              <p className="w-32">Payment Intent ID</p>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  className={`underline text-blue-600 hover:text-blue-800 transition ${
+                                    copiedId === intentId ? "animate-pulse" : ""
+                                  }`}
+                                  title="Open in Stripe Dashboard"
+                                  onClick={() =>
+                                    window.open(
+                                      intentUrl,
+                                      "_blank",
+                                      "noopener,noreferrer"
+                                    )
+                                  }
+                                >
+                                  {shortId(intentId)}
+                                </button>
+                                <FiCopy
+                                  className={`cursor-pointer text-gray-500 hover:text-black ${
+                                    copiedId === intentId ? "animate-pulse" : ""
+                                  }`}
+                                  onClick={() =>
+                                    copyLink(intentUrl, intentId, setCopiedId)
+                                  }
+                                  title="Copy Stripe dashboard link"
+                                />
                               </div>
-                            );
-                          })()
-                          : (
-                            data?.data?.order?.invoiceId && (() => {
-                              const sessionId = data?.data?.order?.invoiceId;
-                              const connectAccountId = data?.data?.order?.salesRep?.connectAccountId;
-                              const sessionUrl = stripeUrlForUser(sessionId, userType, connectAccountId);
+                            </div>
+                          );
+                        })()
+                      : data?.data?.order?.invoiceId &&
+                        (() => {
+                          const sessionId = data?.data?.order?.invoiceId;
+                          const connectAccountId =
+                            data?.data?.order?.salesRep?.connectAccountId;
+                          const sessionUrl = stripeUrlForUser(
+                            sessionId,
+                            userType,
+                            connectAccountId
+                          );
 
-                              return (
-                                <div className="flex items-center gap-2 border-b">
-                                  <p className="w-32">Checkout Session ID</p>
-                                  <div className="flex items-center gap-2">
-                                    <button
-                                      type="button"
-                                      className={`underline text-blue-600 hover:text-blue-800 transition ${copiedId === sessionId ? "animate-pulse" : ""}`}
-                                      title="Open in Stripe Dashboard"
-                                      onClick={() => window.open(sessionUrl, "_blank", "noopener,noreferrer")}
-                                    >
-                                      {shortId(sessionId)}
-                                    </button>
-                                    <FiCopy
-                                      className={`cursor-pointer text-gray-500 hover:text-black ${copiedId === sessionId ? "animate-pulse" : ""}`}
-                                      onClick={() => copyLink(sessionUrl, sessionId, setCopiedId)}
-                                      title="Copy Stripe dashboard link"
-                                    />
-                                  </div>
-                                </div>
-                              );
-                            })()
-                          )
-                      )}
+                          return (
+                            <div className="flex items-center gap-2 border-b">
+                              <p className="w-32">Checkout Session ID</p>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  className={`underline text-blue-600 hover:text-blue-800 transition ${
+                                    copiedId === sessionId
+                                      ? "animate-pulse"
+                                      : ""
+                                  }`}
+                                  title="Open in Stripe Dashboard"
+                                  onClick={() =>
+                                    window.open(
+                                      sessionUrl,
+                                      "_blank",
+                                      "noopener,noreferrer"
+                                    )
+                                  }
+                                >
+                                  {shortId(sessionId)}
+                                </button>
+                                <FiCopy
+                                  className={`cursor-pointer text-gray-500 hover:text-black ${
+                                    copiedId === sessionId
+                                      ? "animate-pulse"
+                                      : ""
+                                  }`}
+                                  onClick={() =>
+                                    copyLink(sessionUrl, sessionId, setCopiedId)
+                                  }
+                                  title="Copy Stripe dashboard link"
+                                />
+                              </div>
+                            </div>
+                          );
+                        })())}
 
                   {data?.data?.order?.shippingCompany && (
-                    <div className="flex items-center gap-2 border-b" data-testid={ORDER_DETAIL.summaryCard.shippingCompanyRow}>
+                    <div
+                      className="flex items-center gap-2 border-b"
+                      data-testid={ORDER_DETAIL.summaryCard.shippingCompanyRow}
+                    >
                       <p className="w-29">Shipping Company</p>
                       <p>{data?.data?.order?.shippingCompany}</p>
                     </div>
                   )}
                   {data?.data?.order?.trackingNumber && (
-                    <div className="flex items-center gap-5 border-b" data-testid={ORDER_DETAIL.summaryCard.trackingNumberRow}>
+                    <div
+                      className="flex items-center gap-5 border-b"
+                      data-testid={ORDER_DETAIL.summaryCard.trackingNumberRow}
+                    >
                       <p className="w-28">Tracking No: </p>
                       <p>{data?.data?.order?.trackingNumber}</p>
                     </div>
                   )}
                   {data?.data?.order?.frequency && (
-                    <div className="flex items-center gap-5 border-b" data-testid={ORDER_DETAIL.summaryCard.frequencyRow}>
+                    <div
+                      className="flex items-center gap-5 border-b"
+                      data-testid={ORDER_DETAIL.summaryCard.frequencyRow}
+                    >
                       <p className="w-28">Frequency: </p>
                       <p>{data?.data?.order?.frequency}</p>
                     </div>
                   )}
                   {data?.data?.order?.invoiceDate && (
-                    <div className="flex items-center gap-5 border-b" data-testid={ORDER_DETAIL.summaryCard.invoicePaidDateRow}>
+                    <div
+                      className="flex items-center gap-5 border-b"
+                      data-testid={ORDER_DETAIL.summaryCard.invoicePaidDateRow}
+                    >
                       <p className="w-28">Invoice Date: </p>
                       <p>
                         {data?.data?.order?.invoiceDate
@@ -789,7 +905,10 @@ export default function OrderDetail() {
                     </div>
                   )}
                   {data?.data?.order?.invoicePaidDate && (
-                    <div className="flex items-center gap-5 border-b" data-testid={ORDER_DETAIL.summaryCard.trackingNumberRow}>
+                    <div
+                      className="flex items-center gap-5 border-b"
+                      data-testid={ORDER_DETAIL.summaryCard.trackingNumberRow}
+                    >
                       <p className="w-28">Invoice Paid Date: </p>
                       <p>
                         {data?.data?.order?.invoicePaidDate
@@ -816,60 +935,97 @@ export default function OrderDetail() {
                 {/* ================ */}
                 <div className="w-full grid grid-cols-2 gap-10 text-xs lg:text-sm">
                   {/* Deliver To */}
-                      <div data-testid={ORDER_DETAIL.deliverTo.wrapper}>
-                        <h6 className="font-semibold">Deliver To</h6>
-                        <div className="items-center uppercase">
-                          {data?.data?.order?.salesRep?.billingAddresses?.[0]?.addressLineOne && (
-                            <p>{data?.data?.order?.salesRep?.billingAddresses[0].addressLineOne}</p>
-                          )}
-                          {data?.data?.order?.salesRep?.billingAddresses?.[0]?.addressLineTwo && (
-                            <p>{data?.data?.order?.salesRep?.billingAddresses[0].addressLineTwo}</p>
-                          )}
-                          {data?.data?.order?.salesRep?.billingAddresses?.[0]?.town && (
-                            <p>{data?.data?.order?.salesRep?.billingAddresses[0].town}</p>
-                          )}
-                          {data?.data?.order?.salesRep?.billingAddresses?.[0]?.state && (
-                            <p>{data?.data?.order?.salesRep?.billingAddresses[0].state}</p>
-                          )}
-                          {data?.data?.order?.salesRep?.billingAddresses?.[0]?.zipCode && (
-                            <p>{data?.data?.order?.salesRep?.billingAddresses[0].zipCode}</p>
-                          )}
-                          {data?.data?.order?.salesRep?.billingAddresses?.[0]?.country && (
-                            <p>{data?.data?.order?.salesRep?.billingAddresses[0].country}</p>
-                          )}
-                        </div>
-                         {/* {(hasPermission("customer_update") || hasPermission("selected-customer_update")) && (
+                  <div data-testid={ORDER_DETAIL.deliverTo.wrapper}>
+                    <h6 className="font-semibold">Deliver To</h6>
+                    <div className="items-center uppercase">
+                      {data?.data?.order?.salesRep?.billingAddresses?.[0]
+                        ?.addressLineOne && (
+                        <p>
+                          {
+                            data?.data?.order?.salesRep?.billingAddresses[0]
+                              .addressLineOne
+                          }
+                        </p>
+                      )}
+                      {data?.data?.order?.salesRep?.billingAddresses?.[0]
+                        ?.addressLineTwo && (
+                        <p>
+                          {
+                            data?.data?.order?.salesRep?.billingAddresses[0]
+                              .addressLineTwo
+                          }
+                        </p>
+                      )}
+                      {data?.data?.order?.salesRep?.billingAddresses?.[0]
+                        ?.town && (
+                        <p>
+                          {
+                            data?.data?.order?.salesRep?.billingAddresses[0]
+                              .town
+                          }
+                        </p>
+                      )}
+                      {data?.data?.order?.salesRep?.billingAddresses?.[0]
+                        ?.state && (
+                        <p>
+                          {
+                            data?.data?.order?.salesRep?.billingAddresses[0]
+                              .state
+                          }
+                        </p>
+                      )}
+                      {data?.data?.order?.salesRep?.billingAddresses?.[0]
+                        ?.zipCode && (
+                        <p>
+                          {
+                            data?.data?.order?.salesRep?.billingAddresses[0]
+                              .zipCode
+                          }
+                        </p>
+                      )}
+                      {data?.data?.order?.salesRep?.billingAddresses?.[0]
+                        ?.country && (
+                        <p>
+                          {
+                            data?.data?.order?.salesRep?.billingAddresses[0]
+                              .country
+                          }
+                        </p>
+                      )}
+                    </div>
+                    {/* {(hasPermission("customer_update") || hasPermission("selected-customer_update")) && (
                     <span
                       onClick={() => router.push(`${pathname}/edit`)}
                       className="text-blue-500 text-xs cursor-pointer"
                     >
                       Edit
                     </span> )} */}
-                      </div>
+                  </div>
 
                   {/* Bill To Section */}
-                      <div className="uppercase" data-testid={ORDER_DETAIL.invoiceTo.wrapper}>
-                        <div className="font-bold capitalize">Invoice to</div>
-                        <div>
-                          {data?.data?.order?.salesRep?.address && (
-                            <div>
-                              {data?.data?.order?.salesRep?.address}
-                            </div>
-                          )}
+                  <div
+                    className="uppercase"
+                    data-testid={ORDER_DETAIL.invoiceTo.wrapper}
+                  >
+                    <div className="font-bold capitalize">Invoice to</div>
+                    <div>
+                      {data?.data?.order?.salesRep?.address && (
+                        <div>{data?.data?.order?.salesRep?.address}</div>
+                      )}
 
-                          {data?.data?.order?.salesRep?.city && (
-                            <div>{data?.data?.order?.salesRep?.city}</div>
-                          )}
+                      {data?.data?.order?.salesRep?.city && (
+                        <div>{data?.data?.order?.salesRep?.city}</div>
+                      )}
 
-                          {data?.data?.order?.salesRep?.state && (
-                            <div>{data?.data?.order?.salesRep?.state}</div>
-                          )}
+                      {data?.data?.order?.salesRep?.state && (
+                        <div>{data?.data?.order?.salesRep?.state}</div>
+                      )}
 
-                          {data?.data?.order?.salesRep?.country && (
-                            <div>{data?.data?.order?.salesRep?.country}</div>
-                          )}
-                        </div>
-                        {(data?.data?.order?.salesRep?.countryCode ||
+                      {data?.data?.order?.salesRep?.country && (
+                        <div>{data?.data?.order?.salesRep?.country}</div>
+                      )}
+                    </div>
+                    {(data?.data?.order?.salesRep?.countryCode ||
                       data?.data?.order?.salesRep?.phoneNumber) && (
                       <div>
                         {[
@@ -914,8 +1070,9 @@ export default function OrderDetail() {
                     </div>
                   )}
                   {data?.data?.order?.statusId == 5 && (
-                    <div className="max-w-32 flex flex-col items-center text-xs text-gray-500"
-                     data-testid={ORDER_DETAIL.dispatchedCard}
+                    <div
+                      className="max-w-32 flex flex-col items-center text-xs text-gray-500"
+                      data-testid={ORDER_DETAIL.dispatchedCard}
                     >
                       <img src="/images/dispatch.png" alt="dispatch image" />
                       <p>Dispatched</p>
@@ -934,18 +1091,21 @@ export default function OrderDetail() {
             </div>
 
             {/* Right side */}
-            <div className="space-y-8" data-testid={ORDER_DETAIL.trackOrderSection}>
+            <div
+              className="space-y-8"
+              data-testid={ORDER_DETAIL.trackOrderSection}
+            >
               <TrackOrder
                 orderHistories={data?.data?.order?.orderHistories}
                 statusId={data?.data?.order?.statusId}
               />
               <div data-testid={ORDER_DETAIL.orderCardSection}>
-              <PartnerOrderCard
-                reFetch={reFetch}
-                orderData={data?.data?.order}
-                modal={modal}
-                setModal={setModal}
-              />
+                <PartnerOrderCard
+                  reFetch={reFetch}
+                  orderData={data?.data?.order}
+                  modal={modal}
+                  setModal={setModal}
+                />
               </div>
             </div>
           </div>
@@ -967,37 +1127,41 @@ export default function OrderDetail() {
               status: false,
             })
           }
-            header={
-              <div className="font-nunito font-bold text-2xl text-center"
-               data-testid={ORDER_DETAIL.dialog.title}
-              >
-                {modal?.type === "cancelOrder"
-                  ? "Cancel Order"
-                  : modal?.type === "addCheque"
-                    ? "Add Bank Check"
-                    : modal?.type === "editCheque"
-                      ? "Edit Bank Check"
-                      : "Delete Order"
-                }
-              </div>
-            }
+          header={
+            <div
+              className="font-nunito font-bold text-2xl text-center"
+              data-testid={ORDER_DETAIL.dialog.title}
+            >
+              {modal?.type === "cancelOrder"
+                ? "Cancel Order"
+                : modal?.type === "addCheque"
+                ? "Add Bank Check"
+                : modal?.type === "editCheque"
+                ? "Edit Bank Check"
+                : "Delete Order"}
+            </div>
+          }
           data-testid={ORDER_DETAIL.dialog.root}
         >
           <form
             onSubmit={handleSubmit}
             className="space-y-4 flex flex-col items-center"
           >
-            {loader === "cancelOrder" || loader === "addCheque" || loader === "deleteOrder" ? (
-              <MiniLoader data-testid={ORDER_DETAIL.miniLoader}/>
+            {loader === "cancelOrder" ||
+            loader === "addCheque" ||
+            loader === "deleteOrder" ? (
+              <MiniLoader data-testid={ORDER_DETAIL.miniLoader} />
             ) : (
               <div className="w-full space-y-4">
                 {modal?.type === "cancelOrder" ? (
                   <p className="text-labelColor font-nunito font-medium text-lg text-center">
                     Are you sure you want to cancel this Order ?
                   </p>
-                ) : modal?.type === "deleteOrder" ? ( 
+                ) : modal?.type === "deleteOrder" ? (
                   <div className="space-y-3">
-                    <p className="text-red-600 font-semibold text-center">This action is permanent.</p>
+                    <p className="text-red-600 font-semibold text-center">
+                      This action is permanent.
+                    </p>
                     <p className="text-labelColor font-nunito font-medium text-lg text-center">
                       Are you sure you want to permanently delete this Order?
                     </p>
@@ -1136,13 +1300,13 @@ export default function OrderDetail() {
                     className="rounded-lg border border-theme text-white px-10 bg-theme"
                     data-testid={ORDER_DETAIL.dialog.submitBtn}
                   >
-                  {modal?.type === "cancelOrder"
-                    ? "Cancel Order"
-                    : modal?.type === "addCheque"
-                    ? "Add Bank Check"
-                    : modal?.type === "editCheque"
-                    ? "Update Bank Check"
-                    : "Delete Order"}
+                    {modal?.type === "cancelOrder"
+                      ? "Cancel Order"
+                      : modal?.type === "addCheque"
+                      ? "Add Bank Check"
+                      : modal?.type === "editCheque"
+                      ? "Update Bank Check"
+                      : "Delete Order"}
                   </button>
                 </div>
               </div>
@@ -1153,4 +1317,3 @@ export default function OrderDetail() {
     </div>
   );
 }
-

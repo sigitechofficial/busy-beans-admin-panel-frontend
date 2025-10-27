@@ -31,6 +31,7 @@ import { FiCopy } from "react-icons/fi";
 export default function OrderDetail() {
   if (typeof window !== "undefined") {
     var userType = localStorage.getItem("userType");
+    var partnerType = localStorage.getItem("partnerType");
     var isEmployee = localStorage.getItem("isEmployee") ? true : false;
   }
 
@@ -463,35 +464,37 @@ export default function OrderDetail() {
           </p>
         </div>
 
-        <ul
-          className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative text-blue-500"
-          data-testid={ORDER_DETAIL.actionsBar}
-        >
-          <li>
-            {hasPermission("invoice_update") && (
+        {partnerType !== "direct-partner" && (
+          <ul
+            className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative text-blue-500"
+            data-testid={ORDER_DETAIL.actionsBar}
+          >
+            <li>
+              {hasPermission("invoice_update") && (
+                <button
+                  type="button"
+                  disabled={data?.data?.order?.statusId === 6 ? true : false}
+                  className="disabled:cursor-not-allowed"
+                  onClick={() => handleSendInvoice(data?.data?.order?.statusId)}
+                  data-testid={ORDER_DETAIL.sendInvoiceBtn}
+                >
+                  {data?.data?.order?.invoiceDate
+                    ? "Invoice reminder"
+                    : "Send Invoice"}
+                </button>
+              )}
+            </li>
+            <li>
               <button
+                onClick={() => router.push(`${pathname}/invoice`)}
                 type="button"
-                disabled={data?.data?.order?.statusId === 6 ? true : false}
-                className="disabled:cursor-not-allowed"
-                onClick={() => handleSendInvoice(data?.data?.order?.statusId)}
-                data-testid={ORDER_DETAIL.sendInvoiceBtn}
+                data-testid={ORDER_DETAIL.viewPdfBtn}
               >
-                {data?.data?.order?.invoiceDate
-                  ? "Invoice reminder"
-                  : "Send Invoice"}
+                View PDF
               </button>
-            )}
-          </li>
-          <li>
-            <button
-              onClick={() => router.push(`${pathname}/invoice`)}
-              type="button"
-              data-testid={ORDER_DETAIL.viewPdfBtn}
-            >
-              View PDF
-            </button>
-          </li>
-        </ul>
+            </li>
+          </ul>
+        )}
       </div>
 
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">

@@ -136,7 +136,9 @@ const DrawerBeans = ({
       if (res?.data?.status === "success") {
         const list = res?.data?.data || [];
         setPartners(list);
-        setSrNameOptions(list.map((p) => ({ value: p?.id, label: p?.srName })));
+        setSrNameOptions(
+          list?.map((p) => ({ value: p?.id, label: p?.srName }))
+        );
       } else {
         throw new Error(
           res?.data?.message || "Failed to fetch direct partner data."
@@ -173,29 +175,37 @@ const DrawerBeans = ({
   const selfOrderSwitch = (checked) => {
     setIsSelfOrder(checked);
     if (checked) {
-      let email = localStorage.getItem("email");
-      setEmail(email);
+      if (email !== "") {
+        fetchChargesForCustomer(userID, totalWeight);
+      }
+      let selfemail = localStorage.getItem("email");
+      setEmail(selfemail);
       fetchDirectPartnerData(true);
-
-      let list = partners?.[0].addresses?.map((add) => ({
-        value: add?.id,
-        label: [
-          add.companyaddress,
-          add.addressLineOne,
-          add.addressLineTwo,
-          add.town,
-          add.state,
-          add.zipCode,
-          add.country,
-        ].filter((part) => part && part.trim() !== ""),
-      }));
-
-      setAddressOptions(list);
     } else {
       setEmail("");
+      selectedEmail("");
       setAddressOptions([]);
     }
   };
+
+  useEffect(() => {
+    if (partners && isSelfOrder) {
+      let list = partners?.[0]?.addresses?.map((add) => ({
+        value: add?.id,
+        label: [
+          add?.companyaddress,
+          add?.addressLineOne,
+          add?.addressLineTwo,
+          add?.town,
+          add?.state,
+          add?.zipCode,
+          add?.country,
+        ]?.filter((part) => part && part?.trim() !== ""),
+      }));
+
+      setAddressOptions(list);
+    }
+  }, [partners]);
 
   const handleSrNameSelect = (selectedOption) => {
     const selectedPartner = partners.find(
@@ -559,8 +569,8 @@ const DrawerBeans = ({
   // }, [open, quotationData]);
 
   useEffect(() => {
-    if (open && order.userId) {
-      fetchChargesForCustomer(order.userId, totalWeight);
+    if ((open && order.userId) || (isSelfOrder && userID)) {
+      fetchChargesForCustomer(isSelfOrder ? userID : order.userId, totalWeight);
     }
   }, [open, order.userId, totalWeight]);
 
@@ -787,8 +797,8 @@ const DrawerBeans = ({
                         className="w-full"
                         styles={drawerSelectStyles}
                         value={
-                          addressOptions.find(
-                            (opt) => opt.value === order.addressId
+                          addressOptions?.find(
+                            (opt) => opt?.value === order?.addressId
                           ) || null
                         }
                         options={addressOptions}

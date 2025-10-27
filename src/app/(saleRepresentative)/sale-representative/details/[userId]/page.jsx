@@ -177,7 +177,7 @@ export default function SalesRepDetails() {
       if (addrKind === "billing") {
         payload = { billingAddresses: baseAddress };
       } else {
-        payload = { newAddressess: baseAddress };
+        payload = { newAddressess: [baseAddress ]};
       }
     }
 

@@ -93,7 +93,7 @@ export default function OrderDetail() {
     setLoader("acknowledgeSupplier");
     try {
       const res = await PatchAPI("api/v1/admin/supplier-acknowledgement", {
-        orderId: data?.data?.order?.id,
+        [pathname.includes("/supplier/partner") ? "partnerOrderId" : "orderId"]: data?.data?.order?.id,
         orderData: {
           statusId: 3,
         },
@@ -116,10 +116,10 @@ export default function OrderDetail() {
     setLoader("orderDelivered");
     try {
       const res = await PatchAPI("api/v1/admin/order-deliver", {
-        orderId: data?.data?.order?.id,
+        [pathname.includes("/supplier/partner") ? "partnerOrderId" : "orderId"]: data?.data?.order?.id,
         orderData: {
           statusId: 5,
-          paymentStaus: "done",
+          // paymentStaus: "done",
         },
       });
       if (res?.data?.status === "success") {

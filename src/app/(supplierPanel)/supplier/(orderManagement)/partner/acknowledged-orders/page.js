@@ -27,18 +27,6 @@ export default function SelfOrders() {
     { field: "id", header: "#", sort: true },
     { field: "partner", header: "Partner" },
     { field: "noOfItems", header: "No. of Items" },
-    // { field: "itemsPrice", header: "Items Price" },
-    // { field: "subTotal", header: "Sub Total" },
-    // { field: "totalBill", header: "Total" },
-    // { field: "discountPrice", header: "Discount Price" },
-    // { field: "discountPercentage", header: "Discount Percentage" },
-    // { field: "vat", header: "Vat" },
-    // { field: "totalWeight", header: "Total Weight" },
-    // { field: "shippingCharges", header: "Shipping Charges" },
-    // { field: "note", header: "Note" },
-    // { field: "paymentMethod", header: "Payment Method" },
-    // { field: "poNumber", header: "Po Number" },
-    // { field: "orderFrequency", header: "Order Frequency" },
     { field: "orderCurrentStatus", header: "Status" },
     // { field: "action", header: "Action" },
   ];
@@ -90,7 +78,7 @@ export default function SelfOrders() {
             <CiMenuBurger size={20} />
           </p>
           <h2 className="text-xl font-inter font-semibold">
-            Self Orders
+            Acknowldged Orders
           </h2>
         </div>
 

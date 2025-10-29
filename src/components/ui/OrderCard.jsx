@@ -151,12 +151,12 @@ export default function OrderCard(props) {
 
         // Deliver immediately
         const resDeliver = await PatchAPI("api/v1/admin/order-deliver", {
-          [pathname.includes("self-orders") ? "partnerOrderId" : "orderId"]:
+          [pathname.includes("/supplier/partner") ? "partnerOrderId" : "orderId"]:
             props?.orderData?.id,
           orderData: {
             statusId: 5,
             orderStatus: props?.orderData?.orderCurrentStatus,
-            paymentStaus: props?.orderData?.paymentStatus,F
+            // paymentStaus: props?.orderData?.paymentStatus,
           },
         });
 

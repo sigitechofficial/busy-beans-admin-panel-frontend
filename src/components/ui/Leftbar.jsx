@@ -1282,7 +1282,8 @@ export default function Leftbar(props) {
               pathname === "/supplier/dispatched-orders" ||
               pathname === "/supplier/delivered-orders" ||
               pathname === "/supplier/cancelled-orders" ||
-              pathname.includes("/supplier/order-detail")
+              pathname.includes("/supplier/order-detail")||
+              pathname.includes("/supplier/partner")
             }
             Angle={
               active?.orderManagement?.tab === "orderManagement" &&

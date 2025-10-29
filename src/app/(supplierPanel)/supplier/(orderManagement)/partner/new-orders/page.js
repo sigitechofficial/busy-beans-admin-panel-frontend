@@ -76,10 +76,10 @@ export default function SelfOrders() {
     });
   });
   const { toggle, setToggle } = useDataContext();
- 
+
   return isLoading ? (
-      <Loader />
-    ) : (
+    <Loader />
+  ) : (
     <div>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <div className="flex items-center gap-2">
@@ -89,9 +89,7 @@ export default function SelfOrders() {
           >
             <CiMenuBurger size={20} />
           </p>
-          <h2 className="text-xl font-inter font-semibold">
-            Self Orders
-          </h2>
+          <h2 className="text-xl font-inter font-semibold">New Orders</h2>
         </div>
 
         {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">

@@ -154,7 +154,7 @@ export default function PartnerOrderCard(props) {
           orderData: {
             statusId: 5,
             orderStatus: props?.orderData?.orderCurrentStatus,
-            paymentStaus: props?.orderData?.paymentStatus,
+            // paymentStaus: props?.orderData?.paymentStatus,
           },
         });
 

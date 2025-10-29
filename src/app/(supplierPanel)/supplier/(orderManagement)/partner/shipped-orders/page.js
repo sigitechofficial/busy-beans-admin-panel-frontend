@@ -89,7 +89,7 @@ export default function SelfOrders() {
           >
             <CiMenuBurger size={20} />
           </p>
-          <h2 className="text-xl font-inter font-semibold">Self Orders</h2>
+          <h2 className="text-xl font-inter font-semibold">Shipped Orders</h2>
         </div>
 
         {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">

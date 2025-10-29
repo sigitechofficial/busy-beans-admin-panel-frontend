@@ -114,7 +114,7 @@ export default function OrderDetail() {
         partnerOrderId: data?.data?.order?.id,
         orderData: {
           statusId: 5,
-          paymentStaus: "done",
+          // paymentStaus: "done",
         },
       });
       if (res?.data?.status === "success") {

@@ -101,7 +101,7 @@ const DrawerBeans = ({
       : userType === "admin"
       ? `api/v1/admin/customer-management/customer-list/all`
       : userType === "salesRepresentative"
-      ? `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}&orderCreation=yes`
+      ? `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}`
       : `api/v1/admin/customer-management/customer-list/all`;
 
   const { data } = GetAPI(customerListEndpoint, "customer");

@@ -499,7 +499,7 @@ export default function OrderDetail() {
 
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
         {data?.data?.order?.selfOrder ? (
-          ""
+      ""
         ) : (
           <div className="flex justify-end">
             <div
@@ -653,6 +653,7 @@ export default function OrderDetail() {
                               onChange={(e) => {
                                 handlePaymentStatus(e);
                               }}
+                              isDisabled={data?.data?.order?.selfOrder}
                             />
                           </span>
                         )}

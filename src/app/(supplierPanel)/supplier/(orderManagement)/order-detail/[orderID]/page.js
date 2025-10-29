@@ -12,17 +12,18 @@ import GetAPI from "@/utilities/GetAPI";
 import { PatchAPI } from "@/utilities/PatchAPI";
 import { selectStyles2 } from "@/utilities/SelectStyle";
 import { success_toaster } from "@/utilities/Toaster";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { Dialog } from "primereact/dialog";
 import React, { useState } from "react";
 import { CiMenuBurger } from "react-icons/ci";
-import Select from "react-select";
 
 export default function OrderDetail() {
   if (typeof window !== "undefined") {
     var userType = localStorage.getItem("userType");
   }
-  const { orderID } = useParams();
+
+  const pathname = usePathname();
+  const { orderID, id } = useParams();
   // const [chequeId, setChequeId] = useState("");
   const [modal, setModal] = useState({
     type: "", // addCheque , editCheque
@@ -57,8 +58,10 @@ export default function OrderDetail() {
   //   { value: "business check", label: "Business check" },
   //   { value: "cashier's check", label: "Cashier's check" },
   // ];
-
-  const { data, reFetch, isLoading } = GetAPI(`api/v1/admin/order-details/${orderID}`);
+  const url = pathname.includes("/supplier/partner")
+    ? `api/v1/admin/partner-order/order-details/${id}`
+    : `api/v1/admin/order-details/${orderID}`;
+  const { data, reFetch, isLoading } = GetAPI(url);
 
   const handleSupplierAcknowledgement = async () => {
     setLoader("acknowledgeSupplier");
@@ -236,10 +239,10 @@ export default function OrderDetail() {
   //   setAddCheque({ ...addCheque, [e.target.name]: e.target.value });
   // };
   const { toggle, setToggle } = useDataContext();
-  
+
   return isLoading ? (
-      <Loader />
-    ) : (
+    <Loader />
+  ) : (
     <div>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <div className="text-xl font-inter font-semibold flex items-center gap-2 [&>p]:cursor-pointer">

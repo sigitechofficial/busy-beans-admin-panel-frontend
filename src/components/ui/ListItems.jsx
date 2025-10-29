@@ -23,7 +23,7 @@ export default function ListItems(props) {
       href={props.to}
     >
       <p>{props.title}</p>
-      <span>{props.count}</span>
+      <span>{props.count || ""}</span>
     </Link>
   );
 }

@@ -451,7 +451,7 @@ export default function SalesRepDetails() {
           </div>
 
           {/* ---- Additional Shipping Addresses ---- */}
-          {(data?.data?.addresses?.length ?? 0) > 1 && (
+          {data?.data?.addresses?.length > 0 && (
             <div className="pt-4">
               <h2 className="text-lg font-semibold text-gray-800 mb-2">
                 Additional Shipping Addresses

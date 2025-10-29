@@ -374,7 +374,7 @@ export default function EditsSalesRepresentative() {
                   data-testid={UPDATE_LOCAL_PARTNER.partnerStatusSelect}
                 />
               </div>
-              <div className="flex flex-col gap-y-2">
+            {saleRepresentative?.partnerType !=="direct-partner"&&  <div className="flex flex-col gap-y-2">
                 <label className="text-labelColor font-medium font-satoshi">
                   Credit Limit
                 </label>
@@ -388,7 +388,7 @@ export default function EditsSalesRepresentative() {
                   onChange={handleChange}
                   data-testid={UPDATE_LOCAL_PARTNER.partnerCreditLimitInput}
                 />
-              </div>
+              </div>}
             </div>
 
             {/* === Section 2: Contact Info === */}

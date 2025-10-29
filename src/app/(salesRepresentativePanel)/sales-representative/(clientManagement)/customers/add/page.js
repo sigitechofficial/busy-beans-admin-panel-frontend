@@ -36,6 +36,7 @@ export default function AddCustomer() {
     value: "",
     label: "",
   });
+  
   const [userData, setUserData] = useState({
     info: {
       name: "",
@@ -72,7 +73,6 @@ export default function AddCustomer() {
     },
     isChecked: true,
   });
-  console.log("🚀 ~ page ~ userData:", userData);
 
   const [allStates, setAllStates] = useState([]);
   const [allCities, setAllCities] = useState([]);

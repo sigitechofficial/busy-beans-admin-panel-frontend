@@ -5,5 +5,5 @@ export const BASE_URL = "https://testingbb.trimworldwide.com/";
 
 export const googleApiKey = "AIzaSyD68_vw1gGE7LVVjJ5ZShy7qWwm9Rq0CBQ";
 
-
-
+export const RECAPTCHA_SITE_KEY = "6LcZGfwrAAAAAMkN2BCYdgTbFG2Ynw__GUvWStzL";
+export const RECAPTCHA_SECRET_KEY = "6LcZGfwrAAAAAJbWNe-BdY5-Q1jdCZVIKY3LW_7C";

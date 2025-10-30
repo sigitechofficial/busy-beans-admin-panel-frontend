@@ -568,11 +568,15 @@ const DrawerBeans = ({
   //   }
   // }, [open, quotationData]);
 
+
   useEffect(() => {
-    if ((open && order.userId) || (isSelfOrder && userID)) {
+    if (open && isSelfOrder ? userID : order.userId) {
       fetchChargesForCustomer(isSelfOrder ? userID : order.userId, totalWeight);
+    } else if (!isSelfOrder && email) {
+      // fetchChargesForCustomer(order.userId, totalWeight);
+      handleEmail(email)
     }
-  }, [open, order.userId, totalWeight]);
+  }, [open, isSelfOrder ? userID : order.userId, totalWeight, email]);
 
   const calculateDiscounts = () => {
     let subtotal = 0;

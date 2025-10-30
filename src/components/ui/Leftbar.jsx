@@ -45,6 +45,7 @@ import { LEFTBAR } from "@/components/ui/leftbar.testid";
 export default function Leftbar(props) {
   if (typeof window !== "undefined") {
     var userType = localStorage.getItem("userType");
+    var partnerType = localStorage.getItem("partnerType");
     var userID = localStorage.getItem("userID");
     var connectAccountId = localStorage.getItem("connectAccountId");
     var isAccountConnected = localStorage.getItem("isAccountConnected");
@@ -1282,7 +1283,7 @@ export default function Leftbar(props) {
               pathname === "/supplier/dispatched-orders" ||
               pathname === "/supplier/delivered-orders" ||
               pathname === "/supplier/cancelled-orders" ||
-              pathname.includes("/supplier/order-detail")||
+              pathname.includes("/supplier/order-detail") ||
               pathname.includes("/supplier/partner")
             }
             Angle={
@@ -1563,15 +1564,17 @@ export default function Leftbar(props) {
                       )}
                     />
                   )}
-                  <ListHead
-                    title="Partner Orders"
-                    Icon={MdStore}
-                    active={pathname.includes("/orders/partnerOrders")}
-                    Angle={
-                      active?.partnerOrders?.status ? FaAngleUp : FaAngleDown
-                    }
-                    onClick={handlePartnerOrdersToggle}
-                  />
+                  {partnerType == "direct-partner" && (
+                    <ListHead
+                      title="Partner Orders"
+                      Icon={MdStore}
+                      active={pathname.includes("/orders/partnerOrders")}
+                      Angle={
+                        active?.partnerOrders?.status ? FaAngleUp : FaAngleDown
+                      }
+                      onClick={handlePartnerOrdersToggle}
+                    />
+                  )}
 
                   {active?.partnerOrders?.status && (
                     <div className="m-2 relative space-y-1">

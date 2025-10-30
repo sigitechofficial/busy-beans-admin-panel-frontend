@@ -241,13 +241,15 @@ export default function AddSaleRepresentative() {
           status: true,
         };
 
-        console.log(finalBillingAddress ,"Billing");
-        console.log(shippingAddress,"shipping");
+        const isDirect = saleRepresentative?.partnerType == "direct-partner";
 
         const formData = new FormData();
         formData.append("srName", saleRepresentative?.srName);
         formData.append("email", saleRepresentative?.email);
-        formData.append("creditLimit", saleRepresentative?.creditLimit);
+        formData.append(
+          "creditLimit",
+          isDirect ? null : saleRepresentative?.creditLimit || null
+        );
         formData.append("partnerType", saleRepresentative?.partnerType);
         formData.append("password", saleRepresentative?.password);
         formData.append("country", saleRepresentative?.country);
@@ -263,8 +265,6 @@ export default function AddSaleRepresentative() {
         formData.append("status", saleRepresentative?.status);
         formData.append("billingAddress", JSON.stringify(finalBillingAddress));
         formData.append("shippingAddress", JSON.stringify(shippingAddress));
-
-      
 
         const res = await PostAPI(
           "api/v1/admin/sales-rep",

@@ -18,7 +18,7 @@ export default function NewOrders() {
   const router = useRouter();
   const { data } = GetAPI(
     userType === "salesRepresentative"
-      ? `api/v1/admin/orders?salesRepId=${userID}&statusId=1`
+      ? `api/v1/admin/partner-order/orders-list?salesRepId=${userID}&statusId=1`
       : "api/v1/admin/partner-order/orders-list?statusId=1"
   );
 

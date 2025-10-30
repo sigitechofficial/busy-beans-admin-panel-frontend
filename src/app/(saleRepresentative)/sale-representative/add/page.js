@@ -38,6 +38,43 @@ export default function AddSaleRepresentative() {
     partnerType: "",
   });
 
+  const [userData, setUserData] = useState({
+    info: {
+      name: "",
+      email: "",
+      password: "",
+      status: true,
+      phoneNumber: "",
+      countryCode: "+1",
+      saleTaxNumber: "",
+      dispatchEmail: "",
+      emailToSendInvoices: "",
+      registerBy: "email",
+      defaultDiscount: null,
+    },
+    address: {
+      companyaddress: "",
+      addressLineOne: "",
+      addressLineTwo: "",
+      town: "",
+      country: "",
+      state: "",
+      zipCode: "",
+      status: true,
+    },
+    billingAddress: {
+      companyaddress: "",
+      addressLineOne: "",
+      addressLineTwo: "",
+      town: "",
+      country: "",
+      state: "",
+      zipCode: "",
+      status: true,
+    },
+    isChecked: true,
+  });
+
   const [imagePreview, setImagePreview] = useState("");
   const [visible, setVisible] = useState(false);
   const [allStates, setAllStates] = useState([]);
@@ -122,10 +159,7 @@ export default function AddSaleRepresentative() {
             label: state?.name,
           })
         );
-        console.log(
-          "🚀 ~ handleSelectedCountryStatesCities ~ tempAllCities:",
-          tempAllCities
-        );
+
         setAllCities([...tempAllCities]);
       } else {
         throw new Error(res?.data?.message || "An unexpected error occurred.");
@@ -158,13 +192,12 @@ export default function AddSaleRepresentative() {
       info_toaster("Invalid Phone Number");
     } else if (!saleRepresentative?.address?.trim()) {
       info_toaster("Enter Address");
-    }
-    //  else if (!saleRepresentative?.businessWeb?.trim()) {
-    //   info_toaster("Enter business webiste");
-    // }
-    else if (!saleRepresentative?.territory?.trim()) {
+    } else if (!saleRepresentative?.territory?.trim()) {
       info_toaster("Enter Territory");
-    } else if (!saleRepresentative?.creditLimit?.trim()) {
+    } else if (
+      saleRepresentative?.partnerType !== "direct-partner" &&
+      !saleRepresentative?.creditLimit?.trim()
+    ) {
       info_toaster("Enter Credit Limit");
     } else if (!saleRepresentative?.partnerType?.trim()) {
       info_toaster("Select Partner Type");
@@ -177,14 +210,46 @@ export default function AddSaleRepresentative() {
     } else {
       // setLoader(true);
       try {
-        console.log(
-          "🚀 ~ AddSaleRepresentative ~ saleRepresentative:",
-          saleRepresentative
-        );
+        const finalBillingAddress = userData.isChecked
+          ? {
+              addressLineOne: userData.address.addressLineOne,
+              addressLineTwo: userData.address.addressLineTwo,
+              town: userData.address.town,
+              country: userData.address.country,
+              state: userData.address.state,
+              zipCode: userData.address.zipCode,
+              status: true,
+            }
+          : {
+              addressLineOne: userData.billingAddress.addressLineOne,
+              addressLineTwo: userData.billingAddress.addressLineTwo,
+              town: userData?.billingAddress?.town,
+              country: userData?.billingAddress?.country,
+              state: userData?.billingAddress?.state,
+              zipCode: userData?.billingAddress?.zipCode,
+              status: true,
+            };
+
+        const shippingAddress = {
+          companyaddress: userData?.address?.companyaddress,
+          addressLineOne: userData?.address?.addressLineOne,
+          addressLineTwo: userData?.address?.addressLineTwo,
+          town: userData?.address?.town,
+          country: userData?.address?.country,
+          state: userData?.address?.state,
+          zipCode: userData?.address?.zipCode,
+          status: true,
+        };
+
+        const isDirect = saleRepresentative?.partnerType == "direct-partner";
+
         const formData = new FormData();
         formData.append("srName", saleRepresentative?.srName);
         formData.append("email", saleRepresentative?.email);
-        formData.append("creditLimit", saleRepresentative?.creditLimit);
+        formData.append(
+          "creditLimit",
+          isDirect ? null : saleRepresentative?.creditLimit || null
+        );
         formData.append("partnerType", saleRepresentative?.partnerType);
         formData.append("password", saleRepresentative?.password);
         formData.append("country", saleRepresentative?.country);
@@ -198,8 +263,14 @@ export default function AddSaleRepresentative() {
         formData.append("phoneNumber", saleRepresentative?.phoneNumber);
         formData.append("countryCode", saleRepresentative?.countryCode);
         formData.append("status", saleRepresentative?.status);
+        formData.append("billingAddress", JSON.stringify(finalBillingAddress));
+        formData.append("shippingAddress", JSON.stringify(shippingAddress));
 
-        const res = await PostAPI("api/v1/admin/sales-rep", formData, "sales-rep");
+        const res = await PostAPI(
+          "api/v1/admin/sales-rep",
+          formData,
+          "sales-rep"
+        );
         if (res?.data?.status === "success") {
           success_toaster("Local Partner added successfully");
           setLoader(false);
@@ -233,11 +304,36 @@ export default function AddSaleRepresentative() {
     }
   };
 
+  const handleAddress = (e) => {
+    setUserData({
+      ...userData,
+      address: {
+        ...userData?.address,
+        [e.target.name]: e.target.value,
+      },
+    });
+  };
+
+  const handleBillingAddress = (e) => {
+    setUserData({
+      ...userData,
+      billingAddress: {
+        ...userData?.billingAddress,
+        [e.target.name]: e.target.value,
+      },
+    });
+  };
+
   return (
     <div data-testid={ADD_LOCAL_PARTNER.root}>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[94px] border-b px-6 2xl:px-12 fixed"
-       data-testid={ADD_LOCAL_PARTNER.headerBar}>
-        <h2 className="text-xl lg:text-2xl font-inter font-semibold" data-testid={ADD_LOCAL_PARTNER.title}>
+      <div
+        className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+        data-testid={ADD_LOCAL_PARTNER.headerBar}
+      >
+        <h2
+          className="text-xl font-inter font-semibold"
+          data-testid={ADD_LOCAL_PARTNER.title}
+        >
           Add Local Partner
         </h2>
       </div>
@@ -256,7 +352,7 @@ export default function AddSaleRepresentative() {
         </div>
 
         {loader ? (
-          <MiniLoader data-testid={ADD_LOCAL_PARTNER.miniLoader}/>
+          <MiniLoader data-testid={ADD_LOCAL_PARTNER.miniLoader} />
         ) : (
           <div className="space-y-6">
             <div className="grid xl:grid-cols-2 gap-6">
@@ -317,7 +413,7 @@ export default function AddSaleRepresentative() {
                     }
                     className="w-full"
                     styles={selectStyles2}
-                    data-testid={ADD_LOCAL_PARTNER.partnerTypeSelect} 
+                    data-testid={ADD_LOCAL_PARTNER.partnerTypeSelect}
                   />
                 </div>
                 <div className="flex flex-col gap-y-2 w-full">
@@ -341,20 +437,22 @@ export default function AddSaleRepresentative() {
                     data-testid={ADD_LOCAL_PARTNER.partnerStatusSelect}
                   />
                 </div>
-                <div className="flex flex-col gap-y-2">
-                  <label className="text-labelColor font-medium font-satoshi">
-                    Credit Limit
-                  </label>
-                  <input
-                    type="number"
-                    name="creditLimit"
-                    value={saleRepresentative?.creditLimit}
-                    placeholder="Enter Credit Limit"
-                    className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                    onChange={handleChange}
-                    data-testid={ADD_LOCAL_PARTNER.partnerCreditLimitInput}
-                  />
-                </div>
+                {saleRepresentative?.partnerType !== "direct-partner" && (
+                  <div className="flex flex-col gap-y-2">
+                    <label className="text-labelColor font-medium font-satoshi">
+                      Credit Limit
+                    </label>
+                    <input
+                      type="number"
+                      name="creditLimit"
+                      value={saleRepresentative?.creditLimit}
+                      placeholder="Enter Credit Limit"
+                      className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                      onChange={handleChange}
+                      data-testid={ADD_LOCAL_PARTNER.partnerCreditLimitInput}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* === Section 2: Contact Info === */}
@@ -625,6 +723,379 @@ export default function AddSaleRepresentative() {
                   </div>
                 </div>
               </div>
+
+              {/* === Section 4: Shipping Address and Billing address === */}
+              {saleRepresentative?.partnerType === "direct-partner" && (
+                <div className="bg-white border border-borderColor rounded p-6 space-y-6 shadow-sm">
+                  <div className="font-satoshi space-y-4">
+                    <p
+                      className="font-black text-xl lg:text-2xl text-theme"
+                      // data-testid={ADD_CUSTOMER.step1Title}
+                    >
+                      4. Shipping Address
+                    </p>
+                    <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
+                      <div className="space-y-4">
+                        <div
+                          className="flex flex-col gap-y-2"
+                          // data-testid={ADD_CUSTOMER.addressLineOneInput}
+                        >
+                          <label className="text-labelColor font-medium font-satoshi">
+                            Address Line 1
+                          </label>
+                          <input
+                            type="text"
+                            name="addressLineOne"
+                            onChange={handleAddress}
+                            value={userData?.address?.addressLineOne}
+                            placeholder="Enter address line 1"
+                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                          />
+                        </div>
+                        <div
+                          className="flex flex-col gap-y-2"
+                          // data-testid={ADD_CUSTOMER.addressLineTwoInput}
+                        >
+                          <label className="text-labelColor font-medium font-satoshi">
+                            Address Line 2
+                          </label>
+                          <input
+                            type="text"
+                            name="addressLineTwo"
+                            onChange={handleAddress}
+                            value={userData?.address?.addressLineTwo}
+                            placeholder="Enter address line 2"
+                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col justify-between gap-y-4">
+                        <div className="space-y-4">
+                          <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
+                            <div
+                              className="flex flex-col gap-y-2"
+                              // data-testid={ADD_CUSTOMER.addressCountrySelect}
+                            >
+                              <label className="text-labelColor font-medium font-satoshi">
+                                Country
+                              </label>
+                              <Select
+                                placeholder="Select Country"
+                                className="w-full"
+                                styles={drawerSelectStyles}
+                                value={
+                                  userData?.address?.country
+                                    ? {
+                                        value: userData.address.country,
+                                        label: userData.address.country,
+                                      }
+                                    : null
+                                }
+                                options={allCountries ?? []}
+                                onChange={(e) => {
+                                  setUserData({
+                                    ...userData,
+                                    address: {
+                                      ...userData?.address,
+                                      country: e.label,
+                                      state: "",
+                                      town: "",
+                                    },
+                                  });
+                                  handleSelectedCountryStates(e.label);
+                                }}
+                              />
+                            </div>
+                            <div
+                              className="flex flex-col gap-y-2"
+                              // data-testid={ADD_CUSTOMER.addressStateSelect}
+                            >
+                              <label className="text-labelColor font-medium font-satoshi">
+                                State
+                              </label>
+                              <Select
+                                placeholder="Select State"
+                                className="w-full"
+                                styles={drawerSelectStyles}
+                                value={
+                                  userData?.address?.state
+                                    ? {
+                                        value: userData.address.state,
+                                        label: userData.address.state,
+                                      }
+                                    : null
+                                }
+                                options={allStates ?? []}
+                                onChange={(e) => {
+                                  setUserData({
+                                    ...userData,
+                                    address: {
+                                      ...userData?.address,
+                                      state: e.label,
+                                      town: "",
+                                    },
+                                  });
+                                  handleSelectedCountryStatesCities(e.value);
+                                }}
+                              />
+                            </div>
+                          </div>
+                          <div
+                            className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4"
+                            // data-testid={ADD_CUSTOMER.addressTownInput}
+                          >
+                            <div className="flex flex-col gap-y-2">
+                              <label className="text-labelColor font-medium font-satoshi">
+                                Town / City
+                              </label>
+
+                              <input
+                                type="text"
+                                name="town"
+                                onChange={(e) => {
+                                  setUserData({
+                                    ...userData,
+                                    address: {
+                                      ...userData?.address,
+                                      town: e.target.value,
+                                    },
+                                  });
+                                }}
+                                value={userData?.address?.town}
+                                placeholder="Enter town"
+                                className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                              />
+                            </div>
+                            <div
+                              className="flex flex-col gap-y-2"
+                              // data-testid={ADD_CUSTOMER.addressZipCodeInput}
+                            >
+                              <label className="text-labelColor font-medium font-satoshi">
+                                Zip Code
+                              </label>
+                              <input
+                                type="text"
+                                name="zipCode"
+                                onChange={handleAddress}
+                                value={userData?.address?.zipCode}
+                                placeholder="Enter Zip Code"
+                                className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    className="flex items-center gap-x-2"
+                    // data-testid={ADD_CUSTOMER.billingSameAsShippingCheckbox}
+                  >
+                    <input
+                      type="checkbox"
+                      name="billingStatus"
+                      checked={userData?.isChecked}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+
+                        setUserData({
+                          ...userData,
+                          isChecked: checked,
+                        });
+                      }}
+                      className="size-4 border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none"
+                    />
+                    <label className="text-labelColor font-medium font-satoshi">
+                      Billing Address same as Shipping Address
+                    </label>
+                  </div>
+
+                  {!userData?.isChecked && (
+                    <div className="font-satoshi space-y-4">
+                      <p className="font-black text-xl lg:text-2xl text-theme">
+                        Billing Address
+                      </p>
+                      <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
+                        <div className="space-y-4">
+                          <div
+                            className="flex flex-col gap-y-2"
+                            // data-testid={ADD_CUSTOMER.billingAddressLineOneInput}
+                          >
+                            <label className="text-labelColor font-medium font-satoshi">
+                              Address Line 1
+                            </label>
+                            <input
+                              type="text"
+                              name="addressLineOne"
+                              onChange={handleBillingAddress}
+                              value={userData?.billingAddress?.addressLineOne}
+                              placeholder="Enter address line 1"
+                              className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                            />
+                          </div>
+                          {/* Address Line 2 */}
+                          <div
+                            className="flex flex-col gap-y-2"
+                            // data-testid={ADD_CUSTOMER.billingAddressLineTwoInput}
+                          >
+                            <label className="text-labelColor font-medium font-satoshi">
+                              Address Line 2
+                            </label>
+                            <input
+                              type="text"
+                              name="addressLineTwo"
+                              onChange={handleBillingAddress}
+                              value={userData?.billingAddress?.addressLineTwo}
+                              placeholder="Enter address line 2"
+                              className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col justify-between gap-y-4">
+                          <div className="space-y-4">
+                            {/* Country Select */}
+                            <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
+                              <div
+                                className="flex flex-col gap-y-2"
+                                //  data-testid={
+                                //     ADD_CUSTOMER.billingAddressCountrySelect
+                                //   }
+                              >
+                                <label className="text-labelColor font-medium font-satoshi">
+                                  Country
+                                </label>
+                                <Select
+                                  placeholder="Select Country"
+                                  className="w-full"
+                                  styles={drawerSelectStyles}
+                                  value={
+                                    userData?.billingAddress?.country
+                                      ? {
+                                          value:
+                                            userData.billingAddress.country,
+                                          label:
+                                            userData.billingAddress.country,
+                                        }
+                                      : null
+                                  }
+                                  options={allCountries ?? []}
+                                  onChange={(e) => {
+                                    setUserData({
+                                      ...userData,
+                                      billingAddress: {
+                                        ...userData?.billingAddress,
+                                        country: e.label,
+                                        state: "",
+                                        town: "",
+                                      },
+                                    });
+                                    handleSelectedCountryStates(e.label);
+                                  }}
+                                />
+                              </div>
+                              <div
+                                className="flex flex-col gap-y-2"
+                                // data-testid={
+                                //   ADD_CUSTOMER.billingAddressStateSelect
+                                // }
+                              >
+                                <label className="text-labelColor font-medium font-satoshi">
+                                  State
+                                </label>
+                                <Select
+                                  placeholder="Select State"
+                                  className="w-full"
+                                  styles={drawerSelectStyles}
+                                  value={
+                                    userData?.billingAddress?.state
+                                      ? {
+                                          value:
+                                            userData?.billingAddress?.state,
+                                          label:
+                                            userData?.billingAddress?.state,
+                                        }
+                                      : null
+                                  }
+                                  options={allStates ?? []}
+                                  onChange={(e) => {
+                                    setUserData({
+                                      ...userData,
+                                      billingAddress: {
+                                        ...userData?.billingAddress,
+                                        state: e.label,
+                                        town: "",
+                                      },
+                                    });
+                                    handleSelectedCountryStatesCities(e.value);
+                                  }}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Town / City Input */}
+                            <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
+                              <div
+                                className="flex flex-col gap-y-2"
+                                // data-testid={ADD_CUSTOMER.billingAddressTownInput}
+                              >
+                                <label className="text-labelColor font-medium font-satoshi">
+                                  Town / City
+                                </label>
+                                <input
+                                  type="text"
+                                  name="town"
+                                  onChange={(e) => {
+                                    setUserData({
+                                      ...userData,
+                                      billingAddress: {
+                                        ...userData?.billingAddress,
+                                        town: e.target.value,
+                                      },
+                                    });
+                                  }}
+                                  value={userData?.billingAddress?.town}
+                                  placeholder="Enter town"
+                                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                                />
+                              </div>
+                              {/* Zip Code Input */}
+                              <div
+                                className="flex flex-col gap-y-2"
+                                // data-testid={
+                                //   ADD_CUSTOMER.billingAddressZipCodeInput
+                                // }
+                              >
+                                <label className="text-labelColor font-medium font-satoshi">
+                                  Zip Code
+                                </label>
+                                <input
+                                  type="text"
+                                  name="zipCode"
+                                  onChange={(e) => {
+                                    setUserData({
+                                      ...userData,
+                                      billingAddress: {
+                                        ...userData.billingAddress,
+                                        zipCode: e.target.value,
+                                      },
+                                    });
+                                  }}
+                                  value={userData?.billingAddress?.zipCode}
+                                  placeholder="Enter Zip Code"
+                                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <div>
               <button

@@ -45,8 +45,12 @@ export default function PartnerOrderCard(props) {
       [e.target.name]: e.target.value,
     });
   };
-  
-  const isTruckCompany = props?.orderData?.shippingCompany?.trim()?.toLowerCase()?.includes("truck") || false;
+
+  const isTruckCompany =
+    props?.orderData?.shippingCompany
+      ?.trim()
+      ?.toLowerCase()
+      ?.includes("truck") || false;
 
   const handlePaymentStatus = async (status) => {
     try {
@@ -91,7 +95,9 @@ export default function PartnerOrderCard(props) {
             setLoader("");
           } else {
             setLoader("");
-            throw new Error(res?.data?.message || "An unexpected error occurred.");
+            throw new Error(
+              res?.data?.message || "An unexpected error occurred."
+            );
           }
         } catch (error) {
           setLoader("");
@@ -100,8 +106,10 @@ export default function PartnerOrderCard(props) {
       }
     } else if (props?.orderData?.statusId === 3) {
       try {
-        const isTruck =
-          props?.orderData?.shippingCompany?.trim()?.toLowerCase()?.includes("truck");
+        const isTruck = props?.orderData?.shippingCompany
+          ?.trim()
+          ?.toLowerCase()
+          ?.includes("truck");
 
         // For non-truck flows, enforce dialog inputs
         if (!isTruck) {
@@ -120,10 +128,10 @@ export default function PartnerOrderCard(props) {
           orderData: {
             statusId: 4,
             trackingNumber: isTruck
-              ? (props?.orderData?.trackingNumber || "")
+              ? props?.orderData?.trackingNumber || ""
               : dispatchOrderData?.trackingNumber,
             shippingCompany: isTruck
-              ? (props?.orderData?.shippingCompany || "Shipping By Truck")
+              ? props?.orderData?.shippingCompany || "Shipping By Truck"
               : dispatchOrderData?.shippingCompany,
           },
         });
@@ -135,7 +143,9 @@ export default function PartnerOrderCard(props) {
           setLoader("");
         } else {
           setLoader("");
-          throw new Error(res?.data?.message || "An unexpected error occurred.");
+          throw new Error(
+            res?.data?.message || "An unexpected error occurred."
+          );
         }
 
         // Deliver immediately
@@ -144,7 +154,7 @@ export default function PartnerOrderCard(props) {
           orderData: {
             statusId: 5,
             orderStatus: props?.orderData?.orderCurrentStatus,
-            paymentStaus: props?.orderData?.paymentStatus,
+            // paymentStaus: props?.orderData?.paymentStatus,
           },
         });
 
@@ -152,7 +162,9 @@ export default function PartnerOrderCard(props) {
           success_toaster("Order Delivered successfully");
           props?.reFetch();
         } else {
-          throw new Error(resDeliver?.data?.message || "Failed to deliver order.");
+          throw new Error(
+            resDeliver?.data?.message || "Failed to deliver order."
+          );
         }
       } catch (error) {
         setLoader("");
@@ -160,7 +172,7 @@ export default function PartnerOrderCard(props) {
       }
     }
   };
-  
+
   const columns = [
     { field: "#", header: "#", sort: true, minWidth: "1rem" },
     { field: "product", header: "Product", minWidth: "12rem" },
@@ -195,8 +207,7 @@ export default function PartnerOrderCard(props) {
           <div className="w-full space-y-4">
             <div className="w-full space-y-2">
               {/* <p className="font-semibold text-lg underline">Order Information</p> */}
-              <div className="space-y-4 w-full">
-              </div>
+              <div className="space-y-4 w-full"></div>
             </div>
             <div className="bg-themeYellowDark text-black font-medium py-2 px-4 rounded-md flex gap-x-4">
               <p>{props?.orderData?.note}</p>
@@ -231,8 +242,12 @@ export default function PartnerOrderCard(props) {
               </th>
               {userType !== "supplier" && (
                 <>
-                  <th className="py-2 px-2 text-center border border-gray-200">Discount</th>
-                  <th className="py-2 px-2 text-center border border-gray-200">Invoiced</th>
+                  <th className="py-2 px-2 text-center border border-gray-200">
+                    Discount
+                  </th>
+                  <th className="py-2 px-2 text-center border border-gray-200">
+                    Invoiced
+                  </th>
                 </>
               )}
               <th className="py-2 px-2 text-center border border-gray-200">
@@ -316,7 +331,10 @@ export default function PartnerOrderCard(props) {
             {/* Subtotal Row */}
             {(userType === "admin" || userType === "salesRepresentative") && (
               <tr>
-                <td colSpan={userType !== "supplier" ? 9 : 7} className="border border-gray-200"></td>
+                <td
+                  colSpan={userType !== "supplier" ? 9 : 7}
+                  className="border border-gray-200"
+                ></td>
                 <td className="py-2 px-2 text-right font-semibold border border-gray-200">
                   Sub-Total
                 </td>
@@ -328,19 +346,27 @@ export default function PartnerOrderCard(props) {
             {/* Shipping Row */}
             {(userType === "admin" || userType === "salesRepresentative") && (
               <tr>
-                <td colSpan={userType !== "supplier" ? 9 : 7} className="border border-gray-200"></td>
+                <td
+                  colSpan={userType !== "supplier" ? 9 : 7}
+                  className="border border-gray-200"
+                ></td>
                 <td className="py-2 px-2 text-right border border-gray-200">
                   Shipping Charges
                 </td>
                 <td className="py-2 px-2 text-right border border-gray-200">
-                  {parseFloat(props?.orderData?.shippingCharges || 0).toFixed(2)}
+                  {parseFloat(props?.orderData?.shippingCharges || 0).toFixed(
+                    2
+                  )}
                 </td>
               </tr>
             )}
             {/* Total Row */}
             {(userType === "admin" || userType === "salesRepresentative") && (
               <tr>
-                <td colSpan={userType !== "supplier" ? 9 : 7} className="border border-gray-200"></td>
+                <td
+                  colSpan={userType !== "supplier" ? 9 : 7}
+                  className="border border-gray-200"
+                ></td>
                 <td className="py-2 px-2 text-right font-bold border border-gray-200">
                   Total USD ({props?.orderData?.items?.length} items)
                 </td>
@@ -440,37 +466,39 @@ export default function PartnerOrderCard(props) {
                   ))}
                 </div>
               )
-            ) : (
-                isTruckCompany ? (
-                  // Truck confirmation view (no fields required)
-                  <div className="space-y-3">
-                    <p className="text-labelColor font-nunito font-medium text-lg">
-                      Ship this order by <span className="font-semibold">Truck</span>?
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      No tracking number is required for truck shipments.
-                    </p>
-                    <div className="text-sm text-gray-700">
-                      <div>
-                        <span className="font-medium">Shipping Company:</span>{" "}
-                        <span>{props?.orderData?.shippingCompany || "Shipping By Truck"}</span>
-                      </div>
-                      {props?.orderData?.totalWeight ? (
-                        <div>
-                          <span className="font-medium">Total Weight:</span>{" "}
-                          <span>{props?.orderData?.totalWeight} lbs</span>
-                        </div>
-                      ) : null}
-                    </div>
+            ) : isTruckCompany ? (
+              // Truck confirmation view (no fields required)
+              <div className="space-y-3">
+                <p className="text-labelColor font-nunito font-medium text-lg">
+                  Ship this order by{" "}
+                  <span className="font-semibold">Truck</span>?
+                </p>
+                <p className="text-sm text-gray-600">
+                  No tracking number is required for truck shipments.
+                </p>
+                <div className="text-sm text-gray-700">
+                  <div>
+                    <span className="font-medium">Shipping Company:</span>{" "}
+                    <span>
+                      {props?.orderData?.shippingCompany || "Shipping By Truck"}
+                    </span>
                   </div>
-                ) : (
-                  // ✉️ Non-truck flow: show existing FedEx form
-                  <div className="space-y-2">
-                    <div className="flex flex-col gap-y-2">
-                      <label className="text-labelColor font-medium font-satoshi">
-                        Company Name
-                      </label>
-                      {/* <input
+                  {props?.orderData?.totalWeight ? (
+                    <div>
+                      <span className="font-medium">Total Weight:</span>{" "}
+                      <span>{props?.orderData?.totalWeight} lbs</span>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            ) : (
+              // ✉️ Non-truck flow: show existing FedEx form
+              <div className="space-y-2">
+                <div className="flex flex-col gap-y-2">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Company Name
+                  </label>
+                  {/* <input
                       type="text"
                       name="shippingCompany"
                       value={dispatchOrderData}
@@ -478,36 +506,35 @@ export default function PartnerOrderCard(props) {
                       placeholder="Enter Description"
                       className="border border-borderColor text-secondary placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       /> */}
-                      <Select
-                        placeholder="Select dispatch order company"
-                        className="w-full"
-                        defaultValue={{ value: "UPS", label: "UPS" }}
-                        styles={selectStyles2}
-                        options={[{ value: "UPS", label: "UPS" }]}
-                        onChange={(e) => {
-                          setDispatchOrderData({
-                            ...dispatchOrderData,
-                            shippingCompany: e.value,
-                          });
-                        }}
-                      />
-                    </div>
-                    <div className="flex flex-col gap-y-2">
-                      <label className="text-labelColor font-medium font-satoshi">
-                        Tracking Number
-                      </label>
-                      <input
-                        type="text"
-                        name="trackingNumber"
-                        value={dispatchOrderData?.trackingNumber}
-                        onChange={handleChange}
-                        placeholder="Enter Tracking number"
-                        className="border border-borderColor text-labelColor placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                      />
-                    </div>
-                  </div>
-                )
-              )}
+                  <Select
+                    placeholder="Select dispatch order company"
+                    className="w-full"
+                    defaultValue={{ value: "UPS", label: "UPS" }}
+                    styles={selectStyles2}
+                    options={[{ value: "UPS", label: "UPS" }]}
+                    onChange={(e) => {
+                      setDispatchOrderData({
+                        ...dispatchOrderData,
+                        shippingCompany: e.value,
+                      });
+                    }}
+                  />
+                </div>
+                <div className="flex flex-col gap-y-2">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Tracking Number
+                  </label>
+                  <input
+                    type="text"
+                    name="trackingNumber"
+                    value={dispatchOrderData?.trackingNumber}
+                    onChange={handleChange}
+                    placeholder="Enter Tracking number"
+                    className="border border-borderColor text-labelColor placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  />
+                </div>
+              </div>
+            )}
             <div className="text-end">
               <button
                 type="submit"

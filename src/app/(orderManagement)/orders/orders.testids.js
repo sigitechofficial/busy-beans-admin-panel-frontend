@@ -21,6 +21,7 @@ const ORDERS_CREATE_DRAWER = {
   title: "drawer-title",
   
   directPartnerSwitch: "direct-partner-switch",
+  selfOrderSwitch: "self-order-switch",
   companySelect: "company-select",
   emailInput: "email-input",
 

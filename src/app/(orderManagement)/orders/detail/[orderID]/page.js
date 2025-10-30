@@ -33,7 +33,7 @@ export default function OrderDetail() {
     var userType = localStorage.getItem("userType");
     var isEmployee = localStorage.getItem("isEmployee") ? true : false;
   }
-
+  const [disabled, setDisabled] = useState("");
   // Get accessToken and realmId from localStorage
   const accessTokenQbo =
     typeof window !== "undefined" ? localStorage.getItem("accessTokenQbo") : "";
@@ -93,7 +93,7 @@ export default function OrderDetail() {
     setLoader("acknowledgeSupplier");
     try {
       const res = await PatchAPI("api/v1/admin/supplier-acknowledgement", {
-        orderId: data?.data?.order?.id,
+        [pathname.includes("/supplier/partner") ? "partnerOrderId" : "orderId"]: data?.data?.order?.id,
         orderData: {
           statusId: 3,
         },
@@ -116,10 +116,10 @@ export default function OrderDetail() {
     setLoader("orderDelivered");
     try {
       const res = await PatchAPI("api/v1/admin/order-deliver", {
-        orderId: data?.data?.order?.id,
+        [pathname.includes("/supplier/partner") ? "partnerOrderId" : "orderId"]: data?.data?.order?.id,
         orderData: {
           statusId: 5,
-          paymentStaus: "done",
+          // paymentStaus: "done",
         },
       });
       if (res?.data?.status === "success") {
@@ -317,6 +317,7 @@ export default function OrderDetail() {
   };
 
   const handleQBOInvoice = async () => {
+    setDisabled("QBO");
     try {
       const payload = { orderId: orderID };
       const res = await PostAPI(
@@ -332,11 +333,14 @@ export default function OrderDetail() {
       if (res?.data?.status === "success") {
         success_toaster("QBO Invoice Created Successfully");
         reFetch();
+        setDisabled("");
       } else {
+        setDisabled("");
         throw new Error(res?.data?.message || "An unexpected error occurred.");
       }
     } catch (error) {
       ErrorHandler(error);
+      setDisabled("");
     }
   };
 
@@ -523,7 +527,11 @@ export default function OrderDetail() {
             <button
               onClick={handleQBOInvoice}
               type="button"
-              disabled={data?.data?.order?.statusId === 6 ? true : false}
+              disabled={
+                data?.data?.order?.statusId === 6 || disabled === "QBO"
+                  ? true
+                  : false
+              }
               className="disabled:cursor-not-allowed"
             >
               QBO Invoice

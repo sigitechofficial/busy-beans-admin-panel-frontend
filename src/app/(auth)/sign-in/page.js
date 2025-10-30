@@ -11,22 +11,29 @@ import {
   info_toaster,
   success_toaster,
 } from "@/utilities/Toaster";
-import { BASE_URL } from "@/utilities/URL";
+import { BASE_URL, RECAPTCHA_SITE_KEY } from "@/utilities/URL";
 import axios from "axios";
 import { useFormik } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Checkbox } from "primereact/checkbox";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import SIGN_IN from "./sign-in.testids";
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function SignIn() {
   const router = useRouter();
   const [loader, setLoader] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState(null);
+  const recaptchaRef = useRef();
   const [type, setType] = useState("admin"); // sales-rep, admin, supplier
   const initialValues = {
     email: "",
     password: "",
+  };
+
+  const handleCaptcha = (token) => {
+    setCaptchaToken(token);
   };
 
   useEffect(() => {
@@ -60,11 +67,35 @@ export default function SignIn() {
   //   }
   // };
 
+  const validateRecaptcha = async () => {
+    if (!captchaToken) {
+      error_toaster("Please verify you’re not a robot!");
+      return;
+    }
+
+    const res = await fetch("/api/captcha", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ captchaToken }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) return true;
+    else false;
+  };
+
   const { values, errors, touched, handleBlur, handleChange, handleSubmit } =
     useFormik({
       initialValues,
       validationSchema: loginSchema,
       onSubmit: async (values, action) => {
+        let captchaRes = await validateRecaptcha();
+
+        if (!captchaRes) {
+          return;
+        }
+
         setLoader(true);
         try {
           let res = await loginAPI(
@@ -79,6 +110,8 @@ export default function SignIn() {
           );
           if (res?.data?.status === "success") {
             setLoader(false);
+            setCaptchaToken("");
+            recaptchaRef.current.reset();
             router.push("/");
             localStorage.setItem("accessToken", res?.data?.data?.token);
             localStorage.setItem("loginStatus", true);
@@ -94,16 +127,25 @@ export default function SignIn() {
             );
 
             localStorage.setItem("email", res?.data?.data?.user?.email);
+            localStorage.setItem(
+              "partnerType",
+              res?.data?.data?.user?.partnerType
+            );
             localStorage.setItem("userID", res?.data?.data?.user?.id);
             localStorage.setItem(
               "userType",
               type === "sales-rep" ? "salesRepresentative" : type
             );
 
-            if (Array.isArray(res?.data?.data?.user?.permissions) && res?.data?.data?.user?.permissions.length > 0) {
+            if (
+              Array.isArray(res?.data?.data?.user?.permissions) &&
+              res?.data?.data?.user?.permissions.length > 0
+            ) {
               localStorage.setItem(
                 "permissions",
-                JSON.stringify(res?.data?.data?.user?.permissions.map((p) => p.key))
+                JSON.stringify(
+                  res?.data?.data?.user?.permissions.map((p) => p.key)
+                )
               );
             } else {
               localStorage.setItem("permissions", "all");
@@ -111,8 +153,11 @@ export default function SignIn() {
             localStorage.setItem("employeeId", res?.data?.data?.user?.id);
 
             if (res?.data?.data?.user?.employeeOf) {
-              localStorage.setItem("isEmployee", "true"); 
-              localStorage.setItem("employeeOf", res?.data?.data?.user?.employeeOf);
+              localStorage.setItem("isEmployee", "true");
+              localStorage.setItem(
+                "employeeOf",
+                res?.data?.data?.user?.employeeOf
+              );
             }
             success_toaster("Login Successfully");
             if (type === "sales-rep") {
@@ -134,6 +179,7 @@ export default function SignIn() {
         } catch (error) {
           ErrorHandler(error);
           setLoader(false);
+          recaptchaRef.current.reset();
         }
         action.resetForm();
       },
@@ -150,11 +196,19 @@ export default function SignIn() {
               className="object-contain w-full sm:h-36"
             />
           </div>
-          <p className="hidden sm:flex items-center justify-between font-switzer text-white text-sm font-normal">
-            <Link href="">Terms of Services</Link>
-            <Link href="">Privacy Policy</Link>
-            <Link href="">Help & Suppport</Link>
-          </p>
+
+          <div className="pb-4 space-y-2">
+            <ReCAPTCHA
+              ref={recaptchaRef}
+              sitekey={RECAPTCHA_SITE_KEY}
+              onChange={handleCaptcha}
+            />
+            <p className="hidden sm:flex items-center justify-between font-switzer text-white text-sm font-normal gap-x-2">
+              <Link href="">Terms of Services</Link>
+              <Link href="">Privacy Policy</Link>
+              <Link href="">Help & Suppport</Link>
+            </p>
+          </div>
         </div>
 
         {/* Right side */}
@@ -214,10 +268,13 @@ export default function SignIn() {
                     )}
                   </div>
                   <p className="text-white text-sm text-end font-normal">
-                    <Link 
+                    <Link
                       href={"/forgot-password"}
                       data-testid={SIGN_IN.forgotPasswordLink}
-                    > Forgot Password?</Link>
+                    >
+                      {" "}
+                      Forgot Password?
+                    </Link>
                   </p>
                 </div>
                 <div className="flex flex-col  gap-2 text-white font-inter font-normal">

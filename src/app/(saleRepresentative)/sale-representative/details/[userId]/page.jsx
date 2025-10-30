@@ -14,6 +14,8 @@ import Select from "react-select";
 import { PatchAPI } from "@/utilities/PatchAPI";
 import { CiMenuBurger } from "react-icons/ci";
 import { hasPermission } from "@/utilities/Permission";
+import ErrorHandler from "@/utilities/ErrorHandler";
+import { success_toaster, warning_toaster } from "@/utilities/Toaster";
 
 export default function SalesRepDetails() {
   if (typeof window !== "undefined") {
@@ -22,10 +24,15 @@ export default function SalesRepDetails() {
   const { userId } = useParams();
   const pathname = usePathname();
   const router = useRouter();
-  const { data, reFetch, isLoading } = GetAPI(`api/v1/admin/sales-rep/${userId}`, "sales-rep");
+  const { data, reFetch, isLoading } = GetAPI(
+    `api/v1/admin/sales-rep/${userId}`,
+    "sales-rep"
+  );
   const { toggle, setToggle } = useDataContext();
-  
-   const { data: countriesData } = GetAPI("api/v1/admin/address-management/country");
+
+  const { data: countriesData } = GetAPI(
+    "api/v1/admin/address-management/country"
+  );
   const allCountries = React.useMemo(() => {
     const arr = [];
     countriesData?.data?.data?.map((country) =>
@@ -38,14 +45,19 @@ export default function SalesRepDetails() {
   const [allCities, setAllCities] = useState([]);
 
   const handleSelectedCountryStates = async (countryName) => {
-    const selectedCountry = countriesData?.data?.data?.find((country) => country?.name === countryName);
+    const selectedCountry = countriesData?.data?.data?.find(
+      (country) => country?.name === countryName
+    );
     try {
       const res = await axios.get(
-        BASE_URL + `api/v1/admin/address-management/state?countryInSystemId=${selectedCountry?.id}`
+        BASE_URL +
+          `api/v1/admin/address-management/state?countryInSystemId=${selectedCountry?.id}`
       );
       if (res?.data?.status === "success") {
         const tempAllStates = [];
-        res?.data?.data?.data?.map((state) => tempAllStates.push({ value: state?.id, label: state?.name }));
+        res?.data?.data?.data?.map((state) =>
+          tempAllStates.push({ value: state?.id, label: state?.name })
+        );
         setAllStates([...tempAllStates]);
       } else {
         throw new Error(res?.data?.message || "An unexpected error occurred.");
@@ -58,11 +70,14 @@ export default function SalesRepDetails() {
   const handleSelectedCountryStatesCities = async (stateID) => {
     try {
       const res = await axios.get(
-        BASE_URL + `api/v1/admin/address-management/city?stateInSystemId=${stateID}`
+        BASE_URL +
+          `api/v1/admin/address-management/city?stateInSystemId=${stateID}`
       );
       if (res?.data?.status === "success") {
         const tempAllCities = [];
-        res?.data?.data?.data?.map((state) => tempAllCities.push({ value: state?.name, label: state?.name }));
+        res?.data?.data?.data?.map((state) =>
+          tempAllCities.push({ value: state?.name, label: state?.name })
+        );
         setAllCities([...tempAllCities]);
       } else {
         throw new Error(res?.data?.message || "An unexpected error occurred.");
@@ -74,9 +89,9 @@ export default function SalesRepDetails() {
 
   const [addrDialogOpen, setAddrDialogOpen] = useState(false);
   const [addrSaving, setAddrSaving] = useState(false);
-  const [addrMode, setAddrMode] = useState("create"); 
+  const [addrMode, setAddrMode] = useState("create");
 
-  const [addrKind, setAddrKind] = useState("shipping"); 
+  const [addrKind, setAddrKind] = useState("shipping");
 
   const [editingAddress, setEditingAddress] = useState(null);
 
@@ -162,7 +177,7 @@ export default function SalesRepDetails() {
       if (addrKind === "billing") {
         payload = { billingAddresses: baseAddress };
       } else {
-        payload = { newAddressess: baseAddress };
+        payload = { newAddressess: [baseAddress ]};
       }
     }
 
@@ -198,8 +213,8 @@ export default function SalesRepDetails() {
   };
 
   return isLoading ? (
-      <Loader />
-    ) : (
+    <Loader />
+  ) : (
     <div className="w-full">
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <h2 className="text-xl lg:text-2xl font-inter font-semibold flex items-center gap-2">
@@ -225,13 +240,14 @@ export default function SalesRepDetails() {
 
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative text-blue-500">
           {hasPermission("local-partner_update") && (
-          <li
-            onClick={() => {
-              router.push(`/sale-representative/edit/${userId}`);
-            }}
-          >
-            Edit
-          </li> )}
+            <li
+              onClick={() => {
+                router.push(`/sale-representative/edit/${userId}`);
+              }}
+            >
+              Edit
+            </li>
+          )}
           <li
             onClick={() => {
               router.push(`/orders/pending-pullouts/${userId}`);
@@ -263,21 +279,19 @@ export default function SalesRepDetails() {
               <div className="flex items-center h-12 border-b [&>span]:w-44">
                 <span className="text-gray-500 font-medium">Partner Type</span>
                 <div className="font-semibold">
-                  {data?.data?.partnerType === "direct-partner" ? "Direct Partner" : "Dropship Partner"}
+                  {data?.data?.partnerType === "direct-partner"
+                    ? "Direct Partner"
+                    : "Dropship Partner"}
                 </div>
               </div>
               <div className="flex items-center h-12 border-b [&>span]:w-44">
                 <span className="text-gray-500 font-medium">Created At</span>
-                <div>
-                  {dayjs(data?.data?.createdAt).format("MM/DD/YYYY")}
-                </div>
+                <div>{dayjs(data?.data?.createdAt).format("MM/DD/YYYY")}</div>
               </div>
 
               <div className="flex items-center h-12 border-b [&>span]:w-44">
                 <span className="text-gray-500 font-medium">Credit Limits</span>
-                <div className="font-semibold">
-                  {data?.data?.creditLimit}
-                </div>
+                <div className="font-semibold">{data?.data?.creditLimit}</div>
               </div>
               <div className="flex items-center h-12 border-b [&>span]:w-44">
                 <span className="text-gray-500 font-medium">
@@ -335,13 +349,9 @@ export default function SalesRepDetails() {
                       data?.data?.zipCode) && (
                       <div>
                         {data?.data?.city || ""}
-                        {data?.data?.city && data?.data?.state
-                          ? ", "
-                          : ""}
+                        {data?.data?.city && data?.data?.state ? ", " : ""}
                         {data?.data?.state || ""}
-                        {data?.data?.zipCode
-                          ? ` ${data?.data?.zipCode}`
-                          : ""}
+                        {data?.data?.zipCode ? ` ${data?.data?.zipCode}` : ""}
                       </div>
                     )}
 
@@ -351,9 +361,7 @@ export default function SalesRepDetails() {
                     )}
 
                     <div>
-                      {data?.data?.countryCode +
-                        " " +
-                        data?.data?.phoneNumber}
+                      {data?.data?.countryCode + " " + data?.data?.phoneNumber}
                     </div>
                   </div>
                 ) : (
@@ -364,15 +372,15 @@ export default function SalesRepDetails() {
               </div>
             </div>
           </div>
-           <div className="w-full flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={openCreateAddress}
-                className="rounded-lg border border-theme text-theme hover:bg-theme hover:text-white duration-150 shadow-buttonShadow px-6 font-nunito py-3 font-medium"
-              >
-                Add New Address
-              </button>
-              <button
+          <div className="w-full flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={openCreateAddress}
+              className="rounded-lg border border-theme text-theme hover:bg-theme hover:text-white duration-150 shadow-buttonShadow px-6 font-nunito py-3 font-medium"
+            >
+              Add New Address
+            </button>
+            <button
               type="button"
               onClick={() => openCreateAddress("billing")}
               disabled={hasBilling}
@@ -381,30 +389,48 @@ export default function SalesRepDetails() {
                   ? "border-gray-300 text-gray-400 cursor-not-allowed"
                   : "border-theme text-theme hover:bg-theme hover:text-white"
               }`}
-              title={hasBilling ? "Only one billing address is allowed" : "Add Billing Address"}
+              title={
+                hasBilling
+                  ? "Only one billing address is allowed"
+                  : "Add Billing Address"
+              }
             >
               Add Billing Address
             </button>
           </div>
 
-             {/* ---- Billing Address (single) ---- */}
+          {/* ---- Billing Address (single) ---- */}
           <div className="pt-4">
-            <h2 className="text-lg font-semibold text-gray-800 mb-2">Billing Address</h2>
+            <h2 className="text-lg font-semibold text-gray-800 mb-2">
+              Billing Address
+            </h2>
             {currentBilling ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-gray-50 p-4 rounded-md flex flex-col justify-between">
                   <div className="text-sm text-gray-700 space-y-1 uppercase">
-                    {currentBilling?.addressLineOne?.trim() && <div>{currentBilling.addressLineOne}</div>}
-                    {currentBilling?.addressLineTwo?.trim() && <div>{currentBilling.addressLineTwo}</div>}
-                    {(currentBilling?.town || currentBilling?.state || currentBilling?.zipCode) && (
+                    {currentBilling?.addressLineOne?.trim() && (
+                      <div>{currentBilling.addressLineOne}</div>
+                    )}
+                    {currentBilling?.addressLineTwo?.trim() && (
+                      <div>{currentBilling.addressLineTwo}</div>
+                    )}
+                    {(currentBilling?.town ||
+                      currentBilling?.state ||
+                      currentBilling?.zipCode) && (
                       <div>
                         {currentBilling?.town || ""}
-                        {currentBilling?.town && currentBilling?.state ? ", " : ""}
+                        {currentBilling?.town && currentBilling?.state
+                          ? ", "
+                          : ""}
                         {currentBilling?.state || ""}
-                        {currentBilling?.zipCode ? ` ${currentBilling?.zipCode}` : ""}
+                        {currentBilling?.zipCode
+                          ? ` ${currentBilling?.zipCode}`
+                          : ""}
                       </div>
                     )}
-                    {currentBilling?.country?.trim() && <div>{currentBilling.country}</div>}
+                    {currentBilling?.country?.trim() && (
+                      <div>{currentBilling.country}</div>
+                    )}
                   </div>
                   <div className="pt-3">
                     <button
@@ -418,66 +444,69 @@ export default function SalesRepDetails() {
                 </div>
               </div>
             ) : (
-              <div className="text-sm text-gray-500">No billing address added yet.</div>
+              <div className="text-sm text-gray-500">
+                No billing address added yet.
+              </div>
             )}
           </div>
 
-            {/* ---- Additional Shipping Addresses ---- */}
-            {(data?.data?.addresses?.length ?? 0) > 1 && (
-              <div className="pt-4">
-                <h2 className="text-lg font-semibold text-gray-800 mb-2">
-                  Additional Shipping Addresses
-                </h2>
+          {/* ---- Additional Shipping Addresses ---- */}
+          {data?.data?.addresses?.length > 0 && (
+            <div className="pt-4">
+              <h2 className="text-lg font-semibold text-gray-800 mb-2">
+                Additional Shipping Addresses
+              </h2>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {data?.data?.addresses
-                    ?.map((addr, i) => (
-                      <div
-                        key={addr?.id ?? `extra-addr-${i}`}
-                        className="bg-gray-50 p-4 rounded-md flex flex-col justify-between"
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {data?.data?.addresses?.map((addr, i) => (
+                  <div
+                    key={addr?.id ?? `extra-addr-${i}`}
+                    className="bg-gray-50 p-4 rounded-md flex flex-col justify-between"
+                  >
+                    <div className="text-sm text-gray-700 space-y-1 uppercase">
+                      {/* Company (optional) */}
+                      {addr?.companyaddress?.trim() && (
+                        <div>{addr.companyaddress}</div>
+                      )}
+
+                      {addr?.addressLineOne?.trim() && (
+                        <div>{addr.addressLineOne}</div>
+                      )}
+                      {addr?.addressLineTwo?.trim() && (
+                        <div>{addr.addressLineTwo}</div>
+                      )}
+
+                      {/* Town, State, ZIP */}
+                      {(addr?.town || addr?.state || addr?.zipCode) && (
+                        <div>
+                          {addr?.town || ""}
+                          {addr?.town && addr?.state ? ", " : ""}
+                          {addr?.state || ""}
+                          {addr?.zipCode ? ` ${addr.zipCode}` : ""}
+                        </div>
+                      )}
+
+                      {/* Country */}
+                      {addr?.country?.trim() && <div>{addr.country}</div>}
+                    </div>
+
+                    <div className="pt-3">
+                      <button
+                        type="button"
+                        onClick={() => openEditAddress(addr)}
+                        className="text-xs px-2 py-1 rounded border hover:bg-gray-100"
                       >
-                        <div className="text-sm text-gray-700 space-y-1 uppercase">
-                          {/* Company (optional) */}
-                          {addr?.companyaddress?.trim() && <div>{addr.companyaddress}</div>}
-
-                          {addr?.addressLineOne?.trim() && (
-                            <div>{addr.addressLineOne}</div>
-                          )}
-                          {addr?.addressLineTwo?.trim() && (
-                            <div>{addr.addressLineTwo}</div>
-                          )}
-
-                          {/* Town, State, ZIP */}
-                          {(addr?.town || addr?.state || addr?.zipCode) && (
-                            <div>
-                              {addr?.town || ""}
-                              {addr?.town && addr?.state ? ", " : ""}
-                              {addr?.state || ""}
-                              {addr?.zipCode ? ` ${addr.zipCode}` : ""}
-                            </div>
-                          )}
-
-                          {/* Country */}
-                          {addr?.country?.trim() && <div>{addr.country}</div>}
-                        </div>
-
-                        <div className="pt-3">
-                          <button
-                            type="button"
-                            onClick={() => openEditAddress(addr)}
-                            className="text-xs px-2 py-1 rounded border hover:bg-gray-100"
-                          >
-                            Edit
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                </div>
+                        Edit
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
+          )}
         </div>
       </div>
-        <Dialog
+      <Dialog
         visible={addrDialogOpen}
         onHide={() => setAddrDialogOpen(false)}
         dismissableMask={true}
@@ -497,7 +526,9 @@ export default function SalesRepDetails() {
       >
         <div className="grid gap-4">
           <div className="flex flex-col gap-y-2">
-            <label className="text-labelColor font-medium">Address Line 1</label>
+            <label className="text-labelColor font-medium">
+              Address Line 1
+            </label>
             <input
               name="addressLineOne"
               value={addressForm.addressLineOne}
@@ -508,7 +539,9 @@ export default function SalesRepDetails() {
           </div>
 
           <div className="flex flex-col gap-y-2">
-            <label className="text-labelColor font-medium">Address Line 2</label>
+            <label className="text-labelColor font-medium">
+              Address Line 2
+            </label>
             <input
               name="addressLineTwo"
               value={addressForm.addressLineTwo}
@@ -525,10 +558,19 @@ export default function SalesRepDetails() {
                 placeholder="Select Country"
                 className="w-full"
                 styles={drawerSelectStyles}
-                value={addressForm.country ? { value: addressForm.country, label: addressForm.country } : null}
+                value={
+                  addressForm.country
+                    ? { value: addressForm.country, label: addressForm.country }
+                    : null
+                }
                 options={allCountries ?? []}
                 onChange={(opt) => {
-                  setAddressForm((prev) => ({ ...prev, country: opt?.label || "", state: "", town: "" }));
+                  setAddressForm((prev) => ({
+                    ...prev,
+                    country: opt?.label || "",
+                    state: "",
+                    town: "",
+                  }));
                   if (opt?.label) handleSelectedCountryStates(opt.label);
                 }}
               />
@@ -540,10 +582,18 @@ export default function SalesRepDetails() {
                 placeholder="Select State"
                 className="w-full"
                 styles={drawerSelectStyles}
-                value={addressForm.state ? { value: addressForm.state, label: addressForm.state } : null}
+                value={
+                  addressForm.state
+                    ? { value: addressForm.state, label: addressForm.state }
+                    : null
+                }
                 options={allStates ?? []}
                 onChange={(opt) => {
-                  setAddressForm((prev) => ({ ...prev, state: opt?.label || "", town: "" }));
+                  setAddressForm((prev) => ({
+                    ...prev,
+                    state: opt?.label || "",
+                    town: "",
+                  }));
                   if (opt?.value) handleSelectedCountryStatesCities(opt.value);
                 }}
               />
@@ -578,7 +628,12 @@ export default function SalesRepDetails() {
             <input
               type="checkbox"
               checked={!!addressForm.status}
-              onChange={(e) => setAddressForm((prev) => ({ ...prev, status: e.target.checked }))}
+              onChange={(e) =>
+                setAddressForm((prev) => ({
+                  ...prev,
+                  status: e.target.checked,
+                }))
+              }
               className="size-4"
             />
             <span className="text-sm">Active</span>

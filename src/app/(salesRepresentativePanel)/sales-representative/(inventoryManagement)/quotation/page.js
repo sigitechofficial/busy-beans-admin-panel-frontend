@@ -32,7 +32,6 @@ export default function SalesRepresentativeInventory() {
     : `api/v1/admin/product`;
 
   const { data, reFetch, isLoading } = GetAPI(url);
-  console.log("🚀 ~ SalesRepresentativeInventory ~ data:", data?.data?.data)
 
   const handleFilter = () => {
     const filteredData = data?.data?.data?.filter((item) =>

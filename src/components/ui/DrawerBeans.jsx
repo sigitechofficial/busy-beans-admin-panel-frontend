@@ -137,7 +137,10 @@ const DrawerBeans = ({
         const list = res?.data?.data || [];
         setPartners(list);
         setSrNameOptions(
-          list?.map((p) => ({ value: p?.id, label: p?.srName }))
+          list?.map((p) => ({
+            value: p?.id,
+            label: p?.srName + ` ( ${p?.territoryName} )`,
+          }))
         );
       } else {
         throw new Error(
@@ -454,7 +457,7 @@ const DrawerBeans = ({
     setOrder((prev) => ({
       ...prev,
       userId: selectedEmail?.id,
-      salesRepId: "",
+      // salesRepId: "",
     }));
     const addressList = (selectedEmail?.addresses ?? []).map((address) => {
       const parts = [
@@ -568,13 +571,12 @@ const DrawerBeans = ({
   //   }
   // }, [open, quotationData]);
 
-
   useEffect(() => {
     if (open && isSelfOrder ? userID : order.userId) {
       fetchChargesForCustomer(isSelfOrder ? userID : order.userId, totalWeight);
     } else if (!isSelfOrder && email) {
       // fetchChargesForCustomer(order.userId, totalWeight);
-      handleEmail(email)
+      handleEmail(email);
     }
   }, [open, isSelfOrder ? userID : order.userId, totalWeight, email]);
 
@@ -668,7 +670,7 @@ const DrawerBeans = ({
                   {userType === "admin" && (
                     <div className="flex items-center gap-x-2 justify-end">
                       <label className="text-white font-medium">
-                        Direct Partner
+                        Local Partners
                       </label>
                       <Switch
                         onChange={handleDirectPartnerToggle}
@@ -684,7 +686,9 @@ const DrawerBeans = ({
                     </div>
                   )}
 
-                  {partnerType === "direct-partner" && (
+                  {["direct-partner", "dropship-partner"].includes(
+                    partnerType
+                  ) && (
                     <div className="flex items-center gap-x-2 justify-end">
                       <label className="text-white font-medium">
                         Self Order

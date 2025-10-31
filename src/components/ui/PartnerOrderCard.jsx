@@ -162,11 +162,13 @@ export default function PartnerOrderCard(props) {
           success_toaster("Order Delivered successfully");
           props?.reFetch();
         } else {
+          props?.reFetch();
           throw new Error(
             resDeliver?.data?.message || "Failed to deliver order."
           );
         }
       } catch (error) {
+        props?.reFetch();
         setLoader("");
         ErrorHandler(error);
       }

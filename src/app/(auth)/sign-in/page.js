@@ -3,37 +3,26 @@ import MiniLoader from "@/components/ui/MiniLoader";
 import { loginSchema } from "@/schema";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import { getMessagingInstance, onMessage } from "@/utilities/firebase";
-// import { onMessage } from "firebase/messaging";
 import { loginAPI } from "@/utilities/PostAPI";
 import { requestDeviceToken } from "@/utilities/requestFCMToken";
-import {
-  error_toaster,
-  info_toaster,
-  success_toaster,
-} from "@/utilities/Toaster";
+import { error_toaster, success_toaster } from "@/utilities/Toaster";
 import { BASE_URL, RECAPTCHA_SITE_KEY } from "@/utilities/URL";
-import axios from "axios";
 import { useFormik } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Checkbox } from "primereact/checkbox";
 import { useEffect, useRef, useState } from "react";
 import SIGN_IN from "./sign-in.testids";
-import ReCAPTCHA from "react-google-recaptcha";
+import Script from "next/script";
 
 export default function SignIn() {
   const router = useRouter();
   const [loader, setLoader] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState(null);
-  const recaptchaRef = useRef();
+
   const [type, setType] = useState("admin"); // sales-rep, admin, supplier
   const initialValues = {
     email: "",
     password: "",
-  };
-
-  const handleCaptcha = (token) => {
-    setCaptchaToken(token);
   };
 
   useEffect(() => {
@@ -68,15 +57,20 @@ export default function SignIn() {
   // };
 
   const validateRecaptcha = async () => {
-    if (!captchaToken) {
-      error_toaster("Please verify you’re not a robot!");
+    // Generate reCAPTCHA token
+    const token = await grecaptcha.execute(RECAPTCHA_SITE_KEY, {
+      action: "submit",
+    });
+
+    if (!token) {
+      error_toaster("reCAPTCHA is not ready");
       return;
     }
 
     const res = await fetch("/api/captcha", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ captchaToken }),
+      body: JSON.stringify({ token }),
     });
 
     const data = await res.json();
@@ -93,6 +87,7 @@ export default function SignIn() {
         let captchaRes = await validateRecaptcha();
 
         if (!captchaRes) {
+          error_toaster("Bot Detection");
           return;
         }
 
@@ -110,8 +105,7 @@ export default function SignIn() {
           );
           if (res?.data?.status === "success") {
             setLoader(false);
-            setCaptchaToken("");
-            recaptchaRef.current.reset();
+
             router.push("/");
             localStorage.setItem("accessToken", res?.data?.data?.token);
             localStorage.setItem("loginStatus", true);
@@ -179,13 +173,16 @@ export default function SignIn() {
         } catch (error) {
           ErrorHandler(error);
           setLoader(false);
-          recaptchaRef.current.reset();
         }
         action.resetForm();
       },
     });
   return (
     <div className="bg-signInBackgroundImage bg-cover min-h-screen flex items-center justify-center">
+      <Script
+        src={`https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_SITE_KEY}`}
+        strategy="afterInteractive"
+      />
       <div className="grid sm:grid-cols-2 w-[80%] xl:w-3/5 backdrop-blur-md rounded-lg border border-theme [&>div]:px-6 sm:[&>div]:px-10 xl:[&>div]:px-14">
         {/* left side */}
         <div className=" flex flex-col justify-center items-center">
@@ -197,18 +194,11 @@ export default function SignIn() {
             />
           </div>
 
-          <div className="pb-4 space-y-2">
-            <ReCAPTCHA
-              ref={recaptchaRef}
-              sitekey={RECAPTCHA_SITE_KEY}
-              onChange={handleCaptcha}
-            />
-            <p className="hidden sm:flex items-center justify-between font-switzer text-white text-sm font-normal gap-x-2">
-              <Link href="">Terms of Services</Link>
-              <Link href="">Privacy Policy</Link>
-              <Link href="">Help & Suppport</Link>
-            </p>
-          </div>
+          <p className="hidden sm:flex items-center justify-between font-switzer text-white text-sm font-normal gap-x-2">
+            <Link href="">Terms of Services</Link>
+            <Link href="">Privacy Policy</Link>
+            <Link href="">Help & Suppport</Link>
+          </p>
         </div>
 
         {/* Right side */}

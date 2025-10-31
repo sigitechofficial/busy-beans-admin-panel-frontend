@@ -177,7 +177,7 @@ export default function SalesRepDetails() {
       if (addrKind === "billing") {
         payload = { billingAddresses: baseAddress };
       } else {
-        payload = { newAddressess: [baseAddress ]};
+        payload = { newAddressess: [baseAddress] };
       }
     }
 
@@ -378,7 +378,7 @@ export default function SalesRepDetails() {
               onClick={openCreateAddress}
               className="rounded-lg border border-theme text-theme hover:bg-theme hover:text-white duration-150 shadow-buttonShadow px-6 font-nunito py-3 font-medium"
             >
-              Add New Address
+              Add Shipping Address
             </button>
             <button
               type="button"

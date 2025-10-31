@@ -13,7 +13,7 @@ import { PatchAPI } from "@/utilities/PatchAPI";
 import { PostAPI } from "@/utilities/PostAPI";
 import { DeleteAPI } from "@/utilities/DeleteAPI";
 import { selectStyles2 } from "@/utilities/SelectStyle";
-import { success_toaster } from "@/utilities/Toaster";
+import { error_toaster, success_toaster } from "@/utilities/Toaster";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { Dialog } from "primereact/dialog";
 import React, { useState } from "react";
@@ -27,6 +27,7 @@ import { useDataContext } from "@/utilities/DataContext";
 import { hasPermission } from "@/utilities/Permission";
 import { ORDER_DETAIL } from "../../../orders.testids";
 import { FiCopy } from "react-icons/fi";
+import { BASE_URL } from "@/utilities/URL";
 
 export default function OrderDetail() {
   if (typeof window !== "undefined") {
@@ -123,11 +124,13 @@ export default function OrderDetail() {
         setLoader("");
       } else {
         setLoader("");
+        reFetch();
         throw new Error(res?.data?.message || "An unexpected error occurred.");
       }
     } catch (error) {
       ErrorHandler(error);
       setLoader("");
+      reFetch();
     }
   };
 
@@ -415,6 +418,18 @@ export default function OrderDetail() {
     } catch {}
   };
 
+  const handleSelfOrderPullout = async (id) => {
+    let res = await PostAPI(
+      BASE_URL + `api/v1/admin/partner-order/pull-payment-from-bank/${id}`
+    );
+
+    if (res?.data?.status === "success") {
+      success_toaster("Payment Pullout Successfully");
+    } else {
+      error_toaster(res?.data?.message);
+    }
+  };
+
   const { toggle, setToggle } = useDataContext();
 
   return isLoading ? (
@@ -469,6 +484,22 @@ export default function OrderDetail() {
             className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative text-blue-500"
             data-testid={ORDER_DETAIL.actionsBar}
           >
+            {userType === "admin" &&
+              data?.data?.order?.partnerOrderDetail &&
+              data?.data?.order.paymentStatus === "pending" && (
+                <li>
+                  <button
+                    type="button"
+                    className="disabled:cursor-not-allowed"
+                    onClick={() =>
+                      handleSelfOrderPullout(data?.data?.order?.id)
+                    }
+                    data-testid={ORDER_DETAIL.pullout}
+                  >
+                    Pullout
+                  </button>
+                </li>
+              )}
             <li>
               {hasPermission("invoice_update") && (
                 <button
@@ -499,7 +530,7 @@ export default function OrderDetail() {
 
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
         {data?.data?.order?.selfOrder ? (
-      ""
+          ""
         ) : (
           <div className="flex justify-end">
             <div

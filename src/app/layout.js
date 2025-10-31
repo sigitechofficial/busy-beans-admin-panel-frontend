@@ -7,9 +7,7 @@ import Header from "@/components/ui/Header";
 import Leftbar from "@/components/ui/Leftbar";
 import { usePathname } from "next/navigation";
 import { ToastContainer } from "react-toastify";
-import { useState } from "react";
 import ProtectedRoute from "@/utilities/ProtectedRoute";
-import { AuthCheck } from "@/utilities/AuthCheck";
 import { DataProvider } from "@/utilities/DataContext";
 
 const satoshi = localFont({
@@ -111,7 +109,10 @@ export default function RootLayout({ children }) {
       <head>
         <title>Busy Beans Coffee</title>
         <link rel="icon" type="image/x-icon" href="/images/logocoffee.png" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, minimum-scale=1"
+        />
         <div
           dangerouslySetInnerHTML={{
             __html: `
@@ -143,16 +144,12 @@ export default function RootLayout({ children }) {
             `,
           }}
         />
-        
+
         <ToastContainer />
         <DataProvider>
-          {!isLayoutDisplay && (
-            <Header />
-          )}
+          {!isLayoutDisplay && <Header />}
 
-          {!isLayoutDisplay && (
-            <Leftbar />
-          )}
+          {!isLayoutDisplay && <Leftbar />}
 
           <section
             className={

@@ -93,7 +93,8 @@ export default function OrderDetail() {
     setLoader("acknowledgeSupplier");
     try {
       const res = await PatchAPI("api/v1/admin/supplier-acknowledgement", {
-        [pathname.includes("/supplier/partner") ? "partnerOrderId" : "orderId"]: data?.data?.order?.id,
+        [pathname.includes("/supplier/partner") ? "partnerOrderId" : "orderId"]:
+          data?.data?.order?.id,
         orderData: {
           statusId: 3,
         },
@@ -116,7 +117,8 @@ export default function OrderDetail() {
     setLoader("orderDelivered");
     try {
       const res = await PatchAPI("api/v1/admin/order-deliver", {
-        [pathname.includes("/supplier/partner") ? "partnerOrderId" : "orderId"]: data?.data?.order?.id,
+        [pathname.includes("/supplier/partner") ? "partnerOrderId" : "orderId"]:
+          data?.data?.order?.id,
         orderData: {
           statusId: 5,
           // paymentStaus: "done",
@@ -128,11 +130,13 @@ export default function OrderDetail() {
         setLoader("");
       } else {
         setLoader("");
+        reFetch();
         throw new Error(res?.data?.message || "An unexpected error occurred.");
       }
     } catch (error) {
       ErrorHandler(error);
       setLoader("");
+      reFetch();
     }
   };
 

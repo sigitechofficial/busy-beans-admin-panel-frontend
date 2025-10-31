@@ -179,6 +179,9 @@ export default function Leftbar(props) {
   const handlePartnerOrdersToggle = () => {
     handleActive("partnerOrders", active?.partnerOrders?.status);
   };
+  const handleCustomerOrdersToggle = () => {
+    handleActive("customerOrder", active?.customerOrder?.status);
+  };
 
   const authenticateQuickbooks = async () => {
     try {
@@ -332,6 +335,8 @@ export default function Leftbar(props) {
     (sum, item) => sum + item?.count,
     0
   );
+
+  console.log(pathname, "pathnamepathnamepathname");
   useEffect(() => {
     let timeoutId = null;
 
@@ -518,75 +523,99 @@ export default function Leftbar(props) {
                       <hr className="w-full" />
                     </div>
                   )}
-                  <ListItems
-                    title="New Orders"
-                    to="/orders/new-orders"
-                    count={overAllData?.data?.data?.[0]?.count || ""}
-                    data-testid={LEFTBAR.listItem(
-                      "orderManagement",
-                      "New Orders"
-                    )}
+
+                  <ListHead
+                    title="Customer Orders"
+                    Icon={MdStore}
+                    active={
+                      pathname === "/orders" ||
+                      pathname === "/orders/new-orders" ||
+                      pathname === "/orders/upcoming" ||
+                      pathname === "/orders/assigned" ||
+                      pathname === "/orders/acknowledged" ||
+                      pathname === "/orders/shiped" ||
+                      pathname === "/orders/cancelled"
+                    }
+                    Angle={
+                      active?.customerOrder?.status ? FaAngleUp : FaAngleDown
+                    }
+                    onClick={handleCustomerOrdersToggle}
                   />
-                  <ListItems
-                    title="All Orders"
-                    to="/orders"
-                    count={allOrder || ""}
-                    data-testid={LEFTBAR.listItem(
-                      "orderManagement",
-                      "All Orders"
-                    )}
-                  />
-                  <ListItems
-                    title="Upcoming Orders"
-                    to="/orders/upcoming"
-                    count={overAllData?.data?.data?.[6]?.count || ""}
-                    data-testid={LEFTBAR.listItem(
-                      "orderManagement",
-                      "Upcoming Orders"
-                    )}
-                  />
-                  <ListItems
-                    title="Dispatched Orders"
-                    to="/orders/assigned"
-                    count={overAllData?.data?.data?.[1]?.count || ""}
-                    data-testid={LEFTBAR.listItem(
-                      "orderManagement",
-                      "Dispatched Orders"
-                    )}
-                  />
-                  <ListItems
-                    title="Acknowledged Orders"
-                    to="/orders/acknowledged"
-                    count={overAllData?.data?.data?.[2]?.count || ""}
-                    data-testid={LEFTBAR.listItem(
-                      "orderManagement",
-                      "Acknowledged Orders"
-                    )}
-                  />
-                  <ListItems
-                    title="Shipped Orders"
-                    to="/orders/shiped"
-                    count={overAllData?.data?.data?.[4]?.count || ""}
-                    data-testid={LEFTBAR.listItem(
-                      "orderManagement",
-                      "Shipped Orders"
-                    )}
-                  />
-                  {/* <ListItems
+
+                  {active?.customerOrder?.status && (
+                    <div className="m-2 relative space-y-1">
+                      <ListItems
+                        title="New Orders"
+                        to="/orders/new-orders"
+                        count={overAllData?.data?.data?.[0]?.count || ""}
+                        data-testid={LEFTBAR.listItem(
+                          "orderManagement",
+                          "New Orders"
+                        )}
+                      />
+                      <ListItems
+                        title="All Orders"
+                        to="/orders"
+                        count={allOrder || ""}
+                        data-testid={LEFTBAR.listItem(
+                          "orderManagement",
+                          "All Orders"
+                        )}
+                      />
+                      <ListItems
+                        title="Upcoming Orders"
+                        to="/orders/upcoming"
+                        count={overAllData?.data?.data?.[6]?.count || ""}
+                        data-testid={LEFTBAR.listItem(
+                          "orderManagement",
+                          "Upcoming Orders"
+                        )}
+                      />
+                      <ListItems
+                        title="Dispatched Orders"
+                        to="/orders/assigned"
+                        count={overAllData?.data?.data?.[1]?.count || ""}
+                        data-testid={LEFTBAR.listItem(
+                          "orderManagement",
+                          "Dispatched Orders"
+                        )}
+                      />
+                      <ListItems
+                        title="Acknowledged Orders"
+                        to="/orders/acknowledged"
+                        count={overAllData?.data?.data?.[2]?.count || ""}
+                        data-testid={LEFTBAR.listItem(
+                          "orderManagement",
+                          "Acknowledged Orders"
+                        )}
+                      />
+                      <ListItems
+                        title="Shipped Orders"
+                        to="/orders/shiped"
+                        count={overAllData?.data?.data?.[4]?.count || ""}
+                        data-testid={LEFTBAR.listItem(
+                          "orderManagement",
+                          "Shipped Orders"
+                        )}
+                      />
+                      {/* <ListItems
                     title="Dispatched Orders"
                     to="/orders/dispatched"
                   /> */}
-                  <ListItems
-                    title="Cancelled Orders"
-                    to="/orders/cancelled"
-                    count={overAllData?.data?.data?.[5]?.count || ""}
-                    data-testid={LEFTBAR.listItem(
-                      "orderManagement",
-                      "Cancelled Orders"
-                    )}
-                  />
+                      <ListItems
+                        title="Cancelled Orders"
+                        to="/orders/cancelled"
+                        count={overAllData?.data?.data?.[5]?.count || ""}
+                        data-testid={LEFTBAR.listItem(
+                          "orderManagement",
+                          "Cancelled Orders"
+                        )}
+                      />
+
+                      <hr className="w-full" />
+                    </div>
+                  )}
                 </div>
-                <hr className="w-full" />
               </>
             )}
           {hasPermission("supplier_view") && (
@@ -1564,17 +1593,16 @@ export default function Leftbar(props) {
                       )}
                     />
                   )}
-                  {partnerType == "direct-partner" && (
-                    <ListHead
-                      title="Partner Orders"
-                      Icon={MdStore}
-                      active={pathname.includes("/orders/partnerOrders")}
-                      Angle={
-                        active?.partnerOrders?.status ? FaAngleUp : FaAngleDown
-                      }
-                      onClick={handlePartnerOrdersToggle}
-                    />
-                  )}
+
+                  <ListHead
+                    title="Partner Orders"
+                    Icon={MdStore}
+                    active={pathname.includes("/orders/partnerOrders")}
+                    Angle={
+                      active?.partnerOrders?.status ? FaAngleUp : FaAngleDown
+                    }
+                    onClick={handlePartnerOrdersToggle}
+                  />
 
                   {active?.partnerOrders?.status && (
                     <div className="m-2 relative space-y-1">

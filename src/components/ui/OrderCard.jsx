@@ -124,8 +124,9 @@ export default function OrderCard(props) {
 
         setLoader("dispatchOrder");
         const res = await PatchAPI("api/v1/admin/order-dispatch", {
-          [pathname.includes("/supplier/partner") ? "partnerOrderId" : "orderId"]:
-            props?.orderData?.id,
+          [pathname.includes("/supplier/partner")
+            ? "partnerOrderId"
+            : "orderId"]: props?.orderData?.id,
           orderData: {
             statusId: 4,
             trackingNumber: isTruck
@@ -151,8 +152,9 @@ export default function OrderCard(props) {
 
         // Deliver immediately
         const resDeliver = await PatchAPI("api/v1/admin/order-deliver", {
-          [pathname.includes("/supplier/partner") ? "partnerOrderId" : "orderId"]:
-            props?.orderData?.id,
+          [pathname.includes("/supplier/partner")
+            ? "partnerOrderId"
+            : "orderId"]: props?.orderData?.id,
           orderData: {
             statusId: 5,
             orderStatus: props?.orderData?.orderCurrentStatus,
@@ -164,6 +166,7 @@ export default function OrderCard(props) {
           success_toaster("Order Delivered successfully");
           props?.reFetch();
         } else {
+          props?.reFetch();
           throw new Error(
             resDeliver?.data?.message || "Failed to deliver order."
           );
@@ -171,6 +174,7 @@ export default function OrderCard(props) {
       } catch (error) {
         setLoader("");
         ErrorHandler(error);
+        props?.reFetch();
       }
     }
   };

@@ -336,7 +336,6 @@ export default function Leftbar(props) {
     0
   );
 
-  console.log(pathname, "pathnamepathnamepathname");
   useEffect(() => {
     let timeoutId = null;
 
@@ -1330,16 +1329,6 @@ export default function Leftbar(props) {
             active?.orderManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  <ListItems
-                    // title="Assigned Orders"
-                    title="New Orders"
-                    to="/supplier/assigned-orders"
-                    count={overAllData?.data?.data?.[1]?.count || ""}
-                    data-testid={LEFTBAR.listItem(
-                      "orderManagement",
-                      "New Orders"
-                    )}
-                  />
                   {/* <ListItems
                     title="Self Orders"
                     to="/supplier/Self-orders"
@@ -1395,24 +1384,58 @@ export default function Leftbar(props) {
                     </div>
                   )}
 
-                  <ListItems
-                    title="Acknowledged Orders"
-                    to="/supplier/acknowledge-orders"
-                    count={overAllData?.data?.data?.[2]?.count || ""}
-                    data-testid={LEFTBAR.listItem(
-                      "orderManagement",
-                      "Acknowledged Orders"
-                    )}
+                  <ListHead
+                    title="Customer Orders"
+                    Icon={MdStore}
+                    active={
+                      pathname === "/supplier/assigned-orders" ||
+                      pathname === "/supplier/acknowledge-orders" ||
+                      pathname === "/supplier/shiped-orders"
+                    }
+                    Angle={
+                      active?.customerOrder?.status ? FaAngleUp : FaAngleDown
+                    }
+                    onClick={handleCustomerOrdersToggle}
                   />
-                  <ListItems
-                    title="Shipped Orders"
-                    to="/supplier/shiped-orders"
-                    count={overAllData?.data?.data?.[4]?.count || ""}
-                    data-testid={LEFTBAR.listItem(
-                      "orderManagement",
-                      "Shipped Orders"
-                    )}
-                  />
+
+                  {active?.customerOrder?.status && (
+                    <div className="m-2 relative space-y-1">
+                      <ListItems
+                        // title="Assigned Orders"
+                        title="New Orders"
+                        to="/supplier/assigned-orders"
+                        count={overAllData?.data?.data?.[1]?.count || ""}
+                        data-testid={LEFTBAR.listItem(
+                          "orderManagement",
+                          "New Orders"
+                        )}
+                        
+                      />
+
+                      <ListItems
+                        title="Acknowledged Orders"
+                        to="/supplier/acknowledge-orders"
+                        count={overAllData?.data?.data?.[2]?.count || ""}
+                        data-testid={LEFTBAR.listItem(
+                          "orderManagement",
+                          "Acknowledged Orders"
+                        )}
+                      />
+
+                      <ListItems
+                        title="Shipped Orders"
+                        to="/supplier/shiped-orders"
+                        count={overAllData?.data?.data?.[4]?.count || ""}
+                        data-testid={LEFTBAR.listItem(
+                          "orderManagement",
+                          "Shipped Orders"
+                        )}
+                      />
+
+                      <hr className="w-full" />
+                    </div>
+                  )}
+
                   {/* <ListItems
                     title="Dispatched Orders"
                     to="/supplier/dispatched-orders"
@@ -1422,7 +1445,6 @@ export default function Leftbar(props) {
                     to="/supplier/cancelled-orders"
                   /> */}
                 </div>
-                <hr className="w-full" />
               </>
             )}
 
@@ -1594,6 +1616,8 @@ export default function Leftbar(props) {
                     />
                   )}
 
+                  <hr className="w-full" />
+
                   <ListHead
                     title="Partner Orders"
                     Icon={MdStore}
@@ -1659,74 +1683,93 @@ export default function Leftbar(props) {
                       <hr className="w-full" />
                     </div>
                   )}
-                  <ListItems
-                    title="New Orders"
-                    to="/orders/new-orders"
-                    count={overAllData?.data?.data?.[0]?.count || ""}
-                    data-testid={LEFTBAR.listItem(
-                      "orderManagement",
-                      "New Orders"
-                    )}
-                  />
-                  <ListItems
-                    title="All Orders"
-                    to="/orders"
-                    count={allOrder || ""}
-                    data-testid={LEFTBAR.listItem(
-                      "orderManagement",
-                      "All Orders"
-                    )}
+
+                  <ListHead
+                    title="Customer Orders"
+                    Icon={MdStore}
+                    active={
+                      pathname === "/orders" ||
+                      pathname === "/orders/new-orders" ||
+                      pathname === "/sales-representative/upcoming-orders" ||
+                      pathname === "/orders/assigned" ||
+                      pathname === "/orders/acknowledged" ||
+                      pathname === "/orders/shiped" ||
+                      pathname === "/orders/cancelled"
+                    }
+                    Angle={
+                      active?.customerOrder?.status ? FaAngleUp : FaAngleDown
+                    }
+                    onClick={handleCustomerOrdersToggle}
                   />
 
-                  <ListItems
-                    title="Upcoming Orders"
-                    to="/sales-representative/upcoming-orders"
-                    count={overAllData?.data?.data?.[6]?.count || ""}
-                    data-testid={LEFTBAR.listItem(
-                      "orderManagement",
-                      "Upcoming Orders"
-                    )}
-                  />
-                  {/* <ListItems title="Assigned Orders" to="/orders/assigned" /> */}
-                  <ListItems
-                    title="Dispatched Orders"
-                    to="/orders/assigned"
-                    count={overAllData?.data?.data?.[1]?.count || ""}
-                    data-testid={LEFTBAR.listItem(
-                      "orderManagement",
-                      "Dispatched Orders"
-                    )}
-                  />
-
-                  <ListItems
-                    title="Acknowledged Orders"
-                    to="/orders/acknowledged"
-                    count={overAllData?.data?.data?.[2]?.count || ""}
-                    data-testid={LEFTBAR.listItem(
-                      "orderManagement",
-                      "Acknowledged Orders"
-                    )}
-                  />
-                  <ListItems
-                    title="Shipped Orders"
-                    to="/orders/shiped"
-                    count={overAllData?.data?.data?.[4]?.count || ""}
-                    data-testid={LEFTBAR.listItem(
-                      "orderManagement",
-                      "Shipped Orders"
-                    )}
-                  />
-                  <ListItems
-                    title="Cancelled Orders"
-                    to="/orders/cancelled"
-                    count={overAllData?.data?.data?.[5]?.count || ""}
-                    data-testid={LEFTBAR.listItem(
-                      "orderManagement",
-                      "Cancelled Orders"
-                    )}
-                  />
+                  {active?.customerOrder?.status && (
+                    <div className="m-2 relative space-y-1">
+                      <ListItems
+                        title="New Orders"
+                        to="/orders/new-orders"
+                        count={overAllData?.data?.data?.[0]?.count || ""}
+                        data-testid={LEFTBAR.listItem(
+                          "orderManagement",
+                          "New Orders"
+                        )}
+                      />
+                      <ListItems
+                        title="All Orders"
+                        to="/orders"
+                        count={allOrder || ""}
+                        data-testid={LEFTBAR.listItem(
+                          "orderManagement",
+                          "All Orders"
+                        )}
+                      />
+                      <ListItems
+                        title="Upcoming Orders"
+                        to="/sales-representative/upcoming-orders"
+                        count={overAllData?.data?.data?.[6]?.count || ""}
+                        data-testid={LEFTBAR.listItem(
+                          "orderManagement",
+                          "Upcoming Orders"
+                        )}
+                      />
+                      <ListItems
+                        title="Dispatched Orders"
+                        to="/orders/assigned"
+                        count={overAllData?.data?.data?.[1]?.count || ""}
+                        data-testid={LEFTBAR.listItem(
+                          "orderManagement",
+                          "Dispatched Orders"
+                        )}
+                      />
+                      <ListItems
+                        title="Acknowledged Orders"
+                        to="/orders/acknowledged"
+                        count={overAllData?.data?.data?.[2]?.count || ""}
+                        data-testid={LEFTBAR.listItem(
+                          "orderManagement",
+                          "Acknowledged Orders"
+                        )}
+                      />
+                      <ListItems
+                        title="Shipped Orders"
+                        to="/orders/shiped"
+                        count={overAllData?.data?.data?.[4]?.count || ""}
+                        data-testid={LEFTBAR.listItem(
+                          "orderManagement",
+                          "Shipped Orders"
+                        )}
+                      />
+                      <ListItems
+                        title="Cancelled Orders"
+                        to="/orders/cancelled"
+                        count={overAllData?.data?.data?.[5]?.count || ""}
+                        data-testid={LEFTBAR.listItem(
+                          "orderManagement",
+                          "Cancelled Orders"
+                        )}
+                      />{" "}
+                    </div>
+                  )}
                 </div>
-                <hr className="w-full" />
               </>
             )}
           {/* {hasPermission("subscription_view") && (

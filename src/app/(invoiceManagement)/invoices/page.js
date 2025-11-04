@@ -22,7 +22,7 @@ export default function Invoices() {
       ? `api/v1/admin/customer-management/invoice-customers-balance/sales-rep/${userID}`
       : "api/v1/admin/customer-management/invoice-customers-balance"
   );
-
+  
   const columns = [
     // { field: "sl", header: "SL", sort: true },
     // { field: "name", header: "Name" },

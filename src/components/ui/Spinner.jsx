@@ -281,7 +281,7 @@ const Spinner = () => {
           <div className="smoke two"></div>
           <div className="smoke three"></div>
         </div>
-        <div className="load">Loading...</div>
+        {/* <div className="load">Loading...</div> */}
       </div>
 
       <style jsx>{`

@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import dayjs from "dayjs";
 import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
-import { NEW_ORDERS } from "../../orders.testids"
+import { NEW_ORDERS } from "../../orders.testids";
 
 export default function NewOrders() {
   if (typeof window !== "undefined") {
@@ -47,12 +47,15 @@ export default function NewOrders() {
   });
   const { toggle, setToggle } = useDataContext();
 
-  return data?.length === 0 ? (
+
+  return !data?.data?.data? (
     <Loader />
   ) : (
     <div data-testid={NEW_ORDERS.root}>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
-        data-testid={NEW_ORDERS.headerBar}>
+      <div
+        className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+        data-testid={NEW_ORDERS.headerBar}
+      >
         <div className="flex items-center gap-2">
           <p
             onClick={() => setToggle(!toggle)}
@@ -62,13 +65,15 @@ export default function NewOrders() {
           </p>
           <h2 className="text-xl font-inter font-semibold">New Orders</h2>
         </div>
-
       </div>
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5"
-          data-testid={NEW_ORDERS.statsGrid} >
-          <ManagementTab title="Total Orders" desc={data?.data?.data?.length} 
+        <div
+          className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5"
+          data-testid={NEW_ORDERS.statsGrid}
+        >
+          <ManagementTab
+            title="Total Orders"
+            desc={data?.data?.data?.length}
             data-testid={NEW_ORDERS.totalOrdersCard}
           />
         </div>

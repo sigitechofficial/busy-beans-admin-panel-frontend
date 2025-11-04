@@ -131,7 +131,7 @@ export default function CustomersByEmployee() {
     }
   };
 
-  return data?.length === 0 ? (
+  return !data ? (
     <Loader />
   ) : (
     <div>

@@ -20,7 +20,7 @@ import {
   MdReceiptLong,
   MdCoffeeMaker,
 } from "react-icons/md";
-import { FaAngleDown, FaAngleUp } from "react-icons/fa";
+import { FaAngleDown, FaAngleRight, FaAngleUp } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import { usePathname, useRouter } from "next/navigation";
 import ListHead from "./ListHead";
@@ -438,10 +438,15 @@ export default function Leftbar(props) {
               Icon={MdListAlt}
               active={pathname.includes("/orders")}
               Angle={
+                FaAngleRight
+                // active?.orderManagement?.tab === "orderManagement" &&
+                // active?.orderManagement?.status
+                //   ? FaAngleUp
+                //   : FaAngleDown
+              }
+              status={
                 active?.orderManagement?.tab === "orderManagement" &&
                 active?.orderManagement?.status
-                  ? FaAngleUp
-                  : FaAngleDown
               }
               onClick={() =>
                 handleActive("orderManagement", active?.orderManagement?.status)
@@ -453,7 +458,7 @@ export default function Leftbar(props) {
           {active?.orderManagement?.tab === "orderManagement" &&
             active?.orderManagement?.status && (
               <>
-                <div className="m-2 relative space-y-1">
+                <div className={`m-2 relative space-y-1`}>
                   {hasPermission("orders_create") && (
                     <ListItems title="Create Order" to="/orders/create" />
                   )}
@@ -461,10 +466,9 @@ export default function Leftbar(props) {
                     title="Partner Orders"
                     Icon={MdStore}
                     active={pathname.includes("/orders/partnerOrders")}
-                    Angle={
-                      active?.partnerOrders?.status ? FaAngleUp : FaAngleDown
-                    }
+                    Angle={FaAngleRight}
                     onClick={handlePartnerOrdersToggle}
+                    status={active?.partnerOrders?.status}
                   />
 
                   {active?.partnerOrders?.status && (
@@ -535,9 +539,8 @@ export default function Leftbar(props) {
                       pathname === "/orders/shiped" ||
                       pathname === "/orders/cancelled"
                     }
-                    Angle={
-                      active?.customerOrder?.status ? FaAngleUp : FaAngleDown
-                    }
+                    Angle={FaAngleRight}
+                    status={active?.customerOrder?.status}
                     onClick={handleCustomerOrdersToggle}
                   />
 
@@ -625,12 +628,13 @@ export default function Leftbar(props) {
               active={
                 pathname === "/suppliers" || pathname === "/add-new-supplier"
               }
-              Angle={
+              status={
                 active?.supplierManagement?.tab === "supplierManagement" &&
                 active?.supplierManagement?.status
-                  ? FaAngleUp
-                  : FaAngleDown
+                  ? true
+                  : false
               }
+              Angle={FaAngleRight}
               onClick={() =>
                 handleActive(
                   "supplierManagement",
@@ -667,12 +671,13 @@ export default function Leftbar(props) {
               Icon={MdGroups}
               data-testid={LEFTBAR.clientManagementSection}
               active={pathname.includes("/customers")}
-              Angle={
+              status={
                 active?.clientManagement?.tab === "clientManagement" &&
                 active?.clientManagement?.status
-                  ? FaAngleUp
-                  : FaAngleDown
+                  ? true
+                  : false
               }
+              Angle={FaAngleRight}
               onClick={() =>
                 handleActive(
                   "clientManagement",
@@ -716,12 +721,13 @@ export default function Leftbar(props) {
               Icon={MdPeopleAlt}
               data-testid={LEFTBAR.localPartnersSection}
               active={pathname === "/sale-representative"}
-              Angle={
+              status={
                 active?.saleRepresentative?.tab === "saleRepresentative" &&
                 active?.saleRepresentative?.status
-                  ? FaAngleUp
-                  : FaAngleDown
+                  ? true
+                  : false
               }
+              Angle={FaAngleRight}
               onClick={() =>
                 handleActive(
                   "saleRepresentative",
@@ -784,12 +790,13 @@ export default function Leftbar(props) {
               title="Invoice Management"
               Icon={MdRequestQuote}
               data-testid={LEFTBAR.invoiceManagementSection}
-              Angle={
+              status={
                 active?.invoiceManagement?.tab === "invoiceManagement" &&
                 active?.invoiceManagement?.status
-                  ? FaAngleUp
-                  : FaAngleDown
+                  ? true
+                  : false
               }
+              Angle={FaAngleRight}
               onClick={() =>
                 handleActive(
                   "invoiceManagement",
@@ -837,11 +844,12 @@ export default function Leftbar(props) {
               active={pathname === "/pullouts"}
               data-testid={LEFTBAR.pulloutsManagementSection}
               Icon={MdPayments}
-              Angle={
+              status={
                 active?.pullouts?.tab === "pullouts" && active?.pullouts?.status
-                  ? FaAngleUp
-                  : FaAngleDown
+                  ? true
+                  : false
               }
+              Angle={FaAngleRight}
               onClick={() => handleActive("pullouts", active?.pullouts?.status)}
             />
           )}
@@ -1018,12 +1026,13 @@ export default function Leftbar(props) {
               active={pathname === "/inventory/stock"}
               data-testid={LEFTBAR.inventoryManagementSection}
               Icon={MdInventory}
-              Angle={
+              status={
                 active?.inventoryManagement?.tab === "inventoryManagement" &&
                 active?.inventoryManagement?.status
-                  ? FaAngleUp
-                  : FaAngleDown
+                  ? true
+                  : false
               }
+              Angle={FaAngleRight}
               onClick={() =>
                 handleActive(
                   "inventoryManagement",
@@ -1056,12 +1065,13 @@ export default function Leftbar(props) {
               active={pathname === "/category" || pathname === "/sub-category"}
               data-testid={LEFTBAR.categoryManagementSection}
               Icon={MdCategory}
-              Angle={
+              status={
                 active?.categoryManagement?.tab === "categoryManagement" &&
                 active?.categoryManagement?.status
-                  ? FaAngleUp
-                  : FaAngleDown
+                  ? true
+                  : false
               }
+              Angle={FaAngleRight}
               onClick={() =>
                 handleActive(
                   "categoryManagement",
@@ -1094,12 +1104,13 @@ export default function Leftbar(props) {
               active={pathname === "/employee"}
               data-testid={LEFTBAR.employeeManagementSection}
               Icon={MdManageAccounts}
-              Angle={
+              status={
                 active?.employees?.tab === "employees" &&
                 active?.employees?.status
-                  ? FaAngleUp
-                  : FaAngleDown
+                  ? true
+                  : false
               }
+              Angle={FaAngleRight}
               onClick={() =>
                 handleActive("employees", active?.employees?.status)
               }
@@ -1170,12 +1181,13 @@ export default function Leftbar(props) {
                 pathname === "/countries" ||
                 pathname === "/cities"
               }
-              Angle={
+              status={
                 active?.zoneManagement?.tab === "zoneManagement" &&
                 active?.zoneManagement?.status
-                  ? FaAngleUp
-                  : FaAngleDown
+                  ? true
+                  : false
               }
+              Angle={FaAngleRight}
               onClick={() =>
                 handleActive("zoneManagement", active?.zoneManagement?.status)
               }
@@ -1253,12 +1265,13 @@ export default function Leftbar(props) {
             onClick={() =>
               handleActive("quickbooks", active?.quickbooks?.status)
             }
-            Angle={
-              active?.quickbooks?.tab === "clientManagement" &&
+            status={
+              active?.quickbooks?.tab === "quickbooks" &&
               active?.quickbooks?.status
-                ? FaAngleUp
-                : FaAngleDown
+                ? true
+                : false
             }
+            Angle={FaAngleRight}
           />
           {active?.quickbooks?.tab === "quickbooks" &&
             active?.quickbooks?.status && (
@@ -1314,12 +1327,13 @@ export default function Leftbar(props) {
               pathname.includes("/supplier/order-detail") ||
               pathname.includes("/supplier/partner")
             }
-            Angle={
+            status={
               active?.orderManagement?.tab === "orderManagement" &&
               active?.orderManagement?.status
-                ? FaAngleUp
-                : FaAngleDown
+                ? true
+                : false
             }
+            Angle={FaAngleRight}
             onClick={() =>
               handleActive("orderManagement", active?.orderManagement?.status)
             }
@@ -1343,9 +1357,8 @@ export default function Leftbar(props) {
                     title="Partner Orders"
                     Icon={MdStore}
                     active={pathname.includes("/supplier/partner")}
-                    Angle={
-                      active?.partnerOrders?.status ? FaAngleUp : FaAngleDown
-                    }
+                    status={active?.partnerOrders?.status ? true : false}
+                    Angle={FaAngleRight}
                     onClick={handlePartnerOrdersToggle}
                   />
 
@@ -1392,9 +1405,8 @@ export default function Leftbar(props) {
                       pathname === "/supplier/acknowledge-orders" ||
                       pathname === "/supplier/shiped-orders"
                     }
-                    Angle={
-                      active?.customerOrder?.status ? FaAngleUp : FaAngleDown
-                    }
+                    status={active?.customerOrder?.status ? true : false}
+                    Angle={FaAngleRight}
                     onClick={handleCustomerOrdersToggle}
                   />
 
@@ -1409,7 +1421,6 @@ export default function Leftbar(props) {
                           "orderManagement",
                           "New Orders"
                         )}
-                        
                       />
 
                       <ListItems
@@ -1483,12 +1494,13 @@ export default function Leftbar(props) {
               active={pathname === "/sales-representative/quotation"}
               Icon={MdReceiptLong}
               data-testid={LEFTBAR.quotationManagementSection}
-              Angle={
+              status={
                 active?.inventoryManagement?.tab === "inventoryManagement" &&
                 active?.inventoryManagement?.status
-                  ? FaAngleUp
-                  : FaAngleDown
+                  ? true
+                  : false
               }
+              Angle={FaAngleRight}
               onClick={() =>
                 handleActive(
                   "inventoryManagement",
@@ -1522,12 +1534,13 @@ export default function Leftbar(props) {
               Icon={MdGroups}
               data-testid={LEFTBAR.clientManagementSection}
               active={pathname === "/sales-representative/customers"}
-              Angle={
+              status={
                 active?.clientManagement?.tab === "clientManagement" &&
                 active?.clientManagement?.status
-                  ? FaAngleUp
-                  : FaAngleDown
+                  ? true
+                  : false
               }
+              Angle={FaAngleRight}
               onClick={() =>
                 handleActive(
                   "clientManagement",
@@ -1589,12 +1602,13 @@ export default function Leftbar(props) {
               active={
                 pathname.includes("/orders") || pathname.includes("-order")
               }
-              Angle={
+              status={
                 active?.orderManagement?.tab === "orderManagement" &&
                 active?.orderManagement?.status
-                  ? FaAngleUp
-                  : FaAngleDown
+                  ? true
+                  : false
               }
+              Angle={FaAngleRight}
               onClick={() =>
                 handleActive("orderManagement", active?.orderManagement?.status)
               }
@@ -1622,9 +1636,8 @@ export default function Leftbar(props) {
                     title="Partner Orders"
                     Icon={MdStore}
                     active={pathname.includes("/orders/partnerOrders")}
-                    Angle={
-                      active?.partnerOrders?.status ? FaAngleUp : FaAngleDown
-                    }
+                    status={active?.partnerOrders?.status ? true : false}
+                    Angle={FaAngleRight}
                     onClick={handlePartnerOrdersToggle}
                   />
 
@@ -1809,12 +1822,13 @@ export default function Leftbar(props) {
               title="Invoice Management"
               Icon={MdRequestQuote}
               data-testid={LEFTBAR.invoiceManagementSection}
-              Angle={
+              status={
                 active?.invoiceManagement?.tab === "invoiceManagement" &&
                 active?.invoiceManagement?.status
-                  ? FaAngleUp
-                  : FaAngleDown
+                  ? true
+                  : false
               }
+              Angle={FaAngleRight}
               onClick={() =>
                 handleActive(
                   "invoiceManagement",
@@ -1862,11 +1876,12 @@ export default function Leftbar(props) {
               active={pathname === "/pullouts"}
               Icon={MdPayments}
               data-testid={LEFTBAR.pulloutsManagementSection}
-              Angle={
+              status={
                 active?.pullouts?.tab === "pullouts" && active?.pullouts?.status
-                  ? FaAngleUp
-                  : FaAngleDown
+                  ? true
+                  : false
               }
+              Angle={FaAngleRight}
               onClick={() => handleActive("pullouts", active?.pullouts?.status)}
             />
           )}
@@ -1889,12 +1904,13 @@ export default function Leftbar(props) {
               active={pathname === "/employee"}
               Icon={MdManageAccounts}
               data-testid={LEFTBAR.employeeManagementSection}
-              Angle={
+              status={
                 active?.employees?.tab === "employees" &&
                 active?.employees?.status
-                  ? FaAngleUp
-                  : FaAngleDown
+                  ? true
+                  : false
               }
+              Angle={FaAngleRight}
               onClick={() =>
                 handleActive("employees", active?.employees?.status)
               }
@@ -1920,12 +1936,13 @@ export default function Leftbar(props) {
               Icon={MdAccountCircle}
               active={pathname.includes("/account")}
               data-testid={LEFTBAR.accountManagementSection}
-              Angle={
+              status={
                 active?.accountManagement?.tab === "accountManagement" &&
                 active?.accountManagement?.status
-                  ? FaAngleUp
-                  : FaAngleDown
+                  ? true
+                  : false
               }
+              Angle={FaAngleRight}
               onClick={() =>
                 handleActive(
                   "accountManagement",
@@ -1989,12 +2006,13 @@ export default function Leftbar(props) {
             onClick={() =>
               handleActive("quickbooks", active?.quickbooks?.status)
             }
-            Angle={
-              active?.quickbooks?.tab === "clientManagement" &&
+            status={
+              active?.quickbooks?.tab === "quickbooks" &&
               active?.quickbooks?.status
-                ? FaAngleUp
-                : FaAngleDown
+                ? true
+                : false
             }
+            Angle={FaAngleRight}
           />
           {active?.quickbooks?.tab === "quickbooks" &&
             active?.quickbooks?.status && (

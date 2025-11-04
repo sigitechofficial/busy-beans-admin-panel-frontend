@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export default function ListHead(props) {
-  const { Icon, Angle, to, onClick, title, active, dataTestId } = props;
+  const { Icon, Angle, to, onClick, title, active, dataTestId, status } = props;
   const pathname = usePathname();
   const { setToggle } = useDataContext();
 
@@ -24,10 +24,10 @@ export default function ListHead(props) {
           data-testid={dataTestId}
           className={`flex gap-x-2 justify-between items-center py-1.5 lg:py-3 px-2 rounded-xl hover:bg-black hover:text-white duration-200
          ${
-            pathname === to || active 
-              ? "bg-black text-white" 
-              : "bg-transparent text-black"
-          }`}
+           pathname === to || active
+             ? "bg-black text-white"
+             : "bg-transparent text-black"
+         }`}
           onClick={handleClick}
         >
           <div className="flex gap-x-2 items-center">
@@ -36,7 +36,13 @@ export default function ListHead(props) {
               {title}
             </h1>
           </div>
-          {Angle && <Angle />}
+          {Angle && (
+            <Angle
+              className={`transition-transform duration-200 ease-in-out " ${
+                status ? "rotate-90" : "rotate-0"
+              }`}
+            />
+          )}
         </div>
         <hr className="w-full" />
       </Link>

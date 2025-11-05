@@ -528,7 +528,7 @@ export default function OrderDetail() {
               </button>
             )}
           </li>
-          {!data?.data?.order?.quickBooksInvoiceId && (
+          {/* {!data?.data?.order?.quickBooksInvoiceId && (
             <li>
               <button
                 onClick={handleQBOInvoice}
@@ -543,7 +543,7 @@ export default function OrderDetail() {
                 QBO Invoice
               </button>
             </li>
-          )}
+          )} */}
           <li>
             <button
               onClick={() => router.push(`${pathname}/invoice`)}

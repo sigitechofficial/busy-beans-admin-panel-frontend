@@ -193,7 +193,7 @@ export default function AddSaleRepresentative() {
     } else if (!saleRepresentative?.address?.trim()) {
       info_toaster("Enter Address");
     } else if (!saleRepresentative?.territory?.trim()) {
-      info_toaster("Enter Territory");
+      info_toaster("Enter Territory/Title");
     } else if (
       saleRepresentative?.partnerType !== "direct-partner" &&
       !saleRepresentative?.creditLimit?.trim()

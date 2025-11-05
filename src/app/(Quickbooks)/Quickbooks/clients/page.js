@@ -24,30 +24,30 @@ export default function CustomersByEmployee() {
   const realmId =
     typeof window !== "undefined" ? localStorage.getItem("realmId") : "";
 
-  const isAuthenticated = accessTokenQbo && realmId;
+  // const isAuthenticated = accessTokenQbo && realmId;
 
-  if (!isAuthenticated) {
-    return (
-      <div className="w-full">
-        <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-inter font-semibold">
-              Customer Management
-            </h2>
-          </div>
-        </div>
+  // if (!isAuthenticated) {
+  //   return (
+  //     <div className="w-full">
+  //       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+  //         <div className="flex items-center gap-2">
+  //           <h2 className="text-xl font-inter font-semibold">
+  //             Customer Management
+  //           </h2>
+  //         </div>
+  //       </div>
 
-        <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
-          <div className="text-center text-red-600">
-            <p className="text-xl font-semibold">
-              Authentication details are missing!
-            </p>
-            <p>Please check your login and try again.</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  //       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
+  //         <div className="text-center text-red-600">
+  //           <p className="text-xl font-semibold">
+  //             Authentication details are missing!
+  //           </p>
+  //           <p>Please check your login and try again.</p>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   // Fetch data if authenticated
   const { data } = GetAPI(

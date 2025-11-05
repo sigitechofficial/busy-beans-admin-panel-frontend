@@ -462,6 +462,7 @@ export default function Leftbar(props) {
                   {hasPermission("orders_create") && (
                     <ListItems title="Create Order" to="/orders/create" />
                   )}
+
                   <ListHead
                     title="Partner Orders"
                     Icon={MdStore}

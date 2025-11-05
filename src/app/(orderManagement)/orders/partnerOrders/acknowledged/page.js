@@ -47,7 +47,7 @@ export default function AcknowledgedOrders() {
   });
   const { toggle, setToggle } = useDataContext();
 
-  return data?.length === 0 ? (
+  return !data ? (
     <Loader />
   ) : (
     <div data-testid={NEW_ORDERS.root}>

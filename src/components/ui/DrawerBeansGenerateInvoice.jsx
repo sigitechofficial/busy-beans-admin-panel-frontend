@@ -15,6 +15,9 @@ import { PostAPI } from "@/utilities/PostAPI";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import { drawerSelectStyles } from "@/utilities/SelectStyle";
 import { hasPermission } from "@/utilities/Permission";
+import Switch from "react-switch";
+import axios from "axios";
+import { BASE_URL } from "@/utilities/URL";
 
 const DrawerBeansGenerateInvoice = ({
   drawerOpen: open,
@@ -30,9 +33,11 @@ const DrawerBeansGenerateInvoice = ({
     userType = localStorage.getItem("userType");
     isEmployee = localStorage.getItem("isEmployee") === "true";
   }
-  
-  const companyNameOptions = [];
-  const emailOptions = [];
+  const [companyNameOptions, setCompanyNameOptions] = useState([]);
+  const [fullData, setFullData] = useState("");
+
+  const [emailOptions, setEmailOptions] = useState([]);
+
   const paymentMethodOptions = [
     { label: "Bank Check", value: "bank check" },
     { label: "Card", value: "card" },
@@ -41,6 +46,7 @@ const DrawerBeansGenerateInvoice = ({
   const [addressOptions, setAddressOptions] = useState([]);
   const [email, setEmail] = useState("");
   const [loader, setLoader] = useState(false);
+  const [partnersOrder, setPartnersOrder] = useState(false);
 
   // Drawer form state
   const [order, setOrder] = useState({
@@ -50,7 +56,7 @@ const DrawerBeansGenerateInvoice = ({
     addressId: "",
     userId: "",
     shippingCharges: "",
-    // categoryDiscounts: [], 
+    // categoryDiscounts: [],
   });
 
   // ======= cart items =======
@@ -70,23 +76,13 @@ const DrawerBeansGenerateInvoice = ({
 
   // ======= customers list =======
   const customerListEndpoint =
-    (isEmployee && hasPermission("selected-customer_view"))
+    isEmployee && hasPermission("selected-customer_view")
       ? `api/v1/admin/customer-management/customer-list/employee-id/${userID}`
-      : (userType === "admin")
-        ? `api/v1/admin/customer-management/customer-list/all`
-        : (userType === "salesRepresentative")
-          ? `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}&orderCreation=yes`
-          : `api/v1/admin/customer-management/customer-list/all`;
-
-  const { data } = GetAPI(customerListEndpoint, "customer");
-
-  data?.data?.data?.forEach((user) => {
-    companyNameOptions.push({
-      value: user?.id,
-      label: `${user?.companyName} (${user?.name})`,
-    });
-    emailOptions.push({ value: user?.email, label: user?.email });
-  });
+      : userType === "admin"
+      ? `api/v1/admin/customer-management/customer-list/all`
+      : userType === "salesRepresentative"
+      ? `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}&orderCreation=yes`
+      : `api/v1/admin/customer-management/customer-list/all`;
 
   // ======= helpers =======
   const mapItemsForPayload = (items) =>
@@ -133,7 +129,7 @@ const DrawerBeansGenerateInvoice = ({
   };
 
   const handleCompanySelect = (companyId) => {
-    const selected = data?.data?.data?.find((c) => c?.id === companyId);
+    const selected = fullData?.find((c) => c?.id === companyId);
     setOrder((prev) => ({
       ...prev,
       userId: selected?.id,
@@ -158,11 +154,98 @@ const DrawerBeansGenerateInvoice = ({
     fetchChargesForCustomer(selected?.id, totalWeight);
   };
 
-  useEffect(() => {
-    if (open && order.userId) {
-      fetchChargesForCustomer(order.userId, totalWeight);
+  const handlePartnerOrder = (e) => {
+    setPartnersOrder(e);
+    setOrder({})
+    setCompanyNameOptions([]);
+    setEmail([]);
+    setAddressOptions([]);
+  };
+
+  // ✅ Fetch customers (existing)
+  const fetchCustomerData = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const res = await axios.get(BASE_URL + customerListEndpoint, {
+        headers: {
+          "Content-Type": "application/json",
+          feature: "customer",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res?.data?.status === "success") {
+        setFullData(res?.data?.data?.data);
+        let nameOptions = [];
+        let emails = [];
+
+        res?.data?.data?.data?.forEach((user) => {
+          nameOptions?.push({
+            value: user?.id,
+            label: `${user?.companyName} (${user?.name})`,
+          });
+          emails.push({ value: user?.email, label: user?.email });
+        });
+
+        setCompanyNameOptions(nameOptions);
+        setEmailOptions(emails);
+      }
+    } catch (error) {
+      console.error(error);
     }
-  }, [open, order.userId, totalWeight]);
+  };
+
+  const fetchDirectPartnerData = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const res = await axios.get(
+        `${BASE_URL}api/v1/admin/sales-rep/for-order-creation?partnerType=direct-partner`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        }
+      );
+      if (res?.data?.status === "success") {
+        setFullData(res?.data?.data);
+        const list = res?.data?.data || [];
+        let options = [];
+        let emails = [];
+        list?.map((elem) => {
+          options.push({
+            value: elem?.id,
+            label: `${elem?.srName} (${elem?.territoryName})`,
+          });
+          // emails.push({value:"",label:""})
+        });
+
+        setCompanyNameOptions(options);
+        // setEmailOptions(emails);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    if (partnersOrder) {
+      fetchDirectPartnerData();
+    } else {
+      fetchCustomerData();
+    }
+  }, [partnersOrder]);
+
+  console.log(
+    order?.userId,
+    totalWeight,
+    "order?.userId, totalWeightorder?.userId, totalWeight"
+  );
+  useEffect(() => {
+    if (open && order?.userId) {
+      fetchChargesForCustomer(order?.userId, totalWeight);
+    }
+  }, [open, order?.userId, totalWeight]);
 
   const handleGenerate = async () => {
     // if (cartItems.length === 0) {
@@ -224,7 +307,7 @@ const DrawerBeansGenerateInvoice = ({
         setInvoiceData?.([]);
         setOpen(false);
         if (orderId) {
-         router.push(`/orders/detail/${orderId}/add-invoice`);
+          router.push(`/orders/detail/${orderId}/add-invoice`);
         }
       } else {
         throw new Error(res?.data?.message || "Failed to generate invoice.");
@@ -251,6 +334,23 @@ const DrawerBeansGenerateInvoice = ({
             <h2 className="text-[32px] font-black font-nunito text-theme-black-2">
               Generate Invoice
             </h2>
+          </div>
+
+          <div className="flex items-center gap-x-2 justify-end">
+            <label className="text-white font-medium">
+              {partnersOrder ? "Partners" : "Customers"}
+            </label>
+            <Switch
+              onChange={(e) => handlePartnerOrder(e)}
+              checked={partnersOrder}
+              uncheckedIcon={false}
+              checkedIcon={false}
+              onColor="#3E342C"
+              onHandleColor="#fff"
+              className="react-switch"
+              boxShadow="none"
+              // data-testid={ORDERS_CREATE_DRAWER.selfOrderSwitch}
+            />
           </div>
 
           {/* Body */}
@@ -288,9 +388,14 @@ const DrawerBeansGenerateInvoice = ({
                 placeholder="Select Address"
                 className="w-full"
                 styles={drawerSelectStyles}
-                value={addressOptions.find((opt) => opt.value === order.addressId) || null}
+                value={
+                  addressOptions?.find((opt) => opt?.value === order?.addressId) ||
+                  null
+                }
                 options={addressOptions}
-                onChange={(e) => setOrder({ ...order, addressId: e?.value || "" })}
+                onChange={(e) =>
+                  setOrder({ ...order, addressId: e?.value || "" })
+                }
               />
             </div>
 
@@ -302,7 +407,9 @@ const DrawerBeansGenerateInvoice = ({
                 styles={drawerSelectStyles}
                 value={
                   order.paymentMethod
-                    ? paymentMethodOptions.find((opt) => opt.value === order.paymentMethod) || null
+                    ? paymentMethodOptions.find(
+                        (opt) => opt.value === order.paymentMethod
+                      ) || null
                     : null
                 }
                 options={paymentMethodOptions}
@@ -322,7 +429,9 @@ const DrawerBeansGenerateInvoice = ({
                       order?.note ? "placeholder-transparent" : ""
                     }`}
                     value={order?.note}
-                    onChange={(e) => setOrder({ ...order, note: e.target.value })}
+                    onChange={(e) =>
+                      setOrder({ ...order, note: e.target.value })
+                    }
                   />
                   <label
                     htmlFor="courier-note"
@@ -349,7 +458,9 @@ const DrawerBeansGenerateInvoice = ({
                       order?.poNumber ? "placeholder-transparent" : ""
                     }`}
                     value={order?.poNumber}
-                    onChange={(e) => setOrder({ ...order, poNumber: e.target.value })}
+                    onChange={(e) =>
+                      setOrder({ ...order, poNumber: e.target.value })
+                    }
                   />
                   <label
                     htmlFor="poNumber"
@@ -359,16 +470,21 @@ const DrawerBeansGenerateInvoice = ({
                         : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
                     }`}
                   >
-                    {order?.poNumber ? "Purchase Order Number" : "Add Purchase Order Number (optional)"}
+                    {order?.poNumber
+                      ? "Purchase Order Number"
+                      : "Add Purchase Order Number (optional)"}
                   </label>
                 </div>
               </div>
             </div>
-
           </div>
 
           {/* Footer */}
-          <div className={`absolute bottom-0 left-0 py-5 flex justify-center w-full px-4 sm:px-0 sm:left-[30px] sm:w-[452px] ${loader ? "opacity-60" : "bg-theme"}`}>
+          <div
+            className={`absolute bottom-0 left-0 py-5 flex justify-center w-full px-4 sm:px-0 sm:left-[30px] sm:w-[452px] ${
+              loader ? "opacity-60" : "bg-theme"
+            }`}
+          >
             <button
               disabled={loader}
               onClick={handleGenerate}
@@ -380,7 +496,10 @@ const DrawerBeansGenerateInvoice = ({
                 </div>
                 <p>Next</p>
               </div>
-              ${" "}{(Number(totalPrice || 0) + Number(order?.shippingCharges || 0)).toFixed(2)}
+              ${" "}
+              {(
+                Number(totalPrice || 0) + Number(order?.shippingCharges || 0)
+              ).toFixed(2)}
             </button>
           </div>
         </div>

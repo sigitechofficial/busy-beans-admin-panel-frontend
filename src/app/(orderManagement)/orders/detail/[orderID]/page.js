@@ -13,7 +13,7 @@ import { PatchAPI } from "@/utilities/PatchAPI";
 import { PostAPI } from "@/utilities/PostAPI";
 import { DeleteAPI } from "@/utilities/DeleteAPI";
 import { selectStyles2 } from "@/utilities/SelectStyle";
-import { success_toaster } from "@/utilities/Toaster";
+import { error_toaster, success_toaster } from "@/utilities/Toaster";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { Dialog } from "primereact/dialog";
 import React, { useState } from "react";
@@ -322,6 +322,7 @@ export default function OrderDetail() {
 
   const handleQBOInvoice = async () => {
     setDisabled("QBO");
+
     try {
       const payload = { orderId: orderID };
       const res = await PostAPI(
@@ -330,20 +331,20 @@ export default function OrderDetail() {
         "",
         {},
         {
-          "x-qbo-access": accessTokenQbo,
-          "x-qbo-realmid": realmId,
+          // "x-qbo-access": accessTokenQbo,
+          // "x-qbo-realmid": realmId,
         }
       );
+
       if (res?.data?.status === "success") {
         success_toaster("QBO Invoice Created Successfully");
         reFetch();
-        setDisabled("");
-      } else {
-        setDisabled("");
-        throw new Error(res?.data?.message || "An unexpected error occurred.");
+        return;
       }
     } catch (error) {
-      ErrorHandler(error);
+      error_toaster(error);
+    } finally {
+      // Always re-enable button, even if API or network fails
       setDisabled("");
     }
   };
@@ -527,20 +528,22 @@ export default function OrderDetail() {
               </button>
             )}
           </li>
-          <li>
-            <button
-              onClick={handleQBOInvoice}
-              type="button"
-              disabled={
-                data?.data?.order?.statusId === 6 || disabled === "QBO"
-                  ? true
-                  : false
-              }
-              className="disabled:cursor-not-allowed"
-            >
-              QBO Invoice
-            </button>
-          </li>
+          {/* {!data?.data?.order?.quickBooksInvoiceId && (
+            <li>
+              <button
+                onClick={handleQBOInvoice}
+                type="button"
+                disabled={
+                  data?.data?.order?.statusId === 6 || disabled === "QBO"
+                    ? true
+                    : false
+                }
+                className="disabled:cursor-not-allowed"
+              >
+                QBO Invoice
+              </button>
+            </li>
+          )} */}
           <li>
             <button
               onClick={() => router.push(`${pathname}/invoice`)}

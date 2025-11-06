@@ -148,10 +148,7 @@ export default function AddSaleRepresentative() {
           `api/v1/admin/address-management/city?stateInSystemId=${stateID}`
       );
       if (res?.data?.status === "success") {
-        console.log(
-          "🚀 ~ handleSelectedCountryStates ~ res:",
-          res?.data?.data?.data?.length
-        );
+ 
         const tempAllCities = [];
         res?.data?.data?.data?.map((state) =>
           tempAllCities.push({

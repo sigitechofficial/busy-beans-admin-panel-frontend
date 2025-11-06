@@ -245,7 +245,7 @@ export default function SalesRepDetails() {
                 router.push(`/sale-representative/edit/${userId}`);
               }}
             >
-              Edit
+              Edit Profile
             </li>
           )}
           <li

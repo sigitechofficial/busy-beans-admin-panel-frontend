@@ -43,10 +43,6 @@ export default function EditsSalesRepresentative() {
     partnerType: "",
   });
 
-  console.log(
-    "🚀 ~ EditsSalesRepresentative ~ saleRepresentative:",
-    saleRepresentative
-  );
   const [imagePreview, setImagePreview] = useState("");
   const [allStates, setAllStates] = useState([]);
   const [allCities, setAllCities] = useState([]);

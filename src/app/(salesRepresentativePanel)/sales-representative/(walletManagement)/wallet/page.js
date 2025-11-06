@@ -90,10 +90,10 @@ export default function page() {
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-            <ManagementTab
+            {/* <ManagementTab
               title="Credit Limit"
               desc={`$${data?.data?.credit?.creditLimit ?? 0}`}
-            />
+            /> */}
             <ManagementTab
               title="Credit Used"
               desc={`$${data?.data?.credit?.creditUsed ?? 0}`}

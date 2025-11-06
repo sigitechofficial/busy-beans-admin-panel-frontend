@@ -36,7 +36,7 @@ export default function AddCustomer() {
     value: "",
     label: "",
   });
-  
+
   const [userData, setUserData] = useState({
     info: {
       name: "",
@@ -89,13 +89,13 @@ export default function AddCustomer() {
 
   const handleInfo = (e) => {
     const { name, value } = e.target;
-    if (name === 'dispatchEmail' || name === 'emailToSendInvoices') {
-      const emails = value.split(',').map((email) => email.trim());
+    if (name === "dispatchEmail" || name === "emailToSendInvoices") {
+      const emails = value.split(",").map((email) => email.trim());
       setUserData({
         ...userData,
         info: {
           ...userData.info,
-          [name]: emails.join(', '),
+          [name]: emails.join(", "),
         },
       });
     } else {
@@ -108,7 +108,7 @@ export default function AddCustomer() {
       });
     }
   };
-  
+
   const handleAddress = (e) => {
     setUserData({
       ...userData,
@@ -158,7 +158,6 @@ export default function AddCustomer() {
     }
   };
 
-
   const validateCustomerForm = (userData) => {
     // --- Shipping Address ---
     const address = userData.address;
@@ -204,23 +203,29 @@ export default function AddCustomer() {
     if (!info.phoneNumber?.trim())
       return { error: true, message: "Phone number cannot be empty" };
 
-     if (!info.dispatchEmail?.trim())
-    return { error: true, message: "Dispatch email cannot be empty" };
-    const dispatchEmails = info.dispatchEmail.split(',');
+    if (!info.dispatchEmail?.trim())
+      return { error: true, message: "Dispatch email cannot be empty" };
+    const dispatchEmails = info.dispatchEmail.split(",");
     const dispatchEmailValidation = dispatchEmails.every((email) =>
       emailValidity.test(email.trim())
     );
     if (!dispatchEmailValidation)
-      return { error: true, message: "One or more dispatch emails are invalid." };
+      return {
+        error: true,
+        message: "One or more dispatch emails are invalid.",
+      };
 
     if (!info.emailToSendInvoices?.trim())
       return { error: true, message: "Invoice email cannot be empty" };
-    const invoiceEmails = info.emailToSendInvoices.split(',');
+    const invoiceEmails = info.emailToSendInvoices.split(",");
     const invoiceEmailValidation = invoiceEmails.every((email) =>
       emailValidity.test(email.trim())
     );
     if (!invoiceEmailValidation)
-      return { error: true, message: "One or more invoice emails are invalid." };
+      return {
+        error: true,
+        message: "One or more invoice emails are invalid.",
+      };
 
     // --- User Info ---
     if (!info.name?.trim())
@@ -281,51 +286,59 @@ export default function AddCustomer() {
     if (result?.error) {
       info_toaster(result.message);
     } else {
-      const dispatchEmails = userData.info.dispatchEmail.split(',').map(email => email.trim());
-      const emails = userData.info.emailToSendInvoices.split(',').map(email => email.trim());
+      const dispatchEmails = userData.info.dispatchEmail
+        .split(",")
+        .map((email) => email.trim());
+      const emails = userData.info.emailToSendInvoices
+        .split(",")
+        .map((email) => email.trim());
       try {
         setLoader(true);
         const url =
           userType === "admin"
             ? "api/v1/admin/add-customer"
             : `api/v1/admin/add-customer/sales-rep/${userID}`;
-        const res = await PostAPI(url, {
-          info: {
-            name: userData?.info?.name,
-            email: userData?.info?.email,
-            password: userData?.info?.password,
-            status: true,
-            phoneNumber: userData?.info?.phoneNumber,
-            countryCode: userData?.info?.countryCode,
-            saleTaxNumber: userData?.info?.saleTaxNumber,
-            dispatchEmail: dispatchEmails.join(', '),
-            emailToSendInvoices: emails.join(', '),
-            companyName: userData?.info?.companyName,
-            // companyInfo: userData?.info?.companyInfo,
-            defaultDiscount: userData?.info?.defaultDiscount,
+        const res = await PostAPI(
+          url,
+          {
+            info: {
+              name: userData?.info?.name,
+              email: userData?.info?.email,
+              password: userData?.info?.password,
+              status: true,
+              phoneNumber: userData?.info?.phoneNumber,
+              countryCode: userData?.info?.countryCode,
+              saleTaxNumber: userData?.info?.saleTaxNumber,
+              dispatchEmail: dispatchEmails.join(", "),
+              emailToSendInvoices: emails.join(", "),
+              companyName: userData?.info?.companyName,
+              // companyInfo: userData?.info?.companyInfo,
+              defaultDiscount: userData?.info?.defaultDiscount,
+            },
+            address: {
+              companyaddress: userData?.address?.companyaddress,
+              addressLineOne: userData?.address?.addressLineOne,
+              addressLineTwo: userData?.address?.addressLineTwo,
+              town: userData?.address?.town,
+              country: userData?.address?.country,
+              state: userData?.address?.state,
+              zipCode: userData?.address?.zipCode,
+              status: true,
+            },
+            billingAddress: {
+              ...finalBillingAddress,
+            },
+            // billingAddress: {
+            //   addressLineOne: userData?.billingAddress?.companyaddress,
+            //   town: userData?.billingAddress?.town,
+            //   country: userData?.billingAddress?.country,
+            //   state: userData?.billingAddress?.state,
+            //   zipCode: userData?.billingAddress?.zipCode,
+            //   status: true,
+            // },
           },
-          address: {
-            companyaddress: userData?.address?.companyaddress,
-            addressLineOne: userData?.address?.addressLineOne,
-            addressLineTwo: userData?.address?.addressLineTwo,
-            town: userData?.address?.town,
-            country: userData?.address?.country,
-            state: userData?.address?.state,
-            zipCode: userData?.address?.zipCode,
-            status: true,
-          },
-          billingAddress: {
-            ...finalBillingAddress,
-          },
-          // billingAddress: {
-          //   addressLineOne: userData?.billingAddress?.companyaddress,
-          //   town: userData?.billingAddress?.town,
-          //   country: userData?.billingAddress?.country,
-          //   state: userData?.billingAddress?.state,
-          //   zipCode: userData?.billingAddress?.zipCode,
-          //   status: true,
-          // },
-        }, "customer");
+          "customer"
+        );
         if (res?.data?.status === "success") {
           setStep(1);
           setUserData({
@@ -362,7 +375,11 @@ export default function AddCustomer() {
             },
           });
           setSelectedCountry({ label: "", value: "" });
-          router.push(userType==="admin"?"/customers": "/sales-representative/customers");
+          router.push(
+            userType === "admin"
+              ? "/customers"
+              : "/sales-representative/customers"
+          );
           setLoader(false);
           success_toaster(res?.data?.data?.message);
         } else {
@@ -414,10 +431,6 @@ export default function AddCustomer() {
           `api/v1/admin/address-management/city?stateInSystemId=${stateID}`
       );
       if (res?.data?.status === "success") {
-        console.log(
-          "🚀 ~ handleSelectedCountryStates ~ res:",
-          res?.data?.data?.data
-        );
         const tempAllCities = [];
         res?.data?.data?.data?.map((state) =>
           tempAllCities.push({
@@ -436,9 +449,14 @@ export default function AddCustomer() {
 
   return (
     <div data-testid={ADD_CUSTOMER.root}>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
-       data-testid={ADD_CUSTOMER.headerBar}>
-        <h2 className="text-xl font-inter font-semibold" data-testid={ADD_CUSTOMER.title}>
+      <div
+        className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+        data-testid={ADD_CUSTOMER.headerBar}
+      >
+        <h2
+          className="text-xl font-inter font-semibold"
+          data-testid={ADD_CUSTOMER.title}
+        >
           Add New Customer
         </h2>
       </div>
@@ -473,12 +491,18 @@ export default function AddCustomer() {
               {step === 1 && (
                 <div className="space-y-6">
                   <div className="font-satoshi space-y-4">
-                    <p className="font-black text-xl lg:text-2xl text-theme" data-testid={ADD_CUSTOMER.step1Title}>
+                    <p
+                      className="font-black text-xl lg:text-2xl text-theme"
+                      data-testid={ADD_CUSTOMER.step1Title}
+                    >
                       1. Shipping Address
                     </p>
                     <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
                       <div className="space-y-4">
-                        <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.addressLineOneInput}>
+                        <div
+                          className="flex flex-col gap-y-2"
+                          data-testid={ADD_CUSTOMER.addressLineOneInput}
+                        >
                           <label className="text-labelColor font-medium font-satoshi">
                             Address Line 1
                           </label>
@@ -491,7 +515,10 @@ export default function AddCustomer() {
                             className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                           />
                         </div>
-                        <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.addressLineTwoInput}>
+                        <div
+                          className="flex flex-col gap-y-2"
+                          data-testid={ADD_CUSTOMER.addressLineTwoInput}
+                        >
                           <label className="text-labelColor font-medium font-satoshi">
                             Address Line 2
                           </label>
@@ -509,7 +536,10 @@ export default function AddCustomer() {
                       <div className="flex flex-col justify-between gap-y-4">
                         <div className="space-y-4">
                           <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
-                            <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.addressCountrySelect}>
+                            <div
+                              className="flex flex-col gap-y-2"
+                              data-testid={ADD_CUSTOMER.addressCountrySelect}
+                            >
                               <label className="text-labelColor font-medium font-satoshi">
                                 Country
                               </label>
@@ -540,7 +570,10 @@ export default function AddCustomer() {
                                 }}
                               />
                             </div>
-                            <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.addressStateSelect}>
+                            <div
+                              className="flex flex-col gap-y-2"
+                              data-testid={ADD_CUSTOMER.addressStateSelect}
+                            >
                               <label className="text-labelColor font-medium font-satoshi">
                                 State
                               </label>
@@ -571,7 +604,10 @@ export default function AddCustomer() {
                               />
                             </div>
                           </div>
-                          <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4" data-testid={ADD_CUSTOMER.addressTownInput}>
+                          <div
+                            className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4"
+                            data-testid={ADD_CUSTOMER.addressTownInput}
+                          >
                             <div className="flex flex-col gap-y-2">
                               <label className="text-labelColor font-medium font-satoshi">
                                 Town / City
@@ -594,7 +630,10 @@ export default function AddCustomer() {
                                 className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                               />
                             </div>
-                            <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.addressZipCodeInput}>
+                            <div
+                              className="flex flex-col gap-y-2"
+                              data-testid={ADD_CUSTOMER.addressZipCodeInput}
+                            >
                               <label className="text-labelColor font-medium font-satoshi">
                                 Zip Code
                               </label>
@@ -613,7 +652,10 @@ export default function AddCustomer() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-x-2" data-testid={ADD_CUSTOMER.billingSameAsShippingCheckbox}>
+                  <div
+                    className="flex items-center gap-x-2"
+                    data-testid={ADD_CUSTOMER.billingSameAsShippingCheckbox}
+                  >
                     <input
                       type="checkbox"
                       name="billingStatus"
@@ -634,142 +676,192 @@ export default function AddCustomer() {
                   </div>
 
                   {!userData?.isChecked && (
-                      <div className="font-satoshi space-y-4">
-                        <p className="font-black text-xl lg:text-2xl text-theme">Billing Address</p>
-                        <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
-                          <div className="space-y-4">
-                            <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.billingAddressLineOneInput}>
-                              <label className="text-labelColor font-medium font-satoshi">
-                                Address Line 1
-                              </label>
-                              <input
-                                type="text"
-                                name="addressLineOne"
-                                onChange={handleBillingAddress}
-                                value={userData?.billingAddress?.addressLineOne}
-                                placeholder="Enter address line 1"
-                                className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                              />
-                            </div>
-                            {/* Address Line 2 */}
-                            <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.billingAddressLineTwoInput}>
-                              <label className="text-labelColor font-medium font-satoshi">
-                                Address Line 2
-                              </label>
-                              <input
-                                type="text"
-                                name="addressLineTwo"
-                                onChange={handleBillingAddress}
-                                value={userData?.billingAddress?.addressLineTwo}
-                                placeholder="Enter address line 2"
-                                className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                              />
-                            </div>
+                    <div className="font-satoshi space-y-4">
+                      <p className="font-black text-xl lg:text-2xl text-theme">
+                        Billing Address
+                      </p>
+                      <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
+                        <div className="space-y-4">
+                          <div
+                            className="flex flex-col gap-y-2"
+                            data-testid={
+                              ADD_CUSTOMER.billingAddressLineOneInput
+                            }
+                          >
+                            <label className="text-labelColor font-medium font-satoshi">
+                              Address Line 1
+                            </label>
+                            <input
+                              type="text"
+                              name="addressLineOne"
+                              onChange={handleBillingAddress}
+                              value={userData?.billingAddress?.addressLineOne}
+                              placeholder="Enter address line 1"
+                              className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                            />
                           </div>
+                          {/* Address Line 2 */}
+                          <div
+                            className="flex flex-col gap-y-2"
+                            data-testid={
+                              ADD_CUSTOMER.billingAddressLineTwoInput
+                            }
+                          >
+                            <label className="text-labelColor font-medium font-satoshi">
+                              Address Line 2
+                            </label>
+                            <input
+                              type="text"
+                              name="addressLineTwo"
+                              onChange={handleBillingAddress}
+                              value={userData?.billingAddress?.addressLineTwo}
+                              placeholder="Enter address line 2"
+                              className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                            />
+                          </div>
+                        </div>
 
-                          <div className="flex flex-col justify-between gap-y-4">
-                            <div className="space-y-4">
-                              {/* Country Select */}
-                              <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
-                                <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.billingAddressCountrySelect}>
-                                  <label className="text-labelColor font-medium font-satoshi">Country</label>
-                                  <Select
-                                    placeholder="Select Country"
-                                    className="w-full"
-                                    styles={drawerSelectStyles}
-                                    value={
-                                      userData?.billingAddress?.country
-                                        ? {
-                                          value: userData.billingAddress.country,
-                                          label: userData.billingAddress.country,
+                        <div className="flex flex-col justify-between gap-y-4">
+                          <div className="space-y-4">
+                            {/* Country Select */}
+                            <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
+                              <div
+                                className="flex flex-col gap-y-2"
+                                data-testid={
+                                  ADD_CUSTOMER.billingAddressCountrySelect
+                                }
+                              >
+                                <label className="text-labelColor font-medium font-satoshi">
+                                  Country
+                                </label>
+                                <Select
+                                  placeholder="Select Country"
+                                  className="w-full"
+                                  styles={drawerSelectStyles}
+                                  value={
+                                    userData?.billingAddress?.country
+                                      ? {
+                                          value:
+                                            userData.billingAddress.country,
+                                          label:
+                                            userData.billingAddress.country,
                                         }
-                                        : null
-                                    }
-                                    options={allCountries ?? []}
-                                    onChange={(e) => {
-                                      setUserData({
-                                        ...userData,
-                                        billingAddress: {
-                                          ...userData?.billingAddress,
-                                          country: e.label,
-                                          state: "",
-                                          town: "",
-                                        },
-                                      });
-                                      handleSelectedCountryStates(e.label);
-                                    }}
-                                  />
-                                </div>
-                                <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.billingAddressStateSelect}>
-                                  <label className="text-labelColor font-medium font-satoshi">State</label>
-                                  <Select
-                                    placeholder="Select State"
-                                    className="w-full"
-                                    styles={drawerSelectStyles}
-                                    value={
-                                      userData?.billingAddress?.state
-                                        ? {
-                                          value: userData?.billingAddress?.state,
-                                          label: userData?.billingAddress?.state,
-                                        }
-                                        : null
-                                    }
-                                    options={allStates ?? []}
-                                    onChange={(e) => {
-                                      setUserData({
-                                        ...userData,
-                                        billingAddress: {
-                                          ...userData?.billingAddress,
-                                          state: e.label,
-                                          town: "",
-                                        },
-                                      });
-                                      handleSelectedCountryStatesCities(e.value);
-                                    }}
-                                  />
-                                </div>
+                                      : null
+                                  }
+                                  options={allCountries ?? []}
+                                  onChange={(e) => {
+                                    setUserData({
+                                      ...userData,
+                                      billingAddress: {
+                                        ...userData?.billingAddress,
+                                        country: e.label,
+                                        state: "",
+                                        town: "",
+                                      },
+                                    });
+                                    handleSelectedCountryStates(e.label);
+                                  }}
+                                />
                               </div>
+                              <div
+                                className="flex flex-col gap-y-2"
+                                data-testid={
+                                  ADD_CUSTOMER.billingAddressStateSelect
+                                }
+                              >
+                                <label className="text-labelColor font-medium font-satoshi">
+                                  State
+                                </label>
+                                <Select
+                                  placeholder="Select State"
+                                  className="w-full"
+                                  styles={drawerSelectStyles}
+                                  value={
+                                    userData?.billingAddress?.state
+                                      ? {
+                                          value:
+                                            userData?.billingAddress?.state,
+                                          label:
+                                            userData?.billingAddress?.state,
+                                        }
+                                      : null
+                                  }
+                                  options={allStates ?? []}
+                                  onChange={(e) => {
+                                    setUserData({
+                                      ...userData,
+                                      billingAddress: {
+                                        ...userData?.billingAddress,
+                                        state: e.label,
+                                        town: "",
+                                      },
+                                    });
+                                    handleSelectedCountryStatesCities(e.value);
+                                  }}
+                                />
+                              </div>
+                            </div>
 
-                              {/* Town / City Input */}
-                              <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
-                                <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.billingAddressTownInput}>
-                                  <label className="text-labelColor font-medium font-satoshi">Town / City</label>
-                                  <input
-                                    type="text"
-                                    name="town"
-                                    onChange={(e) => {
-                                      setUserData({
-                                        ...userData,
-                                        billingAddress: { ...userData?.billingAddress, town: e.target.value },
-                                      });
-                                    }}
-                                    value={userData?.billingAddress?.town}
-                                    placeholder="Enter town"
-                                    className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                                  />
-                                </div>
-                                {/* Zip Code Input */}
-                                <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.billingAddressZipCodeInput}>
-                                  <label className="text-labelColor font-medium font-satoshi">Zip Code</label>
-                                  <input
-                                    type="text"
-                                    name="zipCode"
-                                    onChange={(e) => {
-                                      setUserData({
-                                        ...userData,
-                                        billingAddress: { ...userData.billingAddress, zipCode: e.target.value },
-                                      });
-                                    }}
-                                    value={userData?.billingAddress?.zipCode}
-                                    placeholder="Enter Zip Code"
-                                    className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                                  />
-                                </div>
+                            {/* Town / City Input */}
+                            <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
+                              <div
+                                className="flex flex-col gap-y-2"
+                                data-testid={
+                                  ADD_CUSTOMER.billingAddressTownInput
+                                }
+                              >
+                                <label className="text-labelColor font-medium font-satoshi">
+                                  Town / City
+                                </label>
+                                <input
+                                  type="text"
+                                  name="town"
+                                  onChange={(e) => {
+                                    setUserData({
+                                      ...userData,
+                                      billingAddress: {
+                                        ...userData?.billingAddress,
+                                        town: e.target.value,
+                                      },
+                                    });
+                                  }}
+                                  value={userData?.billingAddress?.town}
+                                  placeholder="Enter town"
+                                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                                />
+                              </div>
+                              {/* Zip Code Input */}
+                              <div
+                                className="flex flex-col gap-y-2"
+                                data-testid={
+                                  ADD_CUSTOMER.billingAddressZipCodeInput
+                                }
+                              >
+                                <label className="text-labelColor font-medium font-satoshi">
+                                  Zip Code
+                                </label>
+                                <input
+                                  type="text"
+                                  name="zipCode"
+                                  onChange={(e) => {
+                                    setUserData({
+                                      ...userData,
+                                      billingAddress: {
+                                        ...userData.billingAddress,
+                                        zipCode: e.target.value,
+                                      },
+                                    });
+                                  }}
+                                  value={userData?.billingAddress?.zipCode}
+                                  placeholder="Enter Zip Code"
+                                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                                />
                               </div>
                             </div>
                           </div>
                         </div>
                       </div>
+                    </div>
                   )}
                 </div>
               )}
@@ -780,7 +872,10 @@ export default function AddCustomer() {
                 </p>
                 <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
                   <div className="space-y-4">
-                    <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.customerCompanyNameInput}>
+                    <div
+                      className="flex flex-col gap-y-2"
+                      data-testid={ADD_CUSTOMER.customerCompanyNameInput}
+                    >
                       <label className="text-labelColor font-medium font-satoshi">
                         Company Name
                       </label>
@@ -793,7 +888,10 @@ export default function AddCustomer() {
                         className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       />
                     </div>
-                    <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.customerDispatchEmailInput}>
+                    <div
+                      className="flex flex-col gap-y-2"
+                      data-testid={ADD_CUSTOMER.customerDispatchEmailInput}
+                    >
                       <label className="text-labelColor font-medium font-satoshi">
                         Dispatch Email
                       </label>
@@ -806,7 +904,10 @@ export default function AddCustomer() {
                         className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       />
                     </div>
-                    <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.customerPhoneInput}>
+                    <div
+                      className="flex flex-col gap-y-2"
+                      data-testid={ADD_CUSTOMER.customerPhoneInput}
+                    >
                       <label className="text-labelColor font-medium font-satoshi">
                         Phone number
                       </label>
@@ -862,7 +963,10 @@ export default function AddCustomer() {
 
                   <div className="flex flex-col justify-between gap-y-4">
                     <div className="space-y-4">
-                      <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.customerSaleTaxNumberInput}>
+                      <div
+                        className="flex flex-col gap-y-2"
+                        data-testid={ADD_CUSTOMER.customerSaleTaxNumberInput}
+                      >
                         <label className="text-labelColor font-medium font-satoshi">
                           Sale Tax Number <span>(if applicable)</span>
                         </label>
@@ -875,7 +979,10 @@ export default function AddCustomer() {
                           className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                         />
                       </div>
-                      <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.customerInvoiceEmailInput}>
+                      <div
+                        className="flex flex-col gap-y-2"
+                        data-testid={ADD_CUSTOMER.customerInvoiceEmailInput}
+                      >
                         <label className="text-labelColor font-medium font-satoshi">
                           Invoice Email
                         </label>
@@ -888,7 +995,7 @@ export default function AddCustomer() {
                           className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                         />
                       </div>
-                        {/* <div className="flex flex-col gap-y-2">
+                      {/* <div className="flex flex-col gap-y-2">
                           <label className="text-labelColor font-medium font-satoshi">
                             Discount (%)
                           </label>
@@ -945,7 +1052,10 @@ export default function AddCustomer() {
                 </p>
                 <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
                   <div className="space-y-4">
-                    <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.customerNameInput}>
+                    <div
+                      className="flex flex-col gap-y-2"
+                      data-testid={ADD_CUSTOMER.customerNameInput}
+                    >
                       <label className="text-labelColor font-medium font-satoshi">
                         Full Name / Contact Name
                       </label>
@@ -958,7 +1068,10 @@ export default function AddCustomer() {
                         className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       />
                     </div>
-                    <div className="flex flex-col gap-y-2" data-testid={ADD_CUSTOMER.customerEmailInput}>
+                    <div
+                      className="flex flex-col gap-y-2"
+                      data-testid={ADD_CUSTOMER.customerEmailInput}
+                    >
                       <label className="text-labelColor font-medium font-satoshi">
                         Login Email / Contact Email
                       </label>
@@ -975,7 +1088,10 @@ export default function AddCustomer() {
 
                   <div className="flex flex-col justify-between gap-y-4">
                     <div className="space-y-4">
-                      <div className="flex flex-col gap-y-2 relative" data-testid={ADD_CUSTOMER.customerPasswordInput}>
+                      <div
+                        className="flex flex-col gap-y-2 relative"
+                        data-testid={ADD_CUSTOMER.customerPasswordInput}
+                      >
                         <label className="text-labelColor font-medium font-satoshi">
                           Password
                         </label>
@@ -1022,7 +1138,10 @@ export default function AddCustomer() {
                           )}
                         </button>
                       </div>
-                      <div className="flex flex-col gap-y-2 relative" data-testid={ADD_CUSTOMER.customerConfirmPasswordInput}>
+                      <div
+                        className="flex flex-col gap-y-2 relative"
+                        data-testid={ADD_CUSTOMER.customerConfirmPasswordInput}
+                      >
                         <label className="text-labelColor font-medium font-satoshi">
                           Confirm Password
                         </label>
@@ -1043,7 +1162,9 @@ export default function AddCustomer() {
                           }
                           type="button"
                           className="text-black absolute right-4 top-11"
-                          data-testid={ADD_CUSTOMER.confirmPasswordVisibilityToggle}
+                          data-testid={
+                            ADD_CUSTOMER.confirmPasswordVisibilityToggle
+                          }
                         >
                           {visibility?.confirmPass ? (
                             <AiOutlineEye size={24} color="#000000" />

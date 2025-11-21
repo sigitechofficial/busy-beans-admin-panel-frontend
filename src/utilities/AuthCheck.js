@@ -1,3 +1,4 @@
+"use client";
 // utilities/AuthCheck.js
 import { info_toaster } from "@/utilities/Toaster";
 import { useRouter } from "next/navigation";

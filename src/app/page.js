@@ -11,22 +11,23 @@ import axios from "axios";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { BsCardList } from "react-icons/bs";
 import { PiHandbagFill, PiUsersThreeBold } from "react-icons/pi";
-import { MdDashboard, 
-  MdCancel, 
-  MdPublic, 
-  MdMap, 
-  MdLocationCity, 
+import {
+  MdDashboard,
+  MdCancel,
+  MdPublic,
+  MdMap,
+  MdLocationCity,
   MdCheckCircle,
-  MdGroups, 
-  MdLocalShipping, 
-  MdPeopleAlt, 
-  MdAttachMoney, 
-  MdTrendingUp, 
-  MdPaid, 
-  MdListAlt, 
-  MdAssignment, 
-  MdAssignmentTurnedIn, 
-  MdPendingActions  
+  MdGroups,
+  MdLocalShipping,
+  MdPeopleAlt,
+  MdAttachMoney,
+  MdTrendingUp,
+  MdPaid,
+  MdListAlt,
+  MdAssignment,
+  MdAssignmentTurnedIn,
+  MdPendingActions,
 } from "react-icons/md";
 import { FaChartLine, FaBox, FaHandshake, FaUserFriends } from "react-icons/fa";
 import { loadStripe } from "@stripe/stripe-js";
@@ -34,8 +35,10 @@ import Loader from "@/components/ui/Loader";
 import api from "@/utilities/StatusErrorHandler";
 import { hasPermission } from "@/utilities/Permission";
 import DASHBOARD from "./dashboard.testids";
+import { useTranslations } from "next-intl";
 
 export default function Home() {
+  const t = useTranslations("HomePage");
   if (typeof window !== "undefined") {
     var userType = localStorage.getItem("userType");
     var userName = localStorage.getItem("userName");
@@ -61,12 +64,14 @@ export default function Home() {
 
   const EMPLOYEE_API_MAP = {
     admin: "api/v1/admin/dashboard/admin-employee",
-    "local partner": "api/v1/admin/dashboard/local-partner-employee"
+    "local partner": "api/v1/admin/dashboard/local-partner-employee",
   };
 
   const dashboardEndpoint = useMemo(() => {
     if (isEmployee) {
-      const employeeOf = (localStorage.getItem("employeeOf") || "").toLowerCase().trim();
+      const employeeOf = (localStorage.getItem("employeeOf") || "")
+        .toLowerCase()
+        .trim();
       return EMPLOYEE_API_MAP[employeeOf] || null;
     }
 
@@ -77,22 +82,32 @@ export default function Home() {
       return `api/v1/admin/supplier-dashboard/${userID}`;
 
     return null;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userType, userID, isEmployee]);
 
-  const { data, isLoading } = dashboardEndpoint ? GetAPI(dashboardEndpoint, 'dashboard') : { data: null, isLoading: false };
-  
-  const supplierDashboard = data?.data?.dashboard || {}; 
-  const { totalOrders, dispatchedToSupplierOrders, acknowledgedOrders, shippedOrders, deliveredOrders, cancelledOrders } = supplierDashboard;
+  const { data, isLoading } = dashboardEndpoint
+    ? GetAPI(dashboardEndpoint, "dashboard")
+    : { data: null, isLoading: false };
 
-  const topProducts = data?.data?.topProducts || []; 
+  const supplierDashboard = data?.data?.dashboard || {};
+  const {
+    totalOrders,
+    dispatchedToSupplierOrders,
+    acknowledgedOrders,
+    shippedOrders,
+    deliveredOrders,
+    cancelledOrders,
+  } = supplierDashboard;
+
+  const topProducts = data?.data?.topProducts || [];
   // console.log("Top Products:", topProducts);
 
   const handleConnectAccount = async () => {
     const path = url.split("/");
     if (isAccountConnected === "false" && connectAccountId !== "null") {
       try {
-        const res = await PostAPI(`api/v1/admin/stripe-connect-account-url/${userID}`,
+        const res = await PostAPI(
+          `api/v1/admin/stripe-connect-account-url/${userID}`,
           {
             returnUrl: "https://" + path[2].trim(),
           }
@@ -103,7 +118,7 @@ export default function Home() {
           if (res?.data?.data?.data?.connectAccount) {
             const link = document.createElement("a");
             link.href = res?.data?.data?.data?.connectAccount;
-            link.target = "_blank"; 
+            link.target = "_blank";
             link.rel = "noopener noreferrer";
             link.click();
           }
@@ -120,7 +135,8 @@ export default function Home() {
       isAccountConnected === "false"
     ) {
       try {
-        const res = await PostAPI(`api/v1/admin/create-stripe-connect-account/${userID}`,
+        const res = await PostAPI(
+          `api/v1/admin/create-stripe-connect-account/${userID}`,
           {
             returnUrl: "https://" + path[2].trim(),
           }
@@ -310,7 +326,7 @@ export default function Home() {
   // };
 
   const handleFinancialConnection = async () => {
-    if (linking) return; 
+    if (linking) return;
     setLinking(true);
     try {
       // Step 1: Create SetupIntent via your backend
@@ -389,7 +405,8 @@ export default function Home() {
       }
 
       // Now handle attachment with backend
-      const attachRes = await PostAPI(`api/v1/admin/attach-bank-account-setup/sales-rep/${userID}`,
+      const attachRes = await PostAPI(
+        `api/v1/admin/attach-bank-account-setup/sales-rep/${userID}`,
         {
           setupIntentId: result?.setupIntent?.id,
           paymentMethodId: result?.setupIntent?.payment_method,
@@ -410,12 +427,12 @@ export default function Home() {
       // console.error("handleFinancialConnection error:", err);
       // error_toaster("An error occurred while linking your bank account.");
     } finally {
-    setLinking(false);
+      setLinking(false);
     }
   };
 
   // useEffect(() => {
-  //   if (didInitRef.current) return; 
+  //   if (didInitRef.current) return;
   //   didInitRef.current = true;
   //   const stripeAccountStatus = async () => {
   //     try {
@@ -432,59 +449,59 @@ export default function Home() {
   //   };
 
   // const createFinancialConnectionSection = async () => {
-    //   try {
-    //     const res = await axios.post(
-    //       BASE_URL +
-    //         `api/v1/admin/create-financial-connection-session/sales-rep/${userID}`
-    //     );
-    //     const clientSecret = res?.data?.data?.clientSecret;
+  //   try {
+  //     const res = await axios.post(
+  //       BASE_URL +
+  //         `api/v1/admin/create-financial-connection-session/sales-rep/${userID}`
+  //     );
+  //     const clientSecret = res?.data?.data?.clientSecret;
 
-    //     // If no clientSecret, assume bank is already connected
-    //     if (!clientSecret) {
-    //       success_toaster("Your bank account is connected. You're all set");
-    //       return;
-    //     }
+  //     // If no clientSecret, assume bank is already connected
+  //     if (!clientSecret) {
+  //       success_toaster("Your bank account is connected. You're all set");
+  //       return;
+  //     }
 
-    //     const stripe = await loadStripe(
-    //       "pk_test_51RPXZNCxTuXimvwHkvKO6MrVTckQ45X3JC2AkCVyV9fxLCK442YPbG8yM2NOexEqnD3wNAXdKfrOyEH2dTSzYKpt00WTyK7kzl"
-    //     );
+  //     const stripe = await loadStripe(
+  //       "pk_test_51RPXZNCxTuXimvwHkvKO6MrVTckQ45X3JC2AkCVyV9fxLCK442YPbG8yM2NOexEqnD3wNAXdKfrOyEH2dTSzYKpt00WTyK7kzl"
+  //     );
 
-    //     if (!stripe) {
-    //       throw new Error("Stripe failed to load");
-    //     }
+  //     if (!stripe) {
+  //       throw new Error("Stripe failed to load");
+  //     }
 
-    //     const { error, session } =
-    //       await stripe.collectFinancialConnectionsAccounts({
-    //         clientSecret,
-    //       });
+  //     const { error, session } =
+  //       await stripe.collectFinancialConnectionsAccounts({
+  //         clientSecret,
+  //       });
 
-    //     // 🛑 Stop if user aborted or error occurred
-    //     if (error || !session?.id) {
-    //       error_toaster(
-    //         "Bank account linking not completed: Compulsory Step",
-    //         error?.message || "Session missing"
-    //       );
-    //       return;
-    //     }
+  //     // 🛑 Stop if user aborted or error occurred
+  //     if (error || !session?.id) {
+  //       error_toaster(
+  //         "Bank account linking not completed: Compulsory Step",
+  //         error?.message || "Session missing"
+  //       );
+  //       return;
+  //     }
 
-    //     // ✅ Proceed to attach only if session is valid and no error
-    //     const attachRes = await axios.post(
-    //       BASE_URL + `api/v1/admin/attach-bank-account`,
-    //       {
-    //         sessionId: session.id,
-    //         customerId: userID,
-    //       }
-    //     );
+  //     // ✅ Proceed to attach only if session is valid and no error
+  //     const attachRes = await axios.post(
+  //       BASE_URL + `api/v1/admin/attach-bank-account`,
+  //       {
+  //         sessionId: session.id,
+  //         customerId: userID,
+  //       }
+  //     );
 
-    //     if (attachRes?.data?.status === "success") {
-    //       success_toaster("Bank account linked successfully!");
-    //     } else {
-    //       throw new Error("Bank attach failed");
-    //     }
-    //   } catch (error) {
-    //     ErrorHandler(error);
-    //   }
-    // };
+  //     if (attachRes?.data?.status === "success") {
+  //       success_toaster("Bank account linked successfully!");
+  //     } else {
+  //       throw new Error("Bank attach failed");
+  //     }
+  //   } catch (error) {
+  //     ErrorHandler(error);
+  //   }
+  // };
 
   //   if (userType === "salesRepresentative" && !isEmployee) {
   //     stripeAccountStatus();
@@ -499,9 +516,10 @@ export default function Home() {
     const stripeAccountStatus = async () => {
       try {
         const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("token") || localStorage.getItem("accessToken")
-          : "";
+          typeof window !== "undefined"
+            ? localStorage.getItem("token") ||
+              localStorage.getItem("accessToken")
+            : "";
         const res = await api.get(
           BASE_URL + `api/v1/admin/stripe-connect-account-retrieve/${userID}`,
           {
@@ -521,18 +539,19 @@ export default function Home() {
       } catch (error) {
         try {
           const path = url.split("/");
-          const fallback = await PostAPI(`api/v1/admin/stripe-connect-account-url/${userID}`,
+          const fallback = await PostAPI(
+            `api/v1/admin/stripe-connect-account-url/${userID}`,
             { returnUrl: "https://" + path[2].trim() }
           );
-          
+
           if (
             fallback?.data?.status === "success" &&
             fallback?.data?.data?.data?.connectAccount
           ) {
             const link = document.createElement("a");
             link.href = fallback?.data?.data?.data?.connectAccount;
-            link.target = "_blank"; 
-            link.rel = "noopener noreferrer"; 
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
             link.click();
           }
         } catch (fallbackErr) {
@@ -547,9 +566,9 @@ export default function Home() {
     }
   }, [userType, userID, isEmployee]);
 
-  return (isLoading || !data) ? (
-  <Loader />
-  )  : (userType === "admin" && !isEmployee) ? (
+  return isLoading || !data ? (
+    <Loader />
+  ) : userType === "admin" && !isEmployee ? (
     <>
       {/* <div
         className={`bg-red-500 z-10 text-center text-white py-2 ${
@@ -573,10 +592,15 @@ export default function Home() {
             : "Complete Account Registration"}
         </button>
       </div> */}
-      <div className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain"
-      data-testid={DASHBOARD.adminRoot}>
+      <div
+        className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain"
+        data-testid={DASHBOARD.adminRoot}
+      >
         <div className="relative z-30 py-5 px-6 2xl:px-12">
-          <div className="flex justify-between items-center" data-testid={DASHBOARD.header}>
+          <div
+            className="flex justify-between items-center"
+            data-testid={DASHBOARD.header}
+          >
             <div>
               <h1 className="text-white text-xl lg:text-3xl font-inter font-semibold">
                 Welcome, {userName}.
@@ -647,7 +671,10 @@ export default function Home() {
           </div> */}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mt-5" data-testid={DASHBOARD.statsCardsGrid}>
+          <div
+            className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mt-5"
+            data-testid={DASHBOARD.statsCardsGrid}
+          >
             <HomeCards
               title="Total Countries"
               // description="Upcoming bookings + completed bookings + Cancelled bookings"
@@ -705,7 +732,10 @@ export default function Home() {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mt-12" data-testid={DASHBOARD.miniCardsGrid}>
+          <div
+            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mt-12"
+            data-testid={DASHBOARD.miniCardsGrid}
+          >
             <HomeMiniCards
               title="Total Sale"
               // description="The bookings that are booked and an employee has been assigned to them."
@@ -721,7 +751,7 @@ export default function Home() {
             />
             <HomeMiniCards
               title="Suppliers Earning"
-              total={`$${data?.data?.revenueSummary?.revenueCollected||0}`}
+              total={`$${data?.data?.revenueSummary?.revenueCollected || 0}`}
               // Icon={LuPackageX}
               data-testid="dashboard-supplier-earnings"
             />
@@ -798,7 +828,7 @@ export default function Home() {
         </div>
       </div>
     </>
-  ) : (userType === "salesRepresentative" && !isEmployee) ? (
+  ) : userType === "salesRepresentative" && !isEmployee ? (
     <div data-testid={DASHBOARD.salesRepRoot}>
       <div
         className={`bg-red-500 z-10 text-center text-white py-2 ${
@@ -826,8 +856,10 @@ export default function Home() {
       </div>
 
       {showBankRetry && (
-        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-60 flex justify-center items-center z-50"
-          data-testid={DASHBOARD.bankRetryModal}>
+        <div
+          className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-60 flex justify-center items-center z-50"
+          data-testid={DASHBOARD.bankRetryModal}
+        >
           <div className="bg-white p-6 rounded-md">
             <p className="text-red-600 mb-4 font-semibold">
               Bank account linking is required and Compulsory.
@@ -844,7 +876,10 @@ export default function Home() {
       )}
       <div className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain">
         <div className="relative z-30 py-5 px-6 2xl:px-12">
-          <div className="flex justify-between items-center" data-testid={DASHBOARD.header}>
+          <div
+            className="flex justify-between items-center"
+            data-testid={DASHBOARD.header}
+          >
             <div>
               <h1 className="text-white text-xl lg:text-3xl font-inter font-semibold">
                 Welcome, {userName}.
@@ -915,7 +950,10 @@ export default function Home() {
           </div> */}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mt-5" data-testid={DASHBOARD.statsCardsGrid}>
+          <div
+            className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mt-5"
+            data-testid={DASHBOARD.statsCardsGrid}
+          >
             <HomeCards
               title="Total Sale"
               // description="Upcoming bookings + completed bookings + Cancelled bookings"
@@ -965,7 +1003,10 @@ export default function Home() {
               Icon={LuPackageX}
             />
           </div> */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mt-6" data-testid={DASHBOARD.miniCardsGrid}>
+          <div
+            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mt-6"
+            data-testid={DASHBOARD.miniCardsGrid}
+          >
             <HomeMiniCards
               title="Total Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
@@ -1032,9 +1073,15 @@ export default function Home() {
       </div>
     </div>
   ) : userType === "supplier" ? (
-      <div className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain" data-testid={DASHBOARD.supplierRoot}>
+    <div
+      className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain"
+      data-testid={DASHBOARD.supplierRoot}
+    >
       <div className="relative z-30 py-5 px-6 2xl:px-12">
-        <div className="flex justify-between items-center" data-testid={DASHBOARD.header}>
+        <div
+          className="flex justify-between items-center"
+          data-testid={DASHBOARD.header}
+        >
           <div>
             <h1 className="text-white text-xl lg:text-3xl font-inter font-semibold">
               Welcome, {userName}.
@@ -1046,7 +1093,10 @@ export default function Home() {
         </div>
 
         {/* Dashboard Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mt-5" data-testid={DASHBOARD.statsCardsGrid}>
+        <div
+          className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mt-5"
+          data-testid={DASHBOARD.statsCardsGrid}
+        >
           <HomeCards
             title="Total Orders"
             total={totalOrders}
@@ -1097,9 +1147,14 @@ export default function Home() {
           />
         </div>
         <div className="mt-8" data-testid={DASHBOARD.topProductsSection}>
-          <h2 className="text-black text-lg font-semibold mb-4">Top Products Sold</h2>
+          <h2 className="text-black text-lg font-semibold mb-4">
+            Top Products Sold
+          </h2>
           {topProducts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5" data-testid={DASHBOARD.topProductsGrid}>
+            <div
+              className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5"
+              data-testid={DASHBOARD.topProductsGrid}
+            >
               {topProducts.map((product) => (
                 <HomeMiniCards
                   key={product.productId}
@@ -1116,24 +1171,35 @@ export default function Home() {
         </div>
       </div>
     </div>
-    ) : (isEmployee || hasPermission("dashboard_view")) ? (
-  <div className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain" data-testid={DASHBOARD.employeeRoot}>
-    <div className="relative z-30 py-5 px-6 2xl:px-12">
-      <div className="flex justify-between items-center" data-testid={DASHBOARD.header}>
-        <div>
-          <h1 className="text-white text-xl lg:text-3xl font-inter font-semibold">
-            Welcome, {userName}.
-          </h1>
-          <p className="text-white font-inter">
-            Monitor your assigned orders and overdue invoices
-          </p>
+  ) : isEmployee || hasPermission("dashboard_view") ? (
+    <div
+      className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain"
+      data-testid={DASHBOARD.employeeRoot}
+    >
+      <div className="relative z-30 py-5 px-6 2xl:px-12">
+        <div
+          className="flex justify-between items-center"
+          data-testid={DASHBOARD.header}
+        >
+          <div>
+            <h1 className="text-white text-xl lg:text-3xl font-inter font-semibold">
+              Welcome, {userName}.
+            </h1>
+            <p className="text-white font-inter">
+              Monitor your assigned orders and overdue invoices
+            </p>
+          </div>
         </div>
-      </div>
 
-      {/* Dashboard Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mt-5" data-testid={DASHBOARD.statsCardsGrid}>
-        {(Array.isArray(data?.data) ? data.data : data?.data?.output || []).map(
-          (item) => (
+        {/* Dashboard Cards */}
+        <div
+          className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mt-5"
+          data-testid={DASHBOARD.statsCardsGrid}
+        >
+          {(Array.isArray(data?.data)
+            ? data.data
+            : data?.data?.output || []
+          ).map((item) => (
             <HomeCards
               key={item.id}
               title={item.orderStatus}
@@ -1144,23 +1210,28 @@ export default function Home() {
               //     : BsCardList
               // }
               Icon={
-                /cancel/i.test(item.orderStatus) ? MdCancel :
-                /ship|dispatch/i.test(item.orderStatus) ? MdLocalShipping :
-                /deliver/i.test(item.orderStatus) ? MdCheckCircle :
-                /acknowledge/i.test(item.orderStatus) ? MdAssignmentTurnedIn :
-                /unpaid|pending/i.test(item.orderStatus) ? MdPendingActions :
-                /assign/i.test(item.orderStatus) ? MdAssignment :
-                MdListAlt
+                /cancel/i.test(item.orderStatus)
+                  ? MdCancel
+                  : /ship|dispatch/i.test(item.orderStatus)
+                  ? MdLocalShipping
+                  : /deliver/i.test(item.orderStatus)
+                  ? MdCheckCircle
+                  : /acknowledge/i.test(item.orderStatus)
+                  ? MdAssignmentTurnedIn
+                  : /unpaid|pending/i.test(item.orderStatus)
+                  ? MdPendingActions
+                  : /assign/i.test(item.orderStatus)
+                  ? MdAssignment
+                  : MdListAlt
               }
               bgColor="bg-homeCards"
               iconBg="bg-white"
               data-testid="dashboard-total-orders"
             />
-          )
-        )}
+          ))}
+        </div>
       </div>
     </div>
-  </div>
   ) : (
     <div className="flex items-center justify-center h-screen">
       <h1 className="text-xl font-semibold text-gray-500">

@@ -9,7 +9,7 @@ import { useState } from "react";
 import { CiMenuBurger } from "react-icons/ci";
 import { ImCross } from "react-icons/im";
 import Select from "react-select";
-import { PRODUCT_SALE_REPORT } from  "../report.testid";
+import { PRODUCT_SALE_REPORT } from "../report.testid";
 
 export default function ProductSale() {
   const [customDates, setCustomDates] = useState({
@@ -22,7 +22,9 @@ export default function ProductSale() {
   });
   const [displayCustomFilters, setDisplayCustomFilters] = useState(false);
 
-  const { data, isLoading } = GetAPI("api/v1/admin/admin-reports/product-sales");
+  const { data, isLoading } = GetAPI(
+    "api/v1/admin/admin-reports/product-sales"
+  );
   console.log("🚀 ~ PartnerCommissionReport ~ data:", data?.data);
 
   const options = [
@@ -40,18 +42,35 @@ export default function ProductSale() {
   const columns = [
     { field: "sl", header: "SL", sort: true },
     { field: "name", header: "Product Name" },
+    {
+      field: "revenue",
+      header: "Revenue",
+      sort: true,
+    },
+    {
+      field: "revenueFromCustomers",
+      header: "Revenue From Customer Orders",
+      sort: true,
+    },
     { field: "unitsSold", header: "Units Sold", sort: true },
+
+    {
+      field: "revenueFromLocalPartners",
+      header: "Revenue From Local Partner Self Orders",
+      sort: true,
+    },
     {
       field: "wholesalePriceTotal",
-      header: "Total Whole Sale Price",
+      header: "Admin Receivable From Local Partner",
       sort: true,
     },
-    {
-      field: "customerPriceTotal",
-      header: "Total Price Customers",
-      sort: true,
-    },
-    { field: "revenue", header: "Revenue", sort: true },
+    { field: "unitsSoldToP", header: "Units Sold To Customers", sort: true },
+    { field: "unitsSoldToC", header: "Units Sold To Partners", sort: true },
+    // {
+    //   field: "customerPriceTotal",
+    //   header: "Total Price Customers",
+    //   sort: true,
+    // },
   ];
 
   const datas = [];
@@ -63,7 +82,17 @@ export default function ProductSale() {
       unitsSold: report?.unitsSold ?? 0,
       wholesalePriceTotal: `$${report?.wholesalePriceTotal ?? 0}`,
       customerPriceTotal: `$${report?.customerPriceTotal ?? 0}`,
-      revenue: `$${report?.revenue ?? 0}`,
+      revenueFromCustomers: `$${report?.revenueFromCustomers ?? 0}`,
+      revenueFromLocalPartners: `$${report?.revenueFromLocalPartners ?? 0}`,
+      unitsSold: `$${
+        report?.unitsSoldToCustomer || 0 + report?.unitsSoldToPartners || 0
+      }`,
+      unitsSoldToC: `$${report?.unitsSoldToCustomer ?? 0}`,
+      unitsSoldToP: `$${report?.unitsSoldToPartners ?? 0}`,
+      revenue:
+        "$" + report?.revenueFromCustomers ||
+        0 + report?.revenueFromLocalPartners ||
+        0,
     })
   );
 
@@ -93,11 +122,13 @@ export default function ProductSale() {
   const { toggle, setToggle } = useDataContext();
 
   return isLoading ? (
-      <Loader />
-    ) : (
+    <Loader />
+  ) : (
     <div data-testid={PRODUCT_SALE_REPORT.root}>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
-       data-testid={PRODUCT_SALE_REPORT.headerBar}>
+      <div
+        className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+        data-testid={PRODUCT_SALE_REPORT.headerBar}
+      >
         <div className="flex items-center gap-2">
           <p
             onClick={() => setToggle(!toggle)}
@@ -105,14 +136,20 @@ export default function ProductSale() {
           >
             <CiMenuBurger size={20} />
           </p>
-          <h2 className="text-xl font-inter font-semibold" data-testid={PRODUCT_SALE_REPORT.title}>
+          <h2
+            className="text-xl font-inter font-semibold"
+            data-testid={PRODUCT_SALE_REPORT.title}
+          >
             Products Sales Report
           </h2>
         </div>
       </div>
 
       <div className="space-y-8 pt-28 2xl:pt-32 px-6 2xl:px-12 ">
-        <div className="flex items-center justify-between" data-testid={PRODUCT_SALE_REPORT.filterSection}>
+        <div
+          className="flex items-center justify-between"
+          data-testid={PRODUCT_SALE_REPORT.filterSection}
+        >
           <div className="flex items-center gap-x-2">
             <BackButton />
             {/* <h2 className="text-xl lg:text-2xl font-inter font-semibold">
@@ -191,7 +228,9 @@ export default function ProductSale() {
             placeholder={"Search ..."}
             pagination={true}
             search={true}
-            rowTestId={(row) => `data-testid-${PRODUCT_SALE_REPORT.row(row.id)}`}
+            rowTestId={(row) =>
+              `data-testid-${PRODUCT_SALE_REPORT.row(row.id)}`
+            }
           />
         </div>
       </div>

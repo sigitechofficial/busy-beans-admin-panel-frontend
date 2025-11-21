@@ -1,14 +1,9 @@
-"use client";
 import localFont from "next/font/local";
 import { Inter, Nunito } from "next/font/google";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/ui/Header";
-import Leftbar from "@/components/ui/Leftbar";
-import { usePathname } from "next/navigation";
-import { ToastContainer } from "react-toastify";
-import ProtectedRoute from "@/utilities/ProtectedRoute";
-import { DataProvider } from "@/utilities/DataContext";
+import LayoutWrapper from "@/components/wrapper/LayoutWrapper";
+import { NextIntlClientProvider } from "next-intl";
 
 const satoshi = localFont({
   src: [
@@ -90,22 +85,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export default function RootLayout({ children }) {
-  const pathname = usePathname();
-  const isLayoutDisplay =
-    pathname.startsWith("/sign-in") ||
-    pathname.includes("/sales-representative/stripe-account-connected") ||
-    pathname.includes("/forgot") ||
-    pathname.includes("/verify") ||
-    pathname.includes("/reset");
-
-  // const [navbarVis, setNavbarVis] = useState(
-  //   window.innerWidth < 640 ? false : true
-  // );
+export default function RootLayout({ children, params }) {
   // const [navbarVis, setNavbarVis] = useState(true);
-
   return (
-    <html lang="en">
+    <html lang={params.locale}>
       <head>
         <title>Busy Beans Coffee</title>
         <link rel="icon" type="image/x-icon" href="/images/logocoffee.png" />
@@ -144,9 +127,11 @@ export default function RootLayout({ children }) {
             `,
           }}
         />
+        <NextIntlClientProvider>
+          <LayoutWrapper>{children}</LayoutWrapper>
+        </NextIntlClientProvider>
 
-        <ToastContainer />
-        <DataProvider>
+        {/* <DataProvider>
           {!isLayoutDisplay && <Header />}
 
           {!isLayoutDisplay && <Leftbar />}
@@ -162,7 +147,7 @@ export default function RootLayout({ children }) {
           >
             <ProtectedRoute>{children}</ProtectedRoute>
           </section>
-        </DataProvider>
+        </DataProvider> */}
       </body>
     </html>
   );

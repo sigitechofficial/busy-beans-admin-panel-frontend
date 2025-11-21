@@ -1023,9 +1023,7 @@ const DrawerBeans = ({
                               <div className="flex items-center gap-x-3">
                                 <span className="font-semibold text-sm text-white mt-1">
                                   {"$ "}
-                                  {parseFloat(
-                                    Number(cartI?.price) * Number(cartI?.qty)
-                                  )}{" "}
+                                  {parseFloat(cartI?.price)}{" "}
                                 </span>
                               </div>
                             </div>

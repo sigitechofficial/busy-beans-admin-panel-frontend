@@ -19,6 +19,7 @@ import {
   MdLogout,
   MdReceiptLong,
   MdCoffeeMaker,
+  MdOutlinePayment,
 } from "react-icons/md";
 import { FaAngleDown, FaAngleRight, FaAngleUp } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";

@@ -2,16 +2,16 @@
 import BackButton from "@/components/ui/BackButton";
 import Loader from "@/components/ui/Loader";
 import MyDataTable from "@/components/ui/MyDataTable";
+import { useDataContext } from "@/utilities/DataContext";
 import GetAPI from "@/utilities/GetAPI";
 import selectStyles, { drawerSelectStyles } from "@/utilities/SelectStyle";
 import { useState } from "react";
+import { CiMenuBurger } from "react-icons/ci";
 import { ImCross } from "react-icons/im";
 import Select from "react-select";
+import { CUSTOMER_REPORT } from "../report.testid";
 
-export default function UnpaidPartnerBalance() {
-  if (typeof window !== "undefined") {
-    var userID = localStorage.getItem("userID");
-  }
+export default function DirectPartnerReport() {
   const [customDates, setCustomDates] = useState({
     startDate: "",
     endDate: "",
@@ -20,13 +20,11 @@ export default function UnpaidPartnerBalance() {
     value: "allTime",
     label: "All Time",
   });
-
   const [displayCustomFilters, setDisplayCustomFilters] = useState(false);
 
   const { data, isLoading } = GetAPI(
-    `api/v1/admin/sales-rep-reports/orders-placed-report/${userID}`
+    "api/v1/admin/admin-reports/direct-partner-summary"
   );
-  console.log("🚀 ~ UnpaidPartnerBalance ~ data:", data?.data);
 
   const options = [
     { value: "allTime", label: "All Time" },
@@ -42,28 +40,24 @@ export default function UnpaidPartnerBalance() {
 
   const columns = [
     { field: "sl", header: "SL", sort: true },
-    { field: "customerName", header: "Customer Name" },
-    { field: "productNames", header: "Product" },
-    { field: "productsSellingPrice", header: "Selling Price" },
-    { field: "productsWholesalePrice", header: "Wholesale Price" },
-    { field: "commission", header: "Partner Profits" },
-    { field: "orderDate", header: "Order Date" },
-    { field: "orderCurrentStatus", header: "Order Status" },
+    { field: "srName", header: "Partner Name" },
+    { field: "territoryName", header: "Territory Name", sort: true },
+    { field: "numberOfOrders", header: "Client Orders", sort: true },
+    { field: "selfOrder", header: "Self Order" },
+    { field: "totalOrders", header: "Total Orders", sort: true },
   ];
 
   const datas = [];
-  data?.data?.data?.map((report, i) =>
+  data?.data?.map((report, i) =>
     datas.push({
+      id: report?.id,
       sl: i + 1,
-      customerName: report?.customerName,
-      productNames: report?.productNames,
-      productsSellingPrice: `$${report?.productsSellingPrice ?? 0}`,
-      productsWholesalePrice: `$${report?.productsWholesalePrice}`,
-      commission: `$${
-        report?.productsSellingPrice - report?.productsWholesalePrice
-      }`,
-      orderDate: report?.orderDate,
-      orderCurrentStatus: report?.orderCurrentStatus,
+      srName: report?.srName,
+      territoryName: report?.territoryName || "",
+      numberOfOrders: report?.clientOrdersCount ?? 0,
+      selfOrder: report?.selfOrdersCount ?? "-",
+      totalOrders:
+        report?.clientOrdersCount || 0 + report?.selfOrdersCount || 0,
     })
   );
 
@@ -90,30 +84,40 @@ export default function UnpaidPartnerBalance() {
   const handleCustomDates = (e) => {
     setCustomDates({ ...customDates, [e.target.name]: e.target.value });
   };
+  const { toggle, setToggle } = useDataContext();
 
   return isLoading ? (
     <Loader />
   ) : (
-    <div>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
-        <h2 className="text-xl font-inter font-semibold">
-          Orders Placed Report
-        </h2>
-
-        {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">
-          <li>Invoice</li>
-          <li>Quickbooks</li>
-          <li>Schedule</li>
-          <li>Bulk Modify</li>
-          <li>Export</li>
-        </ul> */}
+    <div data-testid={CUSTOMER_REPORT.root}>
+      <div
+        className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+        data-testid={CUSTOMER_REPORT.headerBar}
+      >
+        <div className="flex items-center gap-2">
+          <p
+            onClick={() => setToggle(!toggle)}
+            className="cursor-pointer md:hidden"
+          >
+            <CiMenuBurger size={20} />
+          </p>
+          <h2
+            className="text-xl font-inter font-semibold"
+            data-testid={CUSTOMER_REPORT.title}
+          >
+            Direct Partner Report
+          </h2>
+        </div>
       </div>
-      <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
-        <div className="flex items-center justify-between">
+      <div className="space-y-8 pt-28 2xl:pt-32 px-6 2xl:px-12 ">
+        <div
+          className="flex items-center justify-between"
+          data-testid={CUSTOMER_REPORT.filterSection}
+        >
           <div className="flex items-center gap-x-2">
             <BackButton />
             {/* <h2 className="text-xl lg:text-2xl font-inter font-semibold">
-              Orders Placed Report
+              Customers Report
             </h2> */}
           </div>
           <div className="min-w-40">
@@ -133,7 +137,8 @@ export default function UnpaidPartnerBalance() {
                     value={customDates?.startDate}
                     onChange={handleCustomDates}
                     className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium 
-                            text-labelColor"
+                    text-labelColor"
+                    data-testid={CUSTOMER_REPORT.filterStartDate}
                   />
                 </div>
                 <div className="space-x-2">
@@ -149,6 +154,7 @@ export default function UnpaidPartnerBalance() {
                     name="endDate"
                     value={customDates?.endDate}
                     onChange={handleCustomDates}
+                    data-testid={CUSTOMER_REPORT.filterEndDate}
                     className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium 
                             text-labelColor"
                   />
@@ -157,6 +163,7 @@ export default function UnpaidPartnerBalance() {
                   <button
                     onClick={handleCancel}
                     className="px-2 h-full rounded-lg border border-theme text-theme bg-white hover:text-white hover:bg-theme duration-200 group"
+                    data-testid={CUSTOMER_REPORT.filterClearBtn}
                   >
                     <ImCross size={24} />
                   </button>
@@ -171,19 +178,21 @@ export default function UnpaidPartnerBalance() {
                   value={selectedOption ? selectedOption : null}
                   onChange={(val) => handleChange(val)}
                   options={options ? options : null}
+                  data-testid={CUSTOMER_REPORT.filterSelect}
                 />
               </div>
             )}
           </div>
         </div>
 
-        <div>
+        <div data-testid={CUSTOMER_REPORT.tableWrapper}>
           <MyDataTable
             columns={columns}
             data={datas}
             placeholder={"Search ..."}
             pagination={true}
             search={true}
+            rowTestId={(row) => `data-testid-${CUSTOMER_REPORT.row(row.id)}`}
           />
         </div>
       </div>

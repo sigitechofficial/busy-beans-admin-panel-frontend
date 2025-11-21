@@ -18,9 +18,11 @@ import ManagementTab from "@/components/ui/ManagementTab";
 import MiniLoader from "@/components/ui/MiniLoader";
 import { hasPermission } from "@/utilities/Permission";
 import { BASE_URL } from "@/utilities/URL";
+import { FaPeopleGroup } from "react-icons/fa6";
 
 export default function MachineSubscriptions() {
   const { data, reFetch } = GetAPI("api/v1/admin/category");
+  const { machinesData } = GetAPI(`api/v1/admin/machines`);
   const list = data?.data?.data ?? [];
 
   const [modal, setModal] = useState("");
@@ -48,7 +50,7 @@ export default function MachineSubscriptions() {
     { value: "professional", label: "Professional" },
     { value: "enterprise", label: "Enterprise" },
   ];
-  
+
   const columns = [
     { field: "sl", header: "SL", sort: true },
     { field: "machineType", header: "Machine" },
@@ -179,7 +181,10 @@ export default function MachineSubscriptions() {
           reFetch();
         }
       } else if (modal === "edit") {
-        const res = await PatchAPI(`api/v1/admin/machines/${machineId}`, buildFD());
+        const res = await PatchAPI(
+          `api/v1/admin/machines/${machineId}`,
+          buildFD()
+        );
         if (res?.data?.status === "success") {
           success_toaster("Machine updated");
           reset();
@@ -226,57 +231,71 @@ export default function MachineSubscriptions() {
             </button>
           )}
         </div>
-        
-         {/* stat card (optional) */}
+
+        {/* stat card (optional) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
           <ManagementTab title="Total Machines" desc={list.length} />
         </div>
-        {/* <MyDataTable
-          columns={columns}
-          data={rows}
-          placeholder={"Search ..."}
-          pagination={true}
-          search={true}
-        /> */}
-        {/* 4-up card grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-          {list.map((m) => (
+
+        <div className="w-full mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+          {list?.map((machine) => (
             <div
-              key={m.id}
-              className="rounded-xl border overflow-hidden bg-white shadow-sm flex flex-col"
+              key={machine?.id}
+              className="border border-orange-900/50 rounded-lg overflow-hidden relative group"
             >
-              <div className="bg-[#FAF3EC] flex items-center justify-center h-48">
-                <img
-                  src={BASE_URL + (m?.image ?? "")}
-                  alt={m?.machineTypeLabel ?? "machine"}
-                  className="h-40 object-contain"
-                />
-              </div>
+              <span
+                onClick={() => {
+                  setModal("delete");
+                }}
+                className="absolute top-3 right-3 size-8 rounded-full bg-theme cursor-pointer opacity-0 duration-300 transition-all group-hover:opacity-100 flex justify-center items-center"
+              >
+                <MdDelete size={18} color="white" />
+              </span>
 
-              <div className="p-5 flex flex-col gap-2 flex-1">
-                <div className="text-lg font-semibold">{m?.machineTypeLabel}</div>
-                <div className="text-xs text-gray-500">{m?.planNameLabel}</div>
-                <p className="text-xs text-gray-600 leading-snug">{m?.includes}</p>
-
-                <div className="pt-2">
-                  <div className="text-2xl font-bold">${m?.price}/month</div>
-                  <div className="mt-1 text-xs text-gray-500">
-                    Up to {m?.employeeRange || "25+ employees"}
-                  </div>
+              <div className="text-center">
+                <div className="bg-[#fef1d8] rounded-t-lg overflow-hidden">
+                  <img
+                    src={machine?.image || "/images/coffeemachine.png"}
+                    alt={machine?.machineTypeLabel}
+                    className="h-[240px] object-contain mx-auto"
+                  />
                 </div>
 
-                <div className="mt-auto flex gap-3 pt-3">
-                  {hasPermission("machine_update") && (
-                    <button
-                      className="px-4 py-2 text-sm rounded border"
-                      onClick={() => openEdit(m.id)}
-                    >
-                      Edit
-                    </button>
-                  )}
-                  <button className="px-4 py-2 text-sm rounded bg-[#8E6C53] text-white">
-                    Subscribe plan
-                  </button>
+                <div className="p-5 space-y-3">
+                  <h3 className="text-2xl font-semibold">Drip Coffee</h3>
+                  <p className="text-lg">Drip Starter</p>
+                  <p className="text-sm px-4">
+                    Equipment, quarterly checkups, annual service, email
+                    support, 10% off parts
+                  </p>
+                  <div className="text-xl font-bold">{`$${machine?.price}/month`}</div>
+                  <div className="mt-4 text-center">
+                    <div className="flex justify-center">
+                      <FaPeopleGroup size={35} />
+                    </div>
+
+                    <p className="text-sm text-gray-500">
+                      Up to {machine?.employeeRange} employees
+                    </p>
+
+                    <div className="flex items-center gap-x-3">
+                      {hasPermission("machine_update") && (
+                        <button
+                          onClick={() => openEdit(machine?.id)}
+                          className="bg-black text-white w-max h-[56px] py-2 px-6 mt-8 rounded-md"
+                        >
+                          Edit
+                        </button>
+                      )}
+
+                      <button
+                        // onClick={handleContactClick}
+                        className="bg-theme text-white w-full h-[56px] py-2 px-6 mt-8 rounded-md"
+                      >
+                        Subscribe plan
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -291,7 +310,11 @@ export default function MachineSubscriptions() {
         onHide={reset}
         header={
           <div className="font-bold text-2xl text-center">
-            {modal === "add" ? "Add New Coffee Machine" : modal === "edit" ? "Update Machine" : "Delete Machine"}
+            {modal === "add"
+              ? "Add New Coffee Machine"
+              : modal === "edit"
+              ? "Update Machine"
+              : "Delete Machine"}
           </div>
         }
       >
@@ -303,12 +326,23 @@ export default function MachineSubscriptions() {
               <>
                 <button
                   type="button"
-                  onClick={() => document.getElementById("machine-img")?.click()}
+                  onClick={() =>
+                    document.getElementById("machine-img")?.click()
+                  }
                   className="mx-auto overflow-hidden rounded-xl border border-tabBorderColor/40 size-28 flex items-center justify-center"
                 >
-                  <input id="machine-img" type="file" className="hidden" onChange={onImagePick} />
+                  <input
+                    id="machine-img"
+                    type="file"
+                    className="hidden"
+                    onChange={onImagePick}
+                  />
                   {preview ? (
-                    <img src={preview} alt="machine" className="h-full w-full object-cover" />
+                    <img
+                      src={preview}
+                      alt="machine"
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
                     <LuImageUp size={100} color="rgba(0,0,0,.6)" />
                   )}
@@ -341,7 +375,9 @@ export default function MachineSubscriptions() {
                   <input
                     type="text"
                     value={form.includes}
-                    onChange={(e) => setForm((p) => ({ ...p, includes: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, includes: e.target.value }))
+                    }
                     placeholder="Add details"
                     className="border rounded px-3 py-3 w-full"
                   />
@@ -353,7 +389,9 @@ export default function MachineSubscriptions() {
                     <input
                       type="text"
                       value={form.price}
-                      onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))}
+                      onChange={(e) =>
+                        setForm((p) => ({ ...p, price: e.target.value }))
+                      }
                       placeholder="$150 / month"
                       className="border rounded px-3 py-3 w-full"
                     />
@@ -363,7 +401,9 @@ export default function MachineSubscriptions() {
                     <input
                       type="text"
                       value={form.officeSize}
-                      onChange={(e) => setForm((p) => ({ ...p, officeSize: e.target.value }))}
+                      onChange={(e) =>
+                        setForm((p) => ({ ...p, officeSize: e.target.value }))
+                      }
                       placeholder="25"
                       className="border rounded px-3 py-3 w-full"
                     />
@@ -371,7 +411,9 @@ export default function MachineSubscriptions() {
                 </div>
               </>
             ) : (
-              <p className="text-center text-lg">Are you sure you want to delete this machine?</p>
+              <p className="font-semibold text-center text-lg min-h-[200px] flex items-center justify-center">
+                Are you sure you want to delete this machine?
+              </p>
             )}
 
             <div className="flex justify-end gap-3 pt-2">
@@ -386,7 +428,11 @@ export default function MachineSubscriptions() {
                 type="submit"
                 className="bg-theme text-white px-10 py-3 rounded-lg border border-theme hover:bg-white hover:text-theme"
               >
-                {modal === "add" ? "Save" : modal === "edit" ? "Update" : "Delete"}
+                {modal === "add"
+                  ? "Save"
+                  : modal === "edit"
+                  ? "Update"
+                  : "Delete"}
               </button>
             </div>
           </form>

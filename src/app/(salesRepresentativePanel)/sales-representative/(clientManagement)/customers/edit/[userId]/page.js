@@ -27,7 +27,11 @@ export default function UpdateCustomer() {
     userType = localStorage.getItem("userType");
   }
 
-  const { data: categoriesRes, isLoading: catsLoading, error: catsError } = GetAPI("api/v1/admin/category");
+  const {
+    data: categoriesRes,
+    isLoading: catsLoading,
+    error: catsError,
+  } = GetAPI("api/v1/admin/category");
   const [discountSaving, setDiscountSaving] = useState(false);
   const categories =
     categoriesRes?.data?.data?.data ||
@@ -135,7 +139,7 @@ export default function UpdateCustomer() {
       zipCode: "",
       status: true,
     },
-    isChecked: false, 
+    isChecked: false,
   });
   console.log("🚀 ~ page ~ userData:", userData);
 
@@ -156,21 +160,25 @@ export default function UpdateCustomer() {
 
   // Fetch customer details and prefill
   const { data: customerData, isLoading } = GetAPI(
-    `api/v1/admin/view-customer-detail/${userId}`, "customer"
+    `api/v1/admin/view-customer-detail/${userId}`,
+    "customer"
   );
 
   useEffect(() => {
     if (customerData?.data?.customer) {
       const c = customerData.data.customer;
       const areAddressesSame =
-      c.addresses?.[0]?.companyaddress === c.billingAddresses?.[0]?.companyaddress &&
-      c.addresses?.[0]?.addressLineOne === c.billingAddresses?.[0]?.addressLineOne &&
-      c.addresses?.[0]?.addressLineTwo === c.billingAddresses?.[0]?.addressLineTwo &&
-      c.addresses?.[0]?.town === c.billingAddresses?.[0]?.town &&
-      c.addresses?.[0]?.state === c.billingAddresses?.[0]?.state &&
-      c.addresses?.[0]?.zipCode === c.billingAddresses?.[0]?.zipCode &&
-      c.addresses?.[0]?.country === c.billingAddresses?.[0]?.country;
-      
+        c.addresses?.[0]?.companyaddress ===
+          c.billingAddresses?.[0]?.companyaddress &&
+        c.addresses?.[0]?.addressLineOne ===
+          c.billingAddresses?.[0]?.addressLineOne &&
+        c.addresses?.[0]?.addressLineTwo ===
+          c.billingAddresses?.[0]?.addressLineTwo &&
+        c.addresses?.[0]?.town === c.billingAddresses?.[0]?.town &&
+        c.addresses?.[0]?.state === c.billingAddresses?.[0]?.state &&
+        c.addresses?.[0]?.zipCode === c.billingAddresses?.[0]?.zipCode &&
+        c.addresses?.[0]?.country === c.billingAddresses?.[0]?.country;
+
       setUserData({
         info: {
           name: c.name || "",
@@ -186,7 +194,8 @@ export default function UpdateCustomer() {
           companyName: c.companyName || "",
           // companyInfo: c.dispatchEmail || "",
           registerBy: c.registerBy || "email",
-          defaultDiscount: c.defaultDiscount != null ? Number(c.defaultDiscount) : null,
+          defaultDiscount:
+            c.defaultDiscount != null ? Number(c.defaultDiscount) : null,
         },
         address: {
           // companyaddress: c.addresses?.[0]?.companyaddress || "",
@@ -195,7 +204,7 @@ export default function UpdateCustomer() {
           //   (c.addresses?.[0]?.companyaddress || "")?.trim() +
           //   (c.addresses?.[0]?.addressLineOne || "")?.trim(),
           // addressLineTwo: c.addresses?.[0]?.addressLineTwo || "",
-          addressLineOne: (c.addresses?.[0]?.addressLineOne || ""),
+          addressLineOne: c.addresses?.[0]?.addressLineOne || "",
           addressLineTwo: c.addresses?.[0]?.addressLineTwo || "",
           town: c.addresses?.[0]?.town || "",
           country: c.addresses?.[0]?.country || "",
@@ -234,7 +243,7 @@ export default function UpdateCustomer() {
       setCategoryDiscounts(map);
     }
   }, [customerData]);
-  
+
   const handleAddress = (e) => {
     setUserData({
       ...userData,
@@ -344,17 +353,29 @@ export default function UpdateCustomer() {
 
     if (!info.dispatchEmail?.trim())
       return { error: true, message: "Dispatch email cannot be empty" };
-    const dispatchemails = info.dispatchEmail.split(",").map((email) => email.trim());
-    const dispatchEmailValidation = dispatchemails.every((email) => emailValidity.test(email));
+    const dispatchemails = info.dispatchEmail
+      .split(",")
+      .map((email) => email.trim());
+    const dispatchEmailValidation = dispatchemails.every((email) =>
+      emailValidity.test(email)
+    );
     if (!dispatchEmailValidation)
-      return { error: true, message: "One or more dispatch emails are invalid." };
+      return {
+        error: true,
+        message: "One or more dispatch emails are invalid.",
+      };
 
     if (!info.emailToSendInvoices?.trim())
       return { error: true, message: "Invoice email cannot be empty" };
-    const emails = info.emailToSendInvoices.split(",").map((email) => email.trim());
+    const emails = info.emailToSendInvoices
+      .split(",")
+      .map((email) => email.trim());
     const emailValidation = emails.every((email) => emailValidity.test(email));
     if (!emailValidation)
-      return { error: true, message: "One or more invoice emails are invalid." };
+      return {
+        error: true,
+        message: "One or more invoice emails are invalid.",
+      };
 
     // --- User Info ---
     if (!info.name?.trim())
@@ -423,46 +444,50 @@ export default function UpdateCustomer() {
     } else {
       try {
         setLoader(true);
-        const res = await PatchAPI(`api/v1/admin/customer-update/${userId}`, {
-          info: {
-            name: userData?.info?.name,
-            email: userData?.info?.email,
-            ...(userData?.info?.password?.trim() && {
-              password: userData?.info?.password,
-            }),
-            status: userData?.info?.status,
-            phoneNumber: userData?.info?.phoneNumber,
-            countryCode: userData?.info?.countryCode
-              ? userData.info.countryCode.startsWith("+")
-                ? userData.info.countryCode
-                : `+${userData.info.countryCode}`
-              : "+1",
-            saleTaxNumber: userData?.info?.saleTaxNumber,
-            dispatchEmail: userData?.info?.dispatchEmail,
-            emailToSendInvoices: userData?.info?.emailToSendInvoices,
-            companyName: userData?.info?.companyName,
-            // dispatchEmail: userData?.info?.companyInfo,
-            registerBy: userData?.info?.registerBy,
-            defaultDiscount: userData?.info?.defaultDiscount ?? null,
+        const res = await PatchAPI(
+          `api/v1/admin/customer-update/${userId}`,
+          {
+            info: {
+              name: userData?.info?.name,
+              email: userData?.info?.email,
+              ...(userData?.info?.password?.trim() && {
+                password: userData?.info?.password,
+              }),
+              status: userData?.info?.status,
+              phoneNumber: userData?.info?.phoneNumber,
+              countryCode: userData?.info?.countryCode
+                ? userData.info.countryCode.startsWith("+")
+                  ? userData.info.countryCode
+                  : `+${userData.info.countryCode}`
+                : "+1",
+              saleTaxNumber: userData?.info?.saleTaxNumber,
+              dispatchEmail: userData?.info?.dispatchEmail,
+              emailToSendInvoices: userData?.info?.emailToSendInvoices,
+              companyName: userData?.info?.companyName,
+              // dispatchEmail: userData?.info?.companyInfo,
+              registerBy: userData?.info?.registerBy,
+              defaultDiscount: userData?.info?.defaultDiscount ?? null,
+            },
+            address: {
+              companyaddress: userData?.address?.companyaddress,
+              addressLineOne: userData?.address?.addressLineOne,
+              addressLineTwo: userData?.address?.addressLineTwo,
+              town: userData?.address?.town,
+              country: userData?.address?.country,
+              state: userData?.address?.state,
+              zipCode: userData?.address?.zipCode,
+              status: true,
+            },
+            billingAddress: {
+              ...finalBillingAddress,
+            },
           },
-          address: {
-            companyaddress: userData?.address?.companyaddress,
-            addressLineOne: userData?.address?.addressLineOne,
-            addressLineTwo: userData?.address?.addressLineTwo,
-            town: userData?.address?.town,
-            country: userData?.address?.country,
-            state: userData?.address?.state,
-            zipCode: userData?.address?.zipCode,
-            status: true,
-          },
-          billingAddress: {
-            ...finalBillingAddress,
-          },
-        }, "customer");
+          "customer"
+        );
         if (res?.data?.status === "success") {
           setLoader(false);
           success_toaster("Customer updated successfully");
-          window.history.back()
+          window.history.back();
           // router.push(
           //   userType === "admin"
           //     ? "/customers"
@@ -528,24 +553,31 @@ export default function UpdateCustomer() {
       ErrorHandler(error);
     }
   };
- 
+
   return isLoading ? (
-      <Loader />
-    ) : (
+    <Loader />
+  ) : (
     <div data-testid={UPDATE_CUSTOMER.root}>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
-       data-testid={UPDATE_CUSTOMER.headerBar}>
-        <h2 className="text-xl font-inter font-semibold" data-testid={UPDATE_CUSTOMER.title}>Update Customer</h2>
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setDiscountDlgOpen(true)}
-              className="px-3 py-2 rounded-sm bg-theme text-white font-inter text-sm"
-              data-testid={UPDATE_CUSTOMER.discountDlgOpen}
-            >
-              Update User Discount
-            </button>
-          </div>
+      <div
+        className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+        data-testid={UPDATE_CUSTOMER.headerBar}
+      >
+        <h2
+          className="text-xl font-inter font-semibold"
+          data-testid={UPDATE_CUSTOMER.title}
+        >
+          Update Customer
+        </h2>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setDiscountDlgOpen(true)}
+            className="px-3 py-2 rounded-sm bg-theme text-white font-inter text-sm"
+            data-testid={UPDATE_CUSTOMER.discountDlgOpen}
+          >
+            Update User Discount
+          </button>
+        </div>
       </div>
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
         <div className="flex items-center gap-x-2">
@@ -571,7 +603,10 @@ export default function UpdateCustomer() {
               {step === 1 && (
                 <div className="space-y-6">
                   <div className="font-satoshi space-y-4">
-                    <p className="font-black text-xl lg:text-2xl text-theme" data-testid={UPDATE_CUSTOMER.step1Title}>
+                    <p
+                      className="font-black text-xl lg:text-2xl text-theme"
+                      data-testid={UPDATE_CUSTOMER.step1Title}
+                    >
                       1. Shipping Address
                     </p>
                     <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
@@ -589,7 +624,10 @@ export default function UpdateCustomer() {
                             onChange={handleAddress}
                           />
                         </div> */}
-                        <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.addressLineOneInput}>
+                        <div
+                          className="flex flex-col gap-y-2"
+                          data-testid={UPDATE_CUSTOMER.addressLineOneInput}
+                        >
                           <label className="text-labelColor font-medium font-satoshi">
                             Address Line 1
                           </label>
@@ -602,7 +640,10 @@ export default function UpdateCustomer() {
                             className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                           />
                         </div>
-                        <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.addressLineTwoInput}>
+                        <div
+                          className="flex flex-col gap-y-2"
+                          data-testid={UPDATE_CUSTOMER.addressLineTwoInput}
+                        >
                           <label className="text-labelColor font-medium font-satoshi">
                             Address Line 2
                           </label>
@@ -619,7 +660,10 @@ export default function UpdateCustomer() {
                       <div className="flex flex-col justify-between gap-y-4">
                         <div className="space-y-4">
                           <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
-                            <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.addressCountrySelect}>
+                            <div
+                              className="flex flex-col gap-y-2"
+                              data-testid={UPDATE_CUSTOMER.addressCountrySelect}
+                            >
                               <label className="text-labelColor font-medium font-satoshi">
                                 Country
                               </label>
@@ -650,7 +694,10 @@ export default function UpdateCustomer() {
                                 }}
                               />
                             </div>
-                            <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.addressStateSelect}>
+                            <div
+                              className="flex flex-col gap-y-2"
+                              data-testid={UPDATE_CUSTOMER.addressStateSelect}
+                            >
                               <label className="text-labelColor font-medium font-satoshi">
                                 State
                               </label>
@@ -682,7 +729,10 @@ export default function UpdateCustomer() {
                             </div>
                           </div>
                           <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
-                            <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.addressTownInput}>
+                            <div
+                              className="flex flex-col gap-y-2"
+                              data-testid={UPDATE_CUSTOMER.addressTownInput}
+                            >
                               <label className="text-labelColor font-medium font-satoshi">
                                 Town / City
                               </label>
@@ -703,7 +753,10 @@ export default function UpdateCustomer() {
                                 className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                               />
                             </div>
-                            <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.addressZipCodeInput}>
+                            <div
+                              className="flex flex-col gap-y-2"
+                              data-testid={UPDATE_CUSTOMER.addressZipCodeInput}
+                            >
                               <label className="text-labelColor font-medium font-satoshi">
                                 Zip Code
                               </label>
@@ -721,7 +774,10 @@ export default function UpdateCustomer() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-x-2" data-testid={UPDATE_CUSTOMER.billingSameAsShippingCheckbox}>
+                  <div
+                    className="flex items-center gap-x-2"
+                    data-testid={UPDATE_CUSTOMER.billingSameAsShippingCheckbox}
+                  >
                     <input
                       type="checkbox"
                       name="billingStatus"
@@ -740,12 +796,14 @@ export default function UpdateCustomer() {
                       Billing Address same as Shipping Address
                     </label>
                   </div>
-                      {!userData?.isChecked && (
-                        <div className="font-satoshi space-y-4">
-                          <p className="font-black text-xl lg:text-2xl text-theme">Billing Address</p>
-                          <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
-                            <div className="space-y-4">
-                              {/* <div className="flex flex-col gap-y-2">
+                  {!userData?.isChecked && (
+                    <div className="font-satoshi space-y-4">
+                      <p className="font-black text-xl lg:text-2xl text-theme">
+                        Billing Address
+                      </p>
+                      <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
+                        <div className="space-y-4">
+                          {/* <div className="flex flex-col gap-y-2">
                                 <label className="text-labelColor font-medium font-satoshi">
                                   Billing Address{" "}
                                 </label>
@@ -758,143 +816,191 @@ export default function UpdateCustomer() {
                                   onChange={handleBillingAddress}
                                 />
                               </div> */}
-                              {/* Billing Address Line 1 */}
-                              <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.billingAddressLineOneInput}>
-                                <label className="text-labelColor font-medium font-satoshi">Address Line 1</label>
-                                <input
-                                  type="text"
-                                  name="addressLineOne"
-                                  onChange={handleBillingAddress}
-                                  value={userData?.billingAddress?.addressLineOne}
-                                  placeholder="Enter address line 1"
-                                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                          {/* Billing Address Line 1 */}
+                          <div
+                            className="flex flex-col gap-y-2"
+                            data-testid={
+                              UPDATE_CUSTOMER.billingAddressLineOneInput
+                            }
+                          >
+                            <label className="text-labelColor font-medium font-satoshi">
+                              Address Line 1
+                            </label>
+                            <input
+                              type="text"
+                              name="addressLineOne"
+                              onChange={handleBillingAddress}
+                              value={userData?.billingAddress?.addressLineOne}
+                              placeholder="Enter address line 1"
+                              className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                            />
+                          </div>
+                          {/* Billing Address Line 2 */}
+                          <div
+                            className="flex flex-col gap-y-2"
+                            data-testid={
+                              UPDATE_CUSTOMER.billingAddressLineTwoInput
+                            }
+                          >
+                            <label className="text-labelColor font-medium font-satoshi">
+                              Address Line 2
+                            </label>
+                            <input
+                              type="text"
+                              name="addressLineTwo"
+                              onChange={handleBillingAddress}
+                              value={userData?.billingAddress?.addressLineTwo}
+                              placeholder="Enter address line 2"
+                              className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col justify-between gap-y-4">
+                          <div className="space-y-4">
+                            {/* Country Select */}
+                            <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
+                              <div
+                                className="flex flex-col gap-y-2"
+                                data-testid={
+                                  UPDATE_CUSTOMER.billingAddressCountrySelect
+                                }
+                              >
+                                <label className="text-labelColor font-medium font-satoshi">
+                                  Country
+                                </label>
+                                <Select
+                                  placeholder="Select Country"
+                                  className="w-full"
+                                  styles={drawerSelectStyles}
+                                  options={allCountries ?? []}
+                                  value={
+                                    userData?.billingAddress?.country
+                                      ? {
+                                          value:
+                                            userData.billingAddress.country,
+                                          label:
+                                            userData.billingAddress.country,
+                                        }
+                                      : null
+                                  }
+                                  onChange={(e) => {
+                                    setUserData({
+                                      ...userData,
+                                      billingAddress: {
+                                        ...userData?.billingAddress,
+                                        country: e.label,
+                                        state: "",
+                                        town: "",
+                                      },
+                                    });
+                                    handleSelectedCountryStates(e.label);
+                                  }}
                                 />
                               </div>
-                              {/* Billing Address Line 2 */}
-                              <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.billingAddressLineTwoInput}>
-                                <label className="text-labelColor font-medium font-satoshi">Address Line 2</label>
-                                <input
-                                  type="text"
-                                  name="addressLineTwo"
-                                  onChange={handleBillingAddress}
-                                  value={userData?.billingAddress?.addressLineTwo}
-                                  placeholder="Enter address line 2"
-                                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+
+                              {/* State Select */}
+                              <div
+                                className="flex flex-col gap-y-2"
+                                data-testid={
+                                  UPDATE_CUSTOMER.billingAddressStateSelect
+                                }
+                              >
+                                <label className="text-labelColor font-medium font-satoshi">
+                                  State
+                                </label>
+                                <Select
+                                  placeholder="Select State"
+                                  className="w-full"
+                                  styles={drawerSelectStyles}
+                                  value={
+                                    userData?.billingAddress?.state
+                                      ? {
+                                          value:
+                                            userData?.billingAddress?.state,
+                                          label:
+                                            userData?.billingAddress?.state,
+                                        }
+                                      : null
+                                  }
+                                  options={allStates ?? []}
+                                  onChange={(e) => {
+                                    setUserData({
+                                      ...userData,
+                                      billingAddress: {
+                                        ...userData?.billingAddress,
+                                        state: e.label,
+                                        town: "",
+                                      },
+                                    });
+                                    handleSelectedCountryStatesCities(e.value);
+                                  }}
                                 />
                               </div>
                             </div>
 
-                            <div className="flex flex-col justify-between gap-y-4">
-                              <div className="space-y-4">
-                                {/* Country Select */}
-                                <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
-                                  <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.billingAddressCountrySelect}>
-                                    <label className="text-labelColor font-medium font-satoshi">Country</label>
-                                    <Select
-                                      placeholder="Select Country"
-                                      className="w-full"
-                                      styles={drawerSelectStyles}
-                                      options={allCountries ?? []}
-                                      value={
-                                        userData?.billingAddress?.country
-                                          ? {
-                                            value:
-                                              userData.billingAddress.country,
-                                            label:
-                                              userData.billingAddress.country,
-                                          }
-                                          : null
-                                      }
-                                      onChange={(e) => {
-                                        setUserData({
-                                          ...userData,
-                                          billingAddress: {
-                                            ...userData?.billingAddress,
-                                            country: e.label,
-                                            state: "",
-                                            town: "",
-                                          },
-                                        });
-                                        handleSelectedCountryStates(e.label);
-                                      }}
-                                    />
-                                  </div>
+                            {/* Town / City Input */}
+                            <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
+                              <div
+                                className="flex flex-col gap-y-2"
+                                data-testid={
+                                  UPDATE_CUSTOMER.billingAddressTownInput
+                                }
+                              >
+                                <label className="text-labelColor font-medium font-satoshi">
+                                  Town / City
+                                </label>
+                                <input
+                                  type="text"
+                                  name="town"
+                                  onChange={(e) => {
+                                    setUserData({
+                                      ...userData,
+                                      billingAddress: {
+                                        ...userData?.billingAddress,
+                                        town: e.target.value,
+                                      },
+                                    });
+                                  }}
+                                  placeholder="Enter town"
+                                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                                  value={userData?.billingAddress?.town}
+                                />
+                              </div>
 
-                                  {/* State Select */}
-                                  <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.billingAddressStateSelect}>
-                                    <label className="text-labelColor font-medium font-satoshi">State</label>
-                                    <Select
-                                      placeholder="Select State"
-                                      className="w-full"
-                                      styles={drawerSelectStyles}
-                                      value={
-                                        userData?.billingAddress?.state
-                                          ? {
-                                            value:
-                                              userData?.billingAddress?.state,
-                                            label:
-                                              userData?.billingAddress?.state,
-                                          }
-                                          : null
-                                      }
-                                      options={allStates ?? []}
-                                      onChange={(e) => {
-                                        setUserData({
-                                          ...userData,
-                                          billingAddress: {
-                                            ...userData?.billingAddress,
-                                            state: e.label,
-                                            town: "",
-                                          },
-                                        });
-                                        handleSelectedCountryStatesCities(e.value);
-                                      }}
-                                    />
-                                  </div>
-                                </div>
-
-                                {/* Town / City Input */}
-                                <div className="md:grid md:grid-cols-2 gap-x-4 max-md:space-y-4">
-                                  <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.billingAddressTownInput}>
-                                    <label className="text-labelColor font-medium font-satoshi">Town / City</label>
-                                    <input
-                                      type="text"
-                                      name="town"
-                                      onChange={(e) => {
-                                        setUserData({
-                                          ...userData,
-                                          billingAddress: { ...userData?.billingAddress, town: e.target.value },
-                                        });
-                                      }}
-                                      placeholder="Enter town"
-                                      className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                                      value={userData?.billingAddress?.town}
-                                    />
-                                  </div>
-
-                                  {/* Zip Code Input */}
-                                  <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.billingAddressZipCodeInput}>
-                                    <label className="text-labelColor font-medium font-satoshi">Zip Code</label>
-                                    <input
-                                      type="text"
-                                      name="zipCode"
-                                      onChange={(e) => {
-                                        setUserData({
-                                          ...userData,
-                                          billingAddress: { ...userData.billingAddress, zipCode: e.target.value },
-                                        });
-                                      }}
-                                      value={userData?.billingAddress?.zipCode}
-                                      placeholder="Enter Zip Code"
-                                      className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                                    />
-                                  </div>
-                                </div>
+                              {/* Zip Code Input */}
+                              <div
+                                className="flex flex-col gap-y-2"
+                                data-testid={
+                                  UPDATE_CUSTOMER.billingAddressZipCodeInput
+                                }
+                              >
+                                <label className="text-labelColor font-medium font-satoshi">
+                                  Zip Code
+                                </label>
+                                <input
+                                  type="text"
+                                  name="zipCode"
+                                  onChange={(e) => {
+                                    setUserData({
+                                      ...userData,
+                                      billingAddress: {
+                                        ...userData.billingAddress,
+                                        zipCode: e.target.value,
+                                      },
+                                    });
+                                  }}
+                                  value={userData?.billingAddress?.zipCode}
+                                  placeholder="Enter Zip Code"
+                                  className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                                />
                               </div>
                             </div>
                           </div>
                         </div>
-                      )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
               <div className="font-satoshi space-y-4">
@@ -903,7 +1009,10 @@ export default function UpdateCustomer() {
                 </p>
                 <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
                   <div className="space-y-4">
-                    <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.customerCompanyNameInput}>
+                    <div
+                      className="flex flex-col gap-y-2"
+                      data-testid={UPDATE_CUSTOMER.customerCompanyNameInput}
+                    >
                       <label className="text-labelColor font-medium font-satoshi">
                         Company Name
                       </label>
@@ -916,7 +1025,10 @@ export default function UpdateCustomer() {
                         className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       />
                     </div>
-                    <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.customerDispatchEmailInput}>
+                    <div
+                      className="flex flex-col gap-y-2"
+                      data-testid={UPDATE_CUSTOMER.customerDispatchEmailInput}
+                    >
                       <label className="text-labelColor font-medium font-satoshi">
                         Dispatch Email
                       </label>
@@ -929,7 +1041,10 @@ export default function UpdateCustomer() {
                         className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       />
                     </div>
-                    <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.customerPhoneInput}>
+                    <div
+                      className="flex flex-col gap-y-2"
+                      data-testid={UPDATE_CUSTOMER.customerPhoneInput}
+                    >
                       <label className="text-labelColor font-medium font-satoshi">
                         Phone number
                       </label>
@@ -983,7 +1098,10 @@ export default function UpdateCustomer() {
                   </div>
                   <div className="flex flex-col justify-between gap-y-4">
                     <div className="space-y-4">
-                      <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.customerSaleTaxNumberInput}>
+                      <div
+                        className="flex flex-col gap-y-2"
+                        data-testid={UPDATE_CUSTOMER.customerSaleTaxNumberInput}
+                      >
                         <label className="text-labelColor font-medium font-satoshi">
                           Sale Tax Number <span>(if applicable)</span>
                         </label>
@@ -996,7 +1114,10 @@ export default function UpdateCustomer() {
                           className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                         />
                       </div>
-                      <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.customerInvoiceEmailInput}>
+                      <div
+                        className="flex flex-col gap-y-2"
+                        data-testid={UPDATE_CUSTOMER.customerInvoiceEmailInput}
+                      >
                         <label className="text-labelColor font-medium font-satoshi">
                           Invoice Email
                         </label>
@@ -1009,7 +1130,7 @@ export default function UpdateCustomer() {
                           className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                         />
                       </div>
-                          {/* <div className="flex flex-col gap-y-2">
+                      {/* <div className="flex flex-col gap-y-2">
                             <label className="text-labelColor font-medium font-satoshi">Discount (%)</label>
                             <input
                               type="number"
@@ -1054,7 +1175,10 @@ export default function UpdateCustomer() {
                 </p>
                 <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
                   <div className="space-y-4">
-                    <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.customerNameInput}>
+                    <div
+                      className="flex flex-col gap-y-2"
+                      data-testid={UPDATE_CUSTOMER.customerNameInput}
+                    >
                       <label className="text-labelColor font-medium font-satoshi">
                         Full Name / Contact Name
                       </label>
@@ -1067,7 +1191,10 @@ export default function UpdateCustomer() {
                         className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
                       />
                     </div>
-                    <div className="flex flex-col gap-y-2" data-testid={UPDATE_CUSTOMER.customerEmailInput}>
+                    <div
+                      className="flex flex-col gap-y-2"
+                      data-testid={UPDATE_CUSTOMER.customerEmailInput}
+                    >
                       <label className="text-labelColor font-medium font-satoshi">
                         Login Email / Contact Email
                       </label>
@@ -1158,7 +1285,9 @@ export default function UpdateCustomer() {
                           value={userData?.info?.confirmPassword}
                           placeholder="Enter password again"
                           className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                          data-testid={UPDATE_CUSTOMER.customerConfirmPasswordInput}
+                          data-testid={
+                            UPDATE_CUSTOMER.customerConfirmPasswordInput
+                          }
                         />
                         <button
                           onClick={() =>
@@ -1169,7 +1298,9 @@ export default function UpdateCustomer() {
                           }
                           type="button"
                           className="text-black absolute right-4 top-11"
-                          data-testid={UPDATE_CUSTOMER.confirmPasswordVisibilityToggle}
+                          data-testid={
+                            UPDATE_CUSTOMER.confirmPasswordVisibilityToggle
+                          }
                         >
                           {visibility?.confirmPass ? (
                             <AiOutlineEye size={24} color="#000000" />
@@ -1194,99 +1325,111 @@ export default function UpdateCustomer() {
             </div>
           )}
         </div>
-          <Dialog
-            header="Update User Discount by Category"
-            visible={discountDlgOpen}
-            onHide={() => setDiscountDlgOpen(false)}
-            className={`w-[95vw] md:w-[720px] ${typeof window !== "undefined" && window.innerHeight < 800
-              ? "h-[90vh]"  
+        <Dialog
+          header="Update User Discount by Category"
+          visible={discountDlgOpen}
+          onHide={() => setDiscountDlgOpen(false)}
+          className={`w-[95vw] md:w-[720px] ${
+            typeof window !== "undefined" && window.innerHeight < 800
+              ? "h-[90vh]"
               : ""
-            }`}
-            // className="w-[95vw] md:w-[720px]"
-            dismissableMask={true}
-            style={{ maxHeight: "90vh", overflowY: "auto" }}
-            data-testid={UPDATE_CUSTOMER.discountDlgOpen}
-          >
-            {catsError && (
-              <p className="text-red-600 font-medium">Failed to load categories.</p>
-            )}
+          }`}
+          // className="w-[95vw] md:w-[720px]"
+          dismissableMask={true}
+          style={{ maxHeight: "90vh", overflowY: "auto" }}
+          data-testid={UPDATE_CUSTOMER.discountDlgOpen}
+        >
+          {catsError && (
+            <p className="text-red-600 font-medium">
+              Failed to load categories.
+            </p>
+          )}
 
-            {catsLoading ? (
-              <div className="py-6">
-                <MiniLoader />
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <label className="text-labelColor font-medium font-satoshi">
-                  User Discounts
-                </label>
-
-                <div className="border border-borderColor rounded-md p-3 max-h-64 overflow-y-auto space-y-3">
-                  {!categories?.length ? (
-                    <div className="text-sm text-gray-500">No categories found.</div>
-                  ) : (
-                    <>
-                      <div className="grid gap-3 sm:grid-cols-2 items-center px-0.5">
-                        <span className="text-xs text-secondary">Category</span>
-                        <span className="text-xs text-secondary">Discount %</span>
-                      </div>
-                      {categories.map((cat) => {
-                        const catId = cat?.id ?? cat?.categoryId;
-                        const catName =
-                          cat?.name || cat?.categoryName || `Category #${catId}`;
-
-                        return (
-                          <div key={catId} className="grid gap-3 sm:grid-cols-2 items-center">
-                            <input
-                              type="text"
-                              readOnly
-                              value={catName}
-                              className="border border-borderColor rounded-[4px] px-2.5 py-3 bg-gray-50 text-black"
-                            />
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="number"
-                                min={0}
-                                max={100}
-                                step={0.1}
-                                placeholder={`Enter % for ${catName}`}
-                                value={categoryDiscounts[catId] ?? ""}
-                                onChange={(e) => handleDiscountChange(catId, e.target.value)}
-                                onWheel={(e) => e.currentTarget.blur()}
-                                className="border border-borderColor rounded-[4px] px-2.5 py-3 text-black placeholder:text-secondary w-full"
-                                data-testid={UPDATE_CUSTOMER.categoryDiscountInput}
-                              />
-                              {/* <span className="text-sm text-gray-700">%</span> */}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-            <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium mt-4">
-              <button
-                type="button"
-                onClick={() => setDiscountDlgOpen(false)}
-                className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow px-6"
-                disabled={discountSaving}
-                data-testid={UPDATE_CUSTOMER.cancelDiscountButton}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleSaveUserDiscounts}
-                disabled={discountSaving}
-                className="rounded-lg border border-theme text-white px-10 bg-theme disabled:opacity-60"
-                data-testid={UPDATE_CUSTOMER.saveDiscountButton}
-              >
-                {discountSaving ? "Saving..." : "Save"}
-              </button>
+          {catsLoading ? (
+            <div className="py-6">
+              <MiniLoader />
             </div>
-          </Dialog>
+          ) : (
+            <div className="space-y-2">
+              <label className="text-labelColor font-medium font-satoshi">
+                User Discounts
+              </label>
+
+              <div className="border border-borderColor rounded-md p-3 overflow-y-auto space-y-3">
+                {!categories?.length ? (
+                  <div className="text-sm text-gray-500">
+                    No categories found.
+                  </div>
+                ) : (
+                  <>
+                    <div className="grid gap-3 sm:grid-cols-2 items-center px-0.5">
+                      <span className="text-xs text-secondary">Category</span>
+                      <span className="text-xs text-secondary">Discount %</span>
+                    </div>
+                    {categories.map((cat) => {
+                      const catId = cat?.id ?? cat?.categoryId;
+                      const catName =
+                        cat?.name || cat?.categoryName || `Category #${catId}`;
+
+                      return (
+                        <div
+                          key={catId}
+                          className="grid gap-3 sm:grid-cols-2 items-center"
+                        >
+                          <input
+                            type="text"
+                            readOnly
+                            value={catName}
+                            className="border border-borderColor rounded-[4px] px-2.5 py-3 bg-gray-50 text-black"
+                          />
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="number"
+                              min={0}
+                              max={100}
+                              step={0.1}
+                              placeholder={`Enter % for ${catName}`}
+                              value={categoryDiscounts[catId] ?? ""}
+                              onChange={(e) =>
+                                handleDiscountChange(catId, e.target.value)
+                              }
+                              onWheel={(e) => e.currentTarget.blur()}
+                              className="border border-borderColor rounded-[4px] px-2.5 py-3 text-black placeholder:text-secondary w-full"
+                              data-testid={
+                                UPDATE_CUSTOMER.categoryDiscountInput
+                              }
+                            />
+                            {/* <span className="text-sm text-gray-700">%</span> */}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+          <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium mt-4">
+            <button
+              type="button"
+              onClick={() => setDiscountDlgOpen(false)}
+              className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow px-6"
+              disabled={discountSaving}
+              data-testid={UPDATE_CUSTOMER.cancelDiscountButton}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSaveUserDiscounts}
+              disabled={discountSaving}
+              className="rounded-lg border border-theme text-white px-10 bg-theme disabled:opacity-60"
+              data-testid={UPDATE_CUSTOMER.saveDiscountButton}
+            >
+              {discountSaving ? "Saving..." : "Save"}
+            </button>
+          </div>
+        </Dialog>
       </div>
     </div>
   );

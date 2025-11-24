@@ -4,11 +4,8 @@ import Loader from "@/components/ui/Loader";
 import MyDataTable from "@/components/ui/MyDataTable";
 import { useDataContext } from "@/utilities/DataContext";
 import GetAPI from "@/utilities/GetAPI";
-import selectStyles, { drawerSelectStyles } from "@/utilities/SelectStyle";
 import { useState } from "react";
 import { CiMenuBurger } from "react-icons/ci";
-import { ImCross } from "react-icons/im";
-import Select from "react-select";
 import { PARTNER_COMMISSION_REPORT } from "../report.testid";
 
 export default function PartnerCommissionReport() {
@@ -16,14 +13,16 @@ export default function PartnerCommissionReport() {
     startDate: "",
     endDate: "",
   });
+
   const [selectedOption, setSelectedOption] = useState({
     value: "allTime",
     label: "All Time",
   });
   const [displayCustomFilters, setDisplayCustomFilters] = useState(false);
 
-  const { data, isLoading } = GetAPI("api/v1/admin/admin-reports/partner-commission");
-  console.log("🚀 ~ PartnerCommissionReport ~ data:", data?.data);
+  const { data, isLoading } = GetAPI(
+    "api/v1/admin/admin-reports/partner-commission"
+  );
 
   const options = [
     { value: "allTime", label: "All Time" },
@@ -39,7 +38,7 @@ export default function PartnerCommissionReport() {
 
   const columns = [
     { field: "sl", header: "SL", sort: true },
-    { field: "srName", header: "Supplier Name" },
+    { field: "srName", header: "Local Partner" },
     { field: "ordersPlaced", header: "Orders Placed", sort: true },
     { field: "totalSales", header: "Total Sales", sort: true },
     {
@@ -87,13 +86,15 @@ export default function PartnerCommissionReport() {
     setCustomDates({ ...customDates, [e.target.name]: e.target.value });
   };
   const { toggle, setToggle } = useDataContext();
- 
+
   return isLoading ? (
-      <Loader />
-    ) : (
+    <Loader />
+  ) : (
     <div data-testid={PARTNER_COMMISSION_REPORT.root}>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
-       data-testid={PARTNER_COMMISSION_REPORT.headerBar}>
+      <div
+        className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+        data-testid={PARTNER_COMMISSION_REPORT.headerBar}
+      >
         <div className="flex items-center gap-2">
           <p
             onClick={() => setToggle(!toggle)}
@@ -101,7 +102,10 @@ export default function PartnerCommissionReport() {
           >
             <CiMenuBurger size={20} />
           </p>
-          <h2 className="text-xl font-inter font-semibold" data-testid={PARTNER_COMMISSION_REPORT.title}>
+          <h2
+            className="text-xl font-inter font-semibold"
+            data-testid={PARTNER_COMMISSION_REPORT.title}
+          >
             Partner Profits Report
           </h2>
         </div>
@@ -181,7 +185,9 @@ export default function PartnerCommissionReport() {
             placeholder={"Search ..."}
             pagination={true}
             search={true}
-            rowTestId={(row) => `data-testid-${PARTNER_COMMISSION_REPORT.row(row.id)}`}
+            rowTestId={(row) =>
+              `data-testid-${PARTNER_COMMISSION_REPORT.row(row.id)}`
+            }
           />
         </div>
       </div>

@@ -575,15 +575,7 @@ export default function Leftbar(props) {
                           "Upcoming Orders"
                         )}
                       />
-                      <ListItems
-                        title="Dispatched Orders"
-                        to="/orders/assigned"
-                        count={overAllData?.data?.data?.[1]?.count || ""}
-                        data-testid={LEFTBAR.listItem(
-                          "orderManagement",
-                          "Dispatched Orders"
-                        )}
-                      />
+
                       <ListItems
                         title="Acknowledged Orders"
                         to="/orders/acknowledged"
@@ -593,6 +585,17 @@ export default function Leftbar(props) {
                           "Acknowledged Orders"
                         )}
                       />
+
+                      <ListItems
+                        title="Dispatched Orders"
+                        to="/orders/assigned"
+                        count={overAllData?.data?.data?.[1]?.count || ""}
+                        data-testid={LEFTBAR.listItem(
+                          "orderManagement",
+                          "Dispatched Orders"
+                        )}
+                      />
+
                       <ListItems
                         title="Shipped Orders"
                         to="/orders/shiped"

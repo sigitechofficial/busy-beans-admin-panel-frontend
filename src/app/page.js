@@ -736,86 +736,233 @@ export default function Home() {
             className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mt-12"
             data-testid={DASHBOARD.miniCardsGrid}
           >
+            <h4 className="col-span-4 font-semibold text-xl">
+              Revenue Collected
+            </h4>
+
             <HomeMiniCards
-              title="Total Sale"
+              title="Total Revenue"
               // description="The bookings that are booked and an employee has been assigned to them."
-              total={`$${data?.data?.salesSummary?.sales}`}
+              total={`$${
+                (parseFloat(
+                  data?.data?.revenueSummaryClient?.revenueCollectedClient
+                ) || 0) +
+                parseFloat(
+                  data?.data?.revenueSummaryPartners?.revenueCollectedPartners
+                )
+              }`}
               // Icon={FiBox}
               data-testid="dashboard-total-sales"
             />
             <HomeMiniCards
-              title="Whole Sale"
-              total={`$${data?.data?.salesSummary?.wholesalePriceTotal}`}
-              // Icon={LuPackageCheck}
-              data-testid="dashboard-total-whole-sales"
+              title="Revenue From Client Orders"
+              // description="The bookings that are booked and an employee has been assigned to them."
+              total={`$${
+                data?.data?.revenueSummaryClient?.revenueCollectedClient || 0
+              }`}
+              // Icon={FiBox}
+              data-testid="dashboard-total-sales"
             />
             <HomeMiniCards
-              title="Suppliers Earning"
-              total={`$${data?.data?.revenueSummary?.revenueCollected || 0}`}
-              // Icon={LuPackageX}
-              data-testid="dashboard-supplier-earnings"
+              title="Revenue From Partner Orders"
+              // description="The bookings that are booked and an employee has been assigned to them."
+              total={`$${
+                data?.data?.revenueSummaryPartners?.revenueCollectedPartners ||
+                0
+              }`}
+              // Icon={FiBox}
+              data-testid="dashboard-total-sales"
             />
-            {/* <HomeMiniCards
-            title="Pending Payments"
-            description="The bookings in which minimum 1 service is not assigned to any employee"
-            total={"$2000"}
-            Icon={FiBox}
-          /> */}
+            <div></div>
           </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mt-6">
+            <div className="col-span-4">
+              <h4 className="col-span-4 font-semibold text-xl">
+                Customer Sales Summary
+              </h4>
+            </div>
+            <HomeMiniCards
+              title="Admin's Customer Sales"
+              // description="The bookings in which minimum 1 service is not assigned to any employee"
+              total={data?.data?.clientSalesSummary?.customerPriceTotal || 0}
+              // Icon={FiBox}
+              data-testid="dashboard-total-orders"
+            />
+
+            <HomeMiniCards
+              title="Local Partners Customer Sales"
+              // description="The bookings in which minimum 1 service is not assigned to any employee"
+              total={data?.data?.clientSalesSummary?.wholesalePriceTotal || 0}
+              // Icon={FiBox}
+              data-testid="dashboard-total-orders"
+            />
+
+            <HomeMiniCards
+              title="Total Sales"
+              // description="The bookings in which minimum 1 service is not assigned to any employee"
+              total={parseFloat(data?.data?.clientSalesSummary?.sales || 0)}
+              // Icon={FiBox}
+              data-testid="dashboard-assigned-orders"
+            />
+            <HomeMiniCards
+              title="Total Items"
+              // description="The bookings in which minimum 1 service is not assigned to any employee"
+              total={parseFloat(
+                data?.data?.clientSalesSummary?.numberOfItems || 0
+              )}
+              // Icon={FiBox}
+              data-testid="dashboard-assigned-orders"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mt-6">
+            <div className="col-span-4">
+              <h4 className="col-span-4 font-semibold text-xl">
+                Local Partner Sales Summary
+              </h4>
+            </div>
+            <HomeMiniCards
+              title="Partner Self Order Sales"
+              // description="The bookings in which minimum 1 service is not assigned to any employee"
+              total={data?.data?.partnerSalesSummary?.sales || 0}
+              // Icon={FiBox}
+              data-testid="dashboard-total-orders"
+            />
+
+            <HomeMiniCards
+              title="Total Items"
+              // description="The bookings in which minimum 1 service is not assigned to any employee"
+              total={data?.data?.partnerSalesSummary?.numberOfItems || 0}
+              // Icon={FiBox}
+              data-testid="dashboard-total-orders"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mt-6">
+            <div className="col-span-4">
+              <h4 className="col-span-4 font-semibold text-xl">
+                Customer Orders Summary
+              </h4>
+            </div>
             <HomeMiniCards
               title="Total Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
-              total={data?.data?.ordersSummary?.orderPlaced}
+              total={data?.data?.clientOrdersSummary?.orderPlaced}
               // Icon={FiBox}
               data-testid="dashboard-total-orders"
             />
             <HomeMiniCards
               title="Assigned Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
-              total={data?.data?.ordersSummary?.assignedToSupplier}
+              total={data?.data?.clientOrdersSummary?.assignedToSupplier}
               // Icon={FiBox}
               data-testid="dashboard-assigned-orders"
             />
             <HomeMiniCards
               title="Acknowledged Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
-              total={data?.data?.ordersSummary?.supplierAcknowledged}
+              total={data?.data?.clientOrdersSummary?.supplierAcknowledged}
               // Icon={FiBox}
               data-testid="dashboard-acknowledged-orders"
             />
-            <HomeMiniCards
+            {/* <HomeMiniCards
               title="Dispatched Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
               total={data?.data?.ordersSummary?.dispatchedOrders}
               // Icon={FiBox}
               data-testid="dashboard-dispatched-orders"
-            />
+            /> */}
             <HomeMiniCards
-              title="Delivered Orders"
+              title="Dispatched Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
-              total={data?.data?.ordersSummary?.deliveredOrders}
+              total={data?.data?.clientOrdersSummary?.dispatchedOrders}
               // Icon={FiBox}
               data-testid="dashboard-delivered-orders"
             />
             <HomeMiniCards
               title="Cancelled Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
-              total={data?.data?.ordersSummary?.CanceledOrders}
+              total={data?.data?.clientOrdersSummary?.CanceledOrders}
               // Icon={FiBox}
               data-testid="dashboard-cancelled-orders"
             />
             <HomeMiniCards
               title="Unpaid Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
-              total={data?.data?.ordersSummary?.paymentPending}
+              total={data?.data?.clientOrdersSummary?.paymentPending}
               // Icon={FiBox}
               data-testid="dashboard-unpaid-orders"
             />
             <HomeMiniCards
               title="Paid Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
-              total={data?.data?.ordersSummary?.paymentDone}
+              total={data?.data?.clientOrdersSummary?.paymentDone}
+              // Icon={FiBox}
+              data-testid="dashboard-paid-orders"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mt-6">
+            <div className="col-span-4">
+              <h4 className="col-span-4 font-semibold text-xl">
+                Local Partners Order Summary
+              </h4>
+            </div>
+
+            <HomeMiniCards
+              title="Total Orders"
+              // description="The bookings in which minimum 1 service is not assigned to any employee"
+              total={data?.data?.partnersOrdersSummary?.orderPlaced}
+              // Icon={FiBox}
+              data-testid="dashboard-total-orders"
+            />
+            <HomeMiniCards
+              title="Assigned Orders"
+              // description="The bookings in which minimum 1 service is not assigned to any employee"
+              total={data?.data?.partnersOrdersSummary?.assignedToSupplier}
+              // Icon={FiBox}
+              data-testid="dashboard-assigned-orders"
+            />
+            <HomeMiniCards
+              title="Acknowledged Orders"
+              // description="The bookings in which minimum 1 service is not assigned to any employee"
+              total={data?.data?.partnersOrdersSummary?.supplierAcknowledged}
+              // Icon={FiBox}
+              data-testid="dashboard-acknowledged-orders"
+            />
+            {/* <HomeMiniCards
+              title="Dispatched Orders"
+              // description="The bookings in which minimum 1 service is not assigned to any employee"
+              total={data?.data?.ordersSummary?.dispatchedOrders}
+              // Icon={FiBox}
+              data-testid="dashboard-dispatched-orders"
+            /> */}
+            <HomeMiniCards
+              title="Dispatched Orders"
+              // description="The bookings in which minimum 1 service is not assigned to any employee"
+              total={data?.data?.partnersOrdersSummary?.dispatchedOrders}
+              // Icon={FiBox}
+              data-testid="dashboard-delivered-orders"
+            />
+            <HomeMiniCards
+              title="Cancelled Orders"
+              // description="The bookings in which minimum 1 service is not assigned to any employee"
+              total={data?.data?.partnersOrdersSummary?.CanceledOrders}
+              // Icon={FiBox}
+              data-testid="dashboard-cancelled-orders"
+            />
+            <HomeMiniCards
+              title="Unpaid Orders"
+              // description="The bookings in which minimum 1 service is not assigned to any employee"
+              total={data?.data?.partnersOrdersSummary?.paymentPending}
+              // Icon={FiBox}
+              data-testid="dashboard-unpaid-orders"
+            />
+            <HomeMiniCards
+              title="Paid Orders"
+              // description="The bookings in which minimum 1 service is not assigned to any employee"
+              total={data?.data?.partnersOrdersSummary?.paymentDone}
               // Icon={FiBox}
               data-testid="dashboard-paid-orders"
             />
@@ -973,6 +1120,7 @@ export default function Home() {
               iconBg="bg-white"
               data-testid="dashboard-total-whole-sales-card"
             />
+
             <HomeCards
               currecncyunit={"$"}
               title="Revenue Collected"

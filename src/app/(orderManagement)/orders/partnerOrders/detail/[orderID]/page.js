@@ -500,30 +500,37 @@ export default function OrderDetail() {
                   </button>
                 </li>
               )}
-            <li>
-              {hasPermission("invoice_update") && (
+            {!data?.data?.order.selfOrder && (
+              <li>
+                {hasPermission("invoice_update") && (
+                  <button
+                    type="button"
+                    disabled={data?.data?.order?.statusId === 6 ? true : false}
+                    className="disabled:cursor-not-allowed"
+                    onClick={() =>
+                      handleSendInvoice(data?.data?.order?.statusId)
+                    }
+                    data-testid={ORDER_DETAIL.sendInvoiceBtn}
+                  >
+                    {data?.data?.order?.invoiceDate
+                      ? "Invoice reminder"
+                      : "Send Invoices"}
+                  </button>
+                )}
+              </li>
+            )}
+
+            {!data?.data?.order.selfOrder && (
+              <li>
                 <button
+                  onClick={() => router.push(`${pathname}/invoice`)}
                   type="button"
-                  disabled={data?.data?.order?.statusId === 6 ? true : false}
-                  className="disabled:cursor-not-allowed"
-                  onClick={() => handleSendInvoice(data?.data?.order?.statusId)}
-                  data-testid={ORDER_DETAIL.sendInvoiceBtn}
+                  data-testid={ORDER_DETAIL.viewPdfBtn}
                 >
-                  {data?.data?.order?.invoiceDate
-                    ? "Invoice reminder"
-                    : "Send Invoice"}
+                  View PDF
                 </button>
-              )}
-            </li>
-            <li>
-              <button
-                onClick={() => router.push(`${pathname}/invoice`)}
-                type="button"
-                data-testid={ORDER_DETAIL.viewPdfBtn}
-              >
-                View PDF
-              </button>
-            </li>
+              </li>
+            )}
           </ul>
         )}
       </div>

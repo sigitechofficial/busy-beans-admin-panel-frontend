@@ -464,6 +464,8 @@ export default function Leftbar(props) {
                     <ListItems title="Create Order" to="/orders/create" />
                   )}
 
+                  <ListItems title="Emails" to="/orders/emails" />
+
                   <ListHead
                     title="Partner Orders"
                     Icon={MdStore}
@@ -758,37 +760,42 @@ export default function Leftbar(props) {
               </>
             )}
 
-          {/* {hasPermission("subscription_view") && (
-          <ListHead
-            title="Machine Subscriptions"
-            active={pathname === "/subscription"}
-            data-testid={LEFTBAR.subscriptionManagementSection}
-            Icon={MdCoffeeMaker}
-            Angle={
-              active?.subscription?.tab === "subscription" &&
-              active?.subscription?.status
-                ? FaAngleUp
-                : FaAngleDown
-            }
-            onClick={() =>
-              handleActive(
-                "subscription",
+          {hasPermission("subscription_view") && (
+            <ListHead
+              title="Machine Subscriptions"
+              active={pathname === "/subscription"}
+              data-testid={LEFTBAR.subscriptionManagementSection}
+              Icon={MdCoffeeMaker}
+              Angle={
+                active?.subscription?.tab === "subscription" &&
                 active?.subscription?.status
-              )
-            }
-          /> )}
+                  ? FaAngleUp
+                  : FaAngleDown
+              }
+              onClick={() =>
+                handleActive("subscription", active?.subscription?.status)
+              }
+            />
+          )}
 
           {active?.subscription?.tab === "subscription" &&
             active?.subscription?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  <ListItems title="Subscription" to="/subscription" data-testid={LEFTBAR.listItem("subscription", "Subscription")} />
-                  <ListItems title="Requests" to="/subscription-requests" data-testid={LEFTBAR.listItem("subscription-requests", "Requests")} />
-                  <ListItems title="Add-Ons" to="/add-ons" data-testid={LEFTBAR.listItem("add-ons", "Add-Ons")} />
+                  <ListItems
+                    title="Subscription"
+                    to="/subscription"
+                    data-testid={LEFTBAR.listItem(
+                      "subscription",
+                      "Subscription"
+                    )}
+                  />
+                  {/* <ListItems title="Requests" to="/subscription-requests" data-testid={LEFTBAR.listItem("subscription-requests", "Requests")} /> */}
+                  {/* <ListItems title="Add-Ons" to="/add-ons" data-testid={LEFTBAR.listItem("add-ons", "Add-Ons")} /> */}
                 </div>
                 <hr className="w-full" />
               </>
-            )} */}
+            )}
 
           {hasPermission("invoice_view") && (
             <ListHead

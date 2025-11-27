@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Dialog } from "primereact/dialog";
 import Select from "react-select";
 import { LuImageUp } from "react-icons/lu";
-import MyDataTable from "@/components/ui/MyDataTable";
 import { FaEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import Loader from "@/components/ui/Loader";
@@ -21,21 +20,21 @@ import { BASE_URL } from "@/utilities/URL";
 import { FaPeopleGroup } from "react-icons/fa6";
 
 export default function MachineSubscriptions() {
-  const { data, reFetch } = GetAPI("api/v1/admin/category");
-  const { machinesData } = GetAPI(`api/v1/admin/machines`);
+  const { data, reFetch } = GetAPI("api/v1/admin/coffee-machine");
+  // const { machinesData } = GetAPI(`api/v1/admin/machines`);
   const list = data?.data?.data ?? [];
-
   const [modal, setModal] = useState("");
   const [loading, setLoading] = useState("");
   const [machineId, setMachineId] = useState("");
   const [preview, setPreview] = useState("");
 
   const [form, setForm] = useState({
-    machineType: null,
-    planName: null,
-    includes: "",
+    name: "",
+    tag: "",
+    type: "",
+    desc: "",
     price: "",
-    officeSize: "",
+    uptoEmployees: "",
     image: "",
   });
 
@@ -106,25 +105,29 @@ export default function MachineSubscriptions() {
 
   const openEdit = async (id) => {
     setLoading("prefill");
+
     try {
-      const res = await fetch(`${BASE_URL}api/v1/admin/machines/${id}`, {
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch(`${BASE_URL}api/v1/admin/coffee-machine/${id}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
         credentials: "include",
       });
+
       const json = await res.json();
-      const m = json?.data || {};
+      const m = json?.data?.data || {};
+
       setForm({
-        machineType: m?.machineType
-          ? { value: m.machineType, label: m.machineTypeLabel ?? m.machineType }
-          : null,
-        planName: m?.planName
-          ? { value: m.planName, label: m.planNameLabel ?? m.planName }
-          : null,
-        includes: m?.includes ?? "",
+        name: m?.name ?? "",
+        tag: m?.tag ?? "",
+        type: m?.type ? { label: m?.type, name: m?.type } : "",
+        desc: m?.desc ?? "",
         price: m?.price ?? "",
-        officeSize: m?.officeSize ?? "",
+        uptoEmployees: m?.uptoEmployees ?? "",
         image: m?.image ?? "",
       });
+
       setPreview(m?.image ? BASE_URL + m.image : "");
       setMachineId(m?.id ?? "");
       setModal("edit");
@@ -142,24 +145,31 @@ export default function MachineSubscriptions() {
 
   const buildFD = () => {
     const fd = new FormData();
-    fd.append("machineType", form?.machineType?.value ?? "");
-    fd.append("planName", form?.planName?.value ?? "");
-    fd.append("includes", form?.includes ?? "");
-    fd.append("price", String(form?.price ?? ""));
-    fd.append("officeSize", String(form?.officeSize ?? ""));
-    if (form?.image instanceof File) fd.append("image", form.image);
+    fd.append("name", form.name);
+    fd.append("tag", form.tag);
+    fd.append("type", form.type.label);
+    fd.append("desc", form.desc);
+    fd.append("price", String(form.price));
+    fd.append("uptoEmployees", String(form.uptoEmployees));
+
+    if (form.image instanceof File) {
+      fd.append("image", form.image);
+    }
+
     return fd;
   };
 
   const reset = () => {
     setForm({
-      machineType: null,
-      planName: null,
-      includes: "",
+      name: "",
+      tag: "",
+      type: "",
+      desc: "",
       price: "",
-      officeSize: "",
+      uptoEmployees: "",
       image: "",
     });
+
     setPreview("");
     setMachineId("");
     setModal("");
@@ -167,33 +177,46 @@ export default function MachineSubscriptions() {
 
   const submit = async (e) => {
     e.preventDefault();
-    if (!form.machineType || !form.planName || !String(form.price).trim()) {
-      info_toaster("Machine Type, Plan and Price are required");
-      return;
+
+    if (modal !== "delete") {
+      if (
+        !form.name.trim() ||
+        !form.type.label.trim() ||
+        !String(form.price).trim()
+      ) {
+        info_toaster("Name, Type, and Price are required");
+        return;
+      }
     }
+
     setLoading(modal);
+
     try {
       if (modal === "add") {
-        const res = await PostAPI("api/v1/admin/machines", buildFD());
+        const res = await PostAPI("api/v1/admin/coffee-machine", buildFD());
         if (res?.data?.status === "success") {
-          success_toaster("Machine added");
+          success_toaster("Machine Added");
           reset();
           reFetch();
         }
-      } else if (modal === "edit") {
+      }
+
+      if (modal === "edit") {
         const res = await PatchAPI(
-          `api/v1/admin/machines/${machineId}`,
+          `api/v1/admin/coffee-machine/${machineId}`,
           buildFD()
         );
         if (res?.data?.status === "success") {
-          success_toaster("Machine updated");
+          success_toaster("Machine Updated");
           reset();
           reFetch();
         }
-      } else if (modal === "delete") {
-        const res = await DeleteAPI(`api/v1/admin/machines/${machineId}`);
+      }
+
+      if (modal === "delete") {
+        const res = await DeleteAPI(`api/v1/admin/coffee-machine/${machineId}`);
         if (res?.data?.status === "success") {
-          success_toaster("Machine deleted");
+          success_toaster("Machine Deleted");
           reset();
           reFetch();
         }
@@ -237,7 +260,7 @@ export default function MachineSubscriptions() {
           <ManagementTab title="Total Machines" desc={list.length} />
         </div>
 
-        <div className="w-full mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="w-full mx-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
           {list?.map((machine) => (
             <div
               key={machine?.id}
@@ -246,6 +269,7 @@ export default function MachineSubscriptions() {
               <span
                 onClick={() => {
                   setModal("delete");
+                  setMachineId(machine?.id);
                 }}
                 className="absolute top-3 right-3 size-8 rounded-full bg-theme cursor-pointer opacity-0 duration-300 transition-all group-hover:opacity-100 flex justify-center items-center"
               >
@@ -255,27 +279,34 @@ export default function MachineSubscriptions() {
               <div className="text-center">
                 <div className="bg-[#fef1d8] rounded-t-lg overflow-hidden">
                   <img
-                    src={machine?.image || "/images/coffeemachine.png"}
-                    alt={machine?.machineTypeLabel}
+                    src={
+                      BASE_URL + machine?.image || "/images/coffeemachine.png"
+                    }
+                    alt={machine?.name}
                     className="h-[240px] object-contain mx-auto"
                   />
                 </div>
 
                 <div className="p-5 space-y-3">
-                  <h3 className="text-2xl font-semibold">Drip Coffee</h3>
-                  <p className="text-lg">Drip Starter</p>
-                  <p className="text-sm px-4">
-                    Equipment, quarterly checkups, annual service, email
-                    support, 10% off parts
+                  <h3 className="text-2xl font-semibold line-clamp-1">
+                    {machine?.name}
+                  </h3>
+
+                  <p className="text-lg">{machine?.type}</p>
+
+                  <p className="text-sm px-4 h-20 flex justify-center line-clamp-4 overflow-ellipsis">
+                    {machine?.desc}
                   </p>
-                  <div className="text-xl font-bold">{`$${machine?.price}/month`}</div>
+
+                  <div className="text-xl font-bold">{`$${machine?.price}/${machine?.pricePer}`}</div>
+
                   <div className="mt-4 text-center">
                     <div className="flex justify-center">
                       <FaPeopleGroup size={35} />
                     </div>
 
                     <p className="text-sm text-gray-500">
-                      Up to {machine?.employeeRange} employees
+                      Up to {machine?.uptoEmployees} employees
                     </p>
 
                     <div className="flex items-center gap-x-3">
@@ -349,10 +380,23 @@ export default function MachineSubscriptions() {
                 </button>
 
                 <div className="space-y-2">
+                  <label className="font-medium">Machine Name*</label>
+                  <input
+                    type="text"
+                    value={form.name}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, name: e.target.value }))
+                    }
+                    placeholder="Type Name.."
+                    className="border rounded px-3 py-3 w-full"
+                  />
+                </div>
+
+                <div className="space-y-2">
                   <label className="font-medium">Machine Type*</label>
                   <Select
-                    value={form.machineType}
-                    onChange={(v) => setForm((p) => ({ ...p, machineType: v }))}
+                    value={form.type}
+                    onChange={(v) => setForm((p) => ({ ...p, type: v }))}
                     options={machineTypeOptions}
                     styles={selectStyles2}
                     placeholder="Drip coffee"
@@ -360,6 +404,19 @@ export default function MachineSubscriptions() {
                 </div>
 
                 <div className="space-y-2">
+                  <label className="font-medium">Tag*</label>
+                  <input
+                    type="text"
+                    value={form.tag}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, tag: e.target.value }))
+                    }
+                    placeholder="Type Name.."
+                    className="border rounded px-3 py-3 w-full"
+                  />
+                </div>
+
+                {/* <div className="space-y-2">
                   <label className="font-medium">Plan Name*</label>
                   <Select
                     value={form.planName}
@@ -368,18 +425,18 @@ export default function MachineSubscriptions() {
                     styles={selectStyles2}
                     placeholder="Drip Starter"
                   />
-                </div>
+                </div> */}
 
                 <div className="space-y-2">
                   <label className="font-medium">What’s included</label>
-                  <input
+                  <textarea
                     type="text"
-                    value={form.includes}
+                    value={form.desc}
                     onChange={(e) =>
-                      setForm((p) => ({ ...p, includes: e.target.value }))
+                      setForm((p) => ({ ...p, desc: e.target.value }))
                     }
                     placeholder="Add details"
-                    className="border rounded px-3 py-3 w-full"
+                    className="border rounded px-3 py-3 w-full resize-none"
                   />
                 </div>
 
@@ -387,7 +444,7 @@ export default function MachineSubscriptions() {
                   <div className="space-y-2">
                     <label className="font-medium">Price* (per month)</label>
                     <input
-                      type="text"
+                      type="number"
                       value={form.price}
                       onChange={(e) =>
                         setForm((p) => ({ ...p, price: e.target.value }))
@@ -399,10 +456,13 @@ export default function MachineSubscriptions() {
                   <div className="space-y-2">
                     <label className="font-medium">Office size</label>
                     <input
-                      type="text"
-                      value={form.officeSize}
+                      type="number"
+                      value={form.uptoEmployees}
                       onChange={(e) =>
-                        setForm((p) => ({ ...p, officeSize: e.target.value }))
+                        setForm((p) => ({
+                          ...p,
+                          uptoEmployees: e.target.value,
+                        }))
                       }
                       placeholder="25"
                       className="border rounded px-3 py-3 w-full"

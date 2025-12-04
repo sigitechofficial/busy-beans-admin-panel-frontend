@@ -25,12 +25,12 @@ export default function Page() {
   ];
 
   const emailTypeOptions = [
-    { label: "Order Creation", value: "order-creation" },
+    { label: "Order Confirmation", value: "order-confirmation" },
     { label: "Order Dispatch", value: "order-dispatch" },
-    { label: "Invoice Sent", value: "invoice-sent" },
+    { label: "Send Invoice", value: "invoice-sent" },
     { label: "Invoice Reminder", value: "invoice-reminder" },
     { label: "Paid Invoice", value: "paid-invoice" },
-    { label: "Order Ship Supplier", value: "order-ship-supplier" },
+    // { label: "Order Ship Supplier", value: "order-ship-supplier" },
     { label: "Order Shipped", value: "order-shipped" },
   ];
 

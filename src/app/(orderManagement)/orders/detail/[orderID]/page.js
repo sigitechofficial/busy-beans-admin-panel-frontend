@@ -16,7 +16,7 @@ import { selectStyles2 } from "@/utilities/SelectStyle";
 import { error_toaster, success_toaster } from "@/utilities/Toaster";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { Dialog } from "primereact/dialog";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Select from "react-select";
 import { CgNotes } from "react-icons/cg";
 import { LuClipboardList } from "react-icons/lu";
@@ -27,6 +27,7 @@ import { useDataContext } from "@/utilities/DataContext";
 import { hasPermission } from "@/utilities/Permission";
 import { ORDER_DETAIL } from "../../orders.testids";
 import { FiCopy } from "react-icons/fi";
+import { QuickbooksPingCheck } from "@/utilities/constants";
 
 export default function OrderDetail() {
   if (typeof window !== "undefined") {
@@ -458,6 +459,10 @@ export default function OrderDetail() {
   };
 
   const { toggle, setToggle } = useDataContext();
+
+  useEffect(() => {
+    QuickbooksPingCheck();
+  }, []);
 
   return isLoading ? (
     <Loader />

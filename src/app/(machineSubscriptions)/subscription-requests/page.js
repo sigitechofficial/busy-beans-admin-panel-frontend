@@ -14,14 +14,20 @@ export default function SubscriptionRequests() {
   const router = useRouter();
   const { toggle, setToggle } = useDataContext();
 
-  const { data } = GetAPI("api/v1/admin/subscription-requests", "subscription-requests");
-  const list = data?.data?.data ?? [];
+  const { data } = GetAPI("api/v1/admin/coffee-machine/requests");
+  const list = data?.data?.result ?? [];
 
   const stats = useMemo(() => {
     const total = list.length || 0;
-    const pending = list.filter((x) => (x?.status || "").toLowerCase() === "pending").length;
-    const approved = list.filter((x) => (x?.status || "").toLowerCase() === "approved").length;
-    const cancelled = list.filter((x) => (x?.status || "").toLowerCase() === "cancelled").length;
+    const pending = list.filter(
+      (x) => (x?.status || "").toLowerCase() === "pending"
+    ).length;
+    const approved = list.filter(
+      (x) => (x?.status || "").toLowerCase() === "approved"
+    ).length;
+    const cancelled = list.filter(
+      (x) => (x?.status || "").toLowerCase() === "cancelled"
+    ).length;
     const pendingPct = total ? Math.round((pending / total) * 100) : 0;
     return { total, pending, pendingPct, approved, cancelled };
   }, [list]);
@@ -43,7 +49,7 @@ export default function SubscriptionRequests() {
     const statusBadge =
       s === "approved"
         ? "bg-green-100 text-green-700"
-        : s === "cancelled"
+        : s === "reject"
         ? "bg-red-100 text-red-600"
         : "bg-yellow-100 text-yellow-700";
 
@@ -51,27 +57,31 @@ export default function SubscriptionRequests() {
       id: r?.id ?? i + 1,
       sl: String(i + 1).padStart(2, "0"),
       requestId: r?.requestId ?? r?.id ?? "-",
-      companyName: r?.companyName ?? "-",
-      email: r?.email ?? "-",
-      phone: r?.phoneNumber ?? r?.phone ?? "-",
-      requestDate: r?.requestedOn ? dayjs(r.requestedOn).format("YYYY-MM-DD") : "-",
+      companyName: r?.company ?? "-",
+      email: r?.contactEmail ?? "-",
+      phone:  r?.contactPhone,
+      requestDate: r?.createdAt
+        ? dayjs(r.requestedOn).format("YYYY-MM-DD")
+        : "-",
       status: (
-        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusBadge}`}>
+        <span
+          className={`px-3 py-1 rounded-full text-xs font-semibold ${statusBadge}`}
+        >
           {s.charAt(0).toUpperCase() + s.slice(1)}
         </span>
       ),
       actions: (
         <div className="flex items-center gap-1">
           <span className="text-gray-600 text-sm">Pending</span>
-          <span className="inline-block rotate-90">⌄</span>
+          <span className="inline-block rotate-90"></span>
         </div>
       ),
       cta: (
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            router.push(`/subscriptions/buy/${r?.id ?? ""}`);
-          }}
+          // onClick={(e) => {
+          //   e.stopPropagation();
+          //   router.push(`/subscriptions/buy/${r?.id ?? ""}`);
+          // }}
           className="px-3 py-2 rounded bg-[#8E6C53] text-white text-sm"
         >
           Buy Subscription
@@ -87,10 +97,15 @@ export default function SubscriptionRequests() {
       {/* Header */}
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <div className="flex items-center gap-2">
-          <p onClick={() => setToggle(!toggle)} className="cursor-pointer md:hidden">
+          <p
+            onClick={() => setToggle(!toggle)}
+            className="cursor-pointer md:hidden"
+          >
             <CiMenuBurger size={20} />
           </p>
-          <h2 className="text-xl font-inter font-semibold">Subscription Requests</h2>
+          <h2 className="text-xl font-inter font-semibold">
+            Subscription Requests
+          </h2>
         </div>
       </div>
 
@@ -98,7 +113,10 @@ export default function SubscriptionRequests() {
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
           <ManagementTab title="Total Requests" desc={stats.total} />
-          <ManagementTab title="Pending Requests" desc={`${stats.pendingPct}%`} />
+          <ManagementTab
+            title="Pending Requests"
+            desc={`${stats.pendingPct}%`}
+          />
           <ManagementTab title="Approved Requests" desc={stats.approved} />
           <ManagementTab title="Cancelled Requests" desc={stats.cancelled} />
         </div>

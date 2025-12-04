@@ -3,7 +3,7 @@ export default function HomeMiniCards({ title, total, description, ...rest }) {
     <div
       {...rest}
       title={description}
-      className="border border-tabBorderColor border-opacity-60 bg-homeCards p-2.5 2xl:p-5 shadow-tabShadow rounded-xl"
+      className="border border-tabBorderColor border-opacity-60 bg-homeCards p-2.5 2xl:p-5 shadow-tabShadow rounded-xl overflow-hidden"
     >
       <div className="flex justify-between items-start gap-y-4 gap-x-2">
         {/* <div className="flex justify-center items-center gap-x-2"> */}
@@ -12,7 +12,7 @@ export default function HomeMiniCards({ title, total, description, ...rest }) {
           {title}
         </h2>
         {/* </div> */}
-        <div className="text-theme 2xl:text-lg font-inter font-semibold">
+        <div className="text-theme 2xl:text-lg font-inter font-semibold break-all">
           {total}
         </div>
       </div>

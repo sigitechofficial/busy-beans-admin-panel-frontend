@@ -155,6 +155,7 @@ export default function Leftbar(props) {
       status: false,
     },
     partnerOrders: { tab: "", status: false },
+    quickbookOrders: { tab: "", status: false },
   });
 
   const handleActive = (name, status) => {
@@ -179,6 +180,9 @@ export default function Leftbar(props) {
 
   const handlePartnerOrdersToggle = () => {
     handleActive("partnerOrders", active?.partnerOrders?.status);
+  };
+  const handleQuickbooksOrdersToggle = () => {
+    handleActive("quickbookOrders", active?.quickbookOrders?.status);
   };
   const handleCustomerOrdersToggle = () => {
     handleActive("customerOrder", active?.customerOrder?.status);
@@ -465,6 +469,33 @@ export default function Leftbar(props) {
                   )}
 
                   <ListItems title="Emails" to="/orders/emails" />
+
+                  <ListHead
+                    title="Quickbooks Invoices"
+                    Icon={MdStore}
+                    active={pathname.includes("/orders/quickbooks")}
+                    Angle={FaAngleRight}
+                    onClick={handleQuickbooksOrdersToggle}
+                    status={active?.quickbookOrders?.status}
+                  />
+
+                  {active?.quickbookOrders?.status && (
+                    <div className="m-2 relative space-y-1">
+                      <ListItems
+                        title="Partner Invoices"
+                        to="/orders/quickbooks/partner"
+                        data-testid={LEFTBAR.listItem("partner", "Orders")}
+                      />
+
+                      <ListItems
+                        title="Customer Invoices"
+                        to="/orders/quickbooks/customer"
+                        data-testid={LEFTBAR.listItem("customer", "Orders")}
+                      />
+
+                      <hr className="w-full" />
+                    </div>
+                  )}
 
                   <ListHead
                     title="Partner Orders"
@@ -763,7 +794,7 @@ export default function Leftbar(props) {
           {hasPermission("subscription_view") && (
             <ListHead
               title="Machine Subscriptions"
-              active={pathname === "/subscription"}
+              active={pathname.includes("/leads")}
               data-testid={LEFTBAR.subscriptionManagementSection}
               Icon={MdCoffeeMaker}
               Angle={
@@ -790,7 +821,22 @@ export default function Leftbar(props) {
                       "Subscription"
                     )}
                   />
-                  {/* <ListItems title="Requests" to="/subscription-requests" data-testid={LEFTBAR.listItem("subscription-requests", "Requests")} /> */}
+                  {/* <ListItems
+                    title="Requests"
+                    to="/subscription-requests"
+                    data-testid={LEFTBAR.listItem(
+                      "subscription-requests",
+                      "Requests"
+                    )}
+                  /> */}
+                  <ListItems
+                    title="Leads"
+                    to="/leads"
+                    data-testid={LEFTBAR.listItem(
+                      "machineSubscriptions",
+                      "Leads"
+                    )}
+                  />
                   {/* <ListItems title="Add-Ons" to="/add-ons" data-testid={LEFTBAR.listItem("add-ons", "Add-Ons")} /> */}
                 </div>
                 <hr className="w-full" />
@@ -1642,7 +1688,32 @@ export default function Leftbar(props) {
                     />
                   )}
 
-                  <hr className="w-full" />
+                  <ListHead
+                    title="Quickbooks Invoices"
+                    Icon={MdStore}
+                    active={pathname.includes("/orders/quickbooks")}
+                    Angle={FaAngleRight}
+                    onClick={handleQuickbooksOrdersToggle}
+                    status={active?.quickbookOrders?.status}
+                  />
+
+                  {active?.quickbookOrders?.status && (
+                    <div className="m-2 relative space-y-1">
+                      {/* <ListItems
+                        title="Partner Orders"
+                        to="/orders/quickbooks/partner"
+                        data-testid={LEFTBAR.listItem("partner", "Orders")}
+                      /> */}
+
+                      <ListItems
+                        title="Customer Invoices"
+                        to="/orders/quickbooks/customer"
+                        data-testid={LEFTBAR.listItem("customer", "Orders")}
+                      />
+
+                      <hr className="w-full" />
+                    </div>
+                  )}
 
                   <ListHead
                     title="Partner Orders"

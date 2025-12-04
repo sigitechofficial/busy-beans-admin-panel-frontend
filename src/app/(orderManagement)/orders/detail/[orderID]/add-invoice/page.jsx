@@ -16,6 +16,7 @@ import { IoIosSearch } from "react-icons/io";
 import { IoCardSharp, IoSearch } from "react-icons/io5";
 import Select from "react-select";
 import { ORDER_ADD_INVOICE } from "../../../orders.testids";
+import { QuickbooksPingCheck } from "@/utilities/constants";
 
 export default function AddInvoice() {
   const router = useRouter();
@@ -26,15 +27,19 @@ export default function AddInvoice() {
     show: false,
   });
   const { orderID } = useParams();
-  const { data, reFetch, isLoading } = GetAPI(`api/v1/admin/order-details/${orderID}`);
+  const { data, reFetch, isLoading } = GetAPI(
+    `api/v1/admin/order-details/${orderID}`
+  );
   const userId = data?.data?.order?.user?.id ?? null;
   const [cardsUrl, setCardsUrl] = useState(null);
   useEffect(() => {
-    if (userId) setCardsUrl(`api/v1/admin/customer-management/payment-cards/${userId}`);
+    if (userId)
+      setCardsUrl(`api/v1/admin/customer-management/payment-cards/${userId}`);
   }, [userId]);
   const { data: paymentCardsRes, loading: cardsLoading } = GetAPI(cardsUrl);
   const { data: shippingCharges } = GetAPI(
-    "api/v1/admin/shipping-charges-list", 'charges'
+    "api/v1/admin/shipping-charges-list",
+    "charges"
   );
   const { data: category } = GetAPI(`api/v1/admin/category`);
   const [modal, setModal] = useState(false);
@@ -51,10 +56,10 @@ export default function AddInvoice() {
     : `api/v1/admin/product`;
   const { data: ProductList, reFetch: ProductRefetch } = GetAPI(url);
   const savedCards =
-  paymentCardsRes?.data?.data?.cards ??
-  paymentCardsRes?.data?.cards ??
-  paymentCardsRes?.cards ??
-  [];
+    paymentCardsRes?.data?.data?.cards ??
+    paymentCardsRes?.data?.cards ??
+    paymentCardsRes?.cards ??
+    [];
 
   const [selectedCardId, setSelectedCardId] = useState(null);
   useEffect(() => {
@@ -117,7 +122,8 @@ export default function AddInvoice() {
         ...prev,
         invoiceNumber: data?.data?.order?.invoiceNumber || "",
         poNumber: data?.data?.order?.poNumber || "",
-        invoiceDate: prev?.invoiceDate || data?.data?.order?.invoiceDate || getToday(),
+        invoiceDate:
+          prev?.invoiceDate || data?.data?.order?.invoiceDate || getToday(),
         dueDate: prev?.dueDate || getDueDate(),
         note: data?.data?.order?.note,
         // shippingCharges: data?.data?.order?.shippingCharges,
@@ -127,17 +133,17 @@ export default function AddInvoice() {
         shippingCharges: sc,
         // You can set invoiceDate, dueDate, terms, etc. from API if available
       }));
-      setInitialShippingCharges(sc); 
+      setInitialShippingCharges(sc);
       setItems(
         (data?.data?.order?.items || [])
-        .filter((item) => item.type === "product")
-        .map((item) => ({
-          ...item,
-          checked: true,
-          qty: item.qty || 1,
-          weight: item?.singleUnitWeight,
-          unit: item?.price / item?.qty,
-        }))
+          .filter((item) => item.type === "product")
+          .map((item) => ({
+            ...item,
+            checked: true,
+            qty: item.qty || 1,
+            weight: item?.singleUnitWeight,
+            unit: item?.price / item?.qty,
+          }))
       );
       const chargesFromItems = (data?.data?.order?.items || [])
         .filter((item) => item.type === "charges")
@@ -151,8 +157,8 @@ export default function AddInvoice() {
           checked: true,
         }));
 
-      const chargesFromTypeCharges = (data?.data?.order?.typeCharges || [])
-        .map((ch) => ({
+      const chargesFromTypeCharges = (data?.data?.order?.typeCharges || []).map(
+        (ch) => ({
           ...ch,
           type: "charges",
           code: ch.code || "",
@@ -160,7 +166,8 @@ export default function AddInvoice() {
           qty: ch.qty || 1,
           unit: Number(ch.price) || 0,
           checked: true,
-        }));
+        })
+      );
 
       setExtraCharges([...chargesFromItems, ...chargesFromTypeCharges]);
     }
@@ -186,7 +193,7 @@ export default function AddInvoice() {
   };
 
   const normalizeQty = (rawValue) => {
-    let clean = String(rawValue).replace(/\D/g, ""); 
+    let clean = String(rawValue).replace(/\D/g, "");
     if (clean === "") return "";
     if (clean === "0") return 1;
     return parseInt(clean, 10);
@@ -281,7 +288,7 @@ export default function AddInvoice() {
       }));
     }
   };
-  
+
   // Extra Charge Rows
   const [extraCharges, setExtraCharges] = useState([]);
 
@@ -373,8 +380,8 @@ export default function AddInvoice() {
       .filter((item) => item.checked)
       .reduce((sum, item) => sum + item.qty * item.unit, 0) +
     extraCharges
-    .filter((item) => item.checked)
-    .reduce((sum, item) => sum + item.qty * item.unit, 0) +
+      .filter((item) => item.checked)
+      .reduce((sum, item) => sum + item.qty * item.unit, 0) +
     (manual.show
       ? parseFloat(shippingCharge)
       : parseFloat(invoiceFields?.shippingCharges) || 0);
@@ -421,8 +428,8 @@ export default function AddInvoice() {
           //   id: item.id,
           orderId: item.orderId,
           productId: item.productId,
-          product: item.product ?? item.productName ?? item.name,      
-          productCode: item.productCode ?? item.code, 
+          product: item.product ?? item.productName ?? item.name,
+          productCode: item.productCode ?? item.code,
           qty: item.qty,
           price: String(item.unit),
           discount: item.discount,
@@ -430,8 +437,10 @@ export default function AddInvoice() {
         })),
     ];
     const paymentCardId = invoiceFields.paymentOption ? selectedCardId : null;
-    const norm = v => (v ?? "").toString().trim();
-    const includeShipping = manual.show === false && norm(invoiceFields.shippingCharges) !== norm(initialShippingCharges);
+    const norm = (v) => (v ?? "").toString().trim();
+    const includeShipping =
+      manual.show === false &&
+      norm(invoiceFields.shippingCharges) !== norm(initialShippingCharges);
     // Prepare order object
     const orderObj = {
       invoiceNumber: invoiceFields.invoiceNumber,
@@ -444,12 +453,16 @@ export default function AddInvoice() {
       otherPayment: invoiceFields.otherPayment,
       attemptImmediatePayment: invoiceFields.paymentOption,
       emailInvoiceToCustomer: invoiceFields.emailInvoiceToCustomer,
-      invoiceDate: invoiceFields.emailInvoiceToCustomer ? invoiceFields.invoiceDate : (data?.data?.order?.invoiceDate || null),
+      invoiceDate: invoiceFields.emailInvoiceToCustomer
+        ? invoiceFields.invoiceDate
+        : data?.data?.order?.invoiceDate || null,
       reminder: invoiceFields?.invoicePdf ? true : false,
       // invoiceDate: invoiceFields?.invoiceDate ? undefined : Date.now(),
       // invoiceReminder: invoiceFields?.invoiceDate ? Date.now() : undefined,
       discountPercentage: Number(invoiceFields.discountPercentage || 0),
-      ...(includeShipping ? { shippingCharges: invoiceFields.shippingCharges } : {}),
+      ...(includeShipping
+        ? { shippingCharges: invoiceFields.shippingCharges }
+        : {}),
       paymentCardId: paymentCardId,
     };
     if (data?.data?.order?.invoiceDate) {
@@ -478,12 +491,18 @@ export default function AddInvoice() {
   };
   const { toggle, setToggle } = useDataContext();
 
+  useEffect(() => {
+    QuickbooksPingCheck();
+  }, []);
+
   return isLoading ? (
-      <Loader />
-    ) : (
+    <Loader />
+  ) : (
     <div data-testid={ORDER_ADD_INVOICE.root}>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
-       data-testid={ORDER_ADD_INVOICE.headerBar}>
+      <div
+        className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+        data-testid={ORDER_ADD_INVOICE.headerBar}
+      >
         <div className="text-xl font-inter font-semibold flex items-center gap-x-1">
           <p
             onClick={() => setToggle(!toggle)}
@@ -657,7 +676,7 @@ export default function AddInvoice() {
             />
           </div>
 
-            {/* <div className="flex flex-col gap-y-2">
+          {/* <div className="flex flex-col gap-y-2">
               <label className="text-labelColor font-medium font-satoshi">Discount (%)</label>
               <input
                 type="number"
@@ -673,7 +692,6 @@ export default function AddInvoice() {
                 data-testid={ORDER_ADD_INVOICE.discountPercentageInput ?? 0}
               />
             </div> */}
-
         </div>
 
         <div className="w-full overflow-x-auto">
@@ -713,7 +731,10 @@ export default function AddInvoice() {
             </thead>
             <tbody>
               {items.map((item, itemIdx) => (
-                <tr key={item.id} data-testid={ORDER_ADD_INVOICE.itemRow(item.id)}>
+                <tr
+                  key={item.id}
+                  data-testid={ORDER_ADD_INVOICE.itemRow(item.id)}
+                >
                   <td className="py-2 px-2 border border-gray-200 text-center">
                     <input
                       type="checkbox"
@@ -770,7 +791,10 @@ export default function AddInvoice() {
                 </tr>
               ))}
               {extraRows.map((item, idx) => (
-                <tr key={item.id} data-testid={ORDER_ADD_INVOICE.extraRow(item.id)}>
+                <tr
+                  key={item.id}
+                  data-testid={ORDER_ADD_INVOICE.extraRow(item.id)}
+                >
                   <td className="py-2 px-2 border border-gray-200 text-center">
                     <input
                       type="checkbox"
@@ -839,73 +863,86 @@ export default function AddInvoice() {
                   )}
                 </tr>
               ))}
-                
-                {extraCharges.map((item, idx) => (
-                  <tr key={item.id} data-testid={ORDER_ADD_INVOICE.extraChargeRow(item.id)}>
-                    <td className="py-2 px-2 border border-gray-200 text-center">
-                      <input
-                        type="checkbox"
-                        checked={item.checked}
-                        onChange={(e) => handleChargeRowCheck(idx, e.target.checked)}
-                      />
-                    </td>
-                    <td className="py-2 px-2 border border-gray-200">
-                      <input
-                        type="text"
-                        className="w-full rounded px-1 py-1 border border-gray-200 bg-gray-50 cursor-default select-text focus:outline-none focus:ring-0 focus:border-gray-200"
-                        value={item.code}
-                        readOnly
-                        onChange={(e) => handleChargeInputChange(idx, "code", e.target.value)}
-                        placeholder="Code"
-                      />
-                    </td>
-                    <td className="py-2 px-2 border border-gray-200">
-                      <input
-                        type="text"
-                        className="w-full border rounded px-1 py-1"
-                        value={item.name}
-                        onChange={(e) => handleChargeInputChange(idx, "name", e.target.value)}
-                        placeholder="Name"
-                      />
-                    </td>
-                    <td className="py-2 px-2 text-center border border-gray-200">
-                      <input
-                        type="number"
-                        min={1}
-                        className="w-16 border rounded px-1 py-1 text-center"
-                        value={item.qty}
-                        onWheel={(e) => e.currentTarget.blur()}
-                        onChange={(e) => handleChargeInputChange(idx, "qty", e.target.value)}
-                      />
-                    </td>
-                    <td className="py-2 px-2 border border-gray-200 text-right">
-                      <input
-                        type="number"
-                        min={0}
-                        step="0.01"
-                        className="w-20 border rounded px-1 py-1 text-right"
-                        value={item.unit}
-                        onWheel={(e) => e.currentTarget.blur()}
-                        onChange={(e) => handleChargeInputChange(idx, "unit", e.target.value)}
-                      />
-                    </td>
-                    <td className="py-2 px-2 border border-gray-200 text-right">
-                      ${(item.qty * item.unit).toFixed(2)}
-                    </td>
-                  </tr>
-                ))}
+
+              {extraCharges.map((item, idx) => (
+                <tr
+                  key={item.id}
+                  data-testid={ORDER_ADD_INVOICE.extraChargeRow(item.id)}
+                >
+                  <td className="py-2 px-2 border border-gray-200 text-center">
+                    <input
+                      type="checkbox"
+                      checked={item.checked}
+                      onChange={(e) =>
+                        handleChargeRowCheck(idx, e.target.checked)
+                      }
+                    />
+                  </td>
+                  <td className="py-2 px-2 border border-gray-200">
+                    <input
+                      type="text"
+                      className="w-full rounded px-1 py-1 border border-gray-200 bg-gray-50 cursor-default select-text focus:outline-none focus:ring-0 focus:border-gray-200"
+                      value={item.code}
+                      readOnly
+                      onChange={(e) =>
+                        handleChargeInputChange(idx, "code", e.target.value)
+                      }
+                      placeholder="Code"
+                    />
+                  </td>
+                  <td className="py-2 px-2 border border-gray-200">
+                    <input
+                      type="text"
+                      className="w-full border rounded px-1 py-1"
+                      value={item.name}
+                      onChange={(e) =>
+                        handleChargeInputChange(idx, "name", e.target.value)
+                      }
+                      placeholder="Name"
+                    />
+                  </td>
+                  <td className="py-2 px-2 text-center border border-gray-200">
+                    <input
+                      type="number"
+                      min={1}
+                      className="w-16 border rounded px-1 py-1 text-center"
+                      value={item.qty}
+                      onWheel={(e) => e.currentTarget.blur()}
+                      onChange={(e) =>
+                        handleChargeInputChange(idx, "qty", e.target.value)
+                      }
+                    />
+                  </td>
+                  <td className="py-2 px-2 border border-gray-200 text-right">
+                    <input
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      className="w-20 border rounded px-1 py-1 text-right"
+                      value={item.unit}
+                      onWheel={(e) => e.currentTarget.blur()}
+                      onChange={(e) =>
+                        handleChargeInputChange(idx, "unit", e.target.value)
+                      }
+                    />
+                  </td>
+                  <td className="py-2 px-2 border border-gray-200 text-right">
+                    ${(item.qty * item.unit).toFixed(2)}
+                  </td>
+                </tr>
+              ))}
 
               <tr>
                 <td colSpan={6} className="py-2 px-2 border border-gray-200">
                   <div className="flex items-center gap-2">
-                  <button
-                    className="border px-2 py-2"
-                    // onClick={handleAddExtra}
-                    onClick={() => setModal(true)}
-                    data-testid={ORDER_ADD_INVOICE.addItemBtn}
-                  >
-                    Add Item
-                  </button>
+                    <button
+                      className="border px-2 py-2"
+                      // onClick={handleAddExtra}
+                      onClick={() => setModal(true)}
+                      data-testid={ORDER_ADD_INVOICE.addItemBtn}
+                    >
+                      Add Item
+                    </button>
 
                     <button
                       className="border px-2 py-2"
@@ -917,7 +954,7 @@ export default function AddInvoice() {
                   </div>
                 </td>
               </tr>
-              
+
               <tr data-testid={ORDER_ADD_INVOICE.totalWeightRow}>
                 <td colSpan={4} className="border border-gray-200"></td>
                 <td className="py-2 px-2 text-right font-bold border border-gray-200">
@@ -954,9 +991,12 @@ export default function AddInvoice() {
                         className="w-20 border border-gray-200 rounded px-1 py-1 text-right"
                         value={invoiceFields?.shippingCharges ?? ""}
                         type="text"
-                          onChange={e =>
-                            setInvoiceFields(prev => ({ ...prev, shippingCharges: e.target.value }))
-                          }
+                        onChange={(e) =>
+                          setInvoiceFields((prev) => ({
+                            ...prev,
+                            shippingCharges: e.target.value,
+                          }))
+                        }
                       />
                     ) : shippingCharge ? (
                       "$" + parseFloat(shippingCharge)?.toFixed(2)
@@ -1018,18 +1058,25 @@ export default function AddInvoice() {
           </div> */}
 
           <div className="space-y-2">
-              <p>Payment Options</p>
-              <div className="flex items-center gap-2">
-                <IoCardSharp size={25} />
-                <p>Credit/Debit Card with Stripe</p>
-              </div>
+            <p>Payment Options</p>
+            <div className="flex items-center gap-2">
+              <IoCardSharp size={25} />
+              <p>Credit/Debit Card with Stripe</p>
+            </div>
 
-              {userId && (
-                <div className="ml-5 mt-2 space-y-2">
-                  {cardsLoading && <p className="text-sm text-gray-500">Loading saved cards…</p>}
+            {userId && (
+              <div className="ml-5 mt-2 space-y-2">
+                {cardsLoading && (
+                  <p className="text-sm text-gray-500">Loading saved cards…</p>
+                )}
 
-                  {!cardsLoading && savedCards.length > 0 && savedCards.map((c) => (
-                    <label key={c.id} className="flex items-center gap-2 cursor-pointer">
+                {!cardsLoading &&
+                  savedCards.length > 0 &&
+                  savedCards.map((c) => (
+                    <label
+                      key={c.id}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
                       <input
                         type="radio"
                         name="saved-card"
@@ -1040,42 +1087,50 @@ export default function AddInvoice() {
                         data-testid={ORDER_ADD_INVOICE.savedCardRadio(c.id)}
                       />
                       <span className="text-sm">
-                        {c.brand?.toUpperCase()} •••• {c.last4} (exp {String(c.expMonth).padStart(2, '0')}/{String(c.expYear).slice(-2)})
+                        {c.brand?.toUpperCase()} •••• {c.last4} (exp{" "}
+                        {String(c.expMonth).padStart(2, "0")}/
+                        {String(c.expYear).slice(-2)})
                         {c.name ? ` — ${c.name}` : ""}
                       </span>
                     </label>
                   ))}
 
-                  {!cardsLoading && savedCards.length === 0 && (
-                    <p className="text-sm text-gray-500">No saved cards for this customer.</p>
-                  )}
-                </div>
-              )}
-
-              <div className="flex items-center gap-2 ml-5 mt-2">
-                <input
-                  type="checkbox"
-                  className="size-5"
-                  disabled={!selectedCardId}
-                  checked={invoiceFields.paymentOption}
-                  onChange={(e) => handleInvoiceFieldChange("paymentOption", e.target.checked)}
-                  title={!selectedCardId ? "Select a saved card first" : ""}
-                  data-testid={ORDER_ADD_INVOICE.immediatePaymentCheckbox}
-                />
-                <p className="text-sm">
-                  Attempt immediate payment
-                  {selectedCardId && (
-                    <>
-                      {" "}with{" "}
-                      <strong>
-                        {savedCards.find((c) => c.id === selectedCardId)?.brand} •••• {savedCards.find((c) => c.id === selectedCardId)?.last4}
-                      </strong>
-                    </>
-                  )}
-                </p>
+                {!cardsLoading && savedCards.length === 0 && (
+                  <p className="text-sm text-gray-500">
+                    No saved cards for this customer.
+                  </p>
+                )}
               </div>
+            )}
+
+            <div className="flex items-center gap-2 ml-5 mt-2">
+              <input
+                type="checkbox"
+                className="size-5"
+                disabled={!selectedCardId}
+                checked={invoiceFields.paymentOption}
+                onChange={(e) =>
+                  handleInvoiceFieldChange("paymentOption", e.target.checked)
+                }
+                title={!selectedCardId ? "Select a saved card first" : ""}
+                data-testid={ORDER_ADD_INVOICE.immediatePaymentCheckbox}
+              />
+              <p className="text-sm">
+                Attempt immediate payment
+                {selectedCardId && (
+                  <>
+                    {" "}
+                    with{" "}
+                    <strong>
+                      {savedCards.find((c) => c.id === selectedCardId)?.brand}{" "}
+                      ••••{" "}
+                      {savedCards.find((c) => c.id === selectedCardId)?.last4}
+                    </strong>
+                  </>
+                )}
+              </p>
             </div>
-            
+          </div>
 
           <div className="space-y-2">
             <p>Other Payment Options</p>
@@ -1095,7 +1150,10 @@ export default function AddInvoice() {
               className="size-5"
               checked={invoiceFields.emailInvoiceToCustomer}
               onChange={(e) =>
-                handleInvoiceFieldChange("emailInvoiceToCustomer", e.target.checked)
+                handleInvoiceFieldChange(
+                  "emailInvoiceToCustomer",
+                  e.target.checked
+                )
               }
               data-testid={ORDER_ADD_INVOICE.emailInvoiceCheckbox}
             />

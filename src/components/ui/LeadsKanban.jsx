@@ -1,6 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import LeadCard from "./LeadCard";
+import KanbanColumn from "./KanbanColumn";
 import Select from "react-select";
 import selectStyles from "@/utilities/SelectStyle";
 import { Dialog } from "primereact/dialog";
@@ -13,6 +14,21 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { BASE_URL } from "@/utilities/URL";
 import api from "@/utilities/StatusErrorHandler";
+import { Calendar } from "primereact/calendar";
+import dayjs from "dayjs";
+import isBetween from "dayjs/plugin/isBetween";
+import { MdClose, MdCheck, MdFilterList } from "react-icons/md";
+import {
+  DndContext,
+  DragOverlay,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  closestCorners,
+} from "@dnd-kit/core";
+
+// Extend dayjs with isBetween plugin
+dayjs.extend(isBetween);
 
 const columns = [
   { id: "newEnquiry", title: "New Enquiry" },
@@ -25,6 +41,20 @@ const columns = [
   { id: "lost", title: "Lost" },
 ];
 
+const dateRangeOptions = [
+  { value: "all", label: "All Dates" },
+  { value: "currentYear", label: "Current Year" },
+  { value: "currentMonth", label: "Current Month" },
+  { value: "currentWeek", label: "Current Week" },
+  { value: "lastYear", label: "Last Year" },
+  { value: "last90Days", label: "Last 90 Days" },
+  { value: "last14Days", label: "Last 14 Days" },
+  { value: "lastMonth", label: "Last Month" },
+  { value: "lastWeek", label: "Last Week" }, // Last 7 days
+  { value: "previousWeek", label: "Previous Week" }, // Full previous week
+  { value: "custom", label: "Custom Range" },
+];
+
 export default function LeadsKanban() {
   const { data, reFetch, isLoading } = GetAPI("api/v1/leads/kanban");
   const { data: countriesData } = GetAPI(
@@ -32,7 +62,8 @@ export default function LeadsKanban() {
   );
   const { data: machinesData } = GetAPI("api/v1/admin/coffee-machine");
 
-  const kanbanData = data?.data || {
+  // Local state for optimistic UI updates
+  const [items, setItems] = useState({
     newEnquiry: [],
     contacted: [],
     quoted: [],
@@ -41,12 +72,44 @@ export default function LeadsKanban() {
     nurture: [],
     won: [],
     lost: [],
-  };
+  });
 
-  const [filter, setFilter] = useState({ value: "all", label: "All Leads" });
+  // Sync local state with API data
+  useEffect(() => {
+    if (data?.data) {
+      setItems(data.data);
+    }
+  }, [data]);
+
+  // Filter State
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
+
+  // Applied Filters (The truth for the dashboard)
+  const [appliedFilters, setAppliedFilters] = useState({
+    stage: { value: "all", label: "All Leads" },
+    followUpDate: { option: { value: "all", label: "All Dates" }, customRange: null },
+    siteVisitDate: { option: { value: "all", label: "All Dates" }, customRange: null },
+  });
+
+  // Temp Filters (For the modal)
+  const [tempFilters, setTempFilters] = useState({
+    stage: { value: "all", label: "All Leads" },
+    followUpDate: { option: { value: "all", label: "All Dates" }, customRange: null },
+    siteVisitDate: { option: { value: "all", label: "All Dates" }, customRange: null },
+  });
+
+  // UI State for Modal (Custom Mode toggles)
+  const [isFollowUpCustomMode, setIsFollowUpCustomMode] = useState(false);
+  const [tempFollowUpRange, setTempFollowUpRange] = useState(null);
+
+  const [isSiteVisitCustomMode, setIsSiteVisitCustomMode] = useState(false);
+  const [tempSiteVisitRange, setTempSiteVisitRange] = useState(null);
+
+
   const [addModal, setAddModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingLeadId, setEditingLeadId] = useState(null);
+  const [activeId, setActiveId] = useState(null);
   const [newLead, setNewLead] = useState({
     name: "",
     companyName: "",
@@ -72,11 +135,18 @@ export default function LeadsKanban() {
     machineId: "",
     machineName: "",
   });
-  console.log("🚀 ~ LeadsKanban ~ newLead:", newLead);
   const [submitting, setSubmitting] = useState(false);
   const [allCountriesData, setAllCountriesData] = useState([]);
   const [allStates, setAllStates] = useState([]);
   const [allCities, setAllCities] = useState([]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
 
   // Set countries data when it loads
   React.useEffect(() => {
@@ -101,7 +171,6 @@ export default function LeadsKanban() {
 
   // Handle machine selection
   const handleMachineChange = (selectedOption) => {
-    console.log("🚀 ~ handleMachineChange ~ selectedOption:", selectedOption);
     setNewLead({
       ...newLead,
       machineId: selectedOption?.value || "",
@@ -168,13 +237,11 @@ export default function LeadsKanban() {
 
   // Handle lead deletion in kanban view
   const handleDeleteLead = (leadId) => {
-    // Refresh the data to reflect the deletion
     reFetch();
   };
 
   // Handle lead edit in kanban view
   const handleEditLead = (lead) => {
-    // Populate the form with lead data
     setNewLead({
       name: lead.contactName || "",
       companyName: lead.company || "",
@@ -201,7 +268,6 @@ export default function LeadsKanban() {
       machineName: lead.machineName || "",
     });
 
-    // Set edit mode and lead ID
     setIsEditMode(true);
     setEditingLeadId(lead.id);
     setAddModal(true);
@@ -247,7 +313,6 @@ export default function LeadsKanban() {
     try {
       setSubmitting(true);
 
-      // Prepare data for API
       const leadData = {
         contactName: newLead.name,
         company: newLead.companyName,
@@ -278,10 +343,8 @@ export default function LeadsKanban() {
       let response;
 
       if (isEditMode) {
-        // Update existing lead
         response = await leadsAPI.updateLead(editingLeadId, leadData);
       } else {
-        // Create new lead
         leadData.status = "New Enquiry";
         response = await leadsAPI.createLead(leadData);
       }
@@ -292,12 +355,11 @@ export default function LeadsKanban() {
         );
         setAddModal(false);
         resetForm();
-        // Refresh data
         reFetch();
       } else {
         error_toaster(
           response?.data?.message ||
-            (isEditMode ? "Failed to update lead" : "Failed to create lead")
+          (isEditMode ? "Failed to update lead" : "Failed to create lead")
         );
       }
     } catch (error) {
@@ -310,7 +372,6 @@ export default function LeadsKanban() {
     }
   };
 
-  // Reset form to initial state
   const resetForm = () => {
     setNewLead({
       name: "",
@@ -344,8 +405,8 @@ export default function LeadsKanban() {
   };
 
   const filteredColumns = columns.filter((col) => {
-    if (filter.value === "all") return true;
-    return col.id === filter.value;
+    if (appliedFilters.stage.value === "all") return true;
+    return col.id === appliedFilters.stage.value;
   });
 
   const displayColumns = filteredColumns;
@@ -354,6 +415,256 @@ export default function LeadsKanban() {
     { value: "all", label: "All Leads" },
     ...columns.map((col) => ({ value: col.id, label: col.title })),
   ];
+
+  // Drag and Drop Logic
+  const findContainer = (id) => {
+    if (id in items) {
+      return id;
+    }
+    return Object.keys(items).find((key) =>
+      items[key].find((item) => item.id === id)
+    );
+  };
+
+  const handleDragStart = (event) => {
+    setActiveId(event.active.id);
+  };
+
+  const handleDragOver = (event) => {
+    const { active, over } = event;
+    const overId = over?.id;
+
+    if (!overId || active.id === overId) {
+      return;
+    }
+
+    const activeContainer = findContainer(active.id);
+    const overContainer = findContainer(overId);
+
+    if (
+      !activeContainer ||
+      !overContainer ||
+      activeContainer === overContainer
+    ) {
+      return;
+    }
+
+    setItems((prev) => {
+      const activeItems = prev[activeContainer];
+      const overItems = prev[overContainer];
+      const activeIndex = activeItems.findIndex((item) => item.id === active.id);
+      const overIndex = overItems.findIndex((item) => item.id === overId);
+
+      let newIndex;
+
+      if (overId in prev) {
+        // We're over a container (empty column)
+        newIndex = overItems.length + 1;
+      } else {
+        const isBelowOverItem =
+          over &&
+          active.rect.current.translated &&
+          active.rect.current.translated.top >
+          over.rect.top + over.rect.height;
+
+        const modifier = isBelowOverItem ? 1 : 0;
+
+        newIndex = overIndex >= 0 ? overIndex + modifier : overItems.length + 1;
+      }
+
+      return {
+        ...prev,
+        [activeContainer]: [
+          ...prev[activeContainer].filter((item) => item.id !== active.id),
+        ],
+        [overContainer]: [
+          ...prev[overContainer].slice(0, newIndex),
+          activeItems[activeIndex],
+          ...prev[overContainer].slice(newIndex, prev[overContainer].length),
+        ],
+      };
+    });
+  };
+
+  const handleDragEnd = async (event) => {
+    const { active, over } = event;
+    const activeId = active.id;
+    const overId = over?.id;
+
+    if (!overId) {
+      setActiveId(null);
+      return;
+    }
+
+    const activeContainer = findContainer(activeId);
+    const overContainer = findContainer(overId);
+
+    if (activeContainer && overContainer && activeContainer !== overContainer) {
+      // This case is usually handled by onDragOver, but just in case
+    }
+
+    setActiveId(null);
+
+    // API Call to update status
+    // We need to find which container the item is currently in (after onDragOver updates)
+    const finalContainer = findContainer(activeId);
+
+    // Map container ID to status string
+    const statusMap = {
+      newEnquiry: "New Enquiry",
+      contacted: "Contacted",
+      quoted: "Quoted",
+      demoScheduled: "Demo/Scheduled",
+      negotiation: "Negotiation",
+      nurture: "Nurture",
+      won: "WON",
+      lost: "LOST",
+    };
+
+    const newStatus = statusMap[finalContainer];
+
+    if (newStatus) {
+      try {
+        const response = await leadsAPI.updateLead(activeId, {
+          status: newStatus,
+        });
+
+        if (response?.data?.success || response?.success) {
+          success_toaster(`Lead moved to ${newStatus}`);
+          reFetch(); // Sync with backend to ensure consistency
+        } else {
+          error_toaster(response?.message || "Failed to move lead");
+          reFetch(); // Revert if failed
+        }
+      } catch (error) {
+        console.error("Error moving lead:", error);
+        error_toaster("Failed to move lead");
+        reFetch();
+      }
+    }
+  };
+
+  // Date Filter Logic Helper
+  const isDateInRange = (dateStr, option, customRange) => {
+    if (option.value === "all") return true;
+    if (!dateStr) return false;
+
+    let startDate, endDate;
+    const now = dayjs();
+
+    switch (option.value) {
+      case "currentYear":
+        startDate = now.startOf("year");
+        endDate = now.endOf("year");
+        break;
+      case "currentMonth":
+        startDate = now.startOf("month");
+        endDate = now.endOf("month");
+        break;
+      case "currentWeek":
+        startDate = now.startOf("week");
+        endDate = now.endOf("week");
+        break;
+      case "lastYear":
+        startDate = now.subtract(1, "year").startOf("year");
+        endDate = now.subtract(1, "year").endOf("year");
+        break;
+      case "last90Days":
+        startDate = now.subtract(90, "day");
+        endDate = now;
+        break;
+      case "last14Days":
+        startDate = now.subtract(14, "day");
+        endDate = now;
+        break;
+      case "lastMonth":
+        startDate = now.subtract(1, "month").startOf("month");
+        endDate = now.subtract(1, "month").endOf("month");
+        break;
+      case "lastWeek":
+        startDate = now.subtract(7, "day");
+        endDate = now;
+        break;
+      case "previousWeek":
+        startDate = now.subtract(1, "week").startOf("week");
+        endDate = now.subtract(1, "week").endOf("week");
+        break;
+      case "custom":
+        if (customRange && customRange.length === 2 && customRange[0] && customRange[1]) {
+          startDate = dayjs(customRange[0]);
+          endDate = dayjs(customRange[1]);
+        } else {
+          return true; // Fallback
+        }
+        break;
+      default:
+        return true;
+    }
+
+    return dayjs(dateStr).isBetween(startDate, endDate, "day", "[]");
+  };
+
+  // Main Filter Logic
+  const getFilteredLeads = (leads) => {
+    return leads.filter((lead) => {
+      // Filter by Follow-up Date
+      const followUpMatch = isDateInRange(
+        lead.followUpNextDate,
+        appliedFilters.followUpDate.option,
+        appliedFilters.followUpDate.customRange
+      );
+      if (!followUpMatch) return false;
+
+      // Filter by Site Visit Date
+      const siteVisitMatch = isDateInRange(
+        lead.siteVisitDate,
+        appliedFilters.siteVisitDate.option,
+        appliedFilters.siteVisitDate.customRange
+      );
+      if (!siteVisitMatch) return false;
+
+      return true;
+    });
+  };
+
+  // Find the active lead object for the drag overlay
+  const activeLead = activeId
+    ? Object.values(items)
+      .flat()
+      .find((lead) => lead.id === activeId)
+    : null;
+
+  // Open Filter Modal
+  const openFilterModal = () => {
+    setTempFilters(appliedFilters);
+    // Determine custom mode states based on current applied filters
+    setIsFollowUpCustomMode(appliedFilters.followUpDate.option.value === "custom");
+    setTempFollowUpRange(appliedFilters.followUpDate.customRange);
+    setIsSiteVisitCustomMode(appliedFilters.siteVisitDate.option.value === "custom");
+    setTempSiteVisitRange(appliedFilters.siteVisitDate.customRange);
+    setFilterModalVisible(true);
+  };
+
+  // Apply Filters
+  const applyFilters = () => {
+    setAppliedFilters(tempFilters);
+    setFilterModalVisible(false);
+  };
+
+  // Clear a specific filter
+  const clearFilter = (type) => {
+    setAppliedFilters(prev => {
+      const newFilters = { ...prev };
+      if (type === 'stage') {
+        newFilters.stage = { value: "all", label: "All Leads" };
+      } else if (type === 'followUpDate') {
+        newFilters.followUpDate = { option: { value: "all", label: "All Dates" }, customRange: null };
+      } else if (type === 'siteVisitDate') {
+        newFilters.siteVisitDate = { option: { value: "all", label: "All Dates" }, customRange: null };
+      }
+      return newFilters;
+    });
+  };
 
   if (isLoading) {
     return <Loader />;
@@ -370,69 +681,243 @@ export default function LeadsKanban() {
 
       {/* Content Container */}
       <div className="space-y-8 pb-10 pt-28 2xl:pt-32 px-6 2xl:px-12 h-full flex flex-col">
-        {/* Filters and Actions */}
-        <div className="flex items-center gap-4 justify-end">
-          <Select
-            placeholder="Filters"
-            styles={selectStyles}
-            className="w-48"
-            value={filter}
-            onChange={setFilter}
-            options={filterOptions}
-          />
-          <button
-            onClick={() => setAddModal(true)}
-            className="bg-theme text-white px-4 py-2 rounded-lg border border-theme hover:bg-white hover:text-theme transition-colors duration-200 font-medium"
-          >
-            Add New Lead
-          </button>
+        {/* Actions Bar */}
+        <div className="flex items-center justify-between">
+          {/* Active Filters Display */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {appliedFilters.stage.value !== "all" && (
+              <div className="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center gap-2 border">
+                <span className="text-gray-600">Stage: {appliedFilters.stage.label}</span>
+                <button onClick={() => clearFilter('stage')} className="text-gray-400 hover:text-red-500"><MdClose /></button>
+              </div>
+            )}
+            {appliedFilters.followUpDate.option.value !== "all" && (
+              <div className="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center gap-2 border">
+                <span className="text-gray-600">Follow-up: {appliedFilters.followUpDate.option.label}</span>
+                <button onClick={() => clearFilter('followUpDate')} className="text-gray-400 hover:text-red-500"><MdClose /></button>
+              </div>
+            )}
+            {appliedFilters.siteVisitDate.option.value !== "all" && (
+              <div className="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center gap-2 border">
+                <span className="text-gray-600">Site Visit: {appliedFilters.siteVisitDate.option.label}</span>
+                <button onClick={() => clearFilter('siteVisitDate')} className="text-gray-400 hover:text-red-500"><MdClose /></button>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button
+              onClick={openFilterModal}
+              className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50 transition-colors text-gray-700"
+            >
+              <MdFilterList size={20} />
+              Filters
+            </button>
+            <button
+              onClick={() => setAddModal(true)}
+              className="bg-theme text-white px-4 py-2 rounded-lg border border-theme hover:bg-white hover:text-theme transition-colors duration-200 font-medium"
+            >
+              Add New Lead
+            </button>
+          </div>
         </div>
 
         {/* Kanban Board */}
-        <div className="flex-1 overflow-x-auto overflow-y-hidden pb-4">
-          <div className="flex space-x-4 h-full min-w-max">
-            {displayColumns.map((col, index) => (
-              <div key={col.id} className="w-80 flex flex-col h-full">
-                {/* Column Header - Breadcrumb Style */}
-                <div
-                  className="bg-theme text-white h-12 flex items-center justify-center relative mb-2"
-                  style={{
-                    clipPath:
-                      index === 0
-                        ? "polygon(0 0, calc(100% - 15px) 0, 100% 50%, calc(100% - 15px) 100%, 0 100%)"
-                        : "polygon(0 0, calc(100% - 15px) 0, 100% 50%, calc(100% - 15px) 100%, 0 100%, 15px 50%)",
-                  }}
-                >
-                  <h2 className="text-themeDark font-medium text-sm flex items-center gap-1">
-                    <p className="text-white">{col.title}</p>
-                    <span className="text-blue-300">
-                      ({kanbanData[col.id]?.length || 0})
-                    </span>
-                  </h2>
-                </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="flex-1 overflow-x-auto overflow-y-hidden pb-4">
+            <div className="flex space-x-4 h-full min-w-max">
+              {displayColumns.map((col, index) => (
+                <KanbanColumn
+                  key={col.id}
+                  id={col.id}
+                  title={col.title}
+                  count={getFilteredLeads(items[col.id] || []).length}
+                  leads={getFilteredLeads(items[col.id] || [])}
+                  onStatusChange={reFetch}
+                  onDelete={handleDeleteLead}
+                  onEdit={handleEditLead}
+                  index={index}
+                />
+              ))}
+            </div>
+          </div>
+          <DragOverlay>
+            {activeLead ? <LeadCard lead={activeLead} /> : null}
+          </DragOverlay>
+        </DndContext>
+      </div>
 
-                {/* Column Content */}
-                <div className="bg-white p-2 flex-1 overflow-y-auto border border-borderColor rounded-b-xl scrollbar-thin scrollbar-thumb-gray-300">
-                  {kanbanData[col.id]?.map((lead) => (
-                    <LeadCard
-                      key={lead.id}
-                      lead={lead}
-                      onStatusChange={reFetch}
-                      onDelete={handleDeleteLead}
-                      onEdit={handleEditLead}
-                    />
-                  ))}
-                  {kanbanData[col.id]?.length === 0 && (
-                    <div className="text-center text-gray-400 text-sm mt-4">
-                      No leads
-                    </div>
-                  )}
-                </div>
+      {/* Filter Modal */}
+      <Dialog
+        header="Filter Leads"
+        visible={filterModalVisible}
+        style={{ width: "500px" }}
+        onHide={() => setFilterModalVisible(false)}
+        className="font-inter"
+        dismissableMask={true}
+        closable={true}
+      >
+        <div className="flex flex-col gap-6 pt-4">
+
+          {/* Stage Filter */}
+          <div className="flex flex-col gap-2">
+            <label className="font-medium text-sm text-gray-700">Lead Stage</label>
+            <Select
+              placeholder="Select Stage"
+              styles={{
+                ...selectStyles,
+                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+              }}
+              menuPortalTarget={typeof document !== "undefined" ? document.body : null}
+              value={tempFilters.stage}
+              onChange={(option) => setTempFilters({ ...tempFilters, stage: option })}
+              options={filterOptions}
+            />
+          </div>
+
+          {/* Follow-up Date Filter */}
+          <div className="flex flex-col gap-2">
+            <label className="font-medium text-sm text-gray-700">Follow-up Date</label>
+            {!isFollowUpCustomMode ? (
+              <Select
+                placeholder="Select Range"
+                styles={{
+                  ...selectStyles,
+                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                }}
+                menuPortalTarget={typeof document !== "undefined" ? document.body : null}
+                value={tempFilters.followUpDate.option}
+                onChange={(option) => {
+                  if (option.value === "custom") {
+                    setIsFollowUpCustomMode(true);
+                    setTempFollowUpRange(null);
+                    setTempFilters({
+                      ...tempFilters,
+                      followUpDate: { option, customRange: null }
+                    });
+                  } else {
+                    setTempFilters({ ...tempFilters, followUpDate: { option, customRange: null } });
+                  }
+                }}
+                options={dateRangeOptions}
+              />
+            ) : (
+              <div className="flex items-center gap-2">
+                <Calendar
+                  value={tempFollowUpRange}
+                  onChange={(e) => {
+                    setTempFollowUpRange(e.value);
+                    if (e.value) {
+                      setTempFilters({
+                        ...tempFilters,
+                        followUpDate: { option: { value: "custom", label: "Custom Range" }, customRange: e.value }
+                      });
+                    }
+                  }}
+                  selectionMode="range"
+                  readOnlyInput
+                  placeholder="Select Date Range"
+                  showIcon
+                  className="w-full h-[38px]"
+                  inputClassName="h-[38px] rounded-lg border-gray-300 border px-2"
+                  hideOnRangeSelection
+                />
               </div>
-            ))}
+            )}
+          </div>
+
+          {/* Site Visit Date Filter */}
+          <div className="flex flex-col gap-2">
+            <label className="font-medium text-sm text-gray-700">Site Visit Date</label>
+            {!isSiteVisitCustomMode ? (
+              <Select
+                placeholder="Select Range"
+                styles={{
+                  ...selectStyles,
+                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                }}
+                menuPortalTarget={typeof document !== "undefined" ? document.body : null}
+                value={tempFilters.siteVisitDate.option}
+                onChange={(option) => {
+                  if (option.value === "custom") {
+                    setIsSiteVisitCustomMode(true);
+                    setTempSiteVisitRange(null);
+                    setTempFilters({
+                      ...tempFilters,
+                      siteVisitDate: { option, customRange: null }
+                    });
+                  } else {
+                    setTempFilters({ ...tempFilters, siteVisitDate: { option, customRange: null } });
+                  }
+                }}
+                options={dateRangeOptions}
+              />
+            ) : (
+              <div className="flex items-center gap-2">
+                <Calendar
+                  value={tempSiteVisitRange}
+                  onChange={(e) => {
+                    setTempSiteVisitRange(e.value);
+                    if (e.value) {
+                      setTempFilters({
+                        ...tempFilters,
+                        siteVisitDate: { option: { value: "custom", label: "Custom Range" }, customRange: e.value }
+                      });
+                    }
+                  }}
+                  selectionMode="range"
+                  readOnlyInput
+                  placeholder="Select Date Range"
+                  showIcon
+                  className="w-full h-[38px]"
+                  inputClassName="h-[38px] rounded-lg border-gray-300 border px-2"
+                  hideOnRangeSelection
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Footer Actions */}
+          <div className="flex justify-between items-center mt-4 pt-4 border-t">
+            <button
+              onClick={() => {
+                setTempFilters({
+                  stage: { value: "all", label: "All Leads" },
+                  followUpDate: { option: { value: "all", label: "All Dates" }, customRange: null },
+                  siteVisitDate: { option: { value: "all", label: "All Dates" }, customRange: null },
+                });
+                setIsFollowUpCustomMode(false);
+                setTempFollowUpRange(null);
+                setIsSiteVisitCustomMode(false);
+                setTempSiteVisitRange(null);
+              }}
+              className="text-red-500 hover:text-red-700 text-sm font-medium transition-colors"
+            >
+              Clear All
+            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setFilterModalVisible(false)}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={applyFilters}
+                className="px-6 py-2 bg-theme text-white rounded-lg hover:bg-themeDark transition-colors"
+              >
+                Apply Filters
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </Dialog>
 
       {/* Add Lead Modal */}
       <Dialog
@@ -446,7 +931,6 @@ export default function LeadsKanban() {
         className="font-inter overflow-auto"
         dismissableMask={true}
         closable={true}
-        // baseZIndex={10000}
       >
         <div className="flex flex-col gap-4 pt-2 max-h-[70vh]">
           {/* Contact Information Section */}
@@ -513,9 +997,9 @@ export default function LeadsKanban() {
                   value={
                     newLead.businessType
                       ? {
-                          value: newLead.businessType,
-                          label: newLead.businessType,
-                        }
+                        value: newLead.businessType,
+                        label: newLead.businessType,
+                      }
                       : null
                   }
                   options={[
@@ -720,9 +1204,9 @@ export default function LeadsKanban() {
                   value={
                     newLead.snapshotType
                       ? {
-                          value: newLead.snapshotType,
-                          label: newLead.snapshotType,
-                        }
+                        value: newLead.snapshotType,
+                        label: newLead.snapshotType,
+                      }
                       : null
                   }
                   options={[
@@ -745,9 +1229,9 @@ export default function LeadsKanban() {
                   value={
                     newLead.snapshotUseCase
                       ? {
-                          value: newLead.snapshotUseCase,
-                          label: newLead.snapshotUseCase,
-                        }
+                        value: newLead.snapshotUseCase,
+                        label: newLead.snapshotUseCase,
+                      }
                       : null
                   }
                   options={[
@@ -774,9 +1258,9 @@ export default function LeadsKanban() {
                   value={
                     newLead.snapshotVolume
                       ? {
-                          value: newLead.snapshotVolume,
-                          label: newLead.snapshotVolume,
-                        }
+                        value: newLead.snapshotVolume,
+                        label: newLead.snapshotVolume,
+                      }
                       : null
                   }
                   options={[
@@ -800,17 +1284,16 @@ export default function LeadsKanban() {
                   value={
                     newLead.snapshotTimeline
                       ? {
-                          value: newLead.snapshotTimeline,
-                          label: newLead.snapshotTimeline,
-                        }
+                        value: newLead.snapshotTimeline,
+                        label: newLead.snapshotTimeline,
+                      }
                       : null
                   }
                   options={[
                     { value: "Immediate", label: "Immediate" },
-                    { value: "1-2 Weeks", label: "1-2 Weeks" },
-                    { value: "2-4 Weeks", label: "2-4 Weeks" },
-                    { value: "1-2 Months", label: "1-2 Months" },
-                    { value: "Flexible", label: "Flexible" },
+                    { value: "1-3 Months", label: "1-3 Months" },
+                    { value: "3-6 Months", label: "3-6 Months" },
+                    { value: "6+ Months", label: "6+ Months" },
                   ]}
                   onChange={(e) =>
                     setNewLead({ ...newLead, snapshotTimeline: e.value })
@@ -821,71 +1304,37 @@ export default function LeadsKanban() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-y-2 mt-4">
-              <label className="font-medium text-sm">Estimated Value ($)</label>
-              <InputText
-                type="number"
-                value={newLead.estimatedValue}
-                onChange={(e) =>
-                  setNewLead({ ...newLead, estimatedValue: e.target.value })
-                }
-                className="w-full p-2 border rounded-lg"
-                placeholder="e.g. 5000"
-                disabled={submitting}
-              />
-            </div>
-          </div>
-
-          {/* Additional Information Section */}
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold mb-3 text-gray-800">
-              Additional Information
-            </h3>
-
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 mt-4">
               <div className="flex flex-col gap-y-2">
-                <label className="font-medium text-sm">Lead Source</label>
-                <Select
-                  placeholder="Select Lead Source"
-                  value={
-                    newLead.leadSource
-                      ? { value: newLead.leadSource, label: newLead.leadSource }
-                      : null
-                  }
-                  options={[
-                    { value: "Website", label: "Website" },
-                    { value: "Referral", label: "Referral" },
-                    { value: "Trade Show", label: "Trade Show" },
-                    { value: "Social Media", label: "Social Media" },
-                    { value: "Direct Call", label: "Direct Call" },
-                    { value: "Email Campaign", label: "Email Campaign" },
-                  ]}
+                <label className="font-medium text-sm">Estimated Value</label>
+                <InputText
+                  value={newLead.estimatedValue}
                   onChange={(e) =>
-                    setNewLead({ ...newLead, leadSource: e.value })
+                    setNewLead({ ...newLead, estimatedValue: e.target.value })
                   }
-                  styles={selectStyles}
-                  isDisabled={submitting}
+                  className="w-full p-2 border rounded-lg"
+                  placeholder="$0.00"
+                  disabled={submitting}
                 />
               </div>
-
               <div className="flex flex-col gap-y-2">
                 <label className="font-medium text-sm">
-                  Preferred Contact Method *
+                  Preferred Contact Method
                 </label>
                 <Select
-                  placeholder="Select Contact Method"
+                  placeholder="Select Method"
                   value={
                     newLead.preferredContact
                       ? {
-                          value: newLead.preferredContact,
-                          label: newLead.preferredContact,
-                        }
+                        value: newLead.preferredContact,
+                        label: newLead.preferredContact,
+                      }
                       : null
                   }
                   options={[
                     { value: "Email", label: "Email" },
                     { value: "Phone", label: "Phone" },
-                    { value: "WhatsApp", label: "WhatsApp" },
+                    { value: "Any", label: "Any" },
                   ]}
                   onChange={(e) =>
                     setNewLead({ ...newLead, preferredContact: e.value })
@@ -897,43 +1346,46 @@ export default function LeadsKanban() {
             </div>
 
             <div className="flex flex-col gap-y-2 mt-4">
-              <label className="font-medium text-sm">Additional Notes</label>
-              <textarea
+              <label className="font-medium text-sm">Notes</label>
+              <InputText
                 value={newLead.notes}
                 onChange={(e) =>
                   setNewLead({ ...newLead, notes: e.target.value })
                 }
-                className="w-full p-2 border rounded-lg resize-none"
-                rows={3}
-                placeholder="Any additional information about this lead..."
+                className="w-full p-2 border rounded-lg"
+                placeholder="Additional notes..."
                 disabled={submitting}
               />
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 mt-2 pb-6">
+          {/* Form Actions */}
+          <div className="flex justify-end gap-4 mt-4 pt-4 border-t">
             <button
               onClick={() => {
                 setAddModal(false);
                 resetForm();
               }}
-              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
               disabled={submitting}
             >
               Cancel
             </button>
             <button
               onClick={handleSaveLead}
-              className="px-4 py-2 bg-theme text-white rounded-lg hover:bg-themeDark disabled:opacity-50"
+              className="px-6 py-2 bg-theme text-white rounded-lg hover:bg-themeDark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               disabled={submitting}
             >
-              {submitting
-                ? isEditMode
-                  ? "Updating..."
-                  : "Adding..."
-                : isEditMode
-                ? "Update Lead"
-                : "Add Lead"}
+              {submitting ? (
+                <>
+                  <i className="pi pi-spin pi-spinner text-sm"></i>
+                  Saving...
+                </>
+              ) : isEditMode ? (
+                "Update Lead"
+              ) : (
+                "Create Lead"
+              )}
             </button>
           </div>
         </div>

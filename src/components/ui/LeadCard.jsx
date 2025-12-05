@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { leadsAPI } from "@/utilities/LeadsAPI";
 import { success_toaster, error_toaster } from "@/utilities/Toaster";
 import { Dialog } from "primereact/dialog";
+import { formatDateTimeISO } from "@/utilities/constants";
 
 export default function LeadCard({ lead, onStatusChange, onDelete, onEdit }) {
   const router = useRouter();
@@ -24,24 +25,24 @@ export default function LeadCard({ lead, onStatusChange, onDelete, onEdit }) {
   // Function to move lead to next stage
   const moveToNextStage = async (e) => {
     e.stopPropagation();
-    
+
     // Find current stage index
     const currentIndex = pipelineStages.indexOf(lead.status);
-    
+
     // If already at the last stage, don't proceed
     if (currentIndex === -1 || currentIndex === pipelineStages.length - 1) {
       error_toaster("Lead is already at the final stage");
       return;
     }
-    
+
     // Get next stage
     const nextStage = pipelineStages[currentIndex + 1];
-    
+
     try {
       const response = await leadsAPI.updateLead(lead.id, {
         status: nextStage,
       });
-      
+
       if (response?.data?.success || response?.success) {
         success_toaster(`Lead moved to ${nextStage}`);
         // Notify parent component to refresh data
@@ -59,24 +60,24 @@ export default function LeadCard({ lead, onStatusChange, onDelete, onEdit }) {
   // Function to move lead to previous stage
   const moveToPreviousStage = async (e) => {
     e.stopPropagation();
-    
+
     // Find current stage index
     const currentIndex = pipelineStages.indexOf(lead.status);
-    
+
     // If already at the first stage, don't proceed
     if (currentIndex === -1 || currentIndex === 0) {
       error_toaster("Lead is already at the initial stage");
       return;
     }
-    
+
     // Get previous stage
     const previousStage = pipelineStages[currentIndex - 1];
-    
+
     try {
       const response = await leadsAPI.updateLead(lead.id, {
         status: previousStage,
       });
-      
+
       if (response?.data?.success || response?.success) {
         success_toaster(`Lead moved to ${previousStage}`);
         // Notify parent component to refresh data
@@ -95,7 +96,7 @@ export default function LeadCard({ lead, onStatusChange, onDelete, onEdit }) {
   const handleDelete = async () => {
     try {
       const response = await leadsAPI.deleteLead(lead.id);
-      
+
       if (response?.data?.success || response?.success) {
         success_toaster("Lead deleted successfully");
         setDeleteModal(false);
@@ -122,9 +123,10 @@ export default function LeadCard({ lead, onStatusChange, onDelete, onEdit }) {
             {lead.machineName}
           </h3>
           <div className="flex space-x-1 text-themeLightGray opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <button 
+            <button
+              title="Edit"
               className="hover:text-themeDark p-1 rounded hover:bg-themeGray"
-              onClick={(e) => { 
+              onClick={(e) => {
                 e.stopPropagation();
                 // Pass lead data to parent for editing
                 if (onEdit) {
@@ -134,9 +136,10 @@ export default function LeadCard({ lead, onStatusChange, onDelete, onEdit }) {
             >
               <MdEdit size={16} />
             </button>
-            <button 
+            <button
+              title="Delete"
               className="hover:text-themeDark p-1 rounded hover:bg-themeGray"
-              onClick={(e) => { 
+              onClick={(e) => {
                 e.stopPropagation();
                 setDeleteModal(true);
               }}
@@ -144,22 +147,30 @@ export default function LeadCard({ lead, onStatusChange, onDelete, onEdit }) {
               <MdDelete size={16} />
             </button>
             <button
-              className="hover:text-themeDark p-1 rounded hover:bg-themeGray"
+              title="Move to Previous Stage"
+              className={`hover:text-themeDark p-1 rounded hover:bg-themeGray ${lead.status === "New Enquiry" ? "hidden" : ""}`}
               onClick={moveToPreviousStage}
             >
               <MdArrowBack size={16} />
             </button>
             <button
-              className="hover:text-themeDark p-1 rounded hover:bg-themeGray"
+              title="Move to Next Stage"
+              className={`hover:text-themeDark p-1 rounded hover:bg-themeGray ${lead.status === "WON" || lead.status === "LOST" ? "hidden" : ""}`}
               onClick={moveToNextStage}
             >
               <MdArrowForward size={16} />
             </button>
           </div>
         </div>
-        <div className="mb-1">
-          <p className="font-semibold text-themeDark text-sm">{lead.company}</p>
-          <p className="text-xs text-themeLightGray font-medium">{lead.role}</p>
+
+        <div className="flex items-end justify-between">
+
+          <div className="mb-1">
+            <p className="font-semibold text-themeDark text-sm">{lead.company}</p>
+            <p className="text-xs text-themeLightGray font-medium">{lead.role}</p>
+          </div>
+
+          <p className="text-xs text-themeLightGray font-medium">{formatDateTimeISO(lead.followUpNextDate,"date") || ""}</p>
         </div>
       </div>
 

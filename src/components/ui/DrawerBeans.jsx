@@ -86,7 +86,7 @@ const DrawerBeans = ({
   const totalPrice = cartItems?.reduce((a, b) => {
     return (
       Number(a) +
-      (isDirectPartner ? Number(b?.wholesalePrice) : Number(b?.price)) *
+      (isDirectPartner ? parseFloat(b?.wholesalePrice) : parseFloat(b?.price)) *
         Number(b?.qty)
     );
   }, 0);
@@ -186,7 +186,7 @@ const DrawerBeans = ({
       fetchDirectPartnerData(true);
     } else {
       setEmail("");
-      selectedEmail("");
+      // selectedEmail("");
       setAddressOptions([]);
     }
   };
@@ -489,12 +489,12 @@ const DrawerBeans = ({
       if (res?.data?.status === "success") {
         const payload = res?.data?.data || {};
 
-        const shipping = Number(
+        const shipping = parseFloat(
           payload?.shippingCharges ?? payload?.charges ?? 0
         );
         const rawDiscountPct = payload?.discountPercentage;
         const discountPct =
-          rawDiscountPct == null ? "" : Number(rawDiscountPct);
+          rawDiscountPct == null ? "" : parseFloat(rawDiscountPct);
         const categoryDiscounts = payload?.discountPercentage || [];
 
         setOrder((prev) => ({
@@ -590,11 +590,12 @@ const DrawerBeans = ({
       );
 
       const discountPct = categoryDiscount
-        ? Number(categoryDiscount.percentage)
+        ? parseFloat(categoryDiscount.percentage)
         : 0;
-      const itemPrice = isDirectPartner
-        ? Number(item.wholesalePrice)
-        : Number(item.price);
+      const itemPrice =
+        isDirectPartner || isSelfOrder
+          ? parseFloat(item.wholesalePrice)
+          : parseFloat(item.price);
 
       const itemSubtotal = itemPrice * Number(item.qty);
       const itemDiscount = (itemSubtotal * discountPct) / 100;
@@ -607,8 +608,14 @@ const DrawerBeans = ({
   };
 
   const { subtotal, totalDiscount } = calculateDiscounts();
+  console.log(
+    "🚀 ~ calculateDiscounts ~ subtotal, totalDiscount:",
+    subtotal,
+    totalDiscount,
+    isSelfOrder
+  );
   const finalTotal =
-    subtotal - totalDiscount + Number(order?.shippingCharges || 0);
+    subtotal - totalDiscount + parseFloat(order?.shippingCharges || 0);
 
   // const discountPercentage = Number(order?.discountPercentage ?? 0);
   // const discountAmount = (Number(totalPrice || 0) * discountPercentage) / 100;
@@ -1023,7 +1030,7 @@ const DrawerBeans = ({
                               <div className="flex items-center gap-x-3">
                                 <span className="font-semibold text-sm text-white mt-1">
                                   {"$ "}
-                                  {parseFloat(cartI?.price)}{" "}
+                                  {parseFloat(isSelfOrder ? cartI?.wholesalePrice : cartI?.price)}{" "}
                                 </span>
                               </div>
                             </div>
@@ -1088,7 +1095,7 @@ const DrawerBeans = ({
                         <h5 className="text-base text-white">Subtotal</h5>
                         <h6 data-testid={ORDERS_CREATE_DRAWER.subtotalValue}>
                           $
-                          {isDirectPartner
+                          {isDirectPartner || isSelfOrder
                             ? totalWholesale.toFixed(2)
                             : totalPrice.toFixed(2)}
                         </h6>
@@ -1110,9 +1117,9 @@ const DrawerBeans = ({
                           );
                           if (!catDiscount) return null;
 
-                          const pct = Number(catDiscount.percentage);
+                          const pct = parseFloat(catDiscount.percentage);
                           const itemSubtotal =
-                            Number(item.price) * Number(item.qty);
+                            parseFloat(item.price) * Number(item.qty);
                           const itemDiscount = (itemSubtotal * pct) / 100;
 
                           return (
@@ -1136,7 +1143,7 @@ const DrawerBeans = ({
                           Shipping Charges
                         </h5>
                         <h6 data-testid={ORDERS_CREATE_DRAWER.shippingValue}>
-                          $ {Number(order?.shippingCharges || 0).toFixed(2)}
+                          $ {parseFloat(order?.shippingCharges || 0).toFixed(2)}
                         </h6>
                         {/* <h6>$ {order?.shippingCharges}</h6> */}
                       </div>

@@ -8,7 +8,7 @@ import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import { PatchAPI } from "@/utilities/PatchAPI";
 import { hasPermission } from "@/utilities/Permission";
 
-export default function InvoicePDFDownload({ invoiceData, reFetch }) {
+export default function InvoicePDFDownload({ invoiceData, reFetch, adminAddress }) {
   const invoiceRef = useRef(null);
 
   const [data, setData] = useState("");
@@ -43,14 +43,14 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
     const link = `https://www.busybeancoffee.com/paymentCheck?orderId=${invoiceData?.id}`;
     navigator.clipboard.writeText(link)
       .then(() => {
-        setIsLinkCopied(true); 
+        setIsLinkCopied(true);
         // info_toaster("Payment link copied to clipboard!"); 
         setTimeout(() => {
-          setIsLinkCopied(false); 
+          setIsLinkCopied(false);
         }, 2000);
       })
       .catch(() => {
-        info_toaster("Failed to copy the link."); 
+        info_toaster("Failed to copy the link.");
       });
   };
 
@@ -113,7 +113,7 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
       poNumber: invoiceData?.poNumber,
     });
   }, [invoiceData]);
-  
+
   const bill = invoiceData?.user || {};
   const billAddr = bill?.billingAddresses?.[0] || {};
   const phoneText = [bill?.countryCode || "+1", bill?.phoneNumber]
@@ -129,7 +129,7 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
           <div className="flex items-center justify-between pb-4 mb-6">
             <div className="flex items-center gap-x-10">
               <h1 className="text-3xl font-semibold uppercase">Invoice</h1>
-            {invoiceData?.invoicePaidDate && <img className="w-36" src="/images/paidtag.png" alt="invoice paid logo" />}
+              {invoiceData?.invoicePaidDate && <img className="w-36" src="/images/paidtag.png" alt="invoice paid logo" />}
             </div>
             <img
               src="/images/logocoffee.png"
@@ -162,11 +162,11 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
               </div>
               <div className="flex items-center text-sm font-semibold">
                 <div className="w-36">Date of issue:</div>
-                <div>{dayjs(invoiceData?.on).format("MM/DD/YYYY")}</div>
+                <div>{invoiceData?.invoiceDate ? dayjs(invoiceData?.invoiceDate).format("MM/DD/YYYY") : "Not issued yet"}</div>
               </div>
               <div className="flex items-center text-sm font-semibold">
                 <div className="w-36">Due Date:</div>
-                <div>{handleDueDate(invoiceData?.on)}</div>
+                <div>{invoiceData?.invoiceDate ? handleDueDate(invoiceData?.invoiceDate) : "Not issued yet"}</div>
               </div>
               <div className="flex items-center text-sm font-semibold">
                 <div className="w-36">PO Number:</div>
@@ -192,7 +192,7 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
                 <div className="font-bold">Remit To</div>
                 {invoiceData?.salesRep ? (
                   <>
-                    <div className="uppercase">{invoiceData?.salesRepName}</div>
+                    {/* <div className="uppercase">{invoiceData?.salesRepName}</div> */}
                     {invoiceData?.salesRep?.territoryName && (
                       <div className="uppercase">{invoiceData?.salesRep?.territoryName}</div>
                     )}
@@ -221,14 +221,34 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
                     {invoiceData?.salesRep?.email && <div>{invoiceData?.salesRep?.email}</div>}
                   </>
                 ) : (
+
                   <>
                     <div className="uppercase">Busy Bean Coffee Inc.</div>
-                    <div className="uppercase">1141 CAINHOY RD 350</div>
-                    <div className="uppercase">WAREHOUSE 1</div>
-                    <div className="uppercase">CHARLESTON SC 29492, USA</div>
-                    <div className="uppercase">+1 833-843-2326</div>
-                    <div>info@busybeancoffee.com</div>
+                    <div className="uppercase">{adminAddress?.salesRepName}</div>
+                    {adminAddress?.territoryName && (
+                      <div className="uppercase">{adminAddress?.territoryName}</div>
+                    )}
+                    {adminAddress?.address && (
+                      <div className="uppercase">{adminAddress?.address}</div>
+                    )}
+                    {(adminAddress?.city + ", " + adminAddress?.state + ", " + adminAddress?.zipCode) && (
+                      <div className="uppercase">
+                        {adminAddress?.city + ", " + adminAddress?.state + " " + adminAddress?.zipCode}
+                      </div>
+                    )}
+                    {adminAddress?.country && (
+                      <div className="uppercase">{adminAddress?.country}</div>
+                    )}
+                    {(adminAddress?.countryCode || adminAddress?.phoneNumber) && (
+                      <div>
+                        {[adminAddress?.countryCode, adminAddress?.phoneNumber]
+                          .filter(Boolean)
+                          .join(" ")}
+                      </div>
+                    )}
+                    {adminAddress?.email && <div>{adminAddress?.email}</div>}
                   </>
+
                 )}
               </div>
               {/* Bill To Section */}
@@ -299,7 +319,7 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
               <div className="border-b-2 grid grid-cols-7 gap-4">
                 <p className="py-2 px-2 font-semibold">Code</p>
                 <p className="text-left py-2 px-2 font-semibold col-span-2">Item</p>
-                <p className="text-left py-2 px-2 font-semibold">Grind</p> 
+                <p className="text-left py-2 px-2 font-semibold">Grind</p>
                 <p className="text-right py-2 px-2 font-semibold">Quantity</p>
                 <p className="text-right py-2 px-2 font-semibold">Unit price</p>
                 <p className="text-right py-2 px-2 font-semibold">Amount</p>
@@ -309,15 +329,15 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
                 {data &&
                   data?.map((prod, index) => {
                     return (
-                      <div 
-                      key={prod?.id || prod?.productId || index} 
-                      className="border-b last:border-0 grid grid-cols-7 gap-4 h-8 items-center">
+                      <div
+                        key={prod?.id || prod?.productId || index}
+                        className="border-b last:border-0 grid grid-cols-7 gap-4 h-8 items-center">
                         <div className="px-2 text-left">{prod?.productCode ?? ""}</div>
                         <div className="px-2 py-2 font-semibold col-span-2 overflow-hidden text-ellipsis whitespace-nowrap">
                           {prod?.product ?? prod?.productName ?? prod?.name ?? ""}
                         </div>
                         <div className="px-2 py-2 text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                          {prod?.grind} 
+                          {prod?.grind}
                         </div>
                         <div className="px-2 text-right">
                           {isPrint ? (
@@ -381,12 +401,12 @@ export default function InvoicePDFDownload({ invoiceData, reFetch }) {
           Download Invoice
         </button>
         {(hasPermission("invoice_update")) && (
-        <button
-          onClick={handleUpdate}
-          className="mb-4 px-4 py-2 bg-theme text-white rounded"
-        >
-          Update Invoice
-        </button> )}
+          <button
+            onClick={handleUpdate}
+            className="mb-4 px-4 py-2 bg-theme text-white rounded"
+          >
+            Update Invoice
+          </button>)}
       </div>
     </div>
   );

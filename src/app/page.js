@@ -1,5 +1,4 @@
 "use client";
-import Charts from "@/components/ui/Charts";
 import HomeCards from "@/components/ui/HomeCards";
 import HomeMiniCards from "@/components/ui/HomeMiniCards";
 import ErrorHandler from "@/utilities/ErrorHandler";
@@ -9,10 +8,7 @@ import { error_toaster, success_toaster } from "@/utilities/Toaster";
 import { BASE_URL } from "@/utilities/URL";
 import axios from "axios";
 import { useEffect, useState, useRef, useMemo } from "react";
-import { BsCardList } from "react-icons/bs";
-import { PiHandbagFill, PiUsersThreeBold } from "react-icons/pi";
 import {
-  MdDashboard,
   MdCancel,
   MdPublic,
   MdMap,
@@ -23,13 +19,12 @@ import {
   MdPeopleAlt,
   MdAttachMoney,
   MdTrendingUp,
-  MdPaid,
   MdListAlt,
   MdAssignment,
   MdAssignmentTurnedIn,
   MdPendingActions,
 } from "react-icons/md";
-import { FaChartLine, FaBox, FaHandshake, FaUserFriends } from "react-icons/fa";
+import { FaChartLine } from "react-icons/fa";
 import { loadStripe } from "@stripe/stripe-js";
 import Loader from "@/components/ui/Loader";
 import api from "@/utilities/StatusErrorHandler";
@@ -53,14 +48,6 @@ export default function Home() {
   const [showBankRetry, setShowBankRetry] = useState(false);
   const didInitRef = useRef(false);
   const [linking, setLinking] = useState(false);
-
-  // const { data } = GetAPI(
-  //   userType === "admin"
-  //     ? "api/v1/admin/dashboard"
-  //     : userType === "salesRepresentative"
-  //     ? `api/v1/admin/sales-rep-dashboard/${userID}`
-  //     : `api/v1/admin/supplier-dashboard/${userID}`
-  // );
 
   const EMPLOYEE_API_MAP = {
     admin: "api/v1/admin/dashboard/admin-employee",
@@ -100,7 +87,6 @@ export default function Home() {
   } = supplierDashboard;
 
   const topProducts = data?.data?.topProducts || [];
-  // console.log("Top Products:", topProducts);
 
   const handleConnectAccount = async () => {
     const path = url.split("/");
@@ -188,143 +174,6 @@ export default function Home() {
     }
   };
 
-  // const handleFinancialConnection = async () => {
-  //   try {
-  //     // Step 1: Create Stripe Financial Connections Session
-  //     const res = await axios.post(
-  //       BASE_URL +
-  //         `api/v1/admin/create-financial-connection-session/sales-rep/${userID}`
-  //     );
-  //     const clientSecret = res?.data?.data?.clientSecret;
-
-  //     if (!clientSecret) {
-  //       success_toaster("Your bank account is already connected");
-  //       return;
-  //     }
-
-  //     // Step 2: Load Stripe
-  //     const stripe = await loadStripe(
-  //       "pk_test_51RPXZNCxTuXimvwHkvKO6MrVTckQ45X3JC2AkCVyV9fxLCK442YPbG8yM2NOexEqnD3wNAXdKfrOyEH2dTSzYKpt00WTyK7kzl"
-  //     );
-
-  //     if (!stripe) {
-  //       error_toaster("Stripe failed to load");
-  //       return;
-  //     }
-
-  //     // Step 3: Open the bank linking popup
-  //     // const { error, session } =
-  //     //   await stripe.collectFinancialConnectionsAccounts({ clientSecret });
-  //     const session = await stripe.collectFinancialConnectionsAccounts({
-  //       clientSecret,
-  //     });
-  //     console.log(
-  //       "🚀 ~ handleFinancialConnection ~ session:",
-  //       session?.financialConnectionsSession?.id
-  //     );
-  //     console.log("🚀 ~ handleFinancialConnection ~ session:", session);
-  //     // console.log("resSees:----- ", resSees)
-
-  //     // Step 4: If user closed or something went wrong
-  //     if (!session?.financialConnectionsSession?.id) {
-  //       console.warn("User did not complete linking");
-  //       setShowBankRetry(true); // <-- trigger retry modal
-  //       return;
-  //     }
-
-  //     // Step 5: Send session.id to your backend for verification/attachment
-  //     const attachRes = await axios.post(
-  //       BASE_URL + `api/v1/admin/attach-bank-account/sales-rep/${userID}`,
-  //       {
-  //         sessionId: session?.financialConnectionsSession?.id,
-  //       }
-  //     );
-  //     console.log("🚀 ~ handleFinancialConnection ~ attachRes:", attachRes);
-  //     console.log("🚀 ~ handleFinancialConnection ~ attachRes:", attachRes);
-  //     // Step 6: Handle response
-  //     if (attachRes?.data?.status === "success") {
-  //       setShowBankRetry(false);
-  //       success_toaster("Bank account linked successfully!");
-  //     } else {
-  //       error_toaster("Failed to attach bank account. Please try again.");
-  //     }
-  //   } catch (err) {
-  //     console.error("handleFinancialConnection error:", err);
-  //     error_toaster("An error occurred while linking your bank account.");
-  //   }
-  // };
-
-  // const handleFinancialConnection = async () => {
-  //   try {
-  //     // Step 1: Call your API to get the SetupIntent client_secret
-  //     const res = await axios.post(
-  //       BASE_URL +
-  //         `api/v1/admin/create-financial-connection-session/sales-rep/${userID}`
-  //     );
-  //     console.log("🚀 ~ handleFinancialConnection ~ res:", res)
-
-  //     const clientSecret = res?.data?.data?.clientSecret;
-  //     console.log("🚀 ~ handleFinancialConnection ~ clientSecret:", clientSecret)
-
-  //     if (!clientSecret) {
-  //       success_toaster("Your bank account is already connected");
-  //       return;
-  //     }
-
-  //     // Step 2: Load Stripe.js
-  //     const stripe = await loadStripe(
-  //       "pk_test_51RPXZNCxTuXimvwHkvKO6MrVTckQ45X3JC2AkCVyV9fxLCK442YPbG8yM2NOexEqnD3wNAXdKfrOyEH2dTSzYKpt00WTyK7kzl"
-  //     );
-  //     console.log("🚀 ~ handleFinancialConnection ~ stripe:", stripe)
-
-  //     if (!stripe) {
-  //       error_toaster("Stripe failed to load");
-  //       return;
-  //     }
-
-  //     // Step 3: Open Stripe's Financial Connections popup
-  //     const result = await stripe.collectBankAccountForSetup({
-  //       clientSecret,
-  //       params: {
-  //         payment_method_type: "us_bank_account",
-  //       },
-  //     });
-
-  //     console.log("Stripe SetupIntent result:", result);
-
-  //     // Step 4: Extract SetupIntent details
-  //     // const setupIntentId = result?.setupIntent?.id;
-  //     // const setupIntentStatus = result?.setupIntent?.status;
-
-  //     // If user closed the popup or linking failed
-  //     // if (!setupIntentId || setupIntentStatus !== "succeeded") {
-  //     //   console.warn("Bank linking was not completed.");
-  //     //   setShowBankRetry(true);
-  //     //   return;
-  //     // }
-
-  //     // Step 5: Send the setupIntentId to your existing backend endpoint
-  //     // const attachRes = await axios.post(
-  //     //   BASE_URL + `api/v1/admin/attach-bank-account/sales-rep/${userID}`,
-  //     //   {
-  //     //     sessionId: setupIntentId, // ✅ using "sessionId" name for compatibility
-  //     //   }
-  //     // );
-
-  //     // console.log("Attach response:", attachRes?.data);
-
-  //     // if (attachRes?.data?.status === "success") {
-  //     //   setShowBankRetry(false);
-  //     //   success_toaster("Bank account linked successfully!");
-  //     // } else {
-  //     //   error_toaster("Failed to attach bank account. Please try again.");
-  //     // }
-  //   } catch (err) {
-  //     console.error("handleFinancialConnection error:", err);
-  //     error_toaster("An error occurred while linking your bank account.");
-  //   }
-  // };
-
   const handleFinancialConnection = async () => {
     if (linking) return;
     setLinking(true);
@@ -333,7 +182,6 @@ export default function Home() {
       const res = await api.post(
         BASE_URL + `api/v1/admin/create-bank-setup-intent/sales-rep/${userID}`
       );
-      // console.log("🚀 ~ handleFinancialConnection ~ res:", res);
       const clientSecret = res?.data?.data?.clientSecret;
 
       if (!clientSecret) {
@@ -375,8 +223,6 @@ export default function Home() {
       //   ErrorHandler(error);
       // }
 
-      // console.log("Stripe collect result:", result);
-
       if (result.setupIntent.status === "requires_confirmation") {
         const confirmedIntent = await stripe.confirmSetup({
           clientSecret,
@@ -412,7 +258,6 @@ export default function Home() {
           paymentMethodId: result?.setupIntent?.payment_method,
         }
       );
-      // console.log("🚀 attachRes:", attachRes?.data);
 
       // ✅ Only show retry modal if the attach failed
       if (attachRes?.data?.status === "success") {
@@ -424,90 +269,10 @@ export default function Home() {
       }
     } catch (err) {
       ErrorHandler(err);
-      // console.error("handleFinancialConnection error:", err);
-      // error_toaster("An error occurred while linking your bank account.");
     } finally {
       setLinking(false);
     }
   };
-
-  // useEffect(() => {
-  //   if (didInitRef.current) return;
-  //   didInitRef.current = true;
-  //   const stripeAccountStatus = async () => {
-  //     try {
-  //       const res = await api.get(
-  //         BASE_URL + `api/v1/admin/stripe-connect-account-retrieve/${userID}`
-  //       );
-  //       if (res?.data?.status === "success") {
-  //         localStorage.setItem("isAccountConnected", true);
-  //       }
-  //     } catch (error) {
-  //       // console.log("🚀 ~ stripeAccountStatus ~ error:", error);
-  //       // ErrorHandler("Connect Stripe Account");
-  //     }
-  //   };
-
-  // const createFinancialConnectionSection = async () => {
-  //   try {
-  //     const res = await axios.post(
-  //       BASE_URL +
-  //         `api/v1/admin/create-financial-connection-session/sales-rep/${userID}`
-  //     );
-  //     const clientSecret = res?.data?.data?.clientSecret;
-
-  //     // If no clientSecret, assume bank is already connected
-  //     if (!clientSecret) {
-  //       success_toaster("Your bank account is connected. You're all set");
-  //       return;
-  //     }
-
-  //     const stripe = await loadStripe(
-  //       "pk_test_51RPXZNCxTuXimvwHkvKO6MrVTckQ45X3JC2AkCVyV9fxLCK442YPbG8yM2NOexEqnD3wNAXdKfrOyEH2dTSzYKpt00WTyK7kzl"
-  //     );
-
-  //     if (!stripe) {
-  //       throw new Error("Stripe failed to load");
-  //     }
-
-  //     const { error, session } =
-  //       await stripe.collectFinancialConnectionsAccounts({
-  //         clientSecret,
-  //       });
-
-  //     // 🛑 Stop if user aborted or error occurred
-  //     if (error || !session?.id) {
-  //       error_toaster(
-  //         "Bank account linking not completed: Compulsory Step",
-  //         error?.message || "Session missing"
-  //       );
-  //       return;
-  //     }
-
-  //     // ✅ Proceed to attach only if session is valid and no error
-  //     const attachRes = await axios.post(
-  //       BASE_URL + `api/v1/admin/attach-bank-account`,
-  //       {
-  //         sessionId: session.id,
-  //         customerId: userID,
-  //       }
-  //     );
-
-  //     if (attachRes?.data?.status === "success") {
-  //       success_toaster("Bank account linked successfully!");
-  //     } else {
-  //       throw new Error("Bank attach failed");
-  //     }
-  //   } catch (error) {
-  //     ErrorHandler(error);
-  //   }
-  // };
-
-  //   if (userType === "salesRepresentative" && !isEmployee) {
-  //     stripeAccountStatus();
-  //     handleFinancialConnection();
-  //   }
-  // }, [userType, userID, isEmployee]);
 
   useEffect(() => {
     if (didInitRef.current) return;
@@ -570,28 +335,6 @@ export default function Home() {
     <Loader />
   ) : userType === "admin" && !isEmployee ? (
     <>
-      {/* <div
-        className={`bg-red-500 z-10 text-center text-white py-2 ${
-          userType === "salesRepresentative" &&
-          (isAccountConnected === "false" || connectAccountId === "null")
-            ? "flex items-center justify-center gap-x-2"
-            : "hidden"
-        }`}
-      >
-        Your Stripe Account is not Connected {"? click here "}
-        <button
-          onClick={handleConnectAccount}
-          className="flex gap-x-2 text-wrap items-center px-2 rounded-lg font-inter font-medium   duration-200 bg-theme text-white"
-        >
-          {(connectAccountId !== "null" || !connectAccountId) &&
-          isAccountConnected === "true"
-            ? "Stripe Dashboard"
-            : (connectAccountId === "null" || !connectAccountId) &&
-              isAccountConnected === "false"
-            ? "Connect Account"
-            : "Complete Account Registration"}
-        </button>
-      </div> */}
       <div
         className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain"
         data-testid={DASHBOARD.adminRoot}
@@ -609,66 +352,6 @@ export default function Home() {
                 Monitor your business analytics and statistics
               </p>
             </div>
-
-            {/* <div className="min-w-40">
-            {displayCustomFilters ? (
-              <div className="flex gap-x-2 items-center h-[42px]">
-                <div className=" space-x-2">
-                  <label
-                    htmlFor="startDate"
-                    className=" text-labelColor font-workSans font-semibold"
-                  >
-                    Start Date:
-                  </label>
-                  <input
-                    type="date"
-                    id="startDate"
-                    name="startDate"
-                    value={customDates?.startDate}
-                    onChange={handleCustomDates}
-                    className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium 
-                            text-labelColor"
-                  />
-                </div>
-                <div className="space-x-2">
-                  <label
-                    htmlFor="endDate"
-                    className=" text-labelColor font-workSans font-semibold"
-                  >
-                    End Date:
-                  </label>
-                  <input
-                    type="date"
-                    id="endDate"
-                    name="endDate"
-                    value={customDates?.endDate}
-                    onChange={handleCustomDates}
-                    className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium 
-                            text-labelColor"
-                  />
-                </div>
-                <div className="h-full flex items-center gap-x-2">
-                  <button
-                    onClick={handleCancel}
-                    className="px-2 h-full rounded-lg border border-black text-black bg-white hover:text-white hover:bg-black duration-200 group"
-                  >
-                    <ImCross size={24} />
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="font-bold">
-                <Select
-                  styles={selectStyles}
-                  defaultValue={{ value: "allTime", label: "All Time" }}
-                  placeholder="Select Year, Month, Week ..."
-                  value={selectedOption ? selectedOption : null}
-                  onChange={(val) => handleChange(val)}
-                  options={options ? options : null}
-                />
-              </div>
-            )}
-          </div> */}
           </div>
 
           <div
@@ -743,7 +426,7 @@ export default function Home() {
             <HomeMiniCards
               title="Total Revenue"
               // description="The bookings that are booked and an employee has been assigned to them."
-              total={`$${
+              total={`${
                 (parseFloat(
                   data?.data?.revenueSummaryClient?.revenueCollectedClient
                 ) || 0) +
@@ -757,7 +440,7 @@ export default function Home() {
             <HomeMiniCards
               title="Revenue From Client Orders"
               // description="The bookings that are booked and an employee has been assigned to them."
-              total={`$${
+              total={`${
                 data?.data?.revenueSummaryClient?.revenueCollectedClient || 0
               }`}
               // Icon={FiBox}
@@ -766,7 +449,7 @@ export default function Home() {
             <HomeMiniCards
               title="Revenue From Partner Orders"
               // description="The bookings that are booked and an employee has been assigned to them."
-              total={`$${
+              total={`${
                 data?.data?.revenueSummaryPartners?.revenueCollectedPartners ||
                 0
               }`}
@@ -866,13 +549,7 @@ export default function Home() {
               // Icon={FiBox}
               data-testid="dashboard-acknowledged-orders"
             />
-            {/* <HomeMiniCards
-              title="Dispatched Orders"
-              // description="The bookings in which minimum 1 service is not assigned to any employee"
-              total={data?.data?.ordersSummary?.dispatchedOrders}
-              // Icon={FiBox}
-              data-testid="dashboard-dispatched-orders"
-            /> */}
+
             <HomeMiniCards
               title="Dispatched Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
@@ -931,13 +608,7 @@ export default function Home() {
               // Icon={FiBox}
               data-testid="dashboard-acknowledged-orders"
             />
-            {/* <HomeMiniCards
-              title="Dispatched Orders"
-              // description="The bookings in which minimum 1 service is not assigned to any employee"
-              total={data?.data?.ordersSummary?.dispatchedOrders}
-              // Icon={FiBox}
-              data-testid="dashboard-dispatched-orders"
-            /> */}
+
             <HomeMiniCards
               title="Dispatched Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
@@ -1035,66 +706,6 @@ export default function Home() {
                 Monitor your business analytics and statistics
               </p>
             </div>
-
-            {/* <div className="min-w-40">
-            {displayCustomFilters ? (
-              <div className="flex gap-x-2 items-center h-[42px]">
-                <div className=" space-x-2">
-                  <label
-                    htmlFor="startDate"
-                    className=" text-labelColor font-workSans font-semibold"
-                  >
-                    Start Date:
-                  </label>
-                  <input
-                    type="date"
-                    id="startDate"
-                    name="startDate"
-                    value={customDates?.startDate}
-                    onChange={handleCustomDates}
-                    className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium 
-                            text-labelColor"
-                  />
-                </div>
-                <div className="space-x-2">
-                  <label
-                    htmlFor="endDate"
-                    className=" text-labelColor font-workSans font-semibold"
-                  >
-                    End Date:
-                  </label>
-                  <input
-                    type="date"
-                    id="endDate"
-                    name="endDate"
-                    value={customDates?.endDate}
-                    onChange={handleCustomDates}
-                    className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium 
-                            text-labelColor"
-                  />
-                </div>
-                <div className="h-full flex items-center gap-x-2">
-                  <button
-                    onClick={handleCancel}
-                    className="px-2 h-full rounded-lg border border-black text-black bg-white hover:text-white hover:bg-black duration-200 group"
-                  >
-                    <ImCross size={24} />
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="font-bold">
-                <Select
-                  styles={selectStyles}
-                  defaultValue={{ value: "allTime", label: "All Time" }}
-                  placeholder="Select Year, Month, Week ..."
-                  value={selectedOption ? selectedOption : null}
-                  onChange={(val) => handleChange(val)}
-                  options={options ? options : null}
-                />
-              </div>
-            )}
-          </div> */}
           </div>
 
           <div
@@ -1133,24 +744,6 @@ export default function Home() {
             />
           </div>
 
-          {/* <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mt-12">
-            <HomeMiniCards
-              title="Total Sale"
-              description="The bookings that are booked and an employee has been assigned to them."
-              total={`$${data?.data?.salesSummary?.sales}`}
-              Icon={FiBox}
-            />
-            <HomeMiniCards
-              title="Whole Sale"
-              total={`$${data?.data?.salesSummary?.wholesalePriceTotal}`}
-              Icon={LuPackageCheck}
-            />
-            <HomeMiniCards
-              title="Suppliers Earning"
-              total={`$${data?.data?.revenueSummary?.revenueCollected ?? 0}`}
-              Icon={LuPackageX}
-            />
-          </div> */}
           <div
             className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mt-6"
             data-testid={DASHBOARD.miniCardsGrid}
@@ -1352,11 +945,6 @@ export default function Home() {
               key={item.id}
               title={item.orderStatus}
               total={item.count}
-              // Icon={
-              //   item.orderStatus.toLowerCase().includes("cancel")
-              //     ? MdCancel
-              //     : BsCardList
-              // }
               Icon={
                 /cancel/i.test(item.orderStatus)
                   ? MdCancel

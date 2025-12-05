@@ -822,7 +822,7 @@ export default function LeadsKanban() {
             </div>
 
             <div className="flex flex-col gap-y-2 mt-4">
-              <label className="font-medium text-sm">Estimated Value</label>
+              <label className="font-medium text-sm">Estimated Value ($)</label>
               <InputText
                 type="number"
                 value={newLead.estimatedValue}

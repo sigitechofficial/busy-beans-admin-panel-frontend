@@ -44,7 +44,7 @@ function Invoice() {
           </li>
         </ul> */}
       </div>
-      <InvoicePDFDownload invoiceData={data?.data?.order} reFetch={reFetch} />
+      <InvoicePDFDownload invoiceData={data?.data?.order} adminAddress={data?.data?.adminAddress} reFetch={reFetch} />
     </div>
   );
 }

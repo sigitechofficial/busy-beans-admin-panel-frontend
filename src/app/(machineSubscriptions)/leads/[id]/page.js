@@ -31,6 +31,7 @@ import { leadsAPI } from "@/utilities/LeadsAPI";
 import { success_toaster, error_toaster } from "@/utilities/Toaster";
 import Loader from "@/components/ui/Loader";
 import LeadCTAButtons from "@/components/ui/LeadCTAButtons";
+import { formatDateTimeISO, formatUSD } from "@/utilities/constants";
 
 // Helper to generate pipeline based on status
 const generatePipeline = (currentStatus) => {
@@ -55,8 +56,8 @@ const generatePipeline = (currentStatus) => {
       index < currentIndex
         ? "completed"
         : index === currentIndex
-        ? "current"
-        : "upcoming",
+          ? "current"
+          : "upcoming",
   }));
 };
 
@@ -97,13 +98,13 @@ export default function LeadDetails() {
         leadId: `L${String(apiLead.id).padStart(4, "0")}`,
         company: apiLead.company,
         createdOn: apiLead.createdAt
-          ? new Date(apiLead.createdAt).toLocaleDateString()
+          ? formatDateTimeISO(apiLead.createdAt)
           : "-",
         status: apiLead.status,
         tag: apiLead.tag || "Hot Lead",
         leadSource: apiLead.leadSource,
         leadDate: apiLead.leadDate
-          ? new Date(apiLead.leadDate).toLocaleDateString()
+          ? formatDateTimeISO(apiLead.leadDate)
           : "-",
         preferredContact: apiLead.preferredContact,
         business: {
@@ -126,7 +127,7 @@ export default function LeadDetails() {
         },
         followUp: {
           nextDate: apiLead.followUpNextDate
-            ? new Date(apiLead.followUpNextDate).toLocaleDateString()
+            ? formatDateTimeISO(apiLead.followUpNextDate)
             : null,
           needed: apiLead.followUpNeeded,
           feedback: apiLead.followUpFeedback,
@@ -136,13 +137,13 @@ export default function LeadDetails() {
           sent: apiLead.quotationSent,
           amount: apiLead.quotationAmount,
           dateSent: apiLead.quotationDateSent
-            ? new Date(apiLead.quotationDateSent).toLocaleDateString()
+            ? formatDateTimeISO(apiLead.quotationDateSent)
             : null,
         },
         siteVisit: {
           scheduled: apiLead.siteVisitScheduled,
           date: apiLead.siteVisitDate
-            ? new Date(apiLead.siteVisitDate).toLocaleDateString()
+            ? formatDateTimeISO(apiLead.siteVisitDate)
             : null,
           completed: apiLead.siteVisitCompleted,
           notes: apiLead.siteVisitNotes,
@@ -162,7 +163,7 @@ export default function LeadDetails() {
             type: log.type,
             msg: log.message,
             user: log.User?.name || i === 0 ? "Customer" : "Administrator",
-            date: new Date(log.createdAt).toLocaleString(),
+            date: formatDateTimeISO(log.createdAt),
           })) || [],
         pipeline: generatePipeline(apiLead.status),
       });
@@ -396,13 +397,12 @@ export default function LeadDetails() {
           </div>
           <div className="flex items-center gap-3">
             <span
-              className={`px-4 py-1.5 rounded-full text-sm font-medium uppercase tracking-wide text-center ${
-                lead.status === "WON"
-                  ? "bg-green-500 text-white"
-                  : lead.status === "LOST"
+              className={`px-4 py-1.5 rounded-full text-sm font-medium uppercase tracking-wide text-center ${lead.status === "WON"
+                ? "bg-green-500 text-white"
+                : lead.status === "LOST"
                   ? "bg-red-500 text-white"
                   : "bg-gray-600 text-white"
-              }`}
+                }`}
             >
               {lead.status}
             </span>
@@ -483,13 +483,12 @@ export default function LeadDetails() {
                   className="flex flex-col items-center relative z-10 bg-white px-2"
                 >
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold mb-2 transition-colors border-2 ${
-                      step.status === "completed"
-                        ? "bg-green-500 border-green-500 text-white"
-                        : step.status === "current"
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold mb-2 transition-colors border-2 ${step.status === "completed"
+                      ? "bg-green-500 border-green-500 text-white"
+                      : step.status === "current"
                         ? "bg-black border-black text-white"
                         : "bg-white border-gray-200 text-gray-500"
-                    }`}
+                      }`}
                   >
                     {step.status === "completed" ? (
                       <MdCheck size={16} />
@@ -498,11 +497,10 @@ export default function LeadDetails() {
                     )}
                   </div>
                   <span
-                    className={`text-xs font-medium whitespace-nowrap ${
-                      step.status === "current"
-                        ? "text-black font-bold"
-                        : "text-gray-500"
-                    }`}
+                    className={`text-xs font-medium whitespace-nowrap ${step.status === "current"
+                      ? "text-black font-bold"
+                      : "text-gray-500"
+                      }`}
                   >
                     {step.label}
                   </span>
@@ -597,7 +595,7 @@ export default function LeadDetails() {
                   <MdTrendingUp />
                 </div>
                 <p className="text-sm font-medium text-gray-900">
-                  Est. Value: {lead.commercial.estValue}
+                  Est. Value: {formatUSD(lead.commercial.estValue)}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -699,7 +697,7 @@ export default function LeadDetails() {
                   <div className="flex items-center gap-2">
                     <MdTrendingUp className="text-gray-400" size={16} />
                     <p className="text-sm text-gray-900">
-                      Amount: {lead.quotation.amount}
+                      Amount: ${lead.quotation.amount}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -841,13 +839,12 @@ export default function LeadDetails() {
             {lead.logs.map((log) => (
               <div key={log.id} className="ml-6 relative">
                 <div
-                  className={`absolute -left-[33px] top-1 w-4 h-4 rounded-full border-2 border-white shadow-sm ${
-                    log.type === "status"
-                      ? "bg-blue-500"
-                      : log.type === "call"
+                  className={`absolute -left-[33px] top-1 w-4 h-4 rounded-full border-2 border-white shadow-sm ${log.type === "status"
+                    ? "bg-blue-500"
+                    : log.type === "call"
                       ? "bg-purple-500"
                       : "bg-gray-400"
-                  }`}
+                    }`}
                 ></div>
 
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
@@ -980,7 +977,7 @@ export default function LeadDetails() {
               value={quotationAmount}
               onChange={(e) => setQuotationAmount(e.target.value)}
               className="w-full p-2 border rounded-lg"
-              placeholder="e.g. ₹3,20,000"
+              placeholder="e.g. $3,20,000"
             />
           </div>
           <div className="flex justify-end gap-2">

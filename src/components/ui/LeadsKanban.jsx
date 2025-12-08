@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import LeadCard from "./LeadCard";
 import KanbanColumn from "./KanbanColumn";
 import Select from "react-select";
@@ -17,7 +17,7 @@ import api from "@/utilities/StatusErrorHandler";
 import { Calendar } from "primereact/calendar";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
-import { MdClose, MdCheck, MdFilterList } from "react-icons/md";
+import { MdClose, MdFilterList } from "react-icons/md";
 import {
   DndContext,
   DragOverlay,
@@ -149,7 +149,7 @@ export default function LeadsKanban() {
   );
 
   // Set countries data when it loads
-  React.useEffect(() => {
+  useEffect(() => {
     if (countriesData?.data?.data) {
       const countries = countriesData?.data?.data.map((country) => ({
         value: country?.isoCode,
@@ -160,7 +160,7 @@ export default function LeadsKanban() {
   }, [countriesData]);
 
   // Prepare machines data for dropdown
-  const machineOptions = React.useMemo(() => {
+  const machineOptions = useMemo(() => {
     if (!machinesData?.data?.data) return [];
     return machinesData.data.data.map((machine) => ({
       value: machine.id,
@@ -530,14 +530,13 @@ export default function LeadsKanban() {
         });
 
         if (response?.data?.success || response?.success) {
-          success_toaster(`Lead moved to ${newStatus}`);
+          // success_toaster(`Lead moved to ${newStatus}`);
           reFetch(); // Sync with backend to ensure consistency
         } else {
           error_toaster(response?.message || "Failed to move lead");
           reFetch(); // Revert if failed
         }
       } catch (error) {
-        console.error("Error moving lead:", error);
         error_toaster("Failed to move lead");
         reFetch();
       }
@@ -1360,7 +1359,7 @@ export default function LeadsKanban() {
           </div>
 
           {/* Form Actions */}
-          <div className="flex justify-end gap-4 mt-4 pt-4 border-t">
+          <div className="flex justify-end gap-4 mt-4 py-4 border-t">
             <button
               onClick={() => {
                 setAddModal(false);

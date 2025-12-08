@@ -73,6 +73,7 @@ export default function LeadDetails() {
 
   const [modal, setModal] = useState(false);
   const [selectedStage, setSelectedStage] = useState(null);
+  const [stageNote, setStageNote] = useState("");
 
   // New modals
   const [followUpModal, setFollowUpModal] = useState(false);
@@ -221,12 +222,14 @@ export default function LeadDetails() {
     try {
       const response = await leadsAPI.updateLead(lead.id, {
         status: selectedStage.value,
+        stageNote,
       });
 
       if (response?.data?.success || response?.success) {
         success_toaster("Stage updated successfully");
         setModal(false);
         setSelectedStage(null);
+        setStageNote("");
         reFetch();
       } else {
         error_toaster(response?.message || "Failed to update stage");
@@ -890,6 +893,18 @@ export default function LeadDetails() {
             menuPosition="fixed"
             placeholder="Choose stage..."
           />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 mt-4">
+              Note (Optional)
+            </label>
+            <textarea
+              value={stageNote}
+              onChange={(e) => setStageNote(e.target.value)}
+              className="w-full p-2 border rounded-lg resize-none"
+              rows={3}
+              placeholder="Add a note about this stage update..."
+            />
+          </div>
           <div className="flex justify-end gap-2 mt-4">
             <button
               onClick={() => setModal(false)}

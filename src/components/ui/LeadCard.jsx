@@ -36,6 +36,16 @@ export default function LeadCard({ lead, onStatusChange, onDelete, onEdit }) {
     return today === followUpDate;
   };
 
+  // Check if site visit date is today
+  const isSiteVisitToday = () => {
+    if (!lead.siteVisitDate) return false;
+    const today = dayjs().format("YYYY-MM-DD");
+    const siteVisitDate = dayjs(lead.siteVisitDate).format("YYYY-MM-DD");
+    return today === siteVisitDate;
+  };
+
+  const todaysAlert = isSiteVisitToday() || isFollowUpToday()
+
   // Function to handle lead deletion
   const handleDelete = async () => {
     try {
@@ -64,7 +74,7 @@ export default function LeadCard({ lead, onStatusChange, onDelete, onEdit }) {
         {...attributes}
         {...listeners}
         onClick={() => router.push(`/leads/${lead.id}`)}
-        className="bg-white p-4 rounded-xl shadow-sm border border-borderColor mb-3 hover:shadow-md transition-all duration-200 group cursor-grab active:cursor-grabbing relative touch-none"
+        className={`${todaysAlert ? "bg-[#FFD3D5]" : "bg-white"} p-4 rounded-xl shadow-sm border border-borderColor mb-3 hover:shadow-md transition-all duration-200 group cursor-grab active:cursor-grabbing relative touch-none`}
       >
         <div className="flex justify-between items-start mb-2">
           <h3 className="text-themeBlue font-bold text-sm hover:underline">
@@ -107,18 +117,38 @@ export default function LeadCard({ lead, onStatusChange, onDelete, onEdit }) {
             </p>
           </div>
 
-          <div className="flex items-center gap-1">
-            {isFollowUpToday() && (
-              <div
-                title="Follow-up due today"
-                className="text-red-500 bg-red-50 p-0.5 rounded-full"
-              >
-                <MdPriorityHigh size={14} />
+          <div className="flex flex-col items-end gap-1">
+            {lead.siteVisitDate && (
+              <div className="flex items-center gap-1">
+                {isSiteVisitToday() && (
+                  <div
+                    title="Site visit today"
+                    className="text-red-500 bg-red-50 p-0.5 rounded-full"
+                  >
+                    <MdPriorityHigh size={14} />
+                  </div>
+                )}
+                <p className="text-xs text-themeLightGray font-medium">
+                  V:{formatDateTimeISO(lead.siteVisitDate, "date") || ""}
+                </p>
               </div>
             )}
-            <p className="text-xs text-themeLightGray font-medium">
-              {formatDateTimeISO(lead.followUpNextDate, "date") || ""}
-            </p>
+
+            {lead.followUpNextDate && (
+              <div className="flex items-center gap-1">
+                {isFollowUpToday() && (
+                  <div
+                    title="Follow-up due today"
+                    className="text-red-500 bg-red-50 p-0.5 rounded-full"
+                  >
+                    <MdPriorityHigh size={14} />
+                  </div>
+                )}
+                <p className="text-xs text-themeLightGray font-medium">
+                  F:{formatDateTimeISO(lead.followUpNextDate, "date") || ""}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

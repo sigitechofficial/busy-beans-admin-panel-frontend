@@ -86,10 +86,11 @@ const DrawerBeans = ({
   const totalPrice = cartItems?.reduce((a, b) => {
     return (
       Number(a) +
-      (isDirectPartner ? parseFloat(b?.wholesalePrice) : parseFloat(b?.price)) *
-        Number(b?.qty)
+      (isDirectPartner || isSelfOrder ? parseFloat(b?.wholesalePrice) : parseFloat(b?.price)) *
+      Number(b?.qty)
     );
   }, 0);
+
 
   const totalWeight = cartItems?.reduce((a, b) => {
     return Number(a) + Number(b?.weight) * Number(b?.qty);
@@ -99,10 +100,10 @@ const DrawerBeans = ({
     isEmployee && hasPermission("selected-customer_view")
       ? `api/v1/admin/customer-management/customer-list/employee-id/${userID}`
       : userType === "admin"
-      ? `api/v1/admin/customer-management/customer-list/all`
-      : userType === "salesRepresentative"
-      ? `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}`
-      : `api/v1/admin/customer-management/customer-list/all`;
+        ? `api/v1/admin/customer-management/customer-list/all`
+        : userType === "salesRepresentative"
+          ? `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}`
+          : `api/v1/admin/customer-management/customer-list/all`;
 
   const { data } = GetAPI(customerListEndpoint, "customer");
 
@@ -304,13 +305,16 @@ const DrawerBeans = ({
     return updatedCart;
   };
 
+
+
+
   const handleSendQuotation = async () => {
-    const dp = Number(order?.discountPercentage || 0);
-    const discountAmt = (Number(totalPrice || 0) * dp) / 100;
+    const dp = parseFloat(order?.discountPercentage || 0);
+    const discountAmt = (parseFloat(totalPrice || 0) * dp) / 100;
     const subTotalAfterDiscount =
-      dp > 0 ? Number(totalPrice || 0) - discountAmt : Number(totalPrice || 0);
+      dp > 0 ? parseFloat(totalPrice || 0) - discountAmt : parseFloat(totalPrice || 0);
     const totalBillCalc =
-      subTotalAfterDiscount + Number(order?.shippingCharges || 0);
+      subTotalAfterDiscount + parseFloat(order?.shippingCharges || 0);
 
     if (type === "createOrder") {
       const createOrderData = JSON.parse(
@@ -336,19 +340,19 @@ const DrawerBeans = ({
             subTotal: subTotalAfterDiscount.toFixed(2),
             discountPrice: discountAmt.toFixed(2),
             discountPercentage: dp,
-            itemsPrice: Number(totalPrice || 0).toFixed(2),
+            itemsPrice: parseFloat(totalPrice || 0).toFixed(2),
             vat: 0.0,
             totalWeight: totalWeight,
             note: order?.note,
             paymentMethod: order?.paymentMethod,
             poNumber: order?.poNumber,
             frequency: order?.orderFrequency,
-            shippingCharges: Number(order?.shippingCharges || 0).toFixed(2),
+            shippingCharges: parseFloat(order?.shippingCharges || 0).toFixed(2),
             ...(isDirectPartner || isSelfOrder
               ? {
-                  salesRepId: order?.salesRepId || userID,
-                  addressId: order?.addressId,
-                } // direct-partner
+                salesRepId: order?.salesRepId || userID,
+                addressId: order?.addressId,
+              } // direct-partner
               : { userId: order?.userId, addressId: order?.addressId }), // normal customer
           };
 
@@ -356,8 +360,8 @@ const DrawerBeans = ({
             isDirectPartner || isSelfOrder
               ? `api/v1/admin/partner-order/book-new-order`
               : userType === "admin"
-              ? `api/v1/admin/book-new-order`
-              : `api/v1/admin/sales-rep/book-new-order/${userID}`;
+                ? `api/v1/admin/book-new-order`
+                : `api/v1/admin/sales-rep/book-new-order/${userID}`;
 
           const res = await PostAPI(
             endpoint,
@@ -608,12 +612,7 @@ const DrawerBeans = ({
   };
 
   const { subtotal, totalDiscount } = calculateDiscounts();
-  console.log(
-    "🚀 ~ calculateDiscounts ~ subtotal, totalDiscount:",
-    subtotal,
-    totalDiscount,
-    isSelfOrder
-  );
+
   const finalTotal =
     subtotal - totalDiscount + parseFloat(order?.shippingCharges || 0);
 
@@ -696,23 +695,23 @@ const DrawerBeans = ({
                   {["direct-partner", "dropship-partner"].includes(
                     partnerType
                   ) && (
-                    <div className="flex items-center gap-x-2 justify-end">
-                      <label className="text-white font-medium">
-                        Self Order
-                      </label>
-                      <Switch
-                        onChange={(e) => selfOrderSwitch(e)}
-                        checked={isSelfOrder}
-                        uncheckedIcon={false}
-                        checkedIcon={false}
-                        onColor="#3E342C"
-                        onHandleColor="#fff"
-                        className="react-switch"
-                        boxShadow="none"
-                        data-testid={ORDERS_CREATE_DRAWER.selfOrderSwitch}
-                      />
-                    </div>
-                  )}
+                      <div className="flex items-center gap-x-2 justify-end">
+                        <label className="text-white font-medium">
+                          Self Order
+                        </label>
+                        <Switch
+                          onChange={(e) => selfOrderSwitch(e)}
+                          checked={isSelfOrder}
+                          uncheckedIcon={false}
+                          checkedIcon={false}
+                          onColor="#3E342C"
+                          onHandleColor="#fff"
+                          className="react-switch"
+                          boxShadow="none"
+                          data-testid={ORDERS_CREATE_DRAWER.selfOrderSwitch}
+                        />
+                      </div>
+                    )}
 
                   {/* Company flow */}
                   {!isDirectPartner && !isSelfOrder && (
@@ -833,8 +832,8 @@ const DrawerBeans = ({
                       value={
                         order.paymentMethod
                           ? paymentMethodOptions.find(
-                              (opt) => opt.value === order.paymentMethod
-                            ) || null
+                            (opt) => opt.value === order.paymentMethod
+                          ) || null
                           : null
                       }
                       options={paymentMethodOptions}
@@ -907,9 +906,8 @@ const DrawerBeans = ({
                         <input
                           type="text"
                           id="courier-note"
-                          className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${
-                            order?.note ? "placeholder-transparent" : ""
-                          }`}
+                          className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${order?.note ? "placeholder-transparent" : ""
+                            }`}
                           value={order?.note}
                           onChange={(e) =>
                             setOrder({ ...order, note: e.target.value })
@@ -918,11 +916,10 @@ const DrawerBeans = ({
                         />
                         <label
                           htmlFor="courier-note"
-                          className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${
-                            order?.note
+                          className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${order?.note
                               ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
                               : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
-                          }`}
+                            }`}
                         >
                           {order?.note
                             ? "Note for the supplier (optional)"
@@ -936,9 +933,8 @@ const DrawerBeans = ({
                         <input
                           type="text"
                           id="poNumber"
-                          className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${
-                            order?.note ? "placeholder-transparent" : ""
-                          }`}
+                          className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${order?.note ? "placeholder-transparent" : ""
+                            }`}
                           value={order?.poNumber}
                           onChange={(e) =>
                             setOrder({ ...order, poNumber: e.target.value })
@@ -947,11 +943,10 @@ const DrawerBeans = ({
                         />
                         <label
                           htmlFor="poNumber"
-                          className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${
-                            order?.poNumber
+                          className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${order?.poNumber
                               ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
                               : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
-                          }`}
+                            }`}
                         >
                           {order?.poNumber
                             ? "Purchase Order Number"
@@ -994,9 +989,8 @@ const DrawerBeans = ({
                         setEmail("");
                         setEmailType(!emailType);
                       }}
-                      className={`${
-                        emailType ? "w-40" : "w-auto"
-                      } h-12 bg-white text-black px-[7px] rounded-md`}
+                      className={`${emailType ? "w-40" : "w-auto"
+                        } h-12 bg-white text-black px-[7px] rounded-md`}
                     >
                       {emailType ? "Custom Email" : <RxCross2 size={32} />}
                     </button>
@@ -1030,7 +1024,7 @@ const DrawerBeans = ({
                               <div className="flex items-center gap-x-3">
                                 <span className="font-semibold text-sm text-white mt-1">
                                   {"$ "}
-                                  {parseFloat(isSelfOrder ? cartI?.wholesalePrice : cartI?.price)}{" "}
+                                  {parseFloat(isDirectPartner || isSelfOrder ? cartI?.wholesalePrice : cartI?.price)}{" "}
                                 </span>
                               </div>
                             </div>
@@ -1159,9 +1153,8 @@ const DrawerBeans = ({
           )}
 
           <div
-            className={`absolute bottom-0 left-0 py-5 flex justify-center w-full px-4 sm:px-0 sm:left-[30px] sm:w-[452px] ${
-              loader ? "opacity-60" : "bg-theme"
-            }`}
+            className={`absolute bottom-0 left-0 py-5 flex justify-center w-full px-4 sm:px-0 sm:left-[30px] sm:w-[452px] ${loader ? "opacity-60" : "bg-theme"
+              }`}
           >
             <button
               disabled={loader}

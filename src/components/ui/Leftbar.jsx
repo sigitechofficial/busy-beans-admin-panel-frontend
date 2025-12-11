@@ -34,6 +34,7 @@ import {
 } from "@/utilities/Toaster";
 import axios from "axios";
 import { BASE_URL } from "@/utilities/URL";
+
 import ErrorHandler from "@/utilities/ErrorHandler";
 import GetAPI from "@/utilities/GetAPI";
 import { PostAPI } from "@/utilities/PostAPI";
@@ -58,15 +59,15 @@ export default function Leftbar(props) {
     userType === "admin"
       ? "api/v1/admin/order-navigation-counts"
       : userType === "salesRepresentative"
-      ? `api/v1/admin/order-navigation-counts/sales-rep/${userID}`
-      : `api/v1/admin/order-navigation-counts/supplier/${userID}`;
+        ? `api/v1/admin/order-navigation-counts/sales-rep/${userID}`
+        : `api/v1/admin/order-navigation-counts/supplier/${userID}`;
 
   const PartnerCountUrl =
     userType === "admin"
       ? "api/v1/admin/partner-order-navigation-counts"
       : userType === "salesRepresentative"
-      ? `api/v1/admin/partner-order-navigation-counts/sales-rep/${userID}`
-      : `api/v1/admin/partner-order-navigation-counts/supplier/${userID}`;
+        ? `api/v1/admin/partner-order-navigation-counts/sales-rep/${userID}`
+        : `api/v1/admin/partner-order-navigation-counts/supplier/${userID}`;
 
   const overAllData = GetAPI(generateUrl);
   const PartnerCounts = GetAPI(PartnerCountUrl);
@@ -282,7 +283,7 @@ export default function Leftbar(props) {
         const token =
           typeof window !== "undefined"
             ? localStorage.getItem("token") ||
-              localStorage.getItem("accessToken")
+            localStorage.getItem("accessToken")
             : "";
         const res = await axios.get(
           BASE_URL + `api/v1/admin/stripe-connect-account-dashboard/${userID}`,
@@ -381,9 +382,8 @@ export default function Leftbar(props) {
   return (
     <section
       data-testid={LEFTBAR.root}
-      className={`bg-white ${
-        toggle ? "hidden" : "block"
-      } md:block fixed w-full md:max-w-[240px] lg:max-w-[288px] h-full sm:pb-5 sm:pl-2 border-r-2 z-50`}
+      className={`bg-white ${toggle ? "hidden" : "block"
+        } md:block fixed w-full md:max-w-[240px] lg:max-w-[288px] h-full sm:pb-5 sm:pl-2 border-r-2 z-50`}
     >
       <div
         className="flex items-center justify-center font-bold text-4xl 2xl:min-h-[70px] h-[70px] 2xl:h-[94px] border-b max-md:hidden"
@@ -441,7 +441,10 @@ export default function Leftbar(props) {
             <ListHead
               title="Order Management"
               Icon={MdListAlt}
-              active={pathname.includes("/orders")}
+              active={
+                pathname.includes("/orders/create") ||
+                pathname.includes("/orders/emails")
+              }
               Angle={
                 FaAngleRight
                 // active?.orderManagement?.tab === "orderManagement" &&
@@ -469,195 +472,190 @@ export default function Leftbar(props) {
                   )}
 
                   <ListItems title="Emails" to="/orders/emails" />
+                </div>
+              </>
+            )}
 
-                  <ListHead
-                    title="Quickbooks Invoices"
-                    Icon={MdStore}
-                    active={pathname.includes("/orders/quickbooks")}
-                    Angle={FaAngleRight}
-                    onClick={handleQuickbooksOrdersToggle}
-                    status={active?.quickbookOrders?.status}
-                  />
+          <ListHead
+            title="Quickbooks Invoices"
+            Icon={MdStore}
+            active={pathname.includes("/orders/quickbooks")}
+            Angle={FaAngleRight}
+            onClick={handleQuickbooksOrdersToggle}
+            status={active?.quickbookOrders?.status}
+          />
 
-                  {active?.quickbookOrders?.status && (
-                    <div className="m-2 relative space-y-1">
-                      <ListItems
-                        title="Partner Invoices"
-                        to="/orders/quickbooks/partner"
-                        data-testid={LEFTBAR.listItem("partner", "Orders")}
-                      />
+          {active?.quickbookOrders?.status && (
+            <div className="m-2 relative space-y-1">
+              <ListItems
+                title="Partner Invoices"
+                to="/orders/quickbooks/partner"
+                data-testid={LEFTBAR.listItem("partner", "Orders")}
+              />
 
-                      <ListItems
-                        title="Customer Invoices"
-                        to="/orders/quickbooks/customer"
-                        data-testid={LEFTBAR.listItem("customer", "Orders")}
-                      />
+              <ListItems
+                title="Customer Invoices"
+                to="/orders/quickbooks/customer"
+                data-testid={LEFTBAR.listItem("customer", "Orders")}
+              />
 
-                      <hr className="w-full" />
-                    </div>
-                  )}
+              <hr className="w-full" />
+            </div>
+          )}
 
-                  <ListHead
-                    title="Partner Orders"
-                    Icon={MdStore}
-                    active={pathname.includes("/orders/partnerOrders")}
-                    Angle={FaAngleRight}
-                    onClick={handlePartnerOrdersToggle}
-                    status={active?.partnerOrders?.status}
-                  />
+          <ListHead
+            title="Partner Orders"
+            Icon={MdStore}
+            active={pathname.includes("/orders/partnerOrders")}
+            Angle={FaAngleRight}
+            onClick={handlePartnerOrdersToggle}
+            status={active?.partnerOrders?.status}
+          />
 
-                  {active?.partnerOrders?.status && (
-                    <div className="m-2 relative space-y-1">
-                      <ListItems
-                        title="New Partner Orders"
-                        to="/orders/partnerOrders/new-orders"
-                        data-testid={LEFTBAR.listItem(
-                          "partnerOrders",
-                          "New Partner Orders"
-                        )}
-                        count={PartnerCounts?.data?.data?.[0]?.count}
-                      />
-                      {/* <ListItems
+          {active?.partnerOrders?.status && (
+            <div className="m-2 relative space-y-1">
+              <ListItems
+                title="New Partner Orders"
+                to="/orders/partnerOrders/new-orders"
+                data-testid={LEFTBAR.listItem(
+                  "partnerOrders",
+                  "New Partner Orders"
+                )}
+                count={PartnerCounts?.data?.data?.[0]?.count}
+              />
+              {/* <ListItems
                       title="All Partner Orders"
                       to="/orders/partnerOrders/all-orders"
                       data-testid={LEFTBAR.listItem("partnerOrders", "All Partner Orders")}
                     /> */}
-                      <ListItems
-                        title="Dispatched Orders"
-                        to="/orders/partnerOrders/dispatched"
-                        data-testid={LEFTBAR.listItem(
-                          "partnerOrders",
-                          "Dispatched Orders"
-                        )}
-                        count={PartnerCounts?.data?.data?.[1]?.count}
-                      />
-                      <ListItems
-                        title="Acknowledged Orders"
-                        to="/orders/partnerOrders/acknowledged"
-                        data-testid={LEFTBAR.listItem(
-                          "partnerOrders",
-                          "Acknowledged Orders"
-                        )}
-                        count={PartnerCounts?.data?.data?.[2]?.count}
-                      />
-                      <ListItems
-                        title="Shipped Orders"
-                        to="/orders/partnerOrders/shiped"
-                        data-testid={LEFTBAR.listItem(
-                          "partnerOrders",
-                          "Shipped Orders"
-                        )}
-                        count={PartnerCounts?.data?.data?.[4]?.count}
-                      />
-                      <ListItems
-                        title="Cancelled Orders"
-                        to="/orders/partnerOrders/cancelled"
-                        data-testid={LEFTBAR.listItem(
-                          "partnerOrders",
-                          "Cancelled Orders"
-                        )}
-                        count={PartnerCounts?.data?.data?.[5]?.count}
-                      />
-                      <hr className="w-full" />
-                    </div>
-                  )}
+              <ListItems
+                title="Dispatched Orders"
+                to="/orders/partnerOrders/dispatched"
+                data-testid={LEFTBAR.listItem(
+                  "partnerOrders",
+                  "Dispatched Orders"
+                )}
+                count={PartnerCounts?.data?.data?.[1]?.count}
+              />
+              <ListItems
+                title="Acknowledged Orders"
+                to="/orders/partnerOrders/acknowledged"
+                data-testid={LEFTBAR.listItem(
+                  "partnerOrders",
+                  "Acknowledged Orders"
+                )}
+                count={PartnerCounts?.data?.data?.[2]?.count}
+              />
+              <ListItems
+                title="Shipped Orders"
+                to="/orders/partnerOrders/shiped"
+                data-testid={LEFTBAR.listItem(
+                  "partnerOrders",
+                  "Shipped Orders"
+                )}
+                count={PartnerCounts?.data?.data?.[4]?.count}
+              />
+              <ListItems
+                title="Cancelled Orders"
+                to="/orders/partnerOrders/cancelled"
+                data-testid={LEFTBAR.listItem(
+                  "partnerOrders",
+                  "Cancelled Orders"
+                )}
+                count={PartnerCounts?.data?.data?.[5]?.count}
+              />
+              <hr className="w-full" />
+            </div>
+          )}
 
-                  <ListHead
-                    title="Customer Orders"
-                    Icon={MdStore}
-                    active={
-                      pathname === "/orders" ||
-                      pathname === "/orders/new-orders" ||
-                      pathname === "/orders/upcoming" ||
-                      pathname === "/orders/assigned" ||
-                      pathname === "/orders/acknowledged" ||
-                      pathname === "/orders/shiped" ||
-                      pathname === "/orders/cancelled"
-                    }
-                    Angle={FaAngleRight}
-                    status={active?.customerOrder?.status}
-                    onClick={handleCustomerOrdersToggle}
-                  />
+          <ListHead
+            title="Customer Orders"
+            Icon={MdStore}
+            active={
+              pathname === "/orders" ||
+              pathname === "/orders/new-orders" ||
+              pathname === "/orders/upcoming" ||
+              pathname === "/orders/assigned" ||
+              pathname === "/orders/acknowledged" ||
+              pathname === "/orders/shiped" ||
+              pathname === "/orders/cancelled"
+            }
+            Angle={FaAngleRight}
+            status={active?.customerOrder?.status}
+            onClick={handleCustomerOrdersToggle}
+          />
 
-                  {active?.customerOrder?.status && (
-                    <div className="m-2 relative space-y-1">
-                      <ListItems
-                        title="New Orders"
-                        to="/orders/new-orders"
-                        count={overAllData?.data?.data?.[0]?.count || ""}
-                        data-testid={LEFTBAR.listItem(
-                          "orderManagement",
-                          "New Orders"
-                        )}
-                      />
-                      <ListItems
-                        title="All Orders"
-                        to="/orders"
-                        count={allOrder || ""}
-                        data-testid={LEFTBAR.listItem(
-                          "orderManagement",
-                          "All Orders"
-                        )}
-                      />
-                      <ListItems
-                        title="Upcoming Orders"
-                        to="/orders/upcoming"
-                        count={overAllData?.data?.data?.[6]?.count || ""}
-                        data-testid={LEFTBAR.listItem(
-                          "orderManagement",
-                          "Upcoming Orders"
-                        )}
-                      />
+          {active?.customerOrder?.status && (
+            <div className="m-2 relative space-y-1">
+              <ListItems
+                title="New Orders"
+                to="/orders/new-orders"
+                count={overAllData?.data?.data?.[0]?.count || ""}
+                data-testid={LEFTBAR.listItem("orderManagement", "New Orders")}
+              />
+              <ListItems
+                title="All Orders"
+                to="/orders"
+                count={allOrder || ""}
+                data-testid={LEFTBAR.listItem("orderManagement", "All Orders")}
+              />
+              <ListItems
+                title="Upcoming Orders"
+                to="/orders/upcoming"
+                count={overAllData?.data?.data?.[6]?.count || ""}
+                data-testid={LEFTBAR.listItem(
+                  "orderManagement",
+                  "Upcoming Orders"
+                )}
+              />
 
-                      <ListItems
-                        title="Acknowledged Orders"
-                        to="/orders/acknowledged"
-                        count={overAllData?.data?.data?.[2]?.count || ""}
-                        data-testid={LEFTBAR.listItem(
-                          "orderManagement",
-                          "Acknowledged Orders"
-                        )}
-                      />
+              <ListItems
+                title="Acknowledged Orders"
+                to="/orders/acknowledged"
+                count={overAllData?.data?.data?.[2]?.count || ""}
+                data-testid={LEFTBAR.listItem(
+                  "orderManagement",
+                  "Acknowledged Orders"
+                )}
+              />
 
-                      <ListItems
-                        title="Dispatched Orders"
-                        to="/orders/assigned"
-                        count={overAllData?.data?.data?.[1]?.count || ""}
-                        data-testid={LEFTBAR.listItem(
-                          "orderManagement",
-                          "Dispatched Orders"
-                        )}
-                      />
+              <ListItems
+                title="Dispatched Orders"
+                to="/orders/assigned"
+                count={overAllData?.data?.data?.[1]?.count || ""}
+                data-testid={LEFTBAR.listItem(
+                  "orderManagement",
+                  "Dispatched Orders"
+                )}
+              />
 
-                      <ListItems
-                        title="Shipped Orders"
-                        to="/orders/shiped"
-                        count={overAllData?.data?.data?.[4]?.count || ""}
-                        data-testid={LEFTBAR.listItem(
-                          "orderManagement",
-                          "Shipped Orders"
-                        )}
-                      />
-                      {/* <ListItems
+              <ListItems
+                title="Shipped Orders"
+                to="/orders/shiped"
+                count={overAllData?.data?.data?.[4]?.count || ""}
+                data-testid={LEFTBAR.listItem(
+                  "orderManagement",
+                  "Shipped Orders"
+                )}
+              />
+              {/* <ListItems
                     title="Dispatched Orders"
                     to="/orders/dispatched"
                   /> */}
-                      <ListItems
-                        title="Cancelled Orders"
-                        to="/orders/cancelled"
-                        count={overAllData?.data?.data?.[5]?.count || ""}
-                        data-testid={LEFTBAR.listItem(
-                          "orderManagement",
-                          "Cancelled Orders"
-                        )}
-                      />
+              <ListItems
+                title="Cancelled Orders"
+                to="/orders/cancelled"
+                count={overAllData?.data?.data?.[5]?.count || ""}
+                data-testid={LEFTBAR.listItem(
+                  "orderManagement",
+                  "Cancelled Orders"
+                )}
+              />
 
-                      <hr className="w-full" />
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
+              <hr className="w-full" />
+            </div>
+          )}
+
           {hasPermission("supplier_view") && (
             <ListHead
               title="Supplier Management"
@@ -668,7 +666,7 @@ export default function Leftbar(props) {
               }
               status={
                 active?.supplierManagement?.tab === "supplierManagement" &&
-                active?.supplierManagement?.status
+                  active?.supplierManagement?.status
                   ? true
                   : false
               }
@@ -704,26 +702,26 @@ export default function Leftbar(props) {
             )}
           {(hasPermission("customer_view") ||
             hasPermission("selected-customer_view")) && (
-            <ListHead
-              title="Client Management"
-              Icon={MdGroups}
-              data-testid={LEFTBAR.clientManagementSection}
-              active={pathname.includes("/customers")}
-              status={
-                active?.clientManagement?.tab === "clientManagement" &&
-                active?.clientManagement?.status
-                  ? true
-                  : false
-              }
-              Angle={FaAngleRight}
-              onClick={() =>
-                handleActive(
-                  "clientManagement",
-                  active?.clientManagement?.status
-                )
-              }
-            />
-          )}
+              <ListHead
+                title="Client Management"
+                Icon={MdGroups}
+                data-testid={LEFTBAR.clientManagementSection}
+                active={pathname.includes("/customers")}
+                status={
+                  active?.clientManagement?.tab === "clientManagement" &&
+                    active?.clientManagement?.status
+                    ? true
+                    : false
+                }
+                Angle={FaAngleRight}
+                onClick={() =>
+                  handleActive(
+                    "clientManagement",
+                    active?.clientManagement?.status
+                  )
+                }
+              />
+            )}
           {active?.clientManagement?.tab === "clientManagement" &&
             active?.clientManagement?.status && (
               <>
@@ -761,7 +759,7 @@ export default function Leftbar(props) {
               active={pathname === "/sale-representative"}
               status={
                 active?.saleRepresentative?.tab === "saleRepresentative" &&
-                active?.saleRepresentative?.status
+                  active?.saleRepresentative?.status
                   ? true
                   : false
               }
@@ -797,12 +795,13 @@ export default function Leftbar(props) {
               active={pathname.includes("/leads")}
               data-testid={LEFTBAR.subscriptionManagementSection}
               Icon={MdCoffeeMaker}
-              Angle={
+              status={
                 active?.subscription?.tab === "subscription" &&
-                active?.subscription?.status
-                  ? FaAngleUp
-                  : FaAngleDown
+                  active?.subscription?.status
+                  ? true
+                  : false
               }
+              Angle={FaAngleRight}
               onClick={() =>
                 handleActive("subscription", active?.subscription?.status)
               }
@@ -819,6 +818,14 @@ export default function Leftbar(props) {
                     data-testid={LEFTBAR.listItem(
                       "subscription",
                       "Subscription"
+                    )}
+                  />
+                  <ListItems
+                    title="Purchased"
+                    to="/purchased"
+                    data-testid={LEFTBAR.listItem(
+                      "machineSubscriptions",
+                      "Purchased"
                     )}
                   />
                   {/* <ListItems
@@ -850,7 +857,7 @@ export default function Leftbar(props) {
               data-testid={LEFTBAR.invoiceManagementSection}
               status={
                 active?.invoiceManagement?.tab === "invoiceManagement" &&
-                active?.invoiceManagement?.status
+                  active?.invoiceManagement?.status
                   ? true
                   : false
               }
@@ -1086,7 +1093,7 @@ export default function Leftbar(props) {
               Icon={MdInventory}
               status={
                 active?.inventoryManagement?.tab === "inventoryManagement" &&
-                active?.inventoryManagement?.status
+                  active?.inventoryManagement?.status
                   ? true
                   : false
               }
@@ -1125,7 +1132,7 @@ export default function Leftbar(props) {
               Icon={MdCategory}
               status={
                 active?.categoryManagement?.tab === "categoryManagement" &&
-                active?.categoryManagement?.status
+                  active?.categoryManagement?.status
                   ? true
                   : false
               }
@@ -1164,7 +1171,7 @@ export default function Leftbar(props) {
               Icon={MdManageAccounts}
               status={
                 active?.employees?.tab === "employees" &&
-                active?.employees?.status
+                  active?.employees?.status
                   ? true
                   : false
               }
@@ -1241,7 +1248,7 @@ export default function Leftbar(props) {
               }
               status={
                 active?.zoneManagement?.tab === "zoneManagement" &&
-                active?.zoneManagement?.status
+                  active?.zoneManagement?.status
                   ? true
                   : false
               }
@@ -1325,7 +1332,7 @@ export default function Leftbar(props) {
             }
             status={
               active?.quickbooks?.tab === "quickbooks" &&
-              active?.quickbooks?.status
+                active?.quickbooks?.status
                 ? true
                 : false
             }
@@ -1371,7 +1378,7 @@ export default function Leftbar(props) {
             Icon={MdDashboard}
             data-testid={LEFTBAR.dashboardSection}
           />
-
+          {/* 
           <ListHead
             title="Order Management"
             Icon={MdListAlt}
@@ -1395,21 +1402,20 @@ export default function Leftbar(props) {
             onClick={() =>
               handleActive("orderManagement", active?.orderManagement?.status)
             }
-          />
+          /> */}
 
-          {active?.orderManagement?.tab === "orderManagement" &&
+          {/* {active?.orderManagement?.tab === "orderManagement" &&
             active?.orderManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  {/* <ListItems
+                  <ListItems
                     title="Self Orders"
                     to="/supplier/Self-orders"
-                    // count={overAllData?.data?.data?.[2]?.count || ""}
                     data-testid={LEFTBAR.listItem(
                       "orderManagement",
                       "Self Orders"
                     )}
-                  /> */}
+                  />
 
                   <ListHead
                     title="Partner Orders"
@@ -1505,17 +1511,131 @@ export default function Leftbar(props) {
                     </div>
                   )}
 
-                  {/* <ListItems
+                  <ListItems
+                    title="Dispatched Orders"
+                    to="/supplier/dispatched-orders"
+                  />
+                  <ListItems
+                    title="Cancelled Orders"
+                    to="/supplier/cancelled-orders"
+                  />
+                </div>
+              </>
+            )} */}
+
+          <div className="m-2 relative space-y-1">
+            {/* <ListItems
+                    title="Self Orders"
+                    to="/supplier/Self-orders"
+                    // count={overAllData?.data?.data?.[2]?.count || ""}
+                    data-testid={LEFTBAR.listItem(
+                      "orderManagement",
+                      "Self Orders"
+                    )}
+                  /> */}
+
+            <ListHead
+              title="Partner Orders"
+              Icon={MdStore}
+              active={pathname.includes("/supplier/partner")}
+              status={active?.partnerOrders?.status ? true : false}
+              Angle={FaAngleRight}
+              onClick={handlePartnerOrdersToggle}
+            />
+
+            {active?.partnerOrders?.status && (
+              <div className="m-2 relative space-y-1">
+                <ListItems
+                  title="New Partner Orders"
+                  to="/supplier/partner/new-orders"
+                  data-testid={LEFTBAR.listItem(
+                    "partnerOrders",
+                    "New Partner Orders"
+                  )}
+                  count={PartnerCounts?.data?.data?.[1]?.count}
+                />
+
+                <ListItems
+                  title="Acknowledged Orders"
+                  to="/supplier/partner/acknowledged-orders"
+                  data-testid={LEFTBAR.listItem(
+                    "partnerOrders",
+                    "Acknowledged Orders"
+                  )}
+                  count={PartnerCounts?.data?.data?.[2]?.count}
+                />
+                <ListItems
+                  title="Shipped Orders"
+                  to="/supplier/partner/shipped-orders"
+                  data-testid={LEFTBAR.listItem(
+                    "partnerOrders",
+                    "Shipped Orders"
+                  )}
+                  count={PartnerCounts?.data?.data?.[4]?.count}
+                />
+
+                <hr className="w-full" />
+              </div>
+            )}
+
+            <ListHead
+              title="Customer Orders"
+              Icon={MdStore}
+              active={
+                pathname === "/supplier/assigned-orders" ||
+                pathname === "/supplier/acknowledge-orders" ||
+                pathname === "/supplier/shiped-orders"
+              }
+              status={active?.customerOrder?.status ? true : false}
+              Angle={FaAngleRight}
+              onClick={handleCustomerOrdersToggle}
+            />
+
+            {active?.customerOrder?.status && (
+              <div className="m-2 relative space-y-1">
+                <ListItems
+                  title="New Orders"
+                  to="/supplier/assigned-orders"
+                  count={overAllData?.data?.data?.[1]?.count || ""}
+                  data-testid={LEFTBAR.listItem(
+                    "orderManagement",
+                    "New Orders"
+                  )}
+                />
+
+                <ListItems
+                  title="Acknowledged Orders"
+                  to="/supplier/acknowledge-orders"
+                  count={overAllData?.data?.data?.[2]?.count || ""}
+                  data-testid={LEFTBAR.listItem(
+                    "orderManagement",
+                    "Acknowledged Orders"
+                  )}
+                />
+
+                <ListItems
+                  title="Shipped Orders"
+                  to="/supplier/shiped-orders"
+                  count={overAllData?.data?.data?.[4]?.count || ""}
+                  data-testid={LEFTBAR.listItem(
+                    "orderManagement",
+                    "Shipped Orders"
+                  )}
+                />
+
+                <hr className="w-full" />
+              </div>
+            )}
+
+            {/* <ListItems
                     title="Dispatched Orders"
                     to="/supplier/dispatched-orders"
                   /> */}
-                  {/* <ListItems
+            {/* <ListItems
                     title="Cancelled Orders"
                     to="/supplier/cancelled-orders"
                   /> */}
-                </div>
-              </>
-            )}
+          </div>
 
           <ListHead
             title="Report Management"
@@ -1554,7 +1674,7 @@ export default function Leftbar(props) {
               data-testid={LEFTBAR.quotationManagementSection}
               status={
                 active?.inventoryManagement?.tab === "inventoryManagement" &&
-                active?.inventoryManagement?.status
+                  active?.inventoryManagement?.status
                   ? true
                   : false
               }
@@ -1587,26 +1707,26 @@ export default function Leftbar(props) {
 
           {(hasPermission("customer_view") ||
             hasPermission("selected-customer_view")) && (
-            <ListHead
-              title="Client Management"
-              Icon={MdGroups}
-              data-testid={LEFTBAR.clientManagementSection}
-              active={pathname === "/sales-representative/customers"}
-              status={
-                active?.clientManagement?.tab === "clientManagement" &&
-                active?.clientManagement?.status
-                  ? true
-                  : false
-              }
-              Angle={FaAngleRight}
-              onClick={() =>
-                handleActive(
-                  "clientManagement",
-                  active?.clientManagement?.status
-                )
-              }
-            />
-          )}
+              <ListHead
+                title="Client Management"
+                Icon={MdGroups}
+                data-testid={LEFTBAR.clientManagementSection}
+                active={pathname === "/sales-representative/customers"}
+                status={
+                  active?.clientManagement?.tab === "clientManagement" &&
+                    active?.clientManagement?.status
+                    ? true
+                    : false
+                }
+                Angle={FaAngleRight}
+                onClick={() =>
+                  handleActive(
+                    "clientManagement",
+                    active?.clientManagement?.status
+                  )
+                }
+              />
+            )}
 
           {active?.clientManagement?.tab === "clientManagement" &&
             active?.clientManagement?.status && (
@@ -1657,12 +1777,10 @@ export default function Leftbar(props) {
               title="Order Management"
               Icon={MdListAlt}
               data-testid={LEFTBAR.orderManagementSection}
-              active={
-                pathname.includes("/orders") || pathname.includes("-order")
-              }
+              active={pathname === "/sales-representative/create-order"}
               status={
                 active?.orderManagement?.tab === "orderManagement" &&
-                active?.orderManagement?.status
+                  active?.orderManagement?.status
                   ? true
                   : false
               }
@@ -1687,218 +1805,230 @@ export default function Leftbar(props) {
                       )}
                     />
                   )}
+                </div>
+              </>
+            )}
 
-                  <ListHead
-                    title="Quickbooks Invoices"
-                    Icon={MdStore}
-                    active={pathname.includes("/orders/quickbooks")}
-                    Angle={FaAngleRight}
-                    onClick={handleQuickbooksOrdersToggle}
-                    status={active?.quickbookOrders?.status}
-                  />
+          <ListHead
+            title="Quickbooks Invoices"
+            Icon={MdStore}
+            active={pathname.includes("/orders/quickbooks")}
+            Angle={FaAngleRight}
+            onClick={handleQuickbooksOrdersToggle}
+            status={active?.quickbookOrders?.status}
+          />
 
-                  {active?.quickbookOrders?.status && (
-                    <div className="m-2 relative space-y-1">
-                      {/* <ListItems
+          {active?.quickbookOrders?.status && (
+            <div className="m-2 relative space-y-1">
+              {/* <ListItems
                         title="Partner Orders"
                         to="/orders/quickbooks/partner"
                         data-testid={LEFTBAR.listItem("partner", "Orders")}
                       /> */}
 
-                      <ListItems
-                        title="Customer Invoices"
-                        to="/orders/quickbooks/customer"
-                        data-testid={LEFTBAR.listItem("customer", "Orders")}
-                      />
+              <ListItems
+                title="Customer Invoices"
+                to="/orders/quickbooks/customer"
+                data-testid={LEFTBAR.listItem("customer", "Orders")}
+              />
 
-                      <hr className="w-full" />
-                    </div>
-                  )}
+              <hr className="w-full" />
+            </div>
+          )}
 
-                  <ListHead
-                    title="Partner Orders"
-                    Icon={MdStore}
-                    active={pathname.includes("/orders/partnerOrders")}
-                    status={active?.partnerOrders?.status ? true : false}
-                    Angle={FaAngleRight}
-                    onClick={handlePartnerOrdersToggle}
-                  />
+          <ListHead
+            title="Partner Orders"
+            Icon={MdStore}
+            active={pathname.includes("/orders/partnerOrders")}
+            status={active?.partnerOrders?.status ? true : false}
+            Angle={FaAngleRight}
+            onClick={handlePartnerOrdersToggle}
+          />
 
-                  {active?.partnerOrders?.status && (
-                    <div className="m-2 relative space-y-1">
-                      <ListItems
-                        title="New Partner Orders"
-                        to="/orders/partnerOrders/new-orders"
-                        data-testid={LEFTBAR.listItem(
-                          "partnerOrders",
-                          "New Partner Orders"
-                        )}
-                        count={PartnerCounts?.data?.data?.[0]?.count}
-                      />
-                      {/* <ListItems
+          {active?.partnerOrders?.status && (
+            <div className="m-2 relative space-y-1">
+              <ListItems
+                title="New Partner Orders"
+                to="/orders/partnerOrders/new-orders"
+                data-testid={LEFTBAR.listItem(
+                  "partnerOrders",
+                  "New Partner Orders"
+                )}
+                count={PartnerCounts?.data?.data?.[0]?.count}
+              />
+              {/* <ListItems
                           title="All Partner Orders"
                           to="/orders/partnerOrders/all-orders"
                           data-testid={LEFTBAR.listItem("partnerOrders", "All Partner Orders")}
                         /> */}
-                      <ListItems
-                        title="Dispatched Orders"
-                        to="/orders/partnerOrders/dispatched"
-                        data-testid={LEFTBAR.listItem(
-                          "partnerOrders",
-                          "Dispatched Orders"
-                        )}
-                        count={PartnerCounts?.data?.data?.[1]?.count}
-                      />
-                      <ListItems
-                        title="Acknowledged Orders"
-                        to="/orders/partnerOrders/acknowledged"
-                        data-testid={LEFTBAR.listItem(
-                          "partnerOrders",
-                          "Acknowledged Orders"
-                        )}
-                        count={PartnerCounts?.data?.data?.[2]?.count}
-                      />
-                      <ListItems
-                        title="Shipped Orders"
-                        to="/orders/partnerOrders/shiped"
-                        data-testid={LEFTBAR.listItem(
-                          "partnerOrders",
-                          "Shipped Orders"
-                        )}
-                        count={PartnerCounts?.data?.data?.[4]?.count}
-                      />
-                      <ListItems
-                        title="Cancelled Orders"
-                        to="/orders/partnerOrders/cancelled"
-                        data-testid={LEFTBAR.listItem(
-                          "partnerOrders",
-                          "Cancelled Orders"
-                        )}
-                        count={PartnerCounts?.data?.data?.[5]?.count}
-                      />
-                      <hr className="w-full" />
-                    </div>
-                  )}
+              <ListItems
+                title="Dispatched Orders"
+                to="/orders/partnerOrders/dispatched"
+                data-testid={LEFTBAR.listItem(
+                  "partnerOrders",
+                  "Dispatched Orders"
+                )}
+                count={PartnerCounts?.data?.data?.[1]?.count}
+              />
+              <ListItems
+                title="Acknowledged Orders"
+                to="/orders/partnerOrders/acknowledged"
+                data-testid={LEFTBAR.listItem(
+                  "partnerOrders",
+                  "Acknowledged Orders"
+                )}
+                count={PartnerCounts?.data?.data?.[2]?.count}
+              />
+              <ListItems
+                title="Shipped Orders"
+                to="/orders/partnerOrders/shiped"
+                data-testid={LEFTBAR.listItem(
+                  "partnerOrders",
+                  "Shipped Orders"
+                )}
+                count={PartnerCounts?.data?.data?.[4]?.count}
+              />
+              <ListItems
+                title="Cancelled Orders"
+                to="/orders/partnerOrders/cancelled"
+                data-testid={LEFTBAR.listItem(
+                  "partnerOrders",
+                  "Cancelled Orders"
+                )}
+                count={PartnerCounts?.data?.data?.[5]?.count}
+              />
+              <hr className="w-full" />
+            </div>
+          )}
 
-                  <ListHead
-                    title="Customer Orders"
-                    Icon={MdStore}
-                    active={
-                      pathname === "/orders" ||
-                      pathname === "/orders/new-orders" ||
-                      pathname === "/sales-representative/upcoming-orders" ||
-                      pathname === "/orders/assigned" ||
-                      pathname === "/orders/acknowledged" ||
-                      pathname === "/orders/shiped" ||
-                      pathname === "/orders/cancelled"
-                    }
-                    Angle={
-                      active?.customerOrder?.status ? FaAngleUp : FaAngleDown
-                    }
-                    onClick={handleCustomerOrdersToggle}
-                  />
-
-                  {active?.customerOrder?.status && (
-                    <div className="m-2 relative space-y-1">
-                      <ListItems
-                        title="New Orders"
-                        to="/orders/new-orders"
-                        count={overAllData?.data?.data?.[0]?.count || ""}
-                        data-testid={LEFTBAR.listItem(
-                          "orderManagement",
-                          "New Orders"
-                        )}
-                      />
-                      <ListItems
-                        title="All Orders"
-                        to="/orders"
-                        count={allOrder || ""}
-                        data-testid={LEFTBAR.listItem(
-                          "orderManagement",
-                          "All Orders"
-                        )}
-                      />
-                      <ListItems
-                        title="Upcoming Orders"
-                        to="/sales-representative/upcoming-orders"
-                        count={overAllData?.data?.data?.[6]?.count || ""}
-                        data-testid={LEFTBAR.listItem(
-                          "orderManagement",
-                          "Upcoming Orders"
-                        )}
-                      />
-                      <ListItems
-                        title="Dispatched Orders"
-                        to="/orders/assigned"
-                        count={overAllData?.data?.data?.[1]?.count || ""}
-                        data-testid={LEFTBAR.listItem(
-                          "orderManagement",
-                          "Dispatched Orders"
-                        )}
-                      />
-                      <ListItems
-                        title="Acknowledged Orders"
-                        to="/orders/acknowledged"
-                        count={overAllData?.data?.data?.[2]?.count || ""}
-                        data-testid={LEFTBAR.listItem(
-                          "orderManagement",
-                          "Acknowledged Orders"
-                        )}
-                      />
-                      <ListItems
-                        title="Shipped Orders"
-                        to="/orders/shiped"
-                        count={overAllData?.data?.data?.[4]?.count || ""}
-                        data-testid={LEFTBAR.listItem(
-                          "orderManagement",
-                          "Shipped Orders"
-                        )}
-                      />
-                      <ListItems
-                        title="Cancelled Orders"
-                        to="/orders/cancelled"
-                        count={overAllData?.data?.data?.[5]?.count || ""}
-                        data-testid={LEFTBAR.listItem(
-                          "orderManagement",
-                          "Cancelled Orders"
-                        )}
-                      />{" "}
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-          {/* {hasPermission("subscription_view") && (
           <ListHead
-            title="Machine Subscriptions"
-            active={pathname === "/subscription"}
-            data-testid={LEFTBAR.subscriptionManagementSection}
-            Icon={MdCoffeeMaker}
-            Angle={
-              active?.subscription?.tab === "subscription" &&
-              active?.subscription?.status
-                ? FaAngleUp
-                : FaAngleDown
+            title="Customer Orders"
+            Icon={MdStore}
+            active={
+              pathname === "/orders" ||
+              pathname === "/orders/new-orders" ||
+              pathname === "/sales-representative/upcoming-orders" ||
+              pathname === "/orders/assigned" ||
+              pathname === "/orders/acknowledged" ||
+              pathname === "/orders/shiped" ||
+              pathname === "/orders/cancelled"
             }
-            onClick={() =>
-              handleActive(
-                "subscription",
-                active?.subscription?.status
-              )
-            }
-          /> )}
+            Angle={active?.customerOrder?.status ? FaAngleUp : FaAngleDown}
+            onClick={handleCustomerOrdersToggle}
+          />
+
+          {active?.customerOrder?.status && (
+            <div className="m-2 relative space-y-1">
+              <ListItems
+                title="New Orders"
+                to="/orders/new-orders"
+                count={overAllData?.data?.data?.[0]?.count || ""}
+                data-testid={LEFTBAR.listItem("orderManagement", "New Orders")}
+              />
+              <ListItems
+                title="All Orders"
+                to="/orders"
+                count={allOrder || ""}
+                data-testid={LEFTBAR.listItem("orderManagement", "All Orders")}
+              />
+              <ListItems
+                title="Upcoming Orders"
+                to="/sales-representative/upcoming-orders"
+                count={overAllData?.data?.data?.[6]?.count || ""}
+                data-testid={LEFTBAR.listItem(
+                  "orderManagement",
+                  "Upcoming Orders"
+                )}
+              />
+              <ListItems
+                title="Dispatched Orders"
+                to="/orders/assigned"
+                count={overAllData?.data?.data?.[1]?.count || ""}
+                data-testid={LEFTBAR.listItem(
+                  "orderManagement",
+                  "Dispatched Orders"
+                )}
+              />
+              <ListItems
+                title="Acknowledged Orders"
+                to="/orders/acknowledged"
+                count={overAllData?.data?.data?.[2]?.count || ""}
+                data-testid={LEFTBAR.listItem(
+                  "orderManagement",
+                  "Acknowledged Orders"
+                )}
+              />
+              <ListItems
+                title="Shipped Orders"
+                to="/orders/shiped"
+                count={overAllData?.data?.data?.[4]?.count || ""}
+                data-testid={LEFTBAR.listItem(
+                  "orderManagement",
+                  "Shipped Orders"
+                )}
+              />
+              <ListItems
+                title="Cancelled Orders"
+                to="/orders/cancelled"
+                count={overAllData?.data?.data?.[5]?.count || ""}
+                data-testid={LEFTBAR.listItem(
+                  "orderManagement",
+                  "Cancelled Orders"
+                )}
+              />{" "}
+            </div>
+          )}
+          {hasPermission("subscription_view") && (
+            <ListHead
+              title="Machine Subscriptions"
+              active={pathname.includes("/leads")}
+              data-testid={LEFTBAR.subscriptionManagementSection}
+              Icon={MdCoffeeMaker}
+              Angle={
+                active?.subscription?.tab === "subscription" &&
+                  active?.subscription?.status
+                  ? FaAngleUp
+                  : FaAngleDown
+              }
+              onClick={() =>
+                handleActive("subscription", active?.subscription?.status)
+              }
+            />
+          )}
 
           {active?.subscription?.tab === "subscription" &&
             active?.subscription?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  <ListItems title="Subscription" to="/subscription" data-testid={LEFTBAR.listItem("subscription", "Subscription")} />
-                  <ListItems title="Requests" to="/subscription-requests" data-testid={LEFTBAR.listItem("subscription-requests", "Requests")} />
-                  <ListItems title="Add-Ons" to="/add-ons" data-testid={LEFTBAR.listItem("add-ons", "Add-Ons")} />
+                  {/* <ListItems
+                    title="Subscription"
+                    to="/subscription"
+                    data-testid={LEFTBAR.listItem(
+                      "subscription",
+                      "Subscription"
+                    )}
+                  /> */}
+                  {/* <ListItems
+                    title="Requests"
+                    to="/subscription-requests"
+                    data-testid={LEFTBAR.listItem(
+                      "subscription-requests",
+                      "Requests"
+                    )}
+                  /> */}
+                  <ListItems
+                    title="Leads"
+                    to="/leads"
+                    data-testid={LEFTBAR.listItem(
+                      "machineSubscriptions",
+                      "Leads"
+                    )}
+                  />
+                  {/* <ListItems title="Add-Ons" to="/add-ons" data-testid={LEFTBAR.listItem("add-ons", "Add-Ons")} /> */}
                 </div>
                 <hr className="w-full" />
               </>
-            )} */}
+            )}
 
           {hasPermission("invoice_view") && (
             <ListHead
@@ -1907,7 +2037,7 @@ export default function Leftbar(props) {
               data-testid={LEFTBAR.invoiceManagementSection}
               status={
                 active?.invoiceManagement?.tab === "invoiceManagement" &&
-                active?.invoiceManagement?.status
+                  active?.invoiceManagement?.status
                   ? true
                   : false
               }
@@ -1989,7 +2119,7 @@ export default function Leftbar(props) {
               data-testid={LEFTBAR.employeeManagementSection}
               status={
                 active?.employees?.tab === "employees" &&
-                active?.employees?.status
+                  active?.employees?.status
                   ? true
                   : false
               }
@@ -2021,7 +2151,7 @@ export default function Leftbar(props) {
               data-testid={LEFTBAR.accountManagementSection}
               status={
                 active?.accountManagement?.tab === "accountManagement" &&
-                active?.accountManagement?.status
+                  active?.accountManagement?.status
                   ? true
                   : false
               }
@@ -2044,12 +2174,12 @@ export default function Leftbar(props) {
                     className="w-full flex gap-x-2 text-wrap items-center py-2 px-2 rounded-lg font-inter font-medium   duration-200 bg-theme text-white"
                   >
                     {(connectAccountId !== "null" || !connectAccountId) &&
-                    isAccountConnected === "true"
+                      isAccountConnected === "true"
                       ? "Stripe Dashboard"
                       : (connectAccountId === "null" || !connectAccountId) &&
                         isAccountConnected === "false"
-                      ? "Connect Account"
-                      : "Complete Account Registration"}
+                        ? "Connect Account"
+                        : "Complete Account Registration"}
                   </button>
                 </div>
                 <hr className="w-full" />
@@ -2062,15 +2192,15 @@ export default function Leftbar(props) {
               to={"/sales-representative/wallet"}
               data-testid={LEFTBAR.walletManagementSection}
               active={pathname === "/sales-representative/wallet"}
-              // Angle={
-              //   active?.orderManagement?.tab === "walletManagement" &&
-              //   active?.orderManagement?.status
-              //     ? FaAngleUp
-              //     : FaAngleDown
-              // }
-              // onClick={() =>
-              //   handleActive("walletManagement", active?.orderManagement?.status)
-              // }
+            // Angle={
+            //   active?.orderManagement?.tab === "walletManagement" &&
+            //   active?.orderManagement?.status
+            //     ? FaAngleUp
+            //     : FaAngleDown
+            // }
+            // onClick={() =>
+            //   handleActive("walletManagement", active?.orderManagement?.status)
+            // }
             />
           )}
           {hasPermission("report_view") && (
@@ -2091,7 +2221,7 @@ export default function Leftbar(props) {
             }
             status={
               active?.quickbooks?.tab === "quickbooks" &&
-              active?.quickbooks?.status
+                active?.quickbooks?.status
                 ? true
                 : false
             }

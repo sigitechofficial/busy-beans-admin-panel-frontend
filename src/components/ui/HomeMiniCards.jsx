@@ -1,4 +1,4 @@
-export default function HomeMiniCards({ title, total, description, ...rest }) {
+export default function HomeMiniCards({ title, total, description,currency, ...rest }) {
   return (
     <div
       {...rest}
@@ -13,7 +13,7 @@ export default function HomeMiniCards({ title, total, description, ...rest }) {
         </h2>
         {/* </div> */}
         <div className="text-theme 2xl:text-lg font-inter font-semibold break-all">
-          ${total}
+          {currency&&"$"}{total}
         </div>
       </div>
     </div>

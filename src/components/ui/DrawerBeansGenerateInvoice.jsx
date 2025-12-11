@@ -79,10 +79,10 @@ const DrawerBeansGenerateInvoice = ({
     isEmployee && hasPermission("selected-customer_view")
       ? `api/v1/admin/customer-management/customer-list/employee-id/${userID}`
       : userType === "admin"
-      ? `api/v1/admin/customer-management/customer-list/all`
-      : userType === "salesRepresentative"
-      ? `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}&orderCreation=yes`
-      : `api/v1/admin/customer-management/customer-list/all`;
+        ? `api/v1/admin/customer-management/customer-list/all`
+        : userType === "salesRepresentative"
+          ? `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}&orderCreation=yes`
+          : `api/v1/admin/customer-management/customer-list/all`;
 
   // ======= helpers =======
   const mapItemsForPayload = (items) =>
@@ -283,9 +283,10 @@ const DrawerBeansGenerateInvoice = ({
         note: order?.note,
         poNumber: order?.poNumber,
         addressId: order?.addressId,
-        userId: order?.userId,
+        ...(partnersOrder ? { salesRepId: order?.userId } : { userId: order?.userId }),
         paymentMethod: order?.paymentMethod,
         invoiceOnly: true,
+        type: "direct-invoice"
       },
       items: mapItemsForPayload(cartItems),
     };
@@ -294,7 +295,7 @@ const DrawerBeansGenerateInvoice = ({
     try {
       const res = await PostAPI(
         userType === "admin"
-          ? `api/v1/admin/book-new-order`
+          ? partnersOrder ? `api/v1/admin/partner-order/book-new-order` : `api/v1/admin/book-new-order`
           : `api/v1/admin/sales-rep/book-new-order/${userID}`,
         payload,
         "invoices"
@@ -307,7 +308,8 @@ const DrawerBeansGenerateInvoice = ({
         setInvoiceData?.([]);
         setOpen(false);
         if (orderId) {
-          router.push(`/orders/detail/${orderId}/add-invoice`);
+          // router.push(`/orders/detail/${orderId}/add-invoice`);
+          router.push( partnersOrder ? `/individual-invoices/partner/${orderId}/add-invoice` : `/individual-invoices/${orderId}/add-invoice`);
         }
       } else {
         throw new Error(res?.data?.message || "Failed to generate invoice.");
@@ -349,7 +351,7 @@ const DrawerBeansGenerateInvoice = ({
               onHandleColor="#fff"
               className="react-switch"
               boxShadow="none"
-              // data-testid={ORDERS_CREATE_DRAWER.selfOrderSwitch}
+            // data-testid={ORDERS_CREATE_DRAWER.selfOrderSwitch}
             />
           </div>
 
@@ -408,8 +410,8 @@ const DrawerBeansGenerateInvoice = ({
                 value={
                   order.paymentMethod
                     ? paymentMethodOptions.find(
-                        (opt) => opt.value === order.paymentMethod
-                      ) || null
+                      (opt) => opt.value === order.paymentMethod
+                    ) || null
                     : null
                 }
                 options={paymentMethodOptions}
@@ -425,9 +427,8 @@ const DrawerBeansGenerateInvoice = ({
                   <input
                     type="text"
                     id="courier-note"
-                    className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${
-                      order?.note ? "placeholder-transparent" : ""
-                    }`}
+                    className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${order?.note ? "placeholder-transparent" : ""
+                      }`}
                     value={order?.note}
                     onChange={(e) =>
                       setOrder({ ...order, note: e.target.value })
@@ -435,11 +436,10 @@ const DrawerBeansGenerateInvoice = ({
                   />
                   <label
                     htmlFor="courier-note"
-                    className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${
-                      order?.note
-                        ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
-                        : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
-                    }`}
+                    className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${order?.note
+                      ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
+                      : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
+                      }`}
                   >
                     {order?.note
                       ? "Note for the supplier (optional)"
@@ -454,9 +454,8 @@ const DrawerBeansGenerateInvoice = ({
                   <input
                     type="text"
                     id="poNumber"
-                    className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${
-                      order?.poNumber ? "placeholder-transparent" : ""
-                    }`}
+                    className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${order?.poNumber ? "placeholder-transparent" : ""
+                      }`}
                     value={order?.poNumber}
                     onChange={(e) =>
                       setOrder({ ...order, poNumber: e.target.value })
@@ -464,11 +463,10 @@ const DrawerBeansGenerateInvoice = ({
                   />
                   <label
                     htmlFor="poNumber"
-                    className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${
-                      order?.poNumber
-                        ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
-                        : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
-                    }`}
+                    className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${order?.poNumber
+                      ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
+                      : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
+                      }`}
                   >
                     {order?.poNumber
                       ? "Purchase Order Number"
@@ -481,9 +479,8 @@ const DrawerBeansGenerateInvoice = ({
 
           {/* Footer */}
           <div
-            className={`absolute bottom-0 left-0 py-5 flex justify-center w-full px-4 sm:px-0 sm:left-[30px] sm:w-[452px] ${
-              loader ? "opacity-60" : "bg-theme"
-            }`}
+            className={`absolute bottom-0 left-0 py-5 flex justify-center w-full px-4 sm:px-0 sm:left-[30px] sm:w-[452px] ${loader ? "opacity-60" : "bg-theme"
+              }`}
           >
             <button
               disabled={loader}

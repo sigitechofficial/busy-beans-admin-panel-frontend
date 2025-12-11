@@ -3,11 +3,12 @@ import React, { useState, useEffect, useMemo } from "react";
 import LeadCard from "./LeadCard";
 import KanbanColumn from "./KanbanColumn";
 import Select from "react-select";
+import SelectWithTextToggle from "./SelectWithTextToggle";
 import selectStyles from "@/utilities/SelectStyle";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { leadsAPI } from "@/utilities/LeadsAPI";
-import { success_toaster, error_toaster } from "@/utilities/Toaster";
+import { success_toaster, error_toaster, info_toaster } from "@/utilities/Toaster";
 import Loader from "@/components/ui/Loader";
 import GetAPI from "@/utilities/GetAPI";
 import PhoneInput from "react-phone-input-2";
@@ -61,6 +62,8 @@ export default function LeadsKanban() {
     "api/v1/admin/address-management/country"
   );
   const { data: machinesData } = GetAPI("api/v1/admin/coffee-machine");
+  const { data: employeesData } = GetAPI("api/v1/admin/employees");
+  const { data: partnersData } = GetAPI("api/v1/admin/sales-rep/for-order-creation?partnerType=direct-partner");
 
   // Local state for optimistic UI updates
   const [items, setItems] = useState({
@@ -140,6 +143,27 @@ export default function LeadsKanban() {
   const [allStates, setAllStates] = useState([]);
   const [allCities, setAllCities] = useState([]);
 
+  // Assign Lead State
+  const [assignModal, setAssignModal] = useState(false);
+  const [assigningLead, setAssigningLead] = useState(null);
+  const [assignType, setAssignType] = useState("local-partner"); // 'employee' or 'local-partner'
+  const [selectedEntityId, setSelectedEntityId] = useState(null);
+  const [assignLoading, setAssignLoading] = useState(false);
+  const [canAssign, setCanAssign] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const type = localStorage.getItem("userType");
+      const isEmp = localStorage.getItem("isEmployee");
+      // Admin (not employee) or Local Partner (not employee) can assign
+      if ((type === "admin" || type === "salesRepresentative") && !isEmp) {
+        setCanAssign(true);
+      } else {
+        setCanAssign(false);
+      }
+    }
+  }, []);
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -168,6 +192,22 @@ export default function LeadsKanban() {
       price: machine.price,
     }));
   }, [machinesData]);
+
+  const employeeOptions = useMemo(() => {
+    if (!employeesData?.data?.data) return [];
+    return employeesData.data.data.map((emp) => ({
+      value: emp.id,
+      label: emp.name,
+    }));
+  }, [employeesData]);
+
+  const partnerOptions = useMemo(() => {
+    if (!partnersData?.data) return [];
+    return partnersData.data.map((p) => ({
+      value: p.id,
+      label: p.srName + ` (${p.territoryName})`,
+    }));
+  }, [partnersData]);
 
   // Handle machine selection
   const handleMachineChange = (selectedOption) => {
@@ -273,6 +313,67 @@ export default function LeadsKanban() {
     setAddModal(true);
   };
 
+  const handleAssignClick = (lead) => {
+    setAssigningLead(lead);
+
+    // Check if lead is already assigned
+    if (lead.assignedEmployee) {
+      setAssignType("employee");
+      setSelectedEntityId(lead.assignedEmployee.id);
+    } else if (lead.assignedSalesRep) {
+      setAssignType("local-partner");
+      setSelectedEntityId(lead.assignedSalesRep.id);
+    } else {
+      setAssignType("local-partner");
+      setSelectedEntityId(null);
+    }
+
+    setAssignModal(true);
+  };
+
+  const handleAssignSubmit = async () => {
+    if (!selectedEntityId) {
+      error_toaster("Please select an entity to assign.");
+      return;
+    }
+
+    // Check for duplicate assignment
+    if (assigningLead) {
+      if (assignType === "employee" && assigningLead.assignedEmployee?.id === selectedEntityId) {
+        info_toaster("Lead is already assigned to this employee.");
+        return;
+      }
+      if (assignType === "local-partner" && assigningLead.assignedSalesRep?.id === selectedEntityId) {
+        info_toaster("Lead is already assigned to this partner.");
+        return;
+      }
+    }
+
+    try {
+      setAssignLoading(true);
+      const payload = assignType === "employee"
+        ? { employeeId: selectedEntityId }
+        : { salesRepId: selectedEntityId };
+
+      const response = await leadsAPI.assignLead(assigningLead.id, payload);
+
+      if (response?.data?.success || response?.success) {
+        success_toaster("Lead assigned successfully");
+        setAssignModal(false);
+        setAssigningLead(null);
+        setSelectedEntityId(null);
+        reFetch();
+      } else {
+        error_toaster(response?.message || "Failed to assign lead");
+      }
+    } catch (error) {
+      console.error("Error signing lead:", error);
+      error_toaster("Failed to assign lead");
+    } finally {
+      setAssignLoading(false);
+    }
+  };
+
   // Modify handleAddLead to also handle updates
   const handleSaveLead = async () => {
     // REQUIRED FIELDS VALIDATION
@@ -328,7 +429,7 @@ export default function LeadsKanban() {
         country: newLead.country,
         zipCode: newLead.zipCode,
         businessType: newLead.businessType,
-        leadSource: newLead.leadSource || "Admin Panel",
+        leadSource: newLead.leadSource,
         preferredContact: newLead.preferredContact,
         snapshotType: newLead.snapshotType,
         snapshotUseCase: newLead.snapshotUseCase,
@@ -742,6 +843,8 @@ export default function LeadsKanban() {
                   onDelete={handleDeleteLead}
                   onEdit={handleEditLead}
                   index={index}
+                  onAssign={handleAssignClick}
+                  canAssign={canAssign}
                 />
               ))}
             </div>
@@ -1158,19 +1261,15 @@ export default function LeadsKanban() {
                 />
               </div>
 
-              <div className="flex flex-col gap-y-2">
-                <label className="font-medium text-sm">City *</label>
-                <Select
+              <div>
+                <SelectWithTextToggle
+                  label="City *"
                   placeholder="Select City"
-                  value={
-                    newLead.city
-                      ? { value: newLead.city, label: newLead.city }
-                      : null
-                  }
+                  value={newLead.city}
                   options={allCities}
-                  onChange={(e) => setNewLead({ ...newLead, city: e.value })}
+                  onChange={(val) => setNewLead({ ...newLead, city: val })}
                   styles={selectStyles}
-                  isDisabled={submitting || allCities.length === 0}
+                  isDisabled={submitting}
                 />
               </div>
             </div>
@@ -1344,17 +1443,48 @@ export default function LeadsKanban() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-y-2 mt-4">
-              <label className="font-medium text-sm">Notes</label>
-              <InputText
-                value={newLead.notes}
-                onChange={(e) =>
-                  setNewLead({ ...newLead, notes: e.target.value })
-                }
-                className="w-full p-2 border rounded-lg"
-                placeholder="Additional notes..."
-                disabled={submitting}
-              />
+
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <div className="flex flex-col gap-y-2">
+                <label className="font-medium text-sm">Notes</label>
+                <InputText
+                  value={newLead.notes}
+                  onChange={(e) =>
+                    setNewLead({ ...newLead, notes: e.target.value })
+                  }
+                  className="w-full p-2 border rounded-lg"
+                  placeholder="Additional notes..."
+                  disabled={submitting}
+                />
+              </div>
+
+              <div className="flex flex-col gap-y-2">
+                <label className="font-medium text-sm">Lead Source</label>
+                <Select
+                  placeholder="Select Source"
+                  value={
+                    newLead.leadSource
+                      ? {
+                        value: newLead.leadSource,
+                        label: newLead.leadSource,
+                      }
+                      : null
+                  }
+                  options={[
+                    { value: "Website", label: "Website" },
+                    { value: "Referral", label: "Referral" },
+                    { value: "Cold Call", label: "Cold Call" },
+                    { value: "WhatsApp", label: "WhatsApp" },
+                    { value: "Other", label: "Other" },
+                  ]}
+                  onChange={(e) =>
+                    setNewLead({ ...newLead, leadSource: e.value })
+                  }
+                  styles={selectStyles}
+                  isDisabled={submitting}
+                />
+              </div>
+
             </div>
           </div>
 
@@ -1389,6 +1519,103 @@ export default function LeadsKanban() {
           </div>
         </div>
       </Dialog>
-    </div>
+
+
+      {/* Assign Modal */}
+      <Dialog
+        header="Assign Lead"
+        visible={assignModal}
+        style={{ width: "450px" }}
+        onHide={() => {
+          setAssignModal(false);
+          setAssigningLead(null);
+        }}
+        className="font-inter"
+        dismissableMask={true}
+        closable={true}
+      >
+        <div className="flex flex-col gap-6 pt-4">
+          {assigningLead && (
+            <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border">
+              Assigning <strong>{assigningLead.machineName} - {assigningLead.companyName || assigningLead.company}</strong>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-3">
+            <label className="font-semibold text-gray-700">Assign To:</label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="assignType"
+                  value="local-partner"
+                  checked={assignType === "local-partner"}
+                  onChange={(e) => {
+                    setAssignType(e.target.value);
+                    setSelectedEntityId(null);
+                  }}
+                  className="text-theme focus:ring-theme"
+                />
+                Local Partner
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="assignType"
+                  value="employee"
+                  checked={assignType === "employee"}
+                  onChange={(e) => {
+                    setAssignType(e.target.value);
+                    setSelectedEntityId(null);
+                  }}
+                  className="text-theme focus:ring-theme"
+                />
+                Employee
+              </label>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="font-medium text-sm text-gray-700">
+              Select {assignType === "employee" ? "Employee" : "Local Partner"}
+            </label>
+            <Select
+              placeholder={`Select ${assignType === "employee" ? "Employee" : "Local Partner"}`}
+              styles={{
+                ...selectStyles,
+                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+              }}
+              menuPortalTarget={typeof document !== "undefined" ? document.body : null}
+              value={
+                assignType === "employee"
+                  ? employeeOptions.find(opt => opt.value === selectedEntityId)
+                  : partnerOptions.find(opt => opt.value === selectedEntityId)
+              }
+              onChange={(option) => setSelectedEntityId(option?.value)}
+              options={assignType === "employee" ? employeeOptions : partnerOptions}
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 mt-4">
+            <button
+              onClick={() => {
+                setAssignModal(false);
+                setAssigningLead(null);
+              }}
+              className="px-4 py-2 border rounded hover:bg-gray-100 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleAssignSubmit}
+              disabled={!selectedEntityId || assignLoading}
+              className="px-4 py-2 bg-theme text-white rounded hover:bg-themeDark disabled:opacity-70 transition-colors"
+            >
+              {assignLoading ? 'Assigning...' : 'Assign'}
+            </button>
+          </div>
+        </div>
+      </Dialog>
+    </div >
   );
 }

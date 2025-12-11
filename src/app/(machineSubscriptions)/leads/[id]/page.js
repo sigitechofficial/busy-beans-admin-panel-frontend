@@ -17,6 +17,7 @@ import {
   MdDescription,
   MdEvent,
   MdFeedback,
+  MdBusiness,
 } from "react-icons/md";
 import { FaExternalLinkAlt, FaWhatsapp } from "react-icons/fa";
 import { MdOutlinePhonelinkRing } from "react-icons/md";
@@ -167,6 +168,8 @@ export default function LeadDetails() {
             date: formatDateTimeISO(log.createdAt),
           })) || [],
         pipeline: generatePipeline(apiLead.status),
+        assignedEmployee: apiLead.assignedEmployee,
+        assignedSalesRep: apiLead.assignedSalesRep,
       });
       setEditedTag(apiLead.tag || "Hot Lead");
     }
@@ -601,6 +604,7 @@ export default function LeadDetails() {
                   Est. Value: {formatUSD(lead.commercial.estValue)}
                 </p>
               </div>
+
               <div className="flex items-center gap-3">
                 <div className="text-gray-400">
                   <MdPerson />
@@ -609,6 +613,37 @@ export default function LeadDetails() {
                   Role: {lead.commercial.owner}
                 </p>
               </div>
+
+              {lead.assignedEmployee || lead.assignedSalesRep && <div className="flex items-center gap-3">
+                <div className="text-gray-400">
+                  <MdPerson />
+                </div>
+                <p className="text-sm text-gray-900">
+                  Assigned To: {lead.assignedEmployee ? lead.assignedEmployee.name : lead.assignedSalesRep ? lead.assignedSalesRep.srName : "-"}
+                </p>
+              </div>}
+
+              {lead.assignedEmployee && lead.assignedEmployee.employeeOf && (
+                <div className="flex items-center gap-3">
+                  <div className="text-gray-400">
+                    <MdBusiness />
+                  </div>
+                  <p className="text-sm text-gray-900">
+                    Employee of: {lead.assignedEmployee.employeeOf}
+                  </p>
+                </div>
+              )}
+
+              {lead.assignedSalesRep && !lead.assignedEmployee && (
+                <div className="flex items-center gap-3">
+                  <div className="text-gray-400">
+                    <MdBusiness />
+                  </div>
+                  <p className="text-sm text-gray-900">
+                    Type: Local Partner
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

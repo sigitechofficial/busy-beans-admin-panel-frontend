@@ -40,6 +40,7 @@ export default function CustomerReport() {
   const columns = [
     { field: "sl", header: "SL", sort: true },
     { field: "name", header: "Customer Name" },
+    { field: "companyName", header: "Customer Name" },
     { field: "numberOfOrders", header: "No of Orders", sort: true },
     { field: "lastOrderDate", header: "Last Order Date" },
     { field: "outstandingBalance", header: "Outstanding Balance", sort: true },
@@ -53,6 +54,7 @@ export default function CustomerReport() {
       id: report?.id,
       sl: i + 1,
       name: report?.name,
+      companyName: report?.companyName,
       numberOfOrders: report?.numberOfOrders ?? 0,
       lastOrderDate: report?.lastOrderDate ?? "-",
       outstandingBalance: `$${report?.outstandingBalance ?? 0}`,

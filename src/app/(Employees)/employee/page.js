@@ -36,15 +36,15 @@ export default function Employee() {
     password: "",
     phoneNumber: "",
     countryCode: "",
-    features: [], 
+    features: [],
   });
   const [categoryID, setCategoryID] = useState("");
   const [loader, setLoader] = useState("");
   const [visible, setVisible] = useState(false);
   const [changePasswordStatus, setChangePasswordStatus] = useState(false);
-  const ADMIN_FEATURES = [ "dashboard", "orders", "supplier", "invoice", "customer", "selected-customer",  "local-partner", "product", "category", "employees", "country", "charges", "payment-pullout", "report" ];
-  const SALES_REP_FEATURES = [ "dashboard", "quotation", "customer", "selected-customer", "orders", "invoice", "payment-pullout", "employees", "account", "wallet", "report" ];
-  const allFeatures =  userType === "salesRepresentative" ? SALES_REP_FEATURES : ADMIN_FEATURES;
+  const ADMIN_FEATURES = ["dashboard", "orders", "supplier", "invoice", "customer", "selected-customer", "local-partner", "product", "category", "employees", "country", "charges", "payment-pullout", "report"];
+  const SALES_REP_FEATURES = ["dashboard", "quotation", "customer", "selected-customer", "orders", "invoice", "payment-pullout", "employees", "account", "wallet", "report", "subscription"];
+  const allFeatures = userType === "salesRepresentative" ? SALES_REP_FEATURES : ADMIN_FEATURES;
 
   const handleModalClose = () => {
     setModal("");
@@ -55,7 +55,7 @@ export default function Employee() {
       password: "",
       phoneNumber: "",
       countryCode: "",
-      features: [], 
+      features: [],
     });
     setVisible(false);
     setChangePasswordStatus(false);
@@ -117,7 +117,7 @@ export default function Employee() {
         email: formData.email,
         phoneNumber: formData.phoneNumber,
         countryCode: formData.countryCode,
-        features: formData.features, 
+        features: formData.features,
       };
       if (changePasswordStatus) {
         if (!formData.password.trim()) {
@@ -164,7 +164,7 @@ export default function Employee() {
       }
     }
   };
-  
+
   const handleEditClick = async (id) => {
     try {
       setLoader("prefill");
@@ -243,7 +243,7 @@ export default function Employee() {
     // { field: "sl", header: "SL", sort: true },
     { field: "name", header: "Name" },
     { field: "email", header: "Email" },
-    { field: "phoneNumber", header: "Phone Number" }, 
+    { field: "phoneNumber", header: "Phone Number" },
     // { field: "currentStatus", header: "Current Status" },
     { field: "changeStatus", header: "Change Status" },
     { field: "action", header: "Action" },
@@ -255,7 +255,7 @@ export default function Employee() {
       // sl: i + 1,
       name: cat?.name,
       email: cat?.email,
-      phoneNumber: ( <div> {cat?.countryCode && `+${cat?.countryCode} `}{cat?.phoneNumber || ""} </div> ),
+      phoneNumber: (<div> {cat?.countryCode && `+${cat?.countryCode} `}{cat?.phoneNumber || ""} </div>),
       currentStatus: (
         <div>
           {cat?.status ? (
@@ -271,71 +271,71 @@ export default function Employee() {
       ),
       changeStatus: (
         hasPermission("employees_update") ? (
-        <label className="flex items-center gap-2 ">
-          <div>
-            {cat?.status ? (
-              <div className="w-max text-xs bg-theme text-white font-semibold p-2 rounded-md flex justify-center">
-                Active
-              </div>
-            ) : (
-              <div className="w-max text-xs bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
-                Inactive
-              </div>
-            )}
-          </div>
-        <Switch
-          onChange={() => {
-            handleStatus(cat?.id, cat?.status);
-          }}
-          checked={cat?.status}
-          uncheckedIcon={false}
-          checkedIcon={false}
-          onColor="#86644c"
-          onHandleColor="#fff"
-          className="react-switch"
-          boxShadow="none"
-          data-testid={EMPLOYEES.rowStatusSwitch(cat?.id)}
-        /> 
-        </label>
+          <label className="flex items-center gap-2 ">
+            <div>
+              {cat?.status ? (
+                <div className="w-max text-xs bg-theme text-white font-semibold p-2 rounded-md flex justify-center">
+                  Active
+                </div>
+              ) : (
+                <div className="w-max text-xs bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+                  Inactive
+                </div>
+              )}
+            </div>
+            <Switch
+              onChange={() => {
+                handleStatus(cat?.id, cat?.status);
+              }}
+              checked={cat?.status}
+              uncheckedIcon={false}
+              checkedIcon={false}
+              onColor="#86644c"
+              onHandleColor="#fff"
+              className="react-switch"
+              boxShadow="none"
+              data-testid={EMPLOYEES.rowStatusSwitch(cat?.id)}
+            />
+          </label>
         ) : (
-        <span className="text-gray-400">No Access</span>
+          <span className="text-gray-400">No Access</span>
         )
       ),
       action: (
         <div className="flex gap-x-2" data-testid={EMPLOYEES.row(cat?.id)}>
           {hasPermission("employees_update") && (
-          <button
-            className="border border-theme rounded-md p-2 text-theme"
-            // onClick={() => {
-            //   setFormData({
-            //     name: cat?.name,
-            //     email: cat?.email,
-            //     password: "",
-            //     phoneNumber: cat?.phoneNumber || "",
-            //     countryCode: cat?.countryCode || "",
-            //     features: cat?.features || [],
-            //   });
-            //   setVisible(false);
-            //   setChangePasswordStatus(false);
-            //   setModal("edit");
-            //   setCategoryID(cat?.id);
-            // }}
-            onClick={() => handleEditClick(cat?.id)}
-            data-testid={EMPLOYEES.rowEditBtn(cat?.id)}
-          >
-            <FaEdit size={24} />
-          </button> )}
+            <button
+              className="border border-theme rounded-md p-2 text-theme"
+              // onClick={() => {
+              //   setFormData({
+              //     name: cat?.name,
+              //     email: cat?.email,
+              //     password: "",
+              //     phoneNumber: cat?.phoneNumber || "",
+              //     countryCode: cat?.countryCode || "",
+              //     features: cat?.features || [],
+              //   });
+              //   setVisible(false);
+              //   setChangePasswordStatus(false);
+              //   setModal("edit");
+              //   setCategoryID(cat?.id);
+              // }}
+              onClick={() => handleEditClick(cat?.id)}
+              data-testid={EMPLOYEES.rowEditBtn(cat?.id)}
+            >
+              <FaEdit size={24} />
+            </button>)}
           {hasPermission("employees_delete") && (
-          <button
-            className="border border-red-400 rounded-md p-2 text-red-400"
-            onClick={() => {
-              setModal("delete");
-              setCategoryID(cat?.id);
-            }}
-            data-testid={EMPLOYEES.rowDeleteBtn(cat?.id)}
-          >
-            <MdDelete size={24} />
-          </button> )}
+            <button
+              className="border border-red-400 rounded-md p-2 text-red-400"
+              onClick={() => {
+                setModal("delete");
+                setCategoryID(cat?.id);
+              }}
+              data-testid={EMPLOYEES.rowDeleteBtn(cat?.id)}
+            >
+              <MdDelete size={24} />
+            </button>)}
         </div>
       ),
     });
@@ -357,23 +357,23 @@ export default function Employee() {
         </div>
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative" data-testid={EMPLOYEES.newEmployee}>
           {hasPermission("employees_create") && (
-          <li
-            onClick={() => {
-              setFormData({
-                name: "",
-                email: "",
-                password: "",
-                phoneNumber: "",
-                countryCode: "",
-                features: [],
-              });
-              setVisible(false);
-              setChangePasswordStatus(false);
-              setModal("add");
-            }}
-          >
-            New Employee
-          </li> )}
+            <li
+              onClick={() => {
+                setFormData({
+                  name: "",
+                  email: "",
+                  password: "",
+                  phoneNumber: "",
+                  countryCode: "",
+                  features: [],
+                });
+                setVisible(false);
+                setChangePasswordStatus(false);
+                setModal("add");
+              }}
+            >
+              New Employee
+            </li>)}
         </ul>
       </div>
 
@@ -404,10 +404,10 @@ export default function Employee() {
               {modal === "add"
                 ? "Add"
                 : modal === "edit"
-                ? "Update"
-                : modal === "delete"
-                ? "Delete"
-                : ""}{" "}
+                  ? "Update"
+                  : modal === "delete"
+                    ? "Delete"
+                    : ""}{" "}
               Employee
             </div>
           }
@@ -578,88 +578,88 @@ export default function Employee() {
                     </div>
 
                     {/* Features */}
-                          <div className="flex flex-col gap-y-4">
-                              <div className="flex items-center justify-end gap-2">
+                    <div className="flex flex-col gap-y-4">
+                      <div className="flex items-center justify-end gap-2">
+                        <input
+                          type="checkbox"
+                          checked={
+                            formData.features.length === allFeatures.length &&
+                            formData.features.every(f =>
+                              ["create", "view", "update", "delete"].every(action => f[action])
+                            )
+                          }
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            const newFeatures = allFeatures.map(feature => ({
+                              feature,
+                              create: checked,
+                              view: checked,
+                              update: checked,
+                              delete: checked,
+                            }));
+                            setFormData({ ...formData, features: newFeatures });
+                          }}
+                          className="form-checkbox"
+                        />
+                        <label className="text-black font-medium font-satoshi">Select All</label>
+                      </div>
+                      <div className="grid grid-cols-6 gap-6 font-bold mb-2 items-center">
+                        <span className="col-span-2 text-left text-labelColor font-medium font-satoshi">
+                          Features
+                        </span>
+
+                        {["Create", "View", "Update", "Delete"].map((action) => (
+                          <span key={action} className="text-center w-20">
+                            {action}
+                          </span>
+                        ))}
+
+                      </div>
+
+                      {allFeatures.map((feature) => {
+                        const existingFeature =
+                          formData.features.find((f) => f.feature === feature) || {};
+                        return (
+                          <div
+                            key={feature}
+                            className="grid grid-cols-6 gap-6 items-center mb-2"
+                          >
+                            <span className="col-span-2 font-bold capitalize">
+                              {feature.replace("-", " ")}
+                            </span>
+                            {["create", "view", "update", "delete"].map((action) => (
+                              <div key={`${feature}-${action}`} className="flex justify-center">
                                 <input
                                   type="checkbox"
-                                  checked={
-                                    formData.features.length === allFeatures.length &&
-                                    formData.features.every(f =>
-                                      ["create", "view", "update", "delete"].every(action => f[action])
-                                    )
-                                  }
+                                  checked={!!existingFeature[action]}
                                   onChange={(e) => {
                                     const checked = e.target.checked;
-                                    const newFeatures = allFeatures.map(feature => ({
-                                      feature,
-                                      create: checked,
-                                      view: checked,
-                                      update: checked,
-                                      delete: checked,
-                                    }));
+                                    const newFeatures = [...formData.features];
+                                    const featureIndex = newFeatures.findIndex(
+                                      (f) => f.feature === feature
+                                    );
+
+                                    if (featureIndex !== -1) {
+                                      newFeatures[featureIndex] = {
+                                        ...newFeatures[featureIndex],
+                                        [action]: checked,
+                                      };
+                                    } else {
+                                      newFeatures.push({ feature, [action]: checked });
+                                    }
+
                                     setFormData({ ...formData, features: newFeatures });
                                   }}
                                   className="form-checkbox"
+                                  data-testid={EMPLOYEES.featuresCheckbox}
                                 />
-                                <label className="text-black font-medium font-satoshi">Select All</label>
                               </div>
-                            <div className="grid grid-cols-6 gap-6 font-bold mb-2 items-center">
-                              <span className="col-span-2 text-left text-labelColor font-medium font-satoshi">
-                                Features
-                              </span>
-
-                              {["Create", "View", "Update", "Delete"].map((action) => (
-                                <span key={action} className="text-center w-20">
-                                  {action}
-                                </span>
-                              ))}
-
-                            </div>
-
-                            {allFeatures.map((feature) => {
-                              const existingFeature =
-                                formData.features.find((f) => f.feature === feature) || {};
-                              return (
-                                <div
-                                  key={feature}
-                                  className="grid grid-cols-6 gap-6 items-center mb-2"
-                                >
-                                  <span className="col-span-2 font-bold capitalize">
-                                    {feature.replace("-", " ")}
-                                  </span>
-                                  {["create", "view", "update", "delete"].map((action) => (
-                                    <div key={`${feature}-${action}`} className="flex justify-center">
-                                      <input
-                                        type="checkbox"
-                                        checked={!!existingFeature[action]}
-                                        onChange={(e) => {
-                                          const checked = e.target.checked;
-                                          const newFeatures = [...formData.features];
-                                          const featureIndex = newFeatures.findIndex(
-                                            (f) => f.feature === feature
-                                          );
-
-                                          if (featureIndex !== -1) {
-                                            newFeatures[featureIndex] = {
-                                              ...newFeatures[featureIndex],
-                                              [action]: checked,
-                                            };
-                                          } else {
-                                            newFeatures.push({ feature, [action]: checked });
-                                          }
-
-                                          setFormData({ ...formData, features: newFeatures });
-                                        }}
-                                        className="form-checkbox"
-                                        data-testid={EMPLOYEES.featuresCheckbox}
-                                      />
-                                    </div>
-                                  ))}
-                                  <div></div>
-                                </div>
-                              );
-                            })}
+                            ))}
+                            <div></div>
                           </div>
+                        );
+                      })}
+                    </div>
                   </>
                 )}
                 <div className="flex justify-end gap-3 mt-2">
@@ -678,10 +678,10 @@ export default function Employee() {
                     {modal === "add"
                       ? "Add"
                       : modal === "edit"
-                      ? "Update"
-                      : modal === "delete"
-                      ? "Delete"
-                      : ""}{" "}
+                        ? "Update"
+                        : modal === "delete"
+                          ? "Delete"
+                          : ""}{" "}
                     Employee
                   </button>
                 </div>

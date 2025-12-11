@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { MdEdit, MdDelete, MdPriorityHigh } from "react-icons/md";
+import { MdEdit, MdDelete, MdPriorityHigh, MdPersonAdd } from "react-icons/md";
 import { useRouter } from "next/navigation";
 import { leadsAPI } from "@/utilities/LeadsAPI";
 import { success_toaster, error_toaster } from "@/utilities/Toaster";
@@ -9,7 +9,14 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import dayjs from "dayjs";
 
-export default function LeadCard({ lead, onStatusChange, onDelete, onEdit }) {
+export default function LeadCard({
+  lead,
+  onStatusChange,
+  onDelete,
+  onEdit,
+  onAssign,
+  canAssign,
+}) {
   const router = useRouter();
   const [deleteModal, setDeleteModal] = useState(false);
 
@@ -44,7 +51,10 @@ export default function LeadCard({ lead, onStatusChange, onDelete, onEdit }) {
     return today === siteVisitDate;
   };
 
-  const todaysAlert = isSiteVisitToday() || isFollowUpToday()
+  const todaysAlert = isSiteVisitToday() || isFollowUpToday();
+
+  // Determine card background style
+  const isAssigned = lead.assignedEmployee || lead.assignedSalesRep;
 
   // Function to handle lead deletion
   const handleDelete = async () => {
@@ -70,11 +80,12 @@ export default function LeadCard({ lead, onStatusChange, onDelete, onEdit }) {
     <>
       <div
         ref={setNodeRef}
-        style={style}
         {...attributes}
         {...listeners}
         onClick={() => router.push(`/leads/${lead.id}`)}
-        className={`${todaysAlert ? "bg-[#FFD3D5]" : "bg-white"} p-4 rounded-xl shadow-sm border border-borderColor mb-3 hover:shadow-md transition-all duration-200 group cursor-grab active:cursor-grabbing relative touch-none`}
+        className={`${
+          todaysAlert ? "bg-[#FFD3D5]" : "bg-white"
+        } p-4 rounded-xl shadow-sm border border-borderColor mb-3 hover:shadow-md transition-all duration-200 group cursor-grab active:cursor-grabbing relative touch-none`}
       >
         <div className="flex justify-between items-start mb-2">
           <h3 className="text-themeBlue font-bold text-sm hover:underline">
@@ -94,6 +105,20 @@ export default function LeadCard({ lead, onStatusChange, onDelete, onEdit }) {
             >
               <MdEdit size={16} />
             </button>
+            {canAssign && (
+              <button
+                title="Assign"
+                className={`hover:text-themeDark p-1 rounded hover:bg-themeGray`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (onAssign) {
+                    onAssign(lead);
+                  }
+                }}
+              >
+                <MdPersonAdd size={16} />
+              </button>
+            )}
             <button
               title="Delete"
               className="hover:text-themeDark p-1 rounded hover:bg-themeGray"
@@ -151,6 +176,12 @@ export default function LeadCard({ lead, onStatusChange, onDelete, onEdit }) {
             )}
           </div>
         </div>
+
+        {isAssigned && (
+          <p className="text-xs text-white absolute -bottom-0 left-1/2 -translate-x-1/2 bg-green-500 rounded-t-md overflow-hidden px-2">
+            Assigned
+          </p>
+        )}
       </div>
 
       {/* Delete Confirmation Modal */}

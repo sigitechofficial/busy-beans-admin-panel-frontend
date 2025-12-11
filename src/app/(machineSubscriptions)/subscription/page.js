@@ -18,6 +18,7 @@ import MiniLoader from "@/components/ui/MiniLoader";
 import { hasPermission } from "@/utilities/Permission";
 import { BASE_URL } from "@/utilities/URL";
 import { FaPeopleGroup } from "react-icons/fa6";
+import SubscriptionModal from "@/components/subscription/SubscriptionModal";
 
 export default function MachineSubscriptions() {
   const { data, reFetch } = GetAPI("api/v1/admin/coffee-machine");
@@ -27,6 +28,7 @@ export default function MachineSubscriptions() {
   const [loading, setLoading] = useState("");
   const [machineId, setMachineId] = useState("");
   const [preview, setPreview] = useState("");
+  const [subscribingMachine, setSubscribingMachine] = useState(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -320,7 +322,7 @@ export default function MachineSubscriptions() {
                       )}
 
                       <button
-                        // onClick={handleContactClick}
+                        onClick={() => setSubscribingMachine(machine)}
                         className="bg-theme text-white w-full h-[56px] py-2 px-6 mt-8 rounded-md"
                       >
                         Subscribe plan
@@ -334,6 +336,12 @@ export default function MachineSubscriptions() {
         </div>
       </div>
 
+      <SubscriptionModal
+        visible={!!subscribingMachine}
+        onHide={() => setSubscribingMachine(null)}
+        machine={subscribingMachine}
+      />
+
       {/* Modal */}
       <Dialog
         visible={!!modal}
@@ -344,8 +352,8 @@ export default function MachineSubscriptions() {
             {modal === "add"
               ? "Add New Coffee Machine"
               : modal === "edit"
-              ? "Update Machine"
-              : "Delete Machine"}
+                ? "Update Machine"
+                : "Delete Machine"}
           </div>
         }
       >
@@ -416,17 +424,6 @@ export default function MachineSubscriptions() {
                   />
                 </div>
 
-                {/* <div className="space-y-2">
-                  <label className="font-medium">Plan Name*</label>
-                  <Select
-                    value={form.planName}
-                    onChange={(v) => setForm((p) => ({ ...p, planName: v }))}
-                    options={planOptions}
-                    styles={selectStyles2}
-                    placeholder="Drip Starter"
-                  />
-                </div> */}
-
                 <div className="space-y-2">
                   <label className="font-medium">What’s included</label>
                   <textarea
@@ -491,8 +488,8 @@ export default function MachineSubscriptions() {
                 {modal === "add"
                   ? "Save"
                   : modal === "edit"
-                  ? "Update"
-                  : "Delete"}
+                    ? "Update"
+                    : "Delete"}
               </button>
             </div>
           </form>

@@ -28,6 +28,7 @@ export default function MyDataTable({
   csvFileName,
   Styles,
   rowTestId,
+  dataKey = "id",
   ...rest
 }) {
   const [internalSelectedRows, setInternalSelectedRows] = useState([]);
@@ -48,19 +49,24 @@ export default function MyDataTable({
     Object.entries(item).some(([key, val]) =>
       key === "statusText"
         ? String(val ?? "")
-            .toLowerCase()
-            .includes(globalFilter.toLowerCase())
+          .toLowerCase()
+          .includes(globalFilter.toLowerCase())
         : val &&
-          String(val).toLowerCase().includes(globalFilter.toLowerCase())
+        String(val).toLowerCase().includes(globalFilter.toLowerCase())
     )
   );
 
+  const selectedIds = new Set(selected?.map((s) => s?.[dataKey]));
+  const isAllSelected =
+    filteredData.length > 0 &&
+    filteredData.every((item) => selectedIds.has(item?.[dataKey]));
+  const isSomeSelected =
+    filteredData.some((item) => selectedIds.has(item?.[dataKey]));
+
   const headerCheckbox = (
     <Checkbox
-      checked={selected?.length > 0 && selected?.length === filteredData?.length}
-      indeterminate={
-        selected?.length > 0 && selected?.length !== filteredData?.length
-      }
+      checked={isAllSelected}
+      indeterminate={!isAllSelected && isSomeSelected}
       onChange={(e) => {
         if (e.checked) {
           updateSelected(filteredData);
@@ -68,22 +74,23 @@ export default function MyDataTable({
           updateSelected([]);
         }
       }}
-    />
+      className="accent-black cursor-pointer"
+    /> 
   );
 
   const checkboxBody = (rowData) => {
-    const isChecked = selected?.some((row) => row?.id === rowData?.id);
+    const isChecked = selected?.some((row) => row?.[dataKey] === rowData?.[dataKey]);
     return (
       <Checkbox
         checked={!!isChecked}
         onChange={() => {
           const copy = [...(selected || [])];
-          const idx = copy.findIndex((row) => row?.id === rowData?.id);
+          const idx = copy.findIndex((row) => row?.[dataKey] === rowData?.[dataKey]);
           if (idx === -1) copy.push(rowData);
           else copy.splice(idx, 1);
           updateSelected(copy);
         }}
-        className="custom-checkbox"
+        className="custom-checkbox [&_.p-checkbox-box.p-highlight]:!bg-black [&_.p-checkbox-box.p-highlight]:!border-black cursor-pointer"
       />
     );
   };
@@ -188,14 +195,14 @@ export default function MyDataTable({
           rows={10}
           rowsPerPageOptions={[10, 25, 50, 100]}
           removableSort
-          dataKey="id"
+          dataKey={dataKey}
           emptyMessage="No Data Found"
           onRowClick={onRowClick}
           sortField={sortField}
           sortOrder={sortOrder}
           rowClassName={(rowData) => {
             const base =
-              selected?.some((row) => row?.id === rowData?.id)
+              selected?.some((row) => row?.[dataKey] === rowData?.[dataKey])
                 ? "selected-row"
                 : "";
             return `${base} ${rowTestId ? rowTestId(rowData) : ""}`;

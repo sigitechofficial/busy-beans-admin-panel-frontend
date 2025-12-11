@@ -84,4 +84,14 @@ export const leadsAPI = {
   markAsLost: async (id, data) => {
     return await PatchAPI(`api/v1/leads/${id}/lost`, data);
   },
+
+  /**
+   * Assign lead to entity
+   * @param {number} id - Lead ID
+   * @param {Object} data - { employeeId } or { salesRepId }
+   * @returns {Promise}
+   */
+  assignLead: async (id, data) => {
+    return await PostAPI(`api/v1/leads/${id}/assign`, data);
+  },
 };

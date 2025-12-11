@@ -11,6 +11,8 @@ export default function KanbanColumn({
   onStatusChange,
   onDelete,
   onEdit,
+  onAssign,
+  canAssign,
   index,
 }) {
   const { setNodeRef } = useDroppable({
@@ -52,6 +54,8 @@ export default function KanbanColumn({
               onStatusChange={onStatusChange}
               onDelete={onDelete}
               onEdit={onEdit}
+              onAssign={onAssign}
+              canAssign={canAssign}
             />
           ))}
         </SortableContext>

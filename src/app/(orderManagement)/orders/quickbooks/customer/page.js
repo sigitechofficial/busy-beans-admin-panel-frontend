@@ -10,6 +10,8 @@ import { CiMenuBurger } from "react-icons/ci";
 import { ImCross } from "react-icons/im";
 import Select from "react-select";
 import { drawerSelectStyles } from "@/utilities/SelectStyle";
+import { error_toaster, success_toaster } from "@/utilities/Toaster";
+import { PostAPI } from "@/utilities/PostAPI";
 
 export default function UnpaidPartnerBalance() {
   // ---------------------------------------------------------------------
@@ -25,7 +27,7 @@ export default function UnpaidPartnerBalance() {
     value: "allTime",
     label: "All Time",
   });
-
+  const [selectedRows, setSelectedRows] = useState([]);
   const { toggle, setToggle } = useDataContext();
 
   // ---------------------------------------------------------------------
@@ -38,9 +40,8 @@ export default function UnpaidPartnerBalance() {
     4: "/unsynced-paid",
   };
 
-  const { data, isLoading } = GetAPI(
-    `api/v1/admin/quickbooks-customer-order-management${
-      customerURLs[partnerType] ?? ""
+  const { data, isLoading, reFetch } = GetAPI(
+    `api/v1/admin/quickbooks-customer-order-management${customerURLs[partnerType] ?? ""
     }`
   );
 
@@ -120,12 +121,39 @@ export default function UnpaidPartnerBalance() {
     overdue: r?.overdueInvoice ? "Yes" : null,
   }));
 
+
+  const handleSyncInvoice = async () => {
+    let response = await PostAPI("qbo/order-invoice/create-multiple", { orderType: "customer", orderIds: selectedRows?.map((r) => r?.orderId) })
+    console.log(response)
+    if (response?.data?.status === "success") {
+      // success_toaster(response?.data?.message)
+      reFetch()
+    } else {
+      error_toaster(response?.data?.message)
+    }
+  }
+
+
+  const handleSyncPayment = async () => {
+    let response = await PostAPI("qbo/order-payment/sync-multiple", { orderType: "customer", orderIds: selectedRows?.map((r) => r?.orderId) })
+
+    console.log(response)
+    if (response?.data?.status === "success") {
+      // success_toaster(response?.data?.message)
+      reFetch()
+    } else {
+      error_toaster(response?.data?.message)
+    }
+  }
+
   // ---------------------------------------------------------------------
   // RENDER UI
   // ---------------------------------------------------------------------
-  if (isLoading) return <Loader />;
 
-  return (
+
+  return isLoading ? (
+    <Loader />
+  ) : (
     <div>
       {/* HEADER */}
       <header className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white h-[70px] 2xl:h-[94px] fixed flex items-center justify-between border-b px-6 2xl:px-12 z-10">
@@ -159,18 +187,36 @@ export default function UnpaidPartnerBalance() {
               ].map((tab) => (
                 <div
                   key={tab.id}
-                  onClick={() => setPartnerType(tab.id)}
-                  className={`py-3 px-4 cursor-pointer font-semibold text-sm text-center border ${
-                    partnerType === tab.id
-                      ? "bg-black text-white"
-                      : "text-black"
-                  }`}
+                  onClick={() => {
+                    setSelectedRows([])
+                    setPartnerType(tab.id)
+                  }}
+                  className={`py-3 px-4 cursor-pointer font-semibold text-sm text-center border ${partnerType === tab.id
+                    ? "bg-black text-white"
+                    : "text-black"
+                    }`}
                 >
                   {tab.label}
                 </div>
               ))}
             </div>
+
+
           </div>
+
+          {partnerType === 2 && <button
+            onClick={handleSyncInvoice}
+            className="bg-theme text-white px-4 py-2 rounded-lg border border-theme hover:bg-white hover:text-theme transition-colors duration-200 font-medium"
+          >
+            Sync Invoice
+          </button>}
+
+          {partnerType === 4 && <button
+            onClick={handleSyncPayment}
+            className="bg-theme text-white px-4 py-2 rounded-lg border border-theme hover:bg-white hover:text-theme transition-colors duration-200 font-medium"
+          >
+            Sync Payment
+          </button>}
 
           {/* DATE FILTERS */}
           {/* <div className="min-w-40">
@@ -228,6 +274,10 @@ export default function UnpaidPartnerBalance() {
           search
           pagination
           placeholder="Search ..."
+          checkbox={partnerType === 2 || partnerType === 4}
+          selectedRows={selectedRows}
+          setSelectedRows={setSelectedRows}
+          dataKey="orderId"
         />
       </div>
     </div>

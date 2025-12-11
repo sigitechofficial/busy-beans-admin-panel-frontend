@@ -308,7 +308,8 @@ const DrawerBeansGenerateInvoice = ({
         setInvoiceData?.([]);
         setOpen(false);
         if (orderId) {
-          router.push(`/orders/detail/${orderId}/add-invoice`);
+          // router.push(`/orders/detail/${orderId}/add-invoice`);
+          router.push( partnersOrder ? `/individual-invoices/partner/${orderId}/add-invoice` : `/individual-invoices/${orderId}/add-invoice`);
         }
       } else {
         throw new Error(res?.data?.message || "Failed to generate invoice.");
@@ -436,8 +437,8 @@ const DrawerBeansGenerateInvoice = ({
                   <label
                     htmlFor="courier-note"
                     className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${order?.note
-                        ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
-                        : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
+                      ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
+                      : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
                       }`}
                   >
                     {order?.note
@@ -463,8 +464,8 @@ const DrawerBeansGenerateInvoice = ({
                   <label
                     htmlFor="poNumber"
                     className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${order?.poNumber
-                        ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
-                        : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
+                      ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
+                      : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
                       }`}
                   >
                     {order?.poNumber

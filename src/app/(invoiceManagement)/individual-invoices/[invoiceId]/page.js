@@ -787,7 +787,7 @@ export default function OrderDetail() {
                   </div>
                 </div>
 
-                <p className="font-semibold">Invoice Sent: {data?.data?.order?.invoiceDate ? dayjs(data?.data?.order?.invoiceDate).format("MM/DD/YYYY") : "Not Sent"}</p>
+                <p className="font-semibold">Invoice: {data?.data?.order?.invoiceDate ? dayjs(data?.data?.order?.invoiceDate).format("MM/DD/YYYY") : "Not Sent"}</p>
 
               </div>
 

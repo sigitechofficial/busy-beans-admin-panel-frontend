@@ -1,65 +1,173 @@
 import { useState, useEffect } from "react";
 import GetAPI from "@/utilities/GetAPI";
 import { BASE_URL } from "@/utilities/URL";
+import { RiSubtractFill } from "react-icons/ri";
+import { BiPlus } from "react-icons/bi";
 
-export default function ProductSelection({ selectedProducts = [], onToggle }) {
+export default function ProductSelection({ selectedProducts = [], onToggle, onQuantityChange, onPriceChange }) {
   const { data, isLoading } = GetAPI("api/v1/admin/product");
   // Response structure: { status: "success", data: { data: [...] } }
   const products = data?.data?.data || [];
 
-  if (isLoading) return <div>Loading products...</div>;
-  if (!products.length) return <div className="text-gray-500">No products available.</div>;
+  if (isLoading) return <div className="p-4 text-center text-gray-500">Loading products...</div>;
+  if (!products.length) return <div className="p-4 text-center text-gray-500">No products available.</div>;
+
+  const handleToggle = (product) => {
+    onToggle(product);
+  };
+
+  const handleQuantityChange = (productId, newQuantity, e) => {
+    e?.stopPropagation();
+    if (onQuantityChange) {
+      onQuantityChange(productId, Math.max(1, parseInt(newQuantity) || 1));
+    }
+  };
+
+  const handlePriceChange = (productId, newPrice, e) => {
+    e?.stopPropagation();
+    if (onPriceChange) {
+      onPriceChange(productId, parseFloat(newPrice) || 0);
+    }
+  };
+
+  const getSelectedProduct = (productId) => {
+    return selectedProducts.find(p => p.id === productId);
+  };
 
   return (
-    <div className="grid grid-cols-1 gap-4 max-h-[400px] overflow-y-auto pr-2">
+    <div className="grid grid-cols-1 gap-4 max-h-[500px] overflow-y-auto pr-2">
       {products.map((product) => {
         const isSelected = selectedProducts.some((p) => p.id === product.id);
+        const selectedProduct = getSelectedProduct(product.id);
+        const quantity = selectedProduct?.quantity || 1;
+        const customPrice = selectedProduct?.customPrice !== undefined ? selectedProduct.customPrice : product.price;
 
         return (
           <div
             key={product.id}
-            className={`border rounded-lg p-3 flex items-center gap-4 cursor-pointer transition-colors ${isSelected ? "border-theme bg-[#fef1d8]" : "border-gray-200"
-              }`}
-            onClick={() => onToggle(product)}
+            className={`border rounded-xl p-4 transition-all ${
+              isSelected 
+                ? "border-theme bg-[#fef1d8] shadow-md" 
+                : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm"
+            }`}
           >
-            <img
-              src={product.image ? (BASE_URL + product.image) : "/images/coffeemachine.png"}
-              alt={product.name}
-              className="w-16 h-16 object-cover rounded bg-white"
-              onError={(e) => {
-                e.target.onerror = null; // Prevent infinite loop
-                e.target.src = "/images/coffeemachine.png";
-              }}
-            />
-
-            <div className="flex-1">
-              <h4 className="font-semibold">{product.name}</h4>
-              <p className="text-sm text-gray-500 line-clamp-1">{product.desc}</p>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-sm font-bold text-theme">${product.price}</span>
-                {product.unit && <span className="text-xs text-gray-400">/ {product.unit}</span>}
-              </div>
-            </div>
-
-            <div
-              className={`w-6 h-6 rounded border flex items-center justify-center flex-shrink-0 ${isSelected ? "bg-theme border-theme" : "border-gray-300"
-                }`}
+            <div 
+              className="flex items-start gap-4 cursor-pointer"
+              onClick={() => handleToggle(product)}
             >
-              {isSelected && (
-                <svg
-                  className="w-4 h-4 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="3"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              )}
+              <img
+                src={product.image ? (BASE_URL + product.image) : "/images/coffeemachine.png"}
+                alt={product.name}
+                className="w-20 h-20 object-cover rounded-lg bg-white border border-gray-200 flex-shrink-0"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "/images/coffeemachine.png";
+                }}
+              />
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-gray-800">{product.name}</h4>
+                    <div className="flex items-center gap-3 mt-1">
+                      {product.sku && (
+                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded font-mono">
+                          SKU: {product.sku}
+                        </span>
+                      )}
+                    </div>
+                    {product.desc && (
+                      <p className="text-sm text-gray-500 line-clamp-2 mt-1">{product.desc}</p>
+                    )}
+                  </div>
+
+                  <div
+                    className={`w-6 h-6 rounded border flex items-center justify-center flex-shrink-0 ${
+                      isSelected ? "bg-theme border-theme" : "border-gray-300"
+                    }`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {isSelected && (
+                      <svg
+                        className="w-4 h-4 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="3"
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                </div>
+
+                {isSelected && (
+                  <div className="mt-4 pt-4 border-t border-gray-300 space-y-3" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center justify-between gap-4">
+                      <label className="text-sm font-medium text-gray-700">Quantity:</label>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={(e) => handleQuantityChange(product.id, quantity - 1, e)}
+                          className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-50 text-gray-600"
+                        >
+                          <RiSubtractFill size={16} />
+                        </button>
+                        <input
+                          type="number"
+                          min="1"
+                          value={quantity}
+                          onChange={(e) => handleQuantityChange(product.id, e.target.value, e)}
+                          className="w-16 h-8 text-center border border-gray-300 rounded text-sm font-medium"
+                        />
+                        <button
+                          type="button"
+                          onClick={(e) => handleQuantityChange(product.id, quantity + 1, e)}
+                          className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-50 text-gray-600"
+                        >
+                          <BiPlus size={16} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-4">
+                      <label className="text-sm font-medium text-gray-700">Unit Price:</label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">$</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={customPrice}
+                          onChange={(e) => handlePriceChange(product.id, e.target.value, e)}
+                          className="w-24 h-8 px-2 border border-gray-300 rounded text-sm font-medium"
+                        />
+                        {product.unit && (
+                          <span className="text-xs text-gray-500">/ {product.unit}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2">
+                      <span className="text-sm text-gray-600">Subtotal:</span>
+                      <span className="font-bold text-theme">
+                        ${(customPrice * quantity).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {!isSelected && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-sm font-bold text-theme">${product.price}</span>
+                    {product.unit && <span className="text-xs text-gray-400">/ {product.unit}</span>}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         );

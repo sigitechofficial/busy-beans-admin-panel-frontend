@@ -246,7 +246,7 @@ export default function InvoicePDFDownload({ invoiceData, reFetch, adminAddress 
                           .join(" ")}
                       </div>
                     )}
-                    {adminAddress?.email && <div>{adminAddress?.email}</div>}
+                    {adminAddress?.supportEmail && <div>{adminAddress?.supportEmail}</div>}
                   </>
 
                 )}

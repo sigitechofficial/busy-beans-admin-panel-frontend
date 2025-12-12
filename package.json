@@ -16,7 +16,6 @@
     "@emotion/react": "^11.14.0",
     "@next/font": "^14.2.15",
     "@react-google-maps/api": "^2.20.6",
-    "@stripe/react-stripe-js": "^5.4.1",
     "@stripe/stripe-js": "^7.4.0",
     "axios": "^1.8.4",
     "country-state-city": "^3.2.1",

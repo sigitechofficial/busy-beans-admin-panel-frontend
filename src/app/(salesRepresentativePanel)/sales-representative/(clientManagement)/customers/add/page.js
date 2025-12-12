@@ -10,7 +10,7 @@ import { BASE_URL, googleApiKey } from "@/utilities/URL";
 import { emailValidity } from "@/utilities/Validations";
 import { Autocomplete, LoadScript } from "@react-google-maps/api";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Checkbox } from "primereact/checkbox";
 import React, { useRef, useState } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
@@ -26,6 +26,8 @@ export default function AddCustomer() {
   }
   const allCountriesData = [];
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnTo = searchParams?.get("returnTo");
   const [step, setStep] = useState(1);
   const [loader, setLoader] = useState(false);
   const [visibility, setVisibility] = useState({
@@ -340,6 +342,28 @@ export default function AddCustomer() {
           "customer"
         );
         if (res?.data?.status === "success") {
+          // If returning to subscription modal, save customer data to localStorage
+          if (returnTo === "subscription") {
+            // Extract customer ID from response - it might be in different places
+            const customerId = res?.data?.data?.customer?.id || 
+                              res?.data?.data?.id || 
+                              res?.data?.customer?.id || 
+                              res?.data?.id;
+            
+            if (customerId) {
+              localStorage.setItem("newCustomerCreated", JSON.stringify({
+                id: customerId,
+                name: userData.info.name,
+                email: userData.info.email,
+              }));
+              // Go back in history (which should return to the subscription modal)
+              router.back();
+              setLoader(false);
+              success_toaster(res?.data?.data?.message || "Customer created successfully!");
+              return;
+            }
+          }
+
           setStep(1);
           setUserData({
             info: {

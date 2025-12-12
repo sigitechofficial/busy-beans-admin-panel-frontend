@@ -10,10 +10,10 @@ import CardSelection from "./CardSelection";
 import GetAPI from "@/utilities/GetAPI";
 import { PostAPI } from "@/utilities/PostAPI";
 import { success_toaster, error_toaster } from "@/utilities/Toaster";
-import { BASE_URL, stripePublishKey, stripePublishKeyTest } from "@/utilities/URL";
+import { BASE_URL } from "@/utilities/URL";
 
 // TODO: Replace with your actual Stripe Publishable Key
-const stripePromise = loadStripe(stripePublishKey);
+const stripePromise = loadStripe("");
 
 const STEPS = {
   USER_SELECT: 0,

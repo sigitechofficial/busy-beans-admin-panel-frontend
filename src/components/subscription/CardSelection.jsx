@@ -4,7 +4,7 @@ import { FaCreditCard } from "react-icons/fa";
 
 export default function CardSelection({ userId, onSelect, selectedMethodId }) {
   // Fetch payment methods for the selected user
-  const { data, isLoading } = GetAPI(userId ? `api/v1/users/${userId}/payment-methods` : null);
+  const { data, isLoading } = GetAPI(userId ? `api/v1/admin/customer-management/payment-cards/${userId}` : null);
   const paymentMethods = data?.data ?? []; // Adjust structure as needed
 
   if (isLoading) return <div>Loading saved cards...</div>;

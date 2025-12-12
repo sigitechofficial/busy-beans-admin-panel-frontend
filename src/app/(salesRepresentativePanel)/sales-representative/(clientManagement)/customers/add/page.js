@@ -12,14 +12,14 @@ import { Autocomplete, LoadScript } from "@react-google-maps/api";
 import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Checkbox } from "primereact/checkbox";
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, Suspense } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { FaLongArrowAltLeft } from "react-icons/fa";
 import PhoneInput from "react-phone-input-2";
 import Select from "react-select";
 import { ADD_CUSTOMER } from "../../../../../(clientManagement)/customers/customer.testid";
 
-export default function AddCustomer() {
+function AddCustomerContent() {
   if (typeof window !== "undefined") {
     var userID = localStorage.getItem("userID");
     var userType = localStorage.getItem("userType");
@@ -1217,5 +1217,13 @@ export default function AddCustomer() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AddCustomer() {
+  return (
+    <Suspense fallback={<MiniLoader />}>
+      <AddCustomerContent />
+    </Suspense>
   );
 }

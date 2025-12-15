@@ -483,7 +483,7 @@ export default function AddInvoice() {
       setExtraRows([]);
       success_toaster("success");
       reFetch();
-      router.push(`/individual-invoices/${invoiceId}`);
+      router.push(`/direct-invoices/${invoiceId}`);
     } else {
       info_toaster("something went wrong");
       setLoading(false);
@@ -512,7 +512,7 @@ export default function AddInvoice() {
           </p>
           <p
             className="hover:text-blue-500 cursor-pointer"
-            onClick={() => router.push("/individual-invoices")}
+            onClick={() => router.push("/direct-invoices")}
             data-testid={ORDER_ADD_INVOICE.breadcrumbOrdersLink}
           >
             Invoice

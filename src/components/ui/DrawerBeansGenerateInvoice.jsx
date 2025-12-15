@@ -309,7 +309,7 @@ const DrawerBeansGenerateInvoice = ({
         setOpen(false);
         if (orderId) {
           // router.push(`/orders/detail/${orderId}/add-invoice`);
-          router.push( partnersOrder ? `/individual-invoices/partner/${orderId}/add-invoice` : `/individual-invoices/${orderId}/add-invoice`);
+          router.push( partnersOrder ? `/direct-invoices/partner/${orderId}/add-invoice` : `/direct-invoices/${orderId}/add-invoice`);
         }
       } else {
         throw new Error(res?.data?.message || "Failed to generate invoice.");

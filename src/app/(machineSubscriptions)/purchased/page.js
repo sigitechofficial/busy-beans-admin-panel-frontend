@@ -7,26 +7,37 @@ import GetAPI from "@/utilities/GetAPI";
 import Loader from "@/components/ui/Loader";
 import { CiMenuBurger } from "react-icons/ci";
 import { useDataContext } from "@/utilities/DataContext";
+import { useRouter } from "next/navigation";
 import dayjs from "dayjs";
 import { PostAPI } from "@/utilities/PostAPI";
 import { success_toaster, error_toaster } from "@/utilities/Toaster";
+import { Dialog } from "primereact/dialog";
+import { FaEye } from "react-icons/fa";
+import { MdCancel } from "react-icons/md";
 
 export default function PurchasedSubscriptions() {
   const { toggle, setToggle } = useDataContext();
+  const router = useRouter();
   const { data, reFetch } = GetAPI("api/v1/subscription/list");
   const list = data?.subscriptions ?? [];
 
   const [cancelLoading, setCancelLoading] = useState(null);
+  const [cancelModal, setCancelModal] = useState({ visible: false, subscriptionId: null });
 
-  const handleCancel = async (id) => {
-    if (!confirm("Are you sure you want to cancel this subscription?")) return;
+  const handleCancelClick = (id) => {
+    setCancelModal({ visible: true, subscriptionId: id });
+  };
 
-    setCancelLoading(id);
+  const handleCancelConfirm = async () => {
+    if (!cancelModal.subscriptionId) return;
+
+    setCancelLoading(cancelModal.subscriptionId);
     try {
-      const res = await PostAPI(`api/v1/subscription/${id}/cancel`);
+      const res = await PostAPI(`api/v1/subscription/${cancelModal.subscriptionId}/cancel`);
       if (res?.data?.success) {
         success_toaster("Subscription cancelled successfully");
         reFetch();
+        setCancelModal({ visible: false, subscriptionId: null });
       } else {
         error_toaster(res?.data?.error || "Failed to cancel");
       }
@@ -35,24 +46,36 @@ export default function PurchasedSubscriptions() {
     } finally {
       setCancelLoading(null);
     }
-  }
+  };
 
   const columns = [
     { field: "sl", header: "#", sort: true },
     { field: "customer", header: "Customer" },
+    { field: "customerName", header: "Customer Name" },
     { field: "machine", header: "Machine" },
-    { field: "price", header: "Price/Mo" },
+    { field: "machinePrice", header: "Machine Price" },
+    { field: "productsTotal", header: "Products Total" },
+    { field: "addonsTotal", header: "Add-ons Total" },
+    { field: "price", header: "Total Price/Mo" },
+    { field: "subscriptionDays", header: "Days" },
     { field: "status", header: "Status" },
+    { field: "periodStart", header: "Period Start" },
     { field: "period", header: "Period End" },
+    { field: "createdAt", header: "Created At" },
     { field: "action", header: "Action" },
   ];
 
   const rows = list.map((sub, i) => {
     return {
       sl: i + 1,
-      customer: sub.customerEmail,
+      customer: sub.customerEmail || "-",
+      customerName: sub.userName || "-",
       machine: sub.machine?.name || "-",
-      price: `$${sub.totalPrice}`,
+      machinePrice: sub.machinePrice ? `$${parseFloat(sub.machinePrice).toFixed(2)}` : "-",
+      productsTotal: sub.productsTotal ? `$${parseFloat(sub.productsTotal).toFixed(2)}` : "$0.00",
+      addonsTotal: sub.addonsTotal ? `$${parseFloat(sub.addonsTotal).toFixed(2)}` : "$0.00",
+      price: `$${parseFloat(sub.totalPrice || 0).toFixed(2)}`,
+      subscriptionDays: sub.subscriptionDays ? `${sub.subscriptionDays} days` : "-",
       status: (
         <span
           className={`px-3 py-1 rounded-full text-xs font-semibold ${sub.status === "active"
@@ -62,19 +85,37 @@ export default function PurchasedSubscriptions() {
                 : "bg-yellow-100 text-yellow-700"
             }`}
         >
-          {sub.status.toUpperCase()}
+          {sub.status?.toUpperCase() || "UNKNOWN"}
         </span>
       ),
+      periodStart: sub.currentPeriodStart ? dayjs(sub.currentPeriodStart).format("MMM DD, YYYY") : "-",
       period: sub.currentPeriodEnd ? dayjs(sub.currentPeriodEnd).format("MMM DD, YYYY") : "-",
-      action: sub.status === 'active' ? (
-        <button
-          disabled={cancelLoading === sub.id}
-          onClick={() => handleCancel(sub.id)}
-          className="text-red-500 hover:underline text-sm disabled:opacity-50"
-        >
-          {cancelLoading === sub.id ? "Cancelling..." : "Cancel"}
-        </button>
-      ) : "-"
+      createdAt: sub.createdAt ? dayjs(sub.createdAt).format("MMM DD, YYYY") : "-",
+      action: (
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => router.push(`/purchased/${sub.id}`)}
+            className="border border-theme rounded-md p-2 text-theme hover:bg-theme hover:text-white transition-colors"
+            title="View Details"
+          >
+            <FaEye size={18} />
+          </button>
+          {sub.status === 'active' && (
+            <button
+              disabled={cancelLoading === sub.id}
+              onClick={() => handleCancelClick(sub.id)}
+              className="border border-red-400 rounded-md p-2 text-red-400 hover:bg-red-400 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Cancel Subscription"
+            >
+              {cancelLoading === sub.id ? (
+                <span className="text-xs">...</span>
+              ) : (
+                <MdCancel size={18} />
+              )}
+            </button>
+          )}
+        </div>
+      )
     };
   });
 
@@ -109,6 +150,35 @@ export default function PurchasedSubscriptions() {
           search
         />
       </div>
+
+      {/* Cancel Subscription Modal */}
+      <Dialog
+        header="Cancel Subscription"
+        visible={cancelModal.visible}
+        className="w-[90%] max-w-[500px] font-nunito"
+        onHide={() => setCancelModal({ visible: false, subscriptionId: null })}
+      >
+        <div className="space-y-4 py-4">
+          <p className="text-gray-700">
+            Are you sure you want to cancel this subscription? This action cannot be undone.
+          </p>
+          <div className="flex justify-end gap-3 pt-4">
+            <button
+              onClick={() => setCancelModal({ visible: false, subscriptionId: null })}
+              className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50"
+            >
+              No, Keep Subscription
+            </button>
+            <button
+              onClick={handleCancelConfirm}
+              disabled={cancelLoading !== null}
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
+            >
+              {cancelLoading ? "Cancelling..." : "Yes, Cancel Subscription"}
+            </button>
+          </div>
+        </div>
+      </Dialog>
     </div>
   );
 }

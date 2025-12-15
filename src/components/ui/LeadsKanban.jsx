@@ -8,7 +8,11 @@ import selectStyles from "@/utilities/SelectStyle";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { leadsAPI } from "@/utilities/LeadsAPI";
-import { success_toaster, error_toaster, info_toaster } from "@/utilities/Toaster";
+import {
+  success_toaster,
+  error_toaster,
+  info_toaster,
+} from "@/utilities/Toaster";
 import Loader from "@/components/ui/Loader";
 import GetAPI from "@/utilities/GetAPI";
 import PhoneInput from "react-phone-input-2";
@@ -63,7 +67,9 @@ export default function LeadsKanban() {
   );
   const { data: machinesData } = GetAPI("api/v1/admin/coffee-machine");
   const { data: employeesData } = GetAPI("api/v1/admin/employees");
-  const { data: partnersData } = GetAPI("api/v1/admin/sales-rep/for-order-creation?partnerType=direct-partner");
+  const { data: partnersData } = GetAPI(
+    "api/v1/admin/sales-rep/for-order-creation?partnerType=direct-partner"
+  );
 
   // Local state for optimistic UI updates
   const [items, setItems] = useState({
@@ -90,15 +96,27 @@ export default function LeadsKanban() {
   // Applied Filters (The truth for the dashboard)
   const [appliedFilters, setAppliedFilters] = useState({
     stage: { value: "all", label: "All Leads" },
-    followUpDate: { option: { value: "all", label: "All Dates" }, customRange: null },
-    siteVisitDate: { option: { value: "all", label: "All Dates" }, customRange: null },
+    followUpDate: {
+      option: { value: "all", label: "All Dates" },
+      customRange: null,
+    },
+    siteVisitDate: {
+      option: { value: "all", label: "All Dates" },
+      customRange: null,
+    },
   });
 
   // Temp Filters (For the modal)
   const [tempFilters, setTempFilters] = useState({
     stage: { value: "all", label: "All Leads" },
-    followUpDate: { option: { value: "all", label: "All Dates" }, customRange: null },
-    siteVisitDate: { option: { value: "all", label: "All Dates" }, customRange: null },
+    followUpDate: {
+      option: { value: "all", label: "All Dates" },
+      customRange: null,
+    },
+    siteVisitDate: {
+      option: { value: "all", label: "All Dates" },
+      customRange: null,
+    },
   });
 
   // UI State for Modal (Custom Mode toggles)
@@ -107,7 +125,6 @@ export default function LeadsKanban() {
 
   const [isSiteVisitCustomMode, setIsSiteVisitCustomMode] = useState(false);
   const [tempSiteVisitRange, setTempSiteVisitRange] = useState(null);
-
 
   const [addModal, setAddModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -339,11 +356,17 @@ export default function LeadsKanban() {
 
     // Check for duplicate assignment
     if (assigningLead) {
-      if (assignType === "employee" && assigningLead.assignedEmployee?.id === selectedEntityId) {
+      if (
+        assignType === "employee" &&
+        assigningLead.assignedEmployee?.id === selectedEntityId
+      ) {
         info_toaster("Lead is already assigned to this employee.");
         return;
       }
-      if (assignType === "local-partner" && assigningLead.assignedSalesRep?.id === selectedEntityId) {
+      if (
+        assignType === "local-partner" &&
+        assigningLead.assignedSalesRep?.id === selectedEntityId
+      ) {
         info_toaster("Lead is already assigned to this partner.");
         return;
       }
@@ -351,9 +374,10 @@ export default function LeadsKanban() {
 
     try {
       setAssignLoading(true);
-      const payload = assignType === "employee"
-        ? { employeeId: selectedEntityId }
-        : { salesRepId: selectedEntityId };
+      const payload =
+        assignType === "employee"
+          ? { employeeId: selectedEntityId }
+          : { salesRepId: selectedEntityId };
 
       const response = await leadsAPI.assignLead(assigningLead.id, payload);
 
@@ -460,7 +484,7 @@ export default function LeadsKanban() {
       } else {
         error_toaster(
           response?.data?.message ||
-          (isEditMode ? "Failed to update lead" : "Failed to create lead")
+            (isEditMode ? "Failed to update lead" : "Failed to create lead")
         );
       }
     } catch (error) {
@@ -553,7 +577,9 @@ export default function LeadsKanban() {
     setItems((prev) => {
       const activeItems = prev[activeContainer];
       const overItems = prev[overContainer];
-      const activeIndex = activeItems.findIndex((item) => item.id === active.id);
+      const activeIndex = activeItems.findIndex(
+        (item) => item.id === active.id
+      );
       const overIndex = overItems.findIndex((item) => item.id === overId);
 
       let newIndex;
@@ -565,8 +591,7 @@ export default function LeadsKanban() {
         const isBelowOverItem =
           over &&
           active.rect.current.translated &&
-          active.rect.current.translated.top >
-          over.rect.top + over.rect.height;
+          active.rect.current.translated.top > over.rect.top + over.rect.height;
 
         const modifier = isBelowOverItem ? 1 : 0;
 
@@ -690,7 +715,12 @@ export default function LeadsKanban() {
         endDate = now.subtract(1, "week").endOf("week");
         break;
       case "custom":
-        if (customRange && customRange.length === 2 && customRange[0] && customRange[1]) {
+        if (
+          customRange &&
+          customRange.length === 2 &&
+          customRange[0] &&
+          customRange[1]
+        ) {
           startDate = dayjs(customRange[0]);
           endDate = dayjs(customRange[1]);
         } else {
@@ -730,17 +760,21 @@ export default function LeadsKanban() {
   // Find the active lead object for the drag overlay
   const activeLead = activeId
     ? Object.values(items)
-      .flat()
-      .find((lead) => lead.id === activeId)
+        .flat()
+        .find((lead) => lead.id === activeId)
     : null;
 
   // Open Filter Modal
   const openFilterModal = () => {
     setTempFilters(appliedFilters);
     // Determine custom mode states based on current applied filters
-    setIsFollowUpCustomMode(appliedFilters.followUpDate.option.value === "custom");
+    setIsFollowUpCustomMode(
+      appliedFilters.followUpDate.option.value === "custom"
+    );
     setTempFollowUpRange(appliedFilters.followUpDate.customRange);
-    setIsSiteVisitCustomMode(appliedFilters.siteVisitDate.option.value === "custom");
+    setIsSiteVisitCustomMode(
+      appliedFilters.siteVisitDate.option.value === "custom"
+    );
     setTempSiteVisitRange(appliedFilters.siteVisitDate.customRange);
     setFilterModalVisible(true);
   };
@@ -753,14 +787,20 @@ export default function LeadsKanban() {
 
   // Clear a specific filter
   const clearFilter = (type) => {
-    setAppliedFilters(prev => {
+    setAppliedFilters((prev) => {
       const newFilters = { ...prev };
-      if (type === 'stage') {
+      if (type === "stage") {
         newFilters.stage = { value: "all", label: "All Leads" };
-      } else if (type === 'followUpDate') {
-        newFilters.followUpDate = { option: { value: "all", label: "All Dates" }, customRange: null };
-      } else if (type === 'siteVisitDate') {
-        newFilters.siteVisitDate = { option: { value: "all", label: "All Dates" }, customRange: null };
+      } else if (type === "followUpDate") {
+        newFilters.followUpDate = {
+          option: { value: "all", label: "All Dates" },
+          customRange: null,
+        };
+      } else if (type === "siteVisitDate") {
+        newFilters.siteVisitDate = {
+          option: { value: "all", label: "All Dates" },
+          customRange: null,
+        };
       }
       return newFilters;
     });
@@ -787,20 +827,41 @@ export default function LeadsKanban() {
           <div className="flex items-center gap-2 flex-wrap">
             {appliedFilters.stage.value !== "all" && (
               <div className="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center gap-2 border">
-                <span className="text-gray-600">Stage: {appliedFilters.stage.label}</span>
-                <button onClick={() => clearFilter('stage')} className="text-gray-400 hover:text-red-500"><MdClose /></button>
+                <span className="text-gray-600">
+                  Stage: {appliedFilters.stage.label}
+                </span>
+                <button
+                  onClick={() => clearFilter("stage")}
+                  className="text-gray-400 hover:text-red-500"
+                >
+                  <MdClose />
+                </button>
               </div>
             )}
             {appliedFilters.followUpDate.option.value !== "all" && (
               <div className="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center gap-2 border">
-                <span className="text-gray-600">Follow-up: {appliedFilters.followUpDate.option.label}</span>
-                <button onClick={() => clearFilter('followUpDate')} className="text-gray-400 hover:text-red-500"><MdClose /></button>
+                <span className="text-gray-600">
+                  Follow-up: {appliedFilters.followUpDate.option.label}
+                </span>
+                <button
+                  onClick={() => clearFilter("followUpDate")}
+                  className="text-gray-400 hover:text-red-500"
+                >
+                  <MdClose />
+                </button>
               </div>
             )}
             {appliedFilters.siteVisitDate.option.value !== "all" && (
               <div className="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center gap-2 border">
-                <span className="text-gray-600">Site Visit: {appliedFilters.siteVisitDate.option.label}</span>
-                <button onClick={() => clearFilter('siteVisitDate')} className="text-gray-400 hover:text-red-500"><MdClose /></button>
+                <span className="text-gray-600">
+                  Site Visit: {appliedFilters.siteVisitDate.option.label}
+                </span>
+                <button
+                  onClick={() => clearFilter("siteVisitDate")}
+                  className="text-gray-400 hover:text-red-500"
+                >
+                  <MdClose />
+                </button>
               </div>
             )}
           </div>
@@ -866,26 +927,33 @@ export default function LeadsKanban() {
         closable={true}
       >
         <div className="flex flex-col gap-6 pt-4">
-
           {/* Stage Filter */}
           <div className="flex flex-col gap-2">
-            <label className="font-medium text-sm text-gray-700">Lead Stage</label>
+            <label className="font-medium text-sm text-gray-700">
+              Lead Stage
+            </label>
             <Select
               placeholder="Select Stage"
               styles={{
                 ...selectStyles,
                 menuPortal: (base) => ({ ...base, zIndex: 9999 }),
               }}
-              menuPortalTarget={typeof document !== "undefined" ? document.body : null}
+              menuPortalTarget={
+                typeof document !== "undefined" ? document.body : null
+              }
               value={tempFilters.stage}
-              onChange={(option) => setTempFilters({ ...tempFilters, stage: option })}
+              onChange={(option) =>
+                setTempFilters({ ...tempFilters, stage: option })
+              }
               options={filterOptions}
             />
           </div>
 
           {/* Follow-up Date Filter */}
           <div className="flex flex-col gap-2">
-            <label className="font-medium text-sm text-gray-700">Follow-up Date</label>
+            <label className="font-medium text-sm text-gray-700">
+              Follow-up Date
+            </label>
             {!isFollowUpCustomMode ? (
               <Select
                 placeholder="Select Range"
@@ -893,7 +961,9 @@ export default function LeadsKanban() {
                   ...selectStyles,
                   menuPortal: (base) => ({ ...base, zIndex: 9999 }),
                 }}
-                menuPortalTarget={typeof document !== "undefined" ? document.body : null}
+                menuPortalTarget={
+                  typeof document !== "undefined" ? document.body : null
+                }
                 value={tempFilters.followUpDate.option}
                 onChange={(option) => {
                   if (option.value === "custom") {
@@ -901,10 +971,13 @@ export default function LeadsKanban() {
                     setTempFollowUpRange(null);
                     setTempFilters({
                       ...tempFilters,
-                      followUpDate: { option, customRange: null }
+                      followUpDate: { option, customRange: null },
                     });
                   } else {
-                    setTempFilters({ ...tempFilters, followUpDate: { option, customRange: null } });
+                    setTempFilters({
+                      ...tempFilters,
+                      followUpDate: { option, customRange: null },
+                    });
                   }
                 }}
                 options={dateRangeOptions}
@@ -918,7 +991,10 @@ export default function LeadsKanban() {
                     if (e.value) {
                       setTempFilters({
                         ...tempFilters,
-                        followUpDate: { option: { value: "custom", label: "Custom Range" }, customRange: e.value }
+                        followUpDate: {
+                          option: { value: "custom", label: "Custom Range" },
+                          customRange: e.value,
+                        },
                       });
                     }
                   }}
@@ -936,7 +1012,9 @@ export default function LeadsKanban() {
 
           {/* Site Visit Date Filter */}
           <div className="flex flex-col gap-2">
-            <label className="font-medium text-sm text-gray-700">Site Visit Date</label>
+            <label className="font-medium text-sm text-gray-700">
+              Site Visit Date
+            </label>
             {!isSiteVisitCustomMode ? (
               <Select
                 placeholder="Select Range"
@@ -944,7 +1022,9 @@ export default function LeadsKanban() {
                   ...selectStyles,
                   menuPortal: (base) => ({ ...base, zIndex: 9999 }),
                 }}
-                menuPortalTarget={typeof document !== "undefined" ? document.body : null}
+                menuPortalTarget={
+                  typeof document !== "undefined" ? document.body : null
+                }
                 value={tempFilters.siteVisitDate.option}
                 onChange={(option) => {
                   if (option.value === "custom") {
@@ -952,10 +1032,13 @@ export default function LeadsKanban() {
                     setTempSiteVisitRange(null);
                     setTempFilters({
                       ...tempFilters,
-                      siteVisitDate: { option, customRange: null }
+                      siteVisitDate: { option, customRange: null },
                     });
                   } else {
-                    setTempFilters({ ...tempFilters, siteVisitDate: { option, customRange: null } });
+                    setTempFilters({
+                      ...tempFilters,
+                      siteVisitDate: { option, customRange: null },
+                    });
                   }
                 }}
                 options={dateRangeOptions}
@@ -969,7 +1052,10 @@ export default function LeadsKanban() {
                     if (e.value) {
                       setTempFilters({
                         ...tempFilters,
-                        siteVisitDate: { option: { value: "custom", label: "Custom Range" }, customRange: e.value }
+                        siteVisitDate: {
+                          option: { value: "custom", label: "Custom Range" },
+                          customRange: e.value,
+                        },
                       });
                     }
                   }}
@@ -991,8 +1077,14 @@ export default function LeadsKanban() {
               onClick={() => {
                 setTempFilters({
                   stage: { value: "all", label: "All Leads" },
-                  followUpDate: { option: { value: "all", label: "All Dates" }, customRange: null },
-                  siteVisitDate: { option: { value: "all", label: "All Dates" }, customRange: null },
+                  followUpDate: {
+                    option: { value: "all", label: "All Dates" },
+                    customRange: null,
+                  },
+                  siteVisitDate: {
+                    option: { value: "all", label: "All Dates" },
+                    customRange: null,
+                  },
                 });
                 setIsFollowUpCustomMode(false);
                 setTempFollowUpRange(null);
@@ -1099,9 +1191,9 @@ export default function LeadsKanban() {
                   value={
                     newLead.businessType
                       ? {
-                        value: newLead.businessType,
-                        label: newLead.businessType,
-                      }
+                          value: newLead.businessType,
+                          label: newLead.businessType,
+                        }
                       : null
                   }
                   options={[
@@ -1167,10 +1259,7 @@ export default function LeadsKanban() {
                   containerStyle={{
                     borderRadius: "12px",
                   }}
-                  dropdownStyle={{
-                    backgroundColor: "#86644C",
-                    borderRadius: "8px",
-                  }}
+             
                   disableCountryCode={false}
                   disableCountryGuess={false}
                 />
@@ -1302,9 +1391,9 @@ export default function LeadsKanban() {
                   value={
                     newLead.snapshotType
                       ? {
-                        value: newLead.snapshotType,
-                        label: newLead.snapshotType,
-                      }
+                          value: newLead.snapshotType,
+                          label: newLead.snapshotType,
+                        }
                       : null
                   }
                   options={[
@@ -1327,9 +1416,9 @@ export default function LeadsKanban() {
                   value={
                     newLead.snapshotUseCase
                       ? {
-                        value: newLead.snapshotUseCase,
-                        label: newLead.snapshotUseCase,
-                      }
+                          value: newLead.snapshotUseCase,
+                          label: newLead.snapshotUseCase,
+                        }
                       : null
                   }
                   options={[
@@ -1356,9 +1445,9 @@ export default function LeadsKanban() {
                   value={
                     newLead.snapshotVolume
                       ? {
-                        value: newLead.snapshotVolume,
-                        label: newLead.snapshotVolume,
-                      }
+                          value: newLead.snapshotVolume,
+                          label: newLead.snapshotVolume,
+                        }
                       : null
                   }
                   options={[
@@ -1382,9 +1471,9 @@ export default function LeadsKanban() {
                   value={
                     newLead.snapshotTimeline
                       ? {
-                        value: newLead.snapshotTimeline,
-                        label: newLead.snapshotTimeline,
-                      }
+                          value: newLead.snapshotTimeline,
+                          label: newLead.snapshotTimeline,
+                        }
                       : null
                   }
                   options={[
@@ -1424,9 +1513,9 @@ export default function LeadsKanban() {
                   value={
                     newLead.preferredContact
                       ? {
-                        value: newLead.preferredContact,
-                        label: newLead.preferredContact,
-                      }
+                          value: newLead.preferredContact,
+                          label: newLead.preferredContact,
+                        }
                       : null
                   }
                   options={[
@@ -1442,7 +1531,6 @@ export default function LeadsKanban() {
                 />
               </div>
             </div>
-
 
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div className="flex flex-col gap-y-2">
@@ -1465,9 +1553,9 @@ export default function LeadsKanban() {
                   value={
                     newLead.leadSource
                       ? {
-                        value: newLead.leadSource,
-                        label: newLead.leadSource,
-                      }
+                          value: newLead.leadSource,
+                          label: newLead.leadSource,
+                        }
                       : null
                   }
                   options={[
@@ -1484,7 +1572,6 @@ export default function LeadsKanban() {
                   isDisabled={submitting}
                 />
               </div>
-
             </div>
           </div>
 
@@ -1520,7 +1607,6 @@ export default function LeadsKanban() {
         </div>
       </Dialog>
 
-
       {/* Assign Modal */}
       <Dialog
         header="Assign Lead"
@@ -1537,7 +1623,11 @@ export default function LeadsKanban() {
         <div className="flex flex-col gap-6 pt-4">
           {assigningLead && (
             <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border">
-              Assigning <strong>{assigningLead.machineName} - {assigningLead.companyName || assigningLead.company}</strong>
+              Assigning{" "}
+              <strong>
+                {assigningLead.machineName} -{" "}
+                {assigningLead.companyName || assigningLead.company}
+              </strong>
             </div>
           )}
 
@@ -1580,19 +1670,27 @@ export default function LeadsKanban() {
               Select {assignType === "employee" ? "Employee" : "Local Partner"}
             </label>
             <Select
-              placeholder={`Select ${assignType === "employee" ? "Employee" : "Local Partner"}`}
+              placeholder={`Select ${
+                assignType === "employee" ? "Employee" : "Local Partner"
+              }`}
               styles={{
                 ...selectStyles,
                 menuPortal: (base) => ({ ...base, zIndex: 9999 }),
               }}
-              menuPortalTarget={typeof document !== "undefined" ? document.body : null}
+              menuPortalTarget={
+                typeof document !== "undefined" ? document.body : null
+              }
               value={
                 assignType === "employee"
-                  ? employeeOptions.find(opt => opt.value === selectedEntityId)
-                  : partnerOptions.find(opt => opt.value === selectedEntityId)
+                  ? employeeOptions.find(
+                      (opt) => opt.value === selectedEntityId
+                    )
+                  : partnerOptions.find((opt) => opt.value === selectedEntityId)
               }
               onChange={(option) => setSelectedEntityId(option?.value)}
-              options={assignType === "employee" ? employeeOptions : partnerOptions}
+              options={
+                assignType === "employee" ? employeeOptions : partnerOptions
+              }
             />
           </div>
 
@@ -1611,11 +1709,11 @@ export default function LeadsKanban() {
               disabled={!selectedEntityId || assignLoading}
               className="px-4 py-2 bg-theme text-white rounded hover:bg-themeDark disabled:opacity-70 transition-colors"
             >
-              {assignLoading ? 'Assigning...' : 'Assign'}
+              {assignLoading ? "Assigning..." : "Assign"}
             </button>
           </div>
         </div>
       </Dialog>
-    </div >
+    </div>
   );
 }

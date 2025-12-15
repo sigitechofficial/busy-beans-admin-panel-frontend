@@ -42,8 +42,8 @@ export default function Employee() {
   const [loader, setLoader] = useState("");
   const [visible, setVisible] = useState(false);
   const [changePasswordStatus, setChangePasswordStatus] = useState(false);
-  const ADMIN_FEATURES = ["dashboard", "orders", "supplier", "invoice", "customer", "selected-customer", "local-partner", "product", "category", "employees", "country", "charges", "payment-pullout", "report"];
-  const SALES_REP_FEATURES = ["dashboard", "quotation", "customer", "selected-customer", "orders", "invoice", "payment-pullout", "employees", "account", "wallet", "report", "subscription"];
+  const ADMIN_FEATURES = ["dashboard", "orders", "supplier", "invoice", "customer", "selected-customer", "local-partner", "product", "category", "employees", "country", "charges", "payment-pullout", "report","leads-dashboard"];
+  const SALES_REP_FEATURES = ["dashboard", "quotation", "customer", "selected-customer", "orders", "invoice", "payment-pullout", "employees", "account", "wallet", "report", "subscription","leads-dashboard"];
   const allFeatures = userType === "salesRepresentative" ? SALES_REP_FEATURES : ADMIN_FEATURES;
 
   const handleModalClose = () => {

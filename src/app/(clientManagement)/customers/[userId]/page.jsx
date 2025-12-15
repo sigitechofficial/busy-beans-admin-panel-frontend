@@ -42,8 +42,8 @@ function CustomerDetails() {
 
   let url =
     userType === "admin"
-      ? `api/v1/admin/orders?userid=${userId}&statusId[ne]=6`
-      : `api/v1/admin/orders?userid=${userId}&salesRepId=${salesRepId}&statusId[ne]=6`;
+      ? `api/v1/admin/orders?userid=${userId}&statusId[ne]=6&type=all`
+      : `api/v1/admin/orders?userid=${userId}&salesRepId=${salesRepId}&statusId[ne]=6&type=all`;
   const { data: userOrders, isLoading } = GetAPI(url);
   
   const { data: employeesData } = GetAPI("api/v1/admin/employees", "employee");
@@ -134,6 +134,7 @@ function CustomerDetails() {
     orderDatas.push({
       sl: elem?.id,
       id: elem?.id,
+      type: elem?.type,
       invoicePdf: elem?.invoiceDate,
       orderDate: dayjs(elem?.on).format("MM/DD/YYYY"),
       deliveredOn: dayjs(elem?.deliveredOn).format("MM/DD/YYYY"),
@@ -1068,7 +1069,12 @@ function CustomerDetails() {
                   hide
                   Styles
                   onRowClick={(e) => {
-                    router.push(`/orders/detail/${e.data.id}`);
+                    if(e.data.type === "direct-invoice") {
+                      router.push(`/direct-invoices/${e.data.id}`);
+                    } else {
+                      router.push(`/orders/detail/${e.data.id}`);
+                    }
+                  
                   }}
                 />
               </div>

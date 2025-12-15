@@ -192,8 +192,8 @@ export default function MyDataTable({
           onSelectionChange={checkbox ? onSelectionChange : null}
           // scrollable
           // scrollHeight="500px"
-          rows={10}
-          rowsPerPageOptions={[10, 25, 50, 100]}
+          rows={100}
+          rowsPerPageOptions={[150, 250, 500, 1000]}
           removableSort
           dataKey={dataKey}
           emptyMessage="No Data Found"

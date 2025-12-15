@@ -1,11 +1,12 @@
 // export const BASE_URL = "https://backendbb.trimworldwide.com/";
-export const BASE_URL = "https://testingbb.trimworldwide.com/";
+// export const BASE_URL = "https://testingbb.trimworldwide.com/";
 // export const BASE_URL = "https://297a89fecdc1.ngrok-free.app/";
-// export const BASE_URL = "http://192.168.1.110:8013/";
+export const BASE_URL = "http://192.168.1.112:8013/";
 // export const BASE_URL = "http://192.168.18.21:8013/";
 export const googleApiKey = "AIzaSyD68_vw1gGE7LVVjJ5ZShy7qWwm9Rq0CBQ";
 export const RECAPTCHA_SITE_KEY = "6Lfy_PwrAAAAAHCJ7TQAw3g1K-LhLM5qFCtoJpbi";
 export const RECAPTCHA_SECRET_KEY = "6Lfy_PwrAAAAAJrwzEdV9ElaUlZNOTSRBkSPa9zZ";
 
 // export const stripePublishKey = "pk_live_51HGqhQECVLSM4sc2wb1g4dx3lUe61VcK3BMjnUPk28Y5qaRC9sDQ6X6Ar5OZHmVoAIVe2rXncVOxHUax10qb4d8L00KCAdXpd5";
+// export const stripePublishKeyTest = "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";
 // export const stripePublishKeyTest = "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";

@@ -448,7 +448,7 @@ export default function OrderDetail() {
             <CiMenuBurger size={20} />
           </p>
           <p
-            onClick={() => router.push("/individual-invoices")}
+            onClick={() => router.push("/direct-invoices")}
             data-testid={ORDER_DETAIL.breadcrumbOrdersLink}
           >
             Invoice /

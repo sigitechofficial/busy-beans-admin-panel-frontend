@@ -34,6 +34,7 @@ export default function SubscriptionModal({ visible, onHide, machine }) {
   const [extraItems, setExtraItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedMethodId, setSelectedMethodId] = useState(null);
+  const [stripeCustomerId, setStripeCustomerId] = useState(null);
 
   useEffect(() => {
     if (visible) {
@@ -44,6 +45,7 @@ export default function SubscriptionModal({ visible, onHide, machine }) {
       setSelectedMethodId(null);
       setSubscriptionDays(30);
       setExtraItems([]);
+      setStripeCustomerId(null);
     }
   }, [visible]);
 
@@ -52,6 +54,26 @@ export default function SubscriptionModal({ visible, onHide, machine }) {
     visible ? "api/v1/subscription/addons" : null
   );
   const addons = addonData?.addons ?? [];
+
+  // Fetch payment cards to get stripeCustomerId (same API as CardSelection uses)
+  const { data: paymentCardsData } = GetAPI(
+    visible && selectedUser?.value ? `api/v1/admin/customer-management/payment-cards/${selectedUser.value}` : null
+  );
+
+  // Extract cards array from API response
+  const cards = paymentCardsData?.data?.cards || paymentCardsData?.cards || paymentCardsData?.data?.data?.cards || [];
+
+  // Extract stripeCustomerId from the selected card
+  useEffect(() => {
+    if (selectedMethodId && cards.length > 0) {
+      const selectedCard = cards.find(card => card.id === selectedMethodId);
+      if (selectedCard?.stripeCustomerId) {
+        setStripeCustomerId(selectedCard.stripeCustomerId);
+      }
+    } else {
+      setStripeCustomerId(null);
+    }
+  }, [selectedMethodId, cards]);
 
   // Product Handlers
   const handleProductToggle = (product) => {
@@ -177,7 +199,7 @@ export default function SubscriptionModal({ visible, onHide, machine }) {
 
   // Payment Submit
   const handlePaymentSubmit = async () => {
-    if (!selectedMethodId) {
+    if (!selectedMethodId && cards?.length > 0) {
       error_toaster("Please select a payment method.");
       return;
     }
@@ -224,6 +246,7 @@ export default function SubscriptionModal({ visible, onHide, machine }) {
         customerEmail: selectedUser?.email,
         userName: selectedUser?.name || selectedUser?.label || "",
         paymentMethodId: selectedMethodId,
+        stripeCustomerId: stripeCustomerId || "",
         machineId: machine.id,
         machineName: machine.name || "",
         machinePrice: parseFloat(machine.price || 0),
@@ -393,14 +416,14 @@ export default function SubscriptionModal({ visible, onHide, machine }) {
               <div className="flex gap-4 items-center">
                 <img
                   src={BASE_URL + machine?.image}
-                  alt={machine.name}
+                  alt={machine?.name}
                   className="w-20 h-20 object-contain mix-blend-multiply"
                 />
                 <div className="flex-1">
-                  <h5 className="font-semibold">{machine.name}</h5>
-                  <p className="text-sm text-gray-600">{machine.type}</p>
+                  <h5 className="font-semibold">{machine?.name}</h5>
+                  <p className="text-sm text-gray-600">{machine?.type}</p>
                   <p className="font-semibold mt-1 text-theme">
-                    ${machine.price}/{machine.pricePer}
+                    ${machine?.price}/{machine?.pricePer}
                   </p>
                 </div>
               </div>
@@ -812,10 +835,10 @@ export default function SubscriptionModal({ visible, onHide, machine }) {
               <button
                 onClick={handlePaymentSubmit}
                 // disabled={loading || !selectedMethodId}
-                disabled
+                // disabled
                 className="bg-theme text-white w-full max-w-[200px] py-3 rounded-lg font-bold hover:bg-orange-600 disabled:opacity-70 disabled:cursor-not-allowed ml-auto"
               >
-                {loading ? "Processing..." : `Pay $${calculateTotal()}`}
+                {loading ? "Processing..." : `${cards?.length > 0 ? "Pay" : "Invoice"} $${calculateTotal()}`}
               </button>
             </div>
           </div>

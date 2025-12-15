@@ -23,7 +23,6 @@ export default function CustomerReport() {
   const [displayCustomFilters, setDisplayCustomFilters] = useState(false);
 
   const { data, isLoading } = GetAPI("api/v1/admin/admin-reports/customer-report");
-  console.log("🚀 ~ PartnerCommissionReport ~ data:", data?.data);
 
   const options = [
     { value: "allTime", label: "All Time" },
@@ -40,7 +39,7 @@ export default function CustomerReport() {
   const columns = [
     { field: "sl", header: "SL", sort: true },
     { field: "name", header: "Customer Name" },
-    { field: "companyName", header: "Customer Name" },
+    { field: "companyName", header: "Company Name" },
     { field: "numberOfOrders", header: "No of Orders", sort: true },
     { field: "lastOrderDate", header: "Last Order Date" },
     { field: "outstandingBalance", header: "Outstanding Balance", sort: true },

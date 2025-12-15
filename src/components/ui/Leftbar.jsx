@@ -2,24 +2,27 @@
 import { useEffect, useState } from "react";
 import {
   MdDashboard,
-  MdListAlt,
-  MdStore,
+  MdShoppingCart,
+  MdReceiptLong,
+  MdBusiness,
   MdGroups,
-  MdPeopleAlt,
+  MdHandshake,
   MdInventory,
   MdCategory,
   MdManageAccounts,
   MdPublic,
   MdLocalShipping,
   MdInsights,
-  MdRequestQuote,
+  MdDescription,
   MdPayments,
-  MdAccountCircle,
+  MdAccountBalance,
   MdSavings,
   MdLogout,
-  MdReceiptLong,
   MdCoffeeMaker,
-  MdOutlinePayment,
+  MdWarehouse,
+  MdShoppingBag,
+  MdStorefront,
+  MdLeaderboard,
 } from "react-icons/md";
 import { FaAngleDown, FaAngleRight, FaAngleUp } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
@@ -59,15 +62,15 @@ export default function Leftbar(props) {
     userType === "admin"
       ? "api/v1/admin/order-navigation-counts"
       : userType === "salesRepresentative"
-        ? `api/v1/admin/order-navigation-counts/sales-rep/${userID}`
-        : `api/v1/admin/order-navigation-counts/supplier/${userID}`;
+      ? `api/v1/admin/order-navigation-counts/sales-rep/${userID}`
+      : `api/v1/admin/order-navigation-counts/supplier/${userID}`;
 
   const PartnerCountUrl =
     userType === "admin"
       ? "api/v1/admin/partner-order-navigation-counts"
       : userType === "salesRepresentative"
-        ? `api/v1/admin/partner-order-navigation-counts/sales-rep/${userID}`
-        : `api/v1/admin/partner-order-navigation-counts/supplier/${userID}`;
+      ? `api/v1/admin/partner-order-navigation-counts/sales-rep/${userID}`
+      : `api/v1/admin/partner-order-navigation-counts/supplier/${userID}`;
 
   const overAllData = GetAPI(generateUrl);
   const PartnerCounts = GetAPI(PartnerCountUrl);
@@ -283,7 +286,7 @@ export default function Leftbar(props) {
         const token =
           typeof window !== "undefined"
             ? localStorage.getItem("token") ||
-            localStorage.getItem("accessToken")
+              localStorage.getItem("accessToken")
             : "";
         const res = await axios.get(
           BASE_URL + `api/v1/admin/stripe-connect-account-dashboard/${userID}`,
@@ -382,8 +385,9 @@ export default function Leftbar(props) {
   return (
     <section
       data-testid={LEFTBAR.root}
-      className={`bg-white ${toggle ? "hidden" : "block"
-        } md:block fixed w-full md:max-w-[240px] lg:max-w-[288px] h-full sm:pb-5 sm:pl-2 border-r-2 z-50`}
+      className={`bg-white ${
+        toggle ? "hidden" : "block"
+      } md:block fixed w-full md:max-w-[240px] lg:max-w-[288px] h-full sm:pb-5 sm:pl-2 border-r-2 z-50`}
     >
       <div
         className="flex items-center justify-center font-bold text-4xl 2xl:min-h-[70px] h-[70px] 2xl:h-[94px] border-b max-md:hidden"
@@ -440,7 +444,7 @@ export default function Leftbar(props) {
           {hasPermission("orders_view") && (
             <ListHead
               title="Order Management"
-              Icon={MdListAlt}
+              Icon={MdShoppingCart}
               active={
                 pathname.includes("/orders/create") ||
                 pathname.includes("/orders/emails")
@@ -478,7 +482,7 @@ export default function Leftbar(props) {
 
           <ListHead
             title="Quickbooks Invoices"
-            Icon={MdStore}
+            Icon={MdBusiness}
             active={pathname.includes("/orders/quickbooks")}
             Angle={FaAngleRight}
             onClick={handleQuickbooksOrdersToggle}
@@ -505,7 +509,7 @@ export default function Leftbar(props) {
 
           <ListHead
             title="Partner Orders"
-            Icon={MdStore}
+            Icon={MdBusiness}
             active={pathname.includes("/orders/partnerOrders")}
             Angle={FaAngleRight}
             onClick={handlePartnerOrdersToggle}
@@ -570,7 +574,7 @@ export default function Leftbar(props) {
 
           <ListHead
             title="Customer Orders"
-            Icon={MdStore}
+            Icon={MdShoppingBag}
             active={
               pathname === "/orders" ||
               pathname === "/orders/new-orders" ||
@@ -659,14 +663,14 @@ export default function Leftbar(props) {
           {hasPermission("supplier_view") && (
             <ListHead
               title="Supplier Management"
-              Icon={MdStore}
+              Icon={MdBusiness}
               data-testid={LEFTBAR.supplierManagementSection}
               active={
                 pathname === "/suppliers" || pathname === "/add-new-supplier"
               }
               status={
                 active?.supplierManagement?.tab === "supplierManagement" &&
-                  active?.supplierManagement?.status
+                active?.supplierManagement?.status
                   ? true
                   : false
               }
@@ -702,26 +706,26 @@ export default function Leftbar(props) {
             )}
           {(hasPermission("customer_view") ||
             hasPermission("selected-customer_view")) && (
-              <ListHead
-                title="Client Management"
-                Icon={MdGroups}
-                data-testid={LEFTBAR.clientManagementSection}
-                active={pathname.includes("/customers")}
-                status={
-                  active?.clientManagement?.tab === "clientManagement" &&
-                    active?.clientManagement?.status
-                    ? true
-                    : false
-                }
-                Angle={FaAngleRight}
-                onClick={() =>
-                  handleActive(
-                    "clientManagement",
-                    active?.clientManagement?.status
-                  )
-                }
-              />
-            )}
+            <ListHead
+              title="Client Management"
+              Icon={MdGroups}
+              data-testid={LEFTBAR.clientManagementSection}
+              active={pathname.includes("/customers")}
+              status={
+                active?.clientManagement?.tab === "clientManagement" &&
+                active?.clientManagement?.status
+                  ? true
+                  : false
+              }
+              Angle={FaAngleRight}
+              onClick={() =>
+                handleActive(
+                  "clientManagement",
+                  active?.clientManagement?.status
+                )
+              }
+            />
+          )}
           {active?.clientManagement?.tab === "clientManagement" &&
             active?.clientManagement?.status && (
               <>
@@ -754,12 +758,12 @@ export default function Leftbar(props) {
           {hasPermission("local-partner_view") && (
             <ListHead
               title="Local Partners"
-              Icon={MdPeopleAlt}
+              Icon={MdHandshake}
               data-testid={LEFTBAR.localPartnersSection}
               active={pathname === "/sale-representative"}
               status={
                 active?.saleRepresentative?.tab === "saleRepresentative" &&
-                  active?.saleRepresentative?.status
+                active?.saleRepresentative?.status
                   ? true
                   : false
               }
@@ -789,15 +793,24 @@ export default function Leftbar(props) {
               </>
             )}
 
+          {hasPermission("leads-dashboard_view") && (
+            <ListHead
+              // data-testid={LEFTBAR.dashboardSection}
+              title="Leads Dashboard"
+              to="/leads"
+              Icon={MdLeaderboard}
+            />
+          )}
+
           {hasPermission("subscription_view") && (
             <ListHead
               title="Machine Subscriptions"
-              active={pathname.includes("/leads")}
+              active={pathname === "/subscription" || pathname === "/purchased"}
               data-testid={LEFTBAR.subscriptionManagementSection}
               Icon={MdCoffeeMaker}
               status={
                 active?.subscription?.tab === "subscription" &&
-                  active?.subscription?.status
+                active?.subscription?.status
                   ? true
                   : false
               }
@@ -836,14 +849,7 @@ export default function Leftbar(props) {
                       "Requests"
                     )}
                   /> */}
-                  <ListItems
-                    title="Leads"
-                    to="/leads"
-                    data-testid={LEFTBAR.listItem(
-                      "machineSubscriptions",
-                      "Leads"
-                    )}
-                  />
+
                   {/* <ListItems title="Add-Ons" to="/add-ons" data-testid={LEFTBAR.listItem("add-ons", "Add-Ons")} /> */}
                 </div>
                 <hr className="w-full" />
@@ -853,13 +859,18 @@ export default function Leftbar(props) {
           {hasPermission("invoice_view") && (
             <ListHead
               title="Invoice Management"
-              Icon={MdRequestQuote}
+              Icon={MdDescription}
               data-testid={LEFTBAR.invoiceManagementSection}
               status={
                 active?.invoiceManagement?.tab === "invoiceManagement" &&
-                  active?.invoiceManagement?.status
+                active?.invoiceManagement?.status
                   ? true
                   : false
+              }
+              active={
+                pathname === "/all-invoices" ||
+                pathname === "/customer-invoices" ||
+                pathname === "/direct-invoices"
               }
               Angle={FaAngleRight}
               onClick={() =>
@@ -883,20 +894,31 @@ export default function Leftbar(props) {
                       "Create Invoice"
                     )}
                   />
+
                   <ListItems
                     title="All Invoices"
-                    to="/invoices"
+                    to="/all-invoices"
                     data-testid={LEFTBAR.listItem(
                       "invoiceManagement",
                       "All Invoices"
                     )}
                   />
+
                   <ListItems
-                    title="Individual Invoices"
-                    to="/individual-invoices"
+                    title="Customer Invoices"
+                    to="/invoices"
                     data-testid={LEFTBAR.listItem(
                       "invoiceManagement",
-                      "Individual Invoices"
+                      "Customer Invoices"
+                    )}
+                  />
+
+                  <ListItems
+                    title="Direct Invoices"
+                    to="/direct-invoices"
+                    data-testid={LEFTBAR.listItem(
+                      "invoiceManagement",
+                      "Direct Invoices"
                     )}
                   />
                 </div>
@@ -1093,7 +1115,7 @@ export default function Leftbar(props) {
               Icon={MdInventory}
               status={
                 active?.inventoryManagement?.tab === "inventoryManagement" &&
-                  active?.inventoryManagement?.status
+                active?.inventoryManagement?.status
                   ? true
                   : false
               }
@@ -1132,7 +1154,7 @@ export default function Leftbar(props) {
               Icon={MdCategory}
               status={
                 active?.categoryManagement?.tab === "categoryManagement" &&
-                  active?.categoryManagement?.status
+                active?.categoryManagement?.status
                   ? true
                   : false
               }
@@ -1171,7 +1193,7 @@ export default function Leftbar(props) {
               Icon={MdManageAccounts}
               status={
                 active?.employees?.tab === "employees" &&
-                  active?.employees?.status
+                active?.employees?.status
                   ? true
                   : false
               }
@@ -1248,7 +1270,7 @@ export default function Leftbar(props) {
               }
               status={
                 active?.zoneManagement?.tab === "zoneManagement" &&
-                  active?.zoneManagement?.status
+                active?.zoneManagement?.status
                   ? true
                   : false
               }
@@ -1326,13 +1348,13 @@ export default function Leftbar(props) {
 
           <ListHead
             title="QuickBooks"
-            Icon={MdAccountCircle}
+            Icon={MdAccountBalance}
             onClick={() =>
               handleActive("quickbooks", active?.quickbooks?.status)
             }
             status={
               active?.quickbooks?.tab === "quickbooks" &&
-                active?.quickbooks?.status
+              active?.quickbooks?.status
                 ? true
                 : false
             }
@@ -1419,7 +1441,7 @@ export default function Leftbar(props) {
 
                   <ListHead
                     title="Partner Orders"
-                    Icon={MdStore}
+                    Icon={MdBusiness}
                     active={pathname.includes("/supplier/partner")}
                     status={active?.partnerOrders?.status ? true : false}
                     Angle={FaAngleRight}
@@ -1463,7 +1485,7 @@ export default function Leftbar(props) {
 
                   <ListHead
                     title="Customer Orders"
-                    Icon={MdStore}
+                    Icon={MdBusiness}
                     active={
                       pathname === "/supplier/assigned-orders" ||
                       pathname === "/supplier/acknowledge-orders" ||
@@ -1536,7 +1558,7 @@ export default function Leftbar(props) {
 
             <ListHead
               title="Partner Orders"
-              Icon={MdStore}
+              Icon={MdBusiness}
               active={pathname.includes("/supplier/partner")}
               status={active?.partnerOrders?.status ? true : false}
               Angle={FaAngleRight}
@@ -1580,7 +1602,7 @@ export default function Leftbar(props) {
 
             <ListHead
               title="Customer Orders"
-              Icon={MdStore}
+              Icon={MdBusiness}
               active={
                 pathname === "/supplier/assigned-orders" ||
                 pathname === "/supplier/acknowledge-orders" ||
@@ -1674,7 +1696,7 @@ export default function Leftbar(props) {
               data-testid={LEFTBAR.quotationManagementSection}
               status={
                 active?.inventoryManagement?.tab === "inventoryManagement" &&
-                  active?.inventoryManagement?.status
+                active?.inventoryManagement?.status
                   ? true
                   : false
               }
@@ -1707,26 +1729,26 @@ export default function Leftbar(props) {
 
           {(hasPermission("customer_view") ||
             hasPermission("selected-customer_view")) && (
-              <ListHead
-                title="Client Management"
-                Icon={MdGroups}
-                data-testid={LEFTBAR.clientManagementSection}
-                active={pathname === "/sales-representative/customers"}
-                status={
-                  active?.clientManagement?.tab === "clientManagement" &&
-                    active?.clientManagement?.status
-                    ? true
-                    : false
-                }
-                Angle={FaAngleRight}
-                onClick={() =>
-                  handleActive(
-                    "clientManagement",
-                    active?.clientManagement?.status
-                  )
-                }
-              />
-            )}
+            <ListHead
+              title="Client Management"
+              Icon={MdGroups}
+              data-testid={LEFTBAR.clientManagementSection}
+              active={pathname === "/sales-representative/customers"}
+              status={
+                active?.clientManagement?.tab === "clientManagement" &&
+                active?.clientManagement?.status
+                  ? true
+                  : false
+              }
+              Angle={FaAngleRight}
+              onClick={() =>
+                handleActive(
+                  "clientManagement",
+                  active?.clientManagement?.status
+                )
+              }
+            />
+          )}
 
           {active?.clientManagement?.tab === "clientManagement" &&
             active?.clientManagement?.status && (
@@ -1775,12 +1797,12 @@ export default function Leftbar(props) {
           {hasPermission("orders_view") && (
             <ListHead
               title="Order Management"
-              Icon={MdListAlt}
+              Icon={MdShoppingCart}
               data-testid={LEFTBAR.orderManagementSection}
               active={pathname === "/sales-representative/create-order"}
               status={
                 active?.orderManagement?.tab === "orderManagement" &&
-                  active?.orderManagement?.status
+                active?.orderManagement?.status
                   ? true
                   : false
               }
@@ -1811,7 +1833,7 @@ export default function Leftbar(props) {
 
           <ListHead
             title="Quickbooks Invoices"
-            Icon={MdStore}
+            Icon={MdReceiptLong}
             active={pathname.includes("/orders/quickbooks")}
             Angle={FaAngleRight}
             onClick={handleQuickbooksOrdersToggle}
@@ -1838,7 +1860,7 @@ export default function Leftbar(props) {
 
           <ListHead
             title="Partner Orders"
-            Icon={MdStore}
+            Icon={MdBusiness}
             active={pathname.includes("/orders/partnerOrders")}
             status={active?.partnerOrders?.status ? true : false}
             Angle={FaAngleRight}
@@ -1903,7 +1925,7 @@ export default function Leftbar(props) {
 
           <ListHead
             title="Customer Orders"
-            Icon={MdStore}
+            Icon={MdShoppingBag}
             active={
               pathname === "/orders" ||
               pathname === "/orders/new-orders" ||
@@ -1978,15 +2000,25 @@ export default function Leftbar(props) {
               />{" "}
             </div>
           )}
+
+          {hasPermission("leads-dashboard_view") && (
+            <ListHead
+              // data-testid={LEFTBAR.dashboardSection}
+              title="Leads Dashboard"
+              to="/leads"
+              Icon={MdLeaderboard}
+            />
+          )}
+
           {hasPermission("subscription_view") && (
             <ListHead
               title="Machine Subscriptions"
-              active={pathname.includes("/leads")}
+              active={pathname === "/subscription" || pathname === "/purchased"}
               data-testid={LEFTBAR.subscriptionManagementSection}
               Icon={MdCoffeeMaker}
               Angle={
                 active?.subscription?.tab === "subscription" &&
-                  active?.subscription?.status
+                active?.subscription?.status
                   ? FaAngleUp
                   : FaAngleDown
               }
@@ -2000,30 +2032,23 @@ export default function Leftbar(props) {
             active?.subscription?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  {/* <ListItems
+                  <ListItems
                     title="Subscription"
                     to="/subscription"
                     data-testid={LEFTBAR.listItem(
                       "subscription",
                       "Subscription"
                     )}
-                  /> */}
-                  {/* <ListItems
-                    title="Requests"
-                    to="/subscription-requests"
-                    data-testid={LEFTBAR.listItem(
-                      "subscription-requests",
-                      "Requests"
-                    )}
-                  /> */}
+                  />
                   <ListItems
-                    title="Leads"
-                    to="/leads"
+                    title="Purchased"
+                    to="/purchased"
                     data-testid={LEFTBAR.listItem(
                       "machineSubscriptions",
-                      "Leads"
+                      "Purchased"
                     )}
                   />
+
                   {/* <ListItems title="Add-Ons" to="/add-ons" data-testid={LEFTBAR.listItem("add-ons", "Add-Ons")} /> */}
                 </div>
                 <hr className="w-full" />
@@ -2033,11 +2058,11 @@ export default function Leftbar(props) {
           {hasPermission("invoice_view") && (
             <ListHead
               title="Invoice Management"
-              Icon={MdRequestQuote}
+              Icon={MdDescription}
               data-testid={LEFTBAR.invoiceManagementSection}
               status={
                 active?.invoiceManagement?.tab === "invoiceManagement" &&
-                  active?.invoiceManagement?.status
+                active?.invoiceManagement?.status
                   ? true
                   : false
               }
@@ -2072,11 +2097,11 @@ export default function Leftbar(props) {
                     )}
                   />
                   <ListItems
-                    title="Individual Invoices"
-                    to="/individual-invoices"
+                    title="Direct Invoices"
+                    to="/direct-invoices"
                     data-testid={LEFTBAR.listItem(
                       "invoiceManagement",
-                      "Individual Invoices"
+                      "Direct Invoices"
                     )}
                   />
                 </div>
@@ -2119,7 +2144,7 @@ export default function Leftbar(props) {
               data-testid={LEFTBAR.employeeManagementSection}
               status={
                 active?.employees?.tab === "employees" &&
-                  active?.employees?.status
+                active?.employees?.status
                   ? true
                   : false
               }
@@ -2146,12 +2171,12 @@ export default function Leftbar(props) {
           {hasPermission("account_view") && (
             <ListHead
               title="Account Management"
-              Icon={MdAccountCircle}
+              Icon={MdManageAccounts}
               active={pathname.includes("/account")}
               data-testid={LEFTBAR.accountManagementSection}
               status={
                 active?.accountManagement?.tab === "accountManagement" &&
-                  active?.accountManagement?.status
+                active?.accountManagement?.status
                   ? true
                   : false
               }
@@ -2174,12 +2199,12 @@ export default function Leftbar(props) {
                     className="w-full flex gap-x-2 text-wrap items-center py-2 px-2 rounded-lg font-inter font-medium   duration-200 bg-theme text-white"
                   >
                     {(connectAccountId !== "null" || !connectAccountId) &&
-                      isAccountConnected === "true"
+                    isAccountConnected === "true"
                       ? "Stripe Dashboard"
                       : (connectAccountId === "null" || !connectAccountId) &&
                         isAccountConnected === "false"
-                        ? "Connect Account"
-                        : "Complete Account Registration"}
+                      ? "Connect Account"
+                      : "Complete Account Registration"}
                   </button>
                 </div>
                 <hr className="w-full" />
@@ -2192,15 +2217,15 @@ export default function Leftbar(props) {
               to={"/sales-representative/wallet"}
               data-testid={LEFTBAR.walletManagementSection}
               active={pathname === "/sales-representative/wallet"}
-            // Angle={
-            //   active?.orderManagement?.tab === "walletManagement" &&
-            //   active?.orderManagement?.status
-            //     ? FaAngleUp
-            //     : FaAngleDown
-            // }
-            // onClick={() =>
-            //   handleActive("walletManagement", active?.orderManagement?.status)
-            // }
+              // Angle={
+              //   active?.orderManagement?.tab === "walletManagement" &&
+              //   active?.orderManagement?.status
+              //     ? FaAngleUp
+              //     : FaAngleDown
+              // }
+              // onClick={() =>
+              //   handleActive("walletManagement", active?.orderManagement?.status)
+              // }
             />
           )}
           {hasPermission("report_view") && (
@@ -2215,13 +2240,13 @@ export default function Leftbar(props) {
 
           <ListHead
             title="QuickBooks"
-            Icon={MdAccountCircle}
+            Icon={MdAccountBalance}
             onClick={() =>
               handleActive("quickbooks", active?.quickbooks?.status)
             }
             status={
               active?.quickbooks?.tab === "quickbooks" &&
-                active?.quickbooks?.status
+              active?.quickbooks?.status
                 ? true
                 : false
             }

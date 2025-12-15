@@ -1,8 +1,6 @@
 "use client";
 import ManagementTab from "@/components/ui/ManagementTab";
 import MyDataTable from "@/components/ui/MyDataTable";
-import Select from "react-select";
-import selectStyles from "@/utilities/SelectStyle";
 import GetAPI from "@/utilities/GetAPI";
 import Loader from "@/components/ui/Loader";
 import { FaEye } from "react-icons/fa";
@@ -11,9 +9,8 @@ import { useState } from "react";
 import dayjs from "dayjs";
 import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
-import { ALL_ORDERS } from "./orders.testids"
 
-export default function Orders() {
+export default function AllInvoices() {
   if (typeof window !== "undefined") {
     var userID = localStorage.getItem("userID");
     var userType = localStorage.getItem("userType");
@@ -25,37 +22,21 @@ export default function Orders() {
   const [type, setType] = useState("all");
 
   const { data, isLoading } = GetAPI(
-    userType === "salesRepresentative"
-      ? `api/v1/admin/orders?salesRepId=${userID}`
-      : "api/v1/admin/orders",
+    userType === "admin"
+      ? `api/v1/admin/orders?statusId[ne]=6&type=all`
+      : `api/v1/admin/orders?salesRepId=${userID}&statusId[ne]=6&type=all`,
     "orders"
   );
 
   const columns = [
-    // { field: "sl", header: "SL", sort: true },
     { field: "id", header: "#", sort: true },
-    // { field: "customerName", header: "Customer" },
     { field: "companyName", header: "Company Name" },
     { field: "orderDate", header: "Order Date", sort: true },
     { field: "deliveredOn", header: "Deliver On" },
-    // { field: "salesRepName", header: "Local Partner Name" },
-    // { field: "subTotal", header: "Sub Total" },
-    // { field: "discountPrice", header: "Discount Price" },
-    // { field: "discountPercentage", header: "Discount Percentage" },
-    // { field: "itemsPrice", header: "Items Price" },
-    // { field: "vat", header: "Vat" },
-    // { field: "totalWeight", header: "Total Weight" },
-    // { field: "shippingCharges", header: "Shipping Charges" },
-    // { field: "note", header: "Note" },
-    // { field: "paymentMethod", header: "Payment Method" },
-    // { field: "poNumber", header: "Po Number" },
-    // { field: "orderFrequency", header: "Order Frequency" },
-
     { field: "totalBill", header: "Total", sort: true },
     { field: "paymentStatus", header: "Invoice", sort: true },
-    // { field: "createdBy", header: "Created By" },
     { field: "orderCurrentStatus", header: "Status" },
-    // { field: "action", header: "Action" },
+    { field: "action", header: "Action" },
   ];
 
   const datas = [];
@@ -70,7 +51,7 @@ export default function Orders() {
       datas.push({
         sl: slCounter++,
         id: detail?.id,
-        // customerName: detail?.customerName,
+        type: detail?.type,
         companyName: detail?.companyName,
         salesRepName: detail?.salesRepName,
         totalBill: "$" + detail?.totalBill,
@@ -90,27 +71,31 @@ export default function Orders() {
         createdBy: detail?.createdBy,
         orderDate: dayjs(detail?.on).format("MM/DD/YYYY"),
         deliveredOn: dayjs(detail?.deliveredOn).format("MM/DD/YYYY"),
-        // action: (
-        //   <button
-        //     className="border border-yellow-400 rounded-md p-2 text-yellow-400"
-        //     onClick={() => {
-        //       router.push(`/orders/detail/${detail?.id}`);
-        //     }}
-        //   >
-        //     <FaEye size={24} />
-        //   </button>
-        // ),
+        action: (
+          <button
+            className="border border-theme rounded-md p-2 text-theme hover:bg-theme hover:text-white transition-colors"
+            onClick={() => {
+              if (detail?.type === "direct-invoice") {
+                router.push(`/direct-invoices/${detail?.id}`);
+              } else {
+                router.push(`/orders/detail/${detail?.id}`);
+              }
+            }}
+            title="View Details"
+          >
+            <FaEye size={18} />
+          </button>
+        ),
       })
     );
   });
   const { toggle, setToggle } = useDataContext();
 
   return isLoading ? (
-      <Loader />
-    ) : (
-    <div className="w-full" data-testid={ALL_ORDERS.root}>
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
-        data-testid={ALL_ORDERS.headerBar}>
+    <Loader />
+  ) : (
+    <div className="w-full">
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <div className="flex items-center gap-2">
           <p
             onClick={() => setToggle(!toggle)}
@@ -118,28 +103,19 @@ export default function Orders() {
           >
             <CiMenuBurger size={20} />
           </p>
-          <h2 className="text-xl font-inter font-semibold">Orders</h2>
+          <h2 className="text-xl font-inter font-semibold">All Invoices</h2>
         </div>
-
-        {/* <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer">
-          <li>Invoice</li>
-          <li>Quickbooks</li>
-          <li>Schedule</li>
-          <li>Bulk Modify</li>
-          <li>Export</li>
-        </ul> */}
       </div>
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
-        <div data-testid={ALL_ORDERS.filtersBar}>
+        <div>
           <button
             onClick={() => setType("all")}
             className={`${
               type === "all" ? "bg-black text-white" : "bg-white text-black"
             } font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
                   duration-200 max-sm:w-60`}
-            data-testid={ALL_ORDERS.filterAllBtn}
           >
-            All Orders
+            All Invoices
           </button>
           <button
             onClick={() => setType("paid")}
@@ -147,9 +123,8 @@ export default function Orders() {
               type === "paid" ? "bg-black text-white" : "bg-white text-black"
             }  font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
                   duration-200 max-sm:w-60`}
-            data-testid={ALL_ORDERS.filterPaidBtn}
           >
-            Paid Orders
+            Paid Invoices
           </button>
           <button
             onClick={() => setType("unpaid")}
@@ -157,19 +132,13 @@ export default function Orders() {
               type === "unpaid" ? "bg-black text-white" : "bg-white text-black"
             }  font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
                   duration-200 max-sm:w-60`}
-            data-testid={ALL_ORDERS.filterUnpaidBtn}
           >
-            Unpaid Orders
+            Unpaid Invoices
           </button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-          <ManagementTab title="Total Orders" desc={resultedOrders?.length} 
-          data-testid={ALL_ORDERS.totalOrdersCard}/>
-          {/* <ManagementTab title="New Orders" desc="5%" />
-        <ManagementTab title="Pending Orders" desc="5000" />
-        <ManagementTab title="In progress Orders" desc="5,000" />
-        <ManagementTab title="Cancelled Orders" desc="5,000" /> */}
+          <ManagementTab title="Total Invoices" desc={resultedOrders?.length} />
         </div>
 
         <div>
@@ -179,11 +148,13 @@ export default function Orders() {
             placeholder={"Search ..."}
             pagination={true}
             onRowClick={(e) => {
-              Example: router.push(`/orders/detail/${e.data.id}`);
+              if (e.data.type === "direct-invoice") {
+                router.push(`/direct-invoices/${e.data.id}`);
+              } else {
+                router.push(`/orders/detail/${e.data.id}`);
+              }
             }}
             search={true}
-            data-testid={ALL_ORDERS.table}
-            rowTestId={(row) => `data-testid-${ALL_ORDERS.row(row.id)}`}
           />
         </div>
       </div>

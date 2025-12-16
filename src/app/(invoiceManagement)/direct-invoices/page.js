@@ -80,7 +80,7 @@ export default function IndividualInvoices() {
           >
             Customer Invoices
           </button>
-          <button
+        {userType === "admin" && <button
             onClick={() => setInvoiceSource("partner")}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${invoiceSource === "partner"
               ? "bg-white text-gray-900 shadow-sm"
@@ -88,7 +88,7 @@ export default function IndividualInvoices() {
               }`}
           >
             Partner Invoices
-          </button>
+          </button>}
         </div>
       </div>
 

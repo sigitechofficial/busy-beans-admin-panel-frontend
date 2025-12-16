@@ -2090,6 +2090,14 @@ export default function Leftbar(props) {
                   />
                   <ListItems
                     title="All Invoices"
+                    to="/all-invoices"
+                    data-testid={LEFTBAR.listItem(
+                      "invoiceManagement",
+                      "All Invoices"
+                    )}
+                  />
+                  <ListItems
+                    title="Customer Invoices"
                     to="/invoices"
                     data-testid={LEFTBAR.listItem(
                       "invoiceManagement",

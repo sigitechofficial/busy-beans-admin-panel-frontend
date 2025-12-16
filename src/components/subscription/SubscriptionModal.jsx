@@ -199,11 +199,6 @@ export default function SubscriptionModal({ visible, onHide, machine }) {
 
   // Payment Submit
   const handlePaymentSubmit = async () => {
-    if (!selectedMethodId && cards?.length > 0) {
-      error_toaster("Please select a payment method.");
-      return;
-    }
-
     setLoading(true);
     try {
       // Prepare detailed payload with quantities and prices
@@ -838,7 +833,15 @@ export default function SubscriptionModal({ visible, onHide, machine }) {
                 // disabled
                 className="bg-theme text-white w-full max-w-[200px] py-3 rounded-lg font-bold hover:bg-orange-600 disabled:opacity-70 disabled:cursor-not-allowed ml-auto"
               >
-                {loading ? "Processing..." : `${cards?.length > 0 ? "Pay" : "Invoice"} $${calculateTotal()}`}
+                {loading ? "Processing..." : (() => {
+                  if (cards?.length === 0) {
+                    return `Invoice To attach card $${calculateTotal()}`;
+                  } else if (cards?.length > 0 && !selectedMethodId) {
+                    return `Attach another card $${calculateTotal()}`;
+                  } else {
+                    return `Pay $${calculateTotal()}`;
+                  }
+                })()}
               </button>
             </div>
           </div>

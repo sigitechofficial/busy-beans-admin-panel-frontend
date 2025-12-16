@@ -72,7 +72,7 @@ export default function CardSelection({ userId, onSelect, selectedMethodId }) {
           return (
             <div
               key={card.id}
-              onClick={() => onSelect(card.id)}
+              onClick={() => onSelect(isSelected ? null : card.id)}
               className={`relative border rounded-xl p-5 cursor-pointer transition-all duration-200 ${
                 isSelected
                   ? "border-theme bg-[#fef1d8] shadow-md"

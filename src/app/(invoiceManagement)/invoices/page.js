@@ -22,7 +22,7 @@ export default function Invoices() {
       ? `api/v1/admin/customer-management/invoice-customers-balance/sales-rep/${userID}`
       : "api/v1/admin/customer-management/invoice-customers-balance"
   );
-  
+
   const columns = [
     // { field: "sl", header: "SL", sort: true },
     // { field: "name", header: "Name" },
@@ -60,7 +60,7 @@ export default function Invoices() {
   ) : (
     <div data-testid={INVOICES.root}>
       <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
-       data-testid={INVOICES.headerBar}>
+        data-testid={INVOICES.headerBar}>
         <div className="flex items-center gap-2">
           <p
             onClick={() => setToggle(!toggle)}

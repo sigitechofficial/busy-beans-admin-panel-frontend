@@ -58,7 +58,7 @@ export default function Page() {
       }
     } catch (err) {
       console.error(err);
-      error_toaster("Something went wrong.");
+     
     } finally {
       setLoading(false);
     }

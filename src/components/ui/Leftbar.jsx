@@ -2010,7 +2010,7 @@ export default function Leftbar(props) {
             />
           )}
 
-          {hasPermission("subscription_view") && (
+          {/* {hasPermission("subscription_view") && (
             <ListHead
               title="Machine Subscriptions"
               active={pathname === "/subscription" || pathname === "/purchased"}
@@ -2026,9 +2026,9 @@ export default function Leftbar(props) {
                 handleActive("subscription", active?.subscription?.status)
               }
             />
-          )}
+          )} */}
 
-          {active?.subscription?.tab === "subscription" &&
+          {/* {active?.subscription?.tab === "subscription" &&
             active?.subscription?.status && (
               <>
                 <div className="m-2 relative space-y-1">
@@ -2049,11 +2049,10 @@ export default function Leftbar(props) {
                     )}
                   />
 
-                  {/* <ListItems title="Add-Ons" to="/add-ons" data-testid={LEFTBAR.listItem("add-ons", "Add-Ons")} /> */}
                 </div>
                 <hr className="w-full" />
               </>
-            )}
+            )} */}
 
           {hasPermission("invoice_view") && (
             <ListHead
@@ -2065,6 +2064,11 @@ export default function Leftbar(props) {
                 active?.invoiceManagement?.status
                   ? true
                   : false
+              }
+              active={
+                pathname === "/all-invoices" ||
+                pathname === "/customer-invoices" ||
+                pathname === "/direct-invoices"
               }
               Angle={FaAngleRight}
               onClick={() =>

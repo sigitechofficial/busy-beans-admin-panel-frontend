@@ -20,17 +20,25 @@ export default function AllInvoices() {
 
   const router = useRouter();
   const [type, setType] = useState("all");
+  const [invoiceSource, setInvoiceSource] = useState("customer");
 
-  const { data, isLoading } = GetAPI(
-    userType === "admin"
-      ? `api/v1/admin/orders?statusId[ne]=6&type=all`
-      : `api/v1/admin/orders?salesRepId=${userID}&statusId[ne]=6&type=all`,
-    "orders"
-  );
+  // Determine API URL based on invoice source
+  const apiUrl =
+    invoiceSource === "customer"
+      ? userType === "admin"
+        ? `api/v1/admin/orders?statusId[ne]=6&type=all`
+        :  `api/v1/admin/orders?salesRepId=${userID}&statusId[ne]=6&type=all`
+      :  `api/v1/admin/partner-order/orders-list?statusId[ne]=6&type=all`;
+
+  const { data, isLoading } = GetAPI(apiUrl, "orders");
 
   const columns = [
     { field: "id", header: "#", sort: true },
-    { field: "companyName", header: "Company Name" },
+    {
+      field: "companyName",
+      header: invoiceSource === "partner" ? "Local Partner" : "Company Name",
+    },
+    { field: "type", header: "Type" },
     { field: "orderDate", header: "Order Date", sort: true },
     { field: "deliveredOn", header: "Deliver On" },
     { field: "totalBill", header: "Total", sort: true },
@@ -51,8 +59,11 @@ export default function AllInvoices() {
       datas.push({
         sl: slCounter++,
         id: detail?.id,
-        type: detail?.type,
-        companyName: detail?.companyName,
+        type: detail?.type?.split("-").join(" "),
+        companyName:
+          invoiceSource === "partner"
+            ? detail?.salesRepName
+            : detail?.companyName,
         salesRepName: detail?.salesRepName,
         totalBill: "$" + detail?.totalBill,
         subTotal: "$" + detail?.subTotal,
@@ -75,7 +86,14 @@ export default function AllInvoices() {
           <button
             className="border border-theme rounded-md p-2 text-theme hover:bg-theme hover:text-white transition-colors"
             onClick={() => {
-              if (detail?.type === "direct-invoice") {
+              if (invoiceSource === "partner") {
+                // Partner invoices: check if direct-invoice or regular order
+                if (detail?.type === "direct-invoice") {
+                  router.push(`/all-invoices/partner/${detail?.id}`);
+                } else {
+                  router.push(`/orders/partnerOrders/detail/${detail?.id}`);
+                }
+              } else if (detail?.type === "direct-invoice") {
                 router.push(`/direct-invoices/${detail?.id}`);
               } else {
                 router.push(`/orders/detail/${detail?.id}`);
@@ -104,6 +122,32 @@ export default function AllInvoices() {
             <CiMenuBurger size={20} />
           </p>
           <h2 className="text-xl font-inter font-semibold">All Invoices</h2>
+        </div>
+
+        {/* Toggle for Invoice Source */}
+        <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+          <button
+            onClick={() => setInvoiceSource("customer")}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+              invoiceSource === "customer"
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            Customer Invoices
+          </button>
+          {["admin", "salesRepresentative"].includes(userType) && (
+            <button
+              onClick={() => setInvoiceSource("partner")}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                invoiceSource === "partner"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              {userType === "admin" ? "Partner Invoices" : "Self Invoices"}
+            </button>
+          )}
         </div>
       </div>
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
@@ -148,7 +192,14 @@ export default function AllInvoices() {
             placeholder={"Search ..."}
             pagination={true}
             onRowClick={(e) => {
-              if (e.data.type === "direct-invoice") {
+              if (invoiceSource === "partner") {
+                // Partner invoices: check if direct-invoice or regular order
+                if (e.data.type === "direct invoice") {
+                  router.push(`/all-invoices/partner/${e.data.id}`);
+                } else {
+                  router.push(`/orders/partnerOrders/detail/${e.data.id}`);
+                }
+              } else if (e.data.type === "direct invoice") {
                 router.push(`/direct-invoices/${e.data.id}`);
               } else {
                 router.push(`/orders/detail/${e.data.id}`);

@@ -24,7 +24,7 @@ switch (environment) {
   case "production":
     BASE_URL = "https://backendbb.trimworldwide.com/";
     STRIPE_PUBLIC_KEY =
-      "pk_live_51HGqhQECVLSM4sc2wb1g4dx3lUe61VcK3BMjnUPk28Y5qaRC9sDQ6X6Ar5OZHmVoAIVe2rXncVOxHUax10qb4d8L00KCAdXpd5";
+      "pk_live_51HGqhQECVLSM4sc2ko9vVpVH0jy1JfciT2Udx8lN8hGGsJdhHHzcOImRsUCcIHnoz7BL7MbZOLlW7W5Cs6IVmi2r00837cp7DC";
     break;
 
   default:

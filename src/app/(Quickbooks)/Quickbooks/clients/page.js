@@ -23,6 +23,12 @@ export default function CustomersByEmployee() {
     typeof window !== "undefined" ? localStorage.getItem("accessTokenQbo") : "";
   const realmId =
     typeof window !== "undefined" ? localStorage.getItem("realmId") : "";
+  const isEmployee =
+    typeof window !== "undefined"
+      ? localStorage.getItem("isEmployee")
+        ? true
+        : false
+      : false;
 
   // const isAuthenticated = accessTokenQbo && realmId;
 
@@ -51,7 +57,7 @@ export default function CustomersByEmployee() {
 
   // Fetch data if authenticated
   const { data } = GetAPI(
-    `api/v1/admin/customer-management/customer-list${
+    `api/v1/admin/qbo-customer-management/customer-list${
       type === "qbo-registered"
         ? "/qbo-registered"
         : type === "qbo-not-registered"
@@ -175,7 +181,7 @@ export default function CustomersByEmployee() {
             </button>
           </div>
 
-          {type !== "qbo-registered" && (
+          {type !== "qbo-registered" && !isEmployee && (
             <button
               onClick={handleImportCustomers}
               disabled={loading || selectedRows.length === 0}

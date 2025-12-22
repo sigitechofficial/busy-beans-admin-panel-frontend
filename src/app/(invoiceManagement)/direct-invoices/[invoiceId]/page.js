@@ -41,7 +41,7 @@ export default function OrderDetail() {
   const realmId =
     typeof window !== "undefined" ? localStorage.getItem("realmId") : "";
 
-  const { invoiceId } = useParams();
+  const { invoiceId : orderID } = useParams();
   const pathname = usePathname();
   const router = useRouter();
   const [chequeId, setChequeId] = useState("");
@@ -86,7 +86,7 @@ export default function OrderDetail() {
   ];
 
   const { data, reFetch, isLoading } = GetAPI(
-    `api/v1/admin/order-details/${invoiceId}`,
+    `api/v1/admin/order-details/${orderID}`,
     "orders"
   );
 
@@ -385,6 +385,8 @@ export default function OrderDetail() {
   };
 
   const handleSendInvoice = async () => {
+
+    console.log("🚀 ~ handleSendInvoice ~ data?.data?.order?.orderID:",{orderID , orderID, orderID})
     try {
       const res = await PostAPI(
         `api/v1/admin/order-management/send-invoice/${orderID}`,

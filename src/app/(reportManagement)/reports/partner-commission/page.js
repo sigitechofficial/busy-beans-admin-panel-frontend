@@ -4,9 +4,14 @@ import Loader from "@/components/ui/Loader";
 import MyDataTable from "@/components/ui/MyDataTable";
 import { useDataContext } from "@/utilities/DataContext";
 import GetAPI from "@/utilities/GetAPI";
-import { useState } from "react";
+import { drawerSelectStyles } from "@/utilities/SelectStyle";
+import { useState, useEffect } from "react";
 import { CiMenuBurger } from "react-icons/ci";
+import { ImCross } from "react-icons/im";
+import Select from "react-select";
 import { PARTNER_COMMISSION_REPORT } from "../report.testid";
+import dayjs from "dayjs";
+import { formatUSD } from "@/utilities/constants";
 
 export default function PartnerCommissionReport() {
   const [customDates, setCustomDates] = useState({
@@ -19,22 +24,86 @@ export default function PartnerCommissionReport() {
     label: "All Time",
   });
   const [displayCustomFilters, setDisplayCustomFilters] = useState(false);
+  
+  // Initialize dateRange with All Time default (January 1, 2025 to today)
+  const getInitialDateRange = () => {
+    const today = dayjs();
+    return {
+      startDate: "2025-01-01",
+      endDate: today.format("YYYY-MM-DD")
+    };
+  };
+  
+  const [dateRange, setDateRange] = useState(getInitialDateRange());
 
   const { data, isLoading } = GetAPI(
-    "api/v1/admin/admin-reports/partner-commission"
+    `api/v1/admin/admin-reports/partner-commission?startDate=${dateRange?.startDate}&endDate=${dateRange?.endDate}`
   );
 
   const options = [
     { value: "allTime", label: "All Time" },
-    { value: "currentYear", label: "Current Year" },
+    { value: "currentYear", label: "Current year" },
     { value: "currentMonth", label: "Current Month" },
     { value: "currentWeek", label: "Current Week" },
     { value: "lastYear", label: "Last Year" },
     { value: "last90Days", label: "Last 90 days" },
     { value: "lastMonth", label: "Last Month" },
+    { value: "monthToDate", label: "Month to date" },
     { value: "lastWeek", label: "Last Week" },
     { value: "custom", label: "Custom" },
   ];
+
+  const calculateDateRange = (filterValue) => {
+    const today = dayjs();
+    let startDate = "";
+    let endDate = "";
+
+    switch (filterValue) {
+      case "allTime":
+        startDate = "2025-01-01";
+        endDate = today.format("YYYY-MM-DD");
+        break;
+      case "currentYear":
+        startDate = today.startOf("year").format("YYYY-MM-DD");
+        endDate = today.endOf("year").format("YYYY-MM-DD");
+        break;
+      case "currentMonth":
+        startDate = today.startOf("month").format("YYYY-MM-DD");
+        endDate = today.endOf("month").format("YYYY-MM-DD");
+        break;
+      case "currentWeek":
+        startDate = today.startOf("week").format("YYYY-MM-DD");
+        endDate = today.endOf("week").format("YYYY-MM-DD");
+        break;
+      case "lastYear":
+        startDate = today.subtract(1, "year").startOf("year").format("YYYY-MM-DD");
+        endDate = today.subtract(1, "year").endOf("year").format("YYYY-MM-DD");
+        break;
+      case "last90Days":
+        startDate = today.subtract(90, "days").format("YYYY-MM-DD");
+        endDate = today.format("YYYY-MM-DD");
+        break;
+      case "lastMonth":
+        startDate = today.subtract(1, "month").startOf("month").format("YYYY-MM-DD");
+        endDate = today.subtract(1, "month").endOf("month").format("YYYY-MM-DD");
+        break;
+      case "monthToDate":
+        startDate = today.startOf("month").format("YYYY-MM-DD");
+        endDate = today.format("YYYY-MM-DD");
+        break;
+      case "lastWeek":
+        startDate = today.subtract(1, "week").startOf("week").format("YYYY-MM-DD");
+        endDate = today.subtract(1, "week").endOf("week").format("YYYY-MM-DD");
+        break;
+      case "custom":
+        break;
+      default:
+        startDate = "";
+        endDate = "";
+    }
+
+    return { startDate, endDate };
+  };
 
   const columns = [
     { field: "sl", header: "SL", sort: true },
@@ -55,12 +124,28 @@ export default function PartnerCommissionReport() {
       id: report?.id,
       sl: i + 1,
       srName: report?.srName,
-      ordersPlaced: `$${report?.ordersPlaced ?? 0}`,
-      totalSales: `$${report?.totalSales ?? 0}`,
-      wholesalePriceCost: `$${report?.wholesalePriceCost ?? 0}`,
-      totalCommission: `$${report?.totalCommission ?? 0}`,
+      ordersPlaced: formatUSD(parseFloat(report?.ordersPlaced) || 0),
+      totalSales: formatUSD(parseFloat(report?.totalSales) || 0),
+      wholesalePriceCost: formatUSD(parseFloat(report?.wholesalePriceCost) || 0),
+      totalCommission: formatUSD(parseFloat(report?.totalCommission) || 0),
     })
   );
+
+  useEffect(() => {
+    if (selectedOption.value !== "custom" && !displayCustomFilters) {
+      const dates = calculateDateRange(selectedOption.value);
+      setDateRange(dates);
+    }
+  }, [selectedOption, displayCustomFilters]);
+
+  useEffect(() => {
+    if (displayCustomFilters && customDates.startDate && customDates.endDate) {
+      setDateRange({
+        startDate: customDates.startDate,
+        endDate: customDates.endDate,
+      });
+    }
+  }, [customDates.startDate, customDates.endDate, displayCustomFilters]);
 
   const handleChange = (val) => {
     if (val?.value === "custom") {
@@ -68,8 +153,9 @@ export default function PartnerCommissionReport() {
     } else {
       setSelectedOption(val);
       setDisplayCustomFilters(false);
-      //   const filteredDates = handleDatesForFilter(val?.value);
-      //   setCustomDates(filteredDates);
+      const dates = calculateDateRange(val?.value);
+      setDateRange(dates);
+      setCustomDates({ startDate: "", endDate: "" });
     }
   };
 
@@ -80,6 +166,7 @@ export default function PartnerCommissionReport() {
       value: "allTime",
       label: "All Time",
     });
+    setDateRange(getInitialDateRange());
   };
 
   const handleCustomDates = (e) => {
@@ -111,13 +198,20 @@ export default function PartnerCommissionReport() {
         </div>
       </div>
       <div className="space-y-8 pt-28 2xl:pt-32 px-6 2xl:px-12 ">
-        {/* to do this filters */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-x-2">
+        <div className="flex items-center justify-between" data-testid={PARTNER_COMMISSION_REPORT.filterSection}>
+          <div className="flex items-center gap-x-4">
             <BackButton />
+            {/* Date Range Display */}
+            {dateRange.startDate && dateRange.endDate && (
+              <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-md border border-gray-200">
+                <span className="text-sm font-inter font-medium text-gray-600">Date Range:</span>
+                <span className="text-sm font-inter font-semibold text-gray-900">
+                  {dayjs(dateRange.startDate).format("MMM DD, YYYY")} - {dayjs(dateRange.endDate).format("MMM DD, YYYY")}
+                </span>
+              </div>
+            )}
           </div>
-
-          {/* <div className="min-w-40">
+          <div className="min-w-40">
             {displayCustomFilters ? (
               <div className="flex gap-x-2 items-center h-[42px]">
                 <div className=" space-x-2">
@@ -135,6 +229,7 @@ export default function PartnerCommissionReport() {
                     onChange={handleCustomDates}
                     className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium 
                     text-labelColor"
+                    data-testid={PARTNER_COMMISSION_REPORT.filterStartDate}
                   />
                 </div>
                 <div className="space-x-2">
@@ -150,14 +245,16 @@ export default function PartnerCommissionReport() {
                     name="endDate"
                     value={customDates?.endDate}
                     onChange={handleCustomDates}
+                    data-testid={PARTNER_COMMISSION_REPORT.filterEndDate}
                     className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium 
-                    text-labelColor"
+                            text-labelColor"
                   />
                 </div>
                 <div className="h-full flex items-center gap-x-2">
                   <button
                     onClick={handleCancel}
                     className="px-2 h-full rounded-lg border border-theme text-theme bg-white hover:text-white hover:bg-theme duration-200 group"
+                    data-testid={PARTNER_COMMISSION_REPORT.filterClearBtn}
                   >
                     <ImCross size={24} />
                   </button>
@@ -172,10 +269,11 @@ export default function PartnerCommissionReport() {
                   value={selectedOption ? selectedOption : null}
                   onChange={(val) => handleChange(val)}
                   options={options ? options : null}
+                  data-testid={PARTNER_COMMISSION_REPORT.filterSelect}
                 />
               </div>
             )}
-          </div> */}
+          </div>
         </div>
 
         <div data-testid={PARTNER_COMMISSION_REPORT.tableWrapper}>

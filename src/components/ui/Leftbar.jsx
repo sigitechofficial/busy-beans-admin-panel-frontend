@@ -1364,12 +1364,12 @@ export default function Leftbar(props) {
             active?.quickbooks?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  <button
+                {!isEmployee &&  <button
                     onClick={authenticateQuickbooks}
                     className="w-full flex gap-x-2 text-wrap items-center py-2 px-2 rounded-lg font-inter font-medium text-themeLightGray hover:bg-theme hover:text-white duration-200"
                   >
                     Go to QuickBooks
-                  </button>
+                  </button>}
                   <ListItems
                     title="Clients"
                     to="/Quickbooks/clients"

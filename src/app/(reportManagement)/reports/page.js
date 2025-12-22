@@ -84,6 +84,27 @@ export default function page() {
             to="/reports/direct-partner"
             data-testid={REPORT_MANAGEMENT.customersReportCard}
           />
+
+          <ReportCard
+            Icon={TbReportAnalytics}
+            title="Sales by Customer Summary Report"
+            to="/reports/sales-by-customer-summary"
+            data-testid={REPORT_MANAGEMENT.salesByCustomerSummaryReportCard}
+          />
+
+          <ReportCard
+            Icon={TbReportAnalytics}
+            title="Sales by Customer Details"
+            to="/reports/sales-by-customer-details"
+            data-testid={REPORT_MANAGEMENT.salesByCustomerDetailsReportCard}
+          />
+
+          <ReportCard
+            Icon={TbReportAnalytics}
+            title="Product wise sales summary"
+            to="/reports/product-wise-sales-summary"
+            data-testid={REPORT_MANAGEMENT.productWiseSalesSummaryReportCard}
+          />
         </div>
       </div>
     </div>

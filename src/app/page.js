@@ -31,6 +31,7 @@ import api from "@/utilities/StatusErrorHandler";
 import { hasPermission } from "@/utilities/Permission";
 import DASHBOARD from "./dashboard.testids";
 import { useTranslations } from "next-intl";
+import { formatUSD } from "@/utilities/constants";
 
 export default function Home() {
   const t = useTranslations("HomePage");
@@ -283,7 +284,7 @@ export default function Home() {
         const token =
           typeof window !== "undefined"
             ? localStorage.getItem("token") ||
-            localStorage.getItem("accessToken")
+              localStorage.getItem("accessToken")
             : "";
         const res = await api.get(
           BASE_URL + `api/v1/admin/stripe-connect-account-retrieve/${userID}`,
@@ -426,35 +427,35 @@ export default function Home() {
             <HomeMiniCards
               title="Total Revenue"
               // description="The bookings that are booked and an employee has been assigned to them."
-              total={`${(parseFloat(
-                data?.data?.revenueSummaryClient?.revenueCollectedClient
-              ) || 0) +
-                parseFloat(
-                  data?.data?.revenueSummaryPartners?.revenueCollectedPartners
-                )
-                }`}
+              total={`${formatUSD(
+                (parseFloat(
+                  data?.data?.revenueSummaryClient?.revenueCollectedClient
+                ) || 0) +
+                  parseFloat(
+                    data?.data?.revenueSummaryPartners?.revenueCollectedPartners
+                  )
+              )}`}
               // Icon={FiBox}
               data-testid="dashboard-total-sales"
-              currency
             />
             <HomeMiniCards
               title="Revenue From Client Orders"
               // description="The bookings that are booked and an employee has been assigned to them."
-              total={`${data?.data?.revenueSummaryClient?.revenueCollectedClient || 0
-                }`}
+              total={`${
+                formatUSD(data?.data?.revenueSummaryClient?.revenueCollectedClient || 0)
+              }`}
               // Icon={FiBox}
               data-testid="dashboard-total-sales"
-              currency
             />
             <HomeMiniCards
               title="Revenue From Partner Orders"
               // description="The bookings that are booked and an employee has been assigned to them."
-              total={`${data?.data?.revenueSummaryPartners?.revenueCollectedPartners ||
-                0
-                }`}
+              total={`${
+                formatUSD(data?.data?.revenueSummaryPartners?.revenueCollectedPartners || 0)
+                
+              }`}
               // Icon={FiBox}
               data-testid="dashboard-total-sales"
-              currency
             />
             <div></div>
           </div>
@@ -468,28 +469,25 @@ export default function Home() {
             <HomeMiniCards
               title="Admin's Customer Sales"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
-              total={data?.data?.clientSalesSummary?.customerPriceTotal || 0}
+              total={formatUSD(data?.data?.clientSalesSummary?.customerPriceTotal || 0)}
               // Icon={FiBox}
               data-testid="dashboard-total-orders"
-              currency
             />
 
             <HomeMiniCards
               title="Local Partners Customer Sales"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
-              total={data?.data?.clientSalesSummary?.wholesalePriceTotal || 0}
+              total={formatUSD(data?.data?.clientSalesSummary?.wholesalePriceTotal || 0)}
               // Icon={FiBox}
               data-testid="dashboard-total-orders"
-              currency
             />
 
             <HomeMiniCards
               title="Total Sales"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
-              total={parseFloat(data?.data?.clientSalesSummary?.sales || 0)}
+              total={formatUSD(data?.data?.clientSalesSummary?.sales || 0)}
               // Icon={FiBox}
               data-testid="dashboard-assigned-orders"
-              currency
             />
             <HomeMiniCards
               title="Total Items"
@@ -594,7 +592,7 @@ export default function Home() {
             <HomeMiniCards
               title="Total Orders"
               // description="The bookings in which minimum 1 service is not assigned to any employee"
-              total={data?.data?.partnersOrdersSummary?.orderPlaced}
+              total={data?.data?.partnersOrdersSummary?.orderPlaced || 0}
               // Icon={FiBox}
               data-testid="dashboard-total-orders"
             />
@@ -653,11 +651,12 @@ export default function Home() {
   ) : userType === "salesRepresentative" && !isEmployee ? (
     <div data-testid={DASHBOARD.salesRepRoot}>
       <div
-        className={`bg-red-500 z-10 text-center text-white py-2 ${userType === "salesRepresentative" &&
+        className={`bg-red-500 z-10 text-center text-white py-2 ${
+          userType === "salesRepresentative" &&
           (isAccountConnected === "false" || connectAccountId === "null")
-          ? "flex items-center justify-center gap-x-2"
-          : "hidden"
-          }`}
+            ? "flex items-center justify-center gap-x-2"
+            : "hidden"
+        }`}
         data-testid={DASHBOARD.connectBanner}
       >
         Your Stripe Account is not Connected {"? click here "}
@@ -667,12 +666,12 @@ export default function Home() {
           data-testid={DASHBOARD.connectBtn}
         >
           {(connectAccountId !== "null" || !connectAccountId) &&
-            isAccountConnected === "true"
+          isAccountConnected === "true"
             ? "Stripe Dashboard"
             : (connectAccountId === "null" || !connectAccountId) &&
               isAccountConnected === "false"
-              ? "Connect Account"
-              : "Complete Account Registration"}
+            ? "Connect Account"
+            : "Complete Account Registration"}
         </button>
       </div>
 
@@ -952,16 +951,16 @@ export default function Home() {
                 /cancel/i.test(item.orderStatus)
                   ? MdCancel
                   : /ship|dispatch/i.test(item.orderStatus)
-                    ? MdLocalShipping
-                    : /deliver/i.test(item.orderStatus)
-                      ? MdCheckCircle
-                      : /acknowledge/i.test(item.orderStatus)
-                        ? MdAssignmentTurnedIn
-                        : /unpaid|pending/i.test(item.orderStatus)
-                          ? MdPendingActions
-                          : /assign/i.test(item.orderStatus)
-                            ? MdAssignment
-                            : MdListAlt
+                  ? MdLocalShipping
+                  : /deliver/i.test(item.orderStatus)
+                  ? MdCheckCircle
+                  : /acknowledge/i.test(item.orderStatus)
+                  ? MdAssignmentTurnedIn
+                  : /unpaid|pending/i.test(item.orderStatus)
+                  ? MdPendingActions
+                  : /assign/i.test(item.orderStatus)
+                  ? MdAssignment
+                  : MdListAlt
               }
               bgColor="bg-homeCards"
               iconBg="bg-white"

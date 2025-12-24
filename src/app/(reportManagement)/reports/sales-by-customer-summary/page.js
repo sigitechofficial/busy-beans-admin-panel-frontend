@@ -17,6 +17,9 @@ import { MdFilterAlt } from "react-icons/md";
 import UserTypeFilterModal from "@/components/ui/UserTypeFilterModal";
 
 export default function SalesByCustomerSummaryReport() {
+  if (typeof window !== "undefined") {
+    var userType = localStorage.getItem("userType");
+  }
   const [customDates, setCustomDates] = useState({
     startDate: "",
     endDate: "",
@@ -40,7 +43,7 @@ export default function SalesByCustomerSummaryReport() {
     const today = dayjs();
     return {
       startDate: "2025-01-01",
-      endDate: today.format("YYYY-MM-DD")
+      endDate: today.format("YYYY-MM-DD"),
     };
   };
 
@@ -48,21 +51,24 @@ export default function SalesByCustomerSummaryReport() {
 
   // Build API URL with filters
   const buildApiUrl = () => {
-    let url = `api/v1/admin/admin-reports/customer-report?startDate=${dateRange?.startDate}&endDate=${dateRange?.endDate}`;
-    
+    let url = `api/v1/admin/admin-reports/customer-sales-report?startDate=${dateRange?.startDate}&endDate=${dateRange?.endDate}`;
+
     if (filters.userType === "admin") {
       url += "&userType=admin";
     } else if (filters.userType === "salesRep") {
       if (filters.salesRepIds === null) {
         // "All" sales reps selected
         url += "&salesRep[ne]=null";
-      } else if (Array.isArray(filters?.salesRepIds) && filters?.salesRepIds?.length > 0) {
+      } else if (
+        Array.isArray(filters?.salesRepIds) &&
+        filters?.salesRepIds?.length > 0
+      ) {
         // Multiple specific sales reps - send as array string
         const salesRepIdsArray = JSON.stringify(filters.salesRepIds);
         url += `&salesRepId=${salesRepIdsArray}`;
       }
     }
-    
+
     return url;
   };
 
@@ -104,7 +110,10 @@ export default function SalesByCustomerSummaryReport() {
         endDate = today.endOf("week").format("YYYY-MM-DD");
         break;
       case "lastYear":
-        startDate = today.subtract(1, "year").startOf("year").format("YYYY-MM-DD");
+        startDate = today
+          .subtract(1, "year")
+          .startOf("year")
+          .format("YYYY-MM-DD");
         endDate = today.subtract(1, "year").endOf("year").format("YYYY-MM-DD");
         break;
       case "last90Days":
@@ -112,15 +121,24 @@ export default function SalesByCustomerSummaryReport() {
         endDate = today.format("YYYY-MM-DD");
         break;
       case "lastMonth":
-        startDate = today.subtract(1, "month").startOf("month").format("YYYY-MM-DD");
-        endDate = today.subtract(1, "month").endOf("month").format("YYYY-MM-DD");
+        startDate = today
+          .subtract(1, "month")
+          .startOf("month")
+          .format("YYYY-MM-DD");
+        endDate = today
+          .subtract(1, "month")
+          .endOf("month")
+          .format("YYYY-MM-DD");
         break;
       case "monthToDate":
         startDate = today.startOf("month").format("YYYY-MM-DD");
         endDate = today.format("YYYY-MM-DD");
         break;
       case "lastWeek":
-        startDate = today.subtract(1, "week").startOf("week").format("YYYY-MM-DD");
+        startDate = today
+          .subtract(1, "week")
+          .startOf("week")
+          .format("YYYY-MM-DD");
         endDate = today.subtract(1, "week").endOf("week").format("YYYY-MM-DD");
         break;
       case "custom":
@@ -275,33 +293,34 @@ export default function SalesByCustomerSummaryReport() {
   const { toggle, setToggle } = useDataContext();
 
   // Format date range for display
-  const formattedDateRange = dateRange.startDate && dateRange.endDate
-    ? (() => {
-        const start = dayjs(dateRange.startDate);
-        const end = dayjs(dateRange.endDate);
-        
-        // If same month and year
-        if (start.month() === end.month() && start.year() === end.year()) {
-          return `${start.format("MMMM D")} - ${end.format("D, YYYY")}`;
-        }
-        // If same year but different months
-        else if (start.year() === end.year()) {
-          return `${start.format("MMMM D")} - ${end.format("MMMM D, YYYY")}`;
-        }
-        // Different years
-        else {
-          return `${start.format("MMMM D, YYYY")} - ${end.format("MMMM D, YYYY")}`;
-        }
-      })()
-    : "";
+  const formattedDateRange =
+    dateRange.startDate && dateRange.endDate
+      ? (() => {
+          const start = dayjs(dateRange.startDate);
+          const end = dayjs(dateRange.endDate);
+
+          // If same month and year
+          if (start.month() === end.month() && start.year() === end.year()) {
+            return `${start.format("MMMM D")} - ${end.format("D, YYYY")}`;
+          }
+          // If same year but different months
+          else if (start.year() === end.year()) {
+            return `${start.format("MMMM D")} - ${end.format("MMMM D, YYYY")}`;
+          }
+          // Different years
+          else {
+            return `${start.format("MMMM D, YYYY")} - ${end.format(
+              "MMMM D, YYYY"
+            )}`;
+          }
+        })()
+      : "";
 
   return isLoading ? (
     <Loader />
   ) : (
     <div>
-      <div
-        className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
-      >
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <div className="flex items-center gap-2">
           <p
             onClick={() => setToggle(!toggle)}
@@ -323,9 +342,12 @@ export default function SalesByCustomerSummaryReport() {
             {/* Date Range Display */}
             {dateRange.startDate && dateRange.endDate && (
               <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-md border border-gray-200">
-                <span className="text-sm font-inter font-medium text-gray-600">Date Range:</span>
+                <span className="text-sm font-inter font-medium text-gray-600">
+                  Date Range:
+                </span>
                 <span className="text-sm font-inter font-semibold text-gray-900">
-                  {dayjs(dateRange.startDate).format("MMM DD, YYYY")} - {dayjs(dateRange.endDate).format("MMM DD, YYYY")}
+                  {dayjs(dateRange.startDate).format("MMM DD, YYYY")} -{" "}
+                  {dayjs(dateRange.endDate).format("MMM DD, YYYY")}
                 </span>
               </div>
             )}
@@ -409,7 +431,10 @@ export default function SalesByCustomerSummaryReport() {
           {/* Search Bar and Filters */}
           <div className="flex items-center justify-between mb-6 gap-4">
             <div className="relative w-full max-w-md">
-              <LuSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <LuSearch
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                size={20}
+              />
               <input
                 type="text"
                 placeholder="Search customer..."
@@ -418,13 +443,15 @@ export default function SalesByCustomerSummaryReport() {
                 className="w-full h-[42px] pl-10 pr-4 rounded-md border border-gray-300 outline-none focus:border-theme focus:ring-1 focus:ring-theme font-workSans font-medium text-labelColor"
               />
             </div>
-            <button
-              onClick={() => setFilterModalVisible(true)}
-              className="flex items-center gap-2 px-4 py-2 h-[42px] rounded-md border border-theme text-theme bg-white hover:bg-theme hover:text-white transition-colors font-workSans font-medium"
-            >
-              <MdFilterAlt size={18} />
-              Filters
-            </button>
+            {userType === "admin" && (
+              <button
+                onClick={() => setFilterModalVisible(true)}
+                className="flex items-center gap-2 px-4 py-2 h-[42px] rounded-md border border-theme text-theme bg-white hover:bg-theme hover:text-white transition-colors font-workSans font-medium"
+              >
+                <MdFilterAlt size={18} />
+                Filters
+              </button>
+            )}
           </div>
 
           {/* Table */}
@@ -487,7 +514,9 @@ export default function SalesByCustomerSummaryReport() {
                           )}
                           <span
                             className={`${
-                              row.isChild ? "pl-6 text-gray-700" : "text-gray-900"
+                              row.isChild
+                                ? "pl-6 text-gray-700"
+                                : "text-gray-900"
                             }`}
                           >
                             {row.customer}

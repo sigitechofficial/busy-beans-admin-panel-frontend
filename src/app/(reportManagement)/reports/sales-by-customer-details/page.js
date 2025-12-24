@@ -544,13 +544,13 @@ export default function SalesByCustomerDetailsReport() {
                     className="w-full h-[42px] pl-10 pr-4 rounded-md border border-gray-300 outline-none focus:border-theme focus:ring-1 focus:ring-theme font-workSans font-medium text-labelColor"
                   />
                 </div>
-                <button
+                {/* <button
                   onClick={() => setFilterModalVisible(true)}
                   className="flex items-center gap-2 px-4 py-2 h-[42px] rounded-md border border-theme text-theme bg-white hover:bg-theme hover:text-white transition-colors font-workSans font-medium"
                 >
                   <MdFilterAlt size={18} />
                   Filters
-                </button>
+                </button> */}
               </div>
 
               {/* Table */}
@@ -701,12 +701,12 @@ export default function SalesByCustomerDetailsReport() {
       </div>
 
       {/* Filter Modal */}
-      <UserTypeFilterModal
+      {/* <UserTypeFilterModal
         visible={filterModalVisible}
         onHide={() => setFilterModalVisible(false)}
         onApply={handleFilterApply}
         initialFilters={filters}
-      />
+      /> */}
     </div>
   );
 }

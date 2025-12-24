@@ -1,41 +1,38 @@
 import { error_toaster } from "./Toaster";
 
-const environment = "production"; // "local" | "staging" | "production"
+const ENV = "production"; // "local" | "staging" | "production"
 
+const CONFIG = {
+  local: {
+    BASE_URL: "http://192.168.18.21:8013/",
+    STRIPE_PUBLIC_KEY:
+      "pk_test_51RPXZNCxTuXimvwHkvKO6MrVTckQ45X3JC2AkCVyV9fxLCK442YPbG8yM2NOexEqnD3wNAXdKfrOyEH2dTSzYKpt00WTyK7kzl",
+  },
 
+  staging: {
+    BASE_URL: "https://testingbb.trimworldwide.com/",
+    STRIPE_PUBLIC_KEY:
+      "pk_test_51RPXZNCxTuXimvwHkvKO6MrVTckQ45X3JC2AkCVyV9fxLCK442YPbG8yM2NOexEqnD3wNAXdKfrOyEH2dTSzYKpt00WTyK7kzl",
+  },
 
-export let BASE_URL = "";
-export let STRIPE_PUBLIC_KEY = "";
+  production: {
+    BASE_URL: "https://backendbb.trimworldwide.com/",
+    STRIPE_PUBLIC_KEY:
+      "pk_live_51HGqhQECVLSM4sc2wb1g4dx3lUe61VcK3BMjnUPk28Y5qaRC9sDQ6X6Ar5OZHmVoAIVe2rXncVOxHUax10qb4d8L00KCAdXpd5",
+  },
+};
 
-switch (environment) {
-  case "local":
-    // export const BASE_URL = "http://192.168.1.109:8013/";
-    BASE_URL = "http://192.168.18.21:8013/";
-    STRIPE_PUBLIC_KEY =
-      "pk_test_51RPXZNCxTuXimvwHkvKO6MrVTckQ45X3JC2AkCVyV9fxLCK442YPbG8yM2NOexEqnD3wNAXdKfrOyEH2dTSzYKpt00WTyK7kzl";
-    break;
+const CURRENT = CONFIG[ENV];
 
-  case "staging":
-    BASE_URL = "https://testingbb.trimworldwide.com/";
-    STRIPE_PUBLIC_KEY =
-      "pk_test_51RPXZNCxTuXimvwHkvKO6MrVTckQ45X3JC2AkCVyV9fxLCK442YPbG8yM2NOexEqnD3wNAXdKfrOyEH2dTSzYKpt00WTyK7kzl";
-    break;
-
-  case "production":
-    BASE_URL = "https://backendbb.trimworldwide.com/";
-    STRIPE_PUBLIC_KEY =
-      "pk_live_51HGqhQECVLSM4sc2ko9vVpVH0jy1JfciT2Udx8lN8hGGsJdhHHzcOImRsUCcIHnoz7BL7MbZOLlW7W5Cs6IVmi2r00837cp7DC";
-    break;
-
-  default:
-    error_toaster("❌ Invalid environment:", environment);
+if (!CURRENT) {
+  error_toaster("❌ Invalid environment:", ENV);
 }
 
-export const googleApiKey = "AIzaSyD68_vw1gGE7LVVjJ5ZShy7qWwm9Rq0CBQ";
+export const BASE_URL = CURRENT?.BASE_URL || "";
+export const STRIPE_PUBLIC_KEY = CURRENT?.STRIPE_PUBLIC_KEY || "";
+
+export const GOOGLE_API_KEY = "AIzaSyD68_vw1gGE7LVVjJ5ZShy7qWwm9Rq0CBQ";
+
 export const RECAPTCHA_SITE_KEY = "6Lfy_PwrAAAAAHCJ7TQAw3g1K-LhLM5qFCtoJpbi";
+
 export const RECAPTCHA_SECRET_KEY = "6Lfy_PwrAAAAAJrwzEdV9ElaUlZNOTSRBkSPa9zZ";
-
-
-// export const stripePublishKey = "pk_live_51HGqhQECVLSM4sc2wb1g4dx3lUe61VcK3BMjnUPk28Y5qaRC9sDQ6X6Ar5OZHmVoAIVe2rXncVOxHUax10qb4d8L00KCAdXpd5";
-// export const stripePublishKeyTest = "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";
-// export const stripePublishKeyTest = "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";

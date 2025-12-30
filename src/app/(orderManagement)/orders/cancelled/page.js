@@ -74,7 +74,7 @@ export default function CancelledOrders() {
       paymentStatus: detail?.paymentStatus === "done" ? "Paid" : "Unpaid",
       createdBy: detail?.createdBy,
       orderDate: dayjs(detail?.on).format("MM/DD/YYYY"),
-      deliveredOn: dayjs(detail?.deliveredOn).format("MM/DD/YYYY"),
+      deliveredOn: detail?.deliveredOn ? dayjs(detail?.deliveredOn).format("MM/DD/YYYY") : "",
       action: (
         <button
           className="border border-yellow-400 rounded-md p-2 text-yellow-400"

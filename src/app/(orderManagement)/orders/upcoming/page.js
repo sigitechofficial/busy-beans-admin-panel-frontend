@@ -103,7 +103,7 @@ export default function UpcomingOrders() {
       companyName: detail?.companyName,
       email: detail?.email,
       orderDate: dayjs(detail?.orderDate).format("MM/DD/YYYY"),
-      deliveredOn: detail?.nextOrderDate,
+      deliveredOn: detail?.nextOrderDate ? dayjs(detail?.nextOrderDate).format("MM/DD/YYYY") : "",
       orderFrequency: detail?.frequency,
       createdBy: detail?.createdBy,
       action: (

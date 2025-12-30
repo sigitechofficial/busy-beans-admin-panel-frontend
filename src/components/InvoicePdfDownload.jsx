@@ -120,6 +120,15 @@ export default function InvoicePDFDownload({ invoiceData, reFetch, adminAddress 
     .filter(Boolean)
     .join(" ");
   const invoiceEmail = bill?.emailToSendInvoices || bill?.email || "";
+  const isCustomer = invoiceData?.user || false;
+  const isPartnerSelfOrder = (invoiceData?.salesRep && !invoiceData?.user) || false;
+  
+  // For partner self orders, get sales rep billing address
+  const salesRepBillAddr = invoiceData?.salesRep?.billingAddresses?.[0] || {};
+  const salesRepPhoneText = [invoiceData?.salesRep?.countryCode || "+1", invoiceData?.salesRep?.phoneNumber]
+    .filter(Boolean)
+    .join(" ");
+  const salesRepEmail = invoiceData?.salesRep?.email || "";
 
   return (
     <div className="w-full max-w-[800px] mx-auto px-6 pt-28 2xl:pt-32 min-w-[700px] overflow-auto">
@@ -190,7 +199,36 @@ export default function InvoicePDFDownload({ invoiceData, reFetch, adminAddress 
               {/* Remit To Section (always) */}
               <div>
                 <div className="font-bold">Remit To</div>
-                {invoiceData?.salesRep ? (
+                {isPartnerSelfOrder ? (
+                  // For partner self orders, show admin address
+                  <>
+                    <div className="uppercase">Busy Bean Coffee Inc.</div>
+                    <div className="uppercase">{adminAddress?.salesRepName}</div>
+                    {adminAddress?.territoryName && (
+                      <div className="uppercase">{adminAddress?.territoryName}</div>
+                    )}
+                    {adminAddress?.address && (
+                      <div className="uppercase">{adminAddress?.address}</div>
+                    )}
+                    {(adminAddress?.city + ", " + adminAddress?.state + ", " + adminAddress?.zipCode) && (
+                      <div className="uppercase">
+                        {adminAddress?.city + ", " + adminAddress?.state + " " + adminAddress?.zipCode}
+                      </div>
+                    )}
+                    {adminAddress?.country && (
+                      <div className="uppercase">{adminAddress?.country}</div>
+                    )}
+                    {(adminAddress?.countryCode || adminAddress?.phoneNumber) && (
+                      <div>
+                        {[adminAddress?.countryCode, adminAddress?.phoneNumber]
+                          .filter(Boolean)
+                          .join(" ")}
+                      </div>
+                    )}
+                    {adminAddress?.supportEmail && <div>{adminAddress?.supportEmail}</div>}
+                  </>
+                ) : invoiceData?.salesRep ? (
+                  // For regular sales rep orders, show sales rep address
                   <>
                     {/* <div className="uppercase">{invoiceData?.salesRepName}</div> */}
                     {invoiceData?.salesRep?.territoryName && (
@@ -221,7 +259,7 @@ export default function InvoicePDFDownload({ invoiceData, reFetch, adminAddress 
                     {invoiceData?.salesRep?.email && <div>{invoiceData?.salesRep?.email}</div>}
                   </>
                 ) : (
-
+                  // Fallback to admin address
                   <>
                     <div className="uppercase">Busy Bean Coffee Inc.</div>
                     <div className="uppercase">{adminAddress?.salesRepName}</div>
@@ -255,38 +293,79 @@ export default function InvoicePDFDownload({ invoiceData, reFetch, adminAddress 
               <div className="uppercase">
                 <div className="font-bold capitalize">Bill to</div>
 
-                {/* Company address or name */}
-                {billAddr?.companyaddress && <div>{billAddr.companyaddress}</div>}
+                {isPartnerSelfOrder ? (
+                  // For partner self orders, show sales rep billing address
+                  <>
+                    {/* Company address or name */}
+                    {salesRepBillAddr?.companyaddress && <div>{salesRepBillAddr.companyaddress}</div>}
 
-                {/* Company name if available */}
-                {bill?.companyName && <div>{bill.companyName}</div>}
+                    {/* Company name if available */}
+                    {invoiceData?.salesRep?.companyName && <div>{invoiceData?.salesRep?.companyName}</div>}
 
-                {/* Address lines */}
-                {(billAddr?.addressLineOne || billAddr?.addressLineTwo) && (
-                  <div>
-                    {[billAddr?.addressLineOne, billAddr?.addressLineTwo]
-                      .filter(Boolean)
-                      .join(", ")}
-                  </div>
+                    {/* Address lines */}
+                    {(salesRepBillAddr?.addressLineOne || salesRepBillAddr?.addressLineTwo) && (
+                      <div>
+                        {[salesRepBillAddr?.addressLineOne, salesRepBillAddr?.addressLineTwo]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </div>
+                    )}
+
+                    {/* Town, State, Zip */}
+                    {(salesRepBillAddr?.town || salesRepBillAddr?.state || salesRepBillAddr?.zipCode) && (
+                      <div>
+                        {[salesRepBillAddr?.town, salesRepBillAddr?.state, salesRepBillAddr?.zipCode]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </div>
+                    )}
+
+                    {/* Country */}
+                    {salesRepBillAddr?.country && <div>{salesRepBillAddr.country}</div>}
+
+                    {/* Phone */}
+                    {salesRepPhoneText && <div>{salesRepPhoneText}</div>}
+
+                    {/* Email */}
+                    {salesRepEmail && <div className="lowercase">{salesRepEmail}</div>}
+                  </>
+                ) : (
+                  // For customer orders, show customer billing address (unchanged)
+                  <>
+                    {/* Company address or name */}
+                    {billAddr?.companyaddress && <div>{billAddr.companyaddress}</div>}
+
+                    {/* Company name if available */}
+                    {bill?.companyName && <div>{bill.companyName}</div>}
+
+                    {/* Address lines */}
+                    {(billAddr?.addressLineOne || billAddr?.addressLineTwo) && (
+                      <div>
+                        {[billAddr?.addressLineOne, billAddr?.addressLineTwo]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </div>
+                    )}
+
+                    {/* Town, State, Zip */}
+                    {(billAddr?.town || billAddr?.state || billAddr?.zipCode) && (
+                      <div>
+                        {[billAddr?.town, billAddr?.state, billAddr?.zipCode]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </div>
+                    )}
+
+                    {/* Country */}
+                    {billAddr?.country && <div>{billAddr.country}</div>}
+
+                    {/* Phone */}
+                    {phoneText && <div>{phoneText}</div>}
+
+                    {/* Email (prefer invoice email, fallback to user email) */}
+                    {invoiceEmail && <div className="lowercase">{invoiceEmail}</div>}
+                  </>
                 )}
-
-                {/* Town, State, Zip */}
-                {(billAddr?.town || billAddr?.state || billAddr?.zipCode) && (
-                  <div>
-                    {[billAddr?.town, billAddr?.state, billAddr?.zipCode]
-                      .filter(Boolean)
-                      .join(", ")}
-                  </div>
-                )}
-
-                {/* Country */}
-                {billAddr?.country && <div>{billAddr.country}</div>}
-
-                {/* Phone */}
-                {phoneText && <div>{phoneText}</div>}
-
-                {/* Email (prefer invoice email, fallback to user email) */}
-                {invoiceEmail && <div className="lowercase">{invoiceEmail}</div>}
               </div>
             </div>
           </div>

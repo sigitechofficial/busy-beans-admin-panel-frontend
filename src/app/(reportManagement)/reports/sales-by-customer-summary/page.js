@@ -15,8 +15,11 @@ import { FaChevronDown, FaChevronRight } from "react-icons/fa";
 import { LuSearch } from "react-icons/lu";
 import { MdFilterAlt } from "react-icons/md";
 import UserTypeFilterModal from "@/components/ui/UserTypeFilterModal";
+import { error_toaster } from "@/utilities/Toaster";
+import { useRouter } from "next/navigation";
 
 export default function SalesByCustomerSummaryReport() {
+  const router = useRouter();
   if (typeof window !== "undefined") {
     var userType = localStorage.getItem("userType");
   }
@@ -160,6 +163,22 @@ export default function SalesByCustomerSummaryReport() {
 
   useEffect(() => {
     if (displayCustomFilters && customDates.startDate && customDates.endDate) {
+      const start = dayjs(customDates.startDate);
+      const end = dayjs(customDates.endDate);
+      const today = dayjs();
+
+      if (start.isAfter(end)) {
+        error_toaster("Start date cannot be after end date.");
+        return;
+      }
+      if (start.isAfter(today) || end.isAfter(today)) {
+        error_toaster("Dates cannot be in the future.");
+        return;
+      }
+      if (start.isBefore(dayjs("2025-01-01"))) {
+        error_toaster("Start date cannot be before January 1, 2025.");
+        return;
+      }
       setDateRange({
         startDate: customDates.startDate,
         endDate: customDates.endDate,
@@ -215,6 +234,10 @@ export default function SalesByCustomerSummaryReport() {
     } else {
       setSortOrder(null);
     }
+  };
+
+  const navigateToDetailPage = (userId) => {
+    router.push(`/customers/${userId}`);
   };
 
   // Process data to handle grouped customers
@@ -354,48 +377,50 @@ export default function SalesByCustomerSummaryReport() {
           </div>
           <div className="min-w-40">
             {displayCustomFilters ? (
-              <div className="flex gap-x-2 items-center h-[42px]">
-                <div className="space-x-2">
-                  <label
-                    htmlFor="startDate"
-                    className="text-labelColor font-workSans font-semibold"
-                  >
-                    Start Date:
-                  </label>
-                  <input
-                    type="date"
-                    id="startDate"
-                    name="startDate"
-                    value={customDates?.startDate}
-                    onChange={handleCustomDates}
-                    className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium text-labelColor"
-                  />
+              <>
+                <div className="flex gap-x-2 items-center h-[42px]">
+                  <div className="space-x-2">
+                    <label
+                      htmlFor="startDate"
+                      className="text-labelColor font-workSans font-semibold"
+                    >
+                      Start Date:
+                    </label>
+                    <input
+                      type="date"
+                      id="startDate"
+                      name="startDate"
+                      value={customDates?.startDate}
+                      onChange={handleCustomDates}
+                      className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium text-labelColor"
+                    />
+                  </div>
+                  <div className="space-x-2">
+                    <label
+                      htmlFor="endDate"
+                      className="text-labelColor font-workSans font-semibold"
+                    >
+                      End Date:
+                    </label>
+                    <input
+                      type="date"
+                      id="endDate"
+                      name="endDate"
+                      value={customDates?.endDate}
+                      onChange={handleCustomDates}
+                      className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium text-labelColor"
+                    />
+                  </div>
+                  <div className="h-full flex items-center gap-x-2">
+                    <button
+                      onClick={handleCancel}
+                      className="px-2 h-full rounded-lg border border-theme text-theme bg-white hover:text-white hover:bg-theme duration-200 group"
+                    >
+                      <ImCross size={24} />
+                    </button>
+                  </div>
                 </div>
-                <div className="space-x-2">
-                  <label
-                    htmlFor="endDate"
-                    className="text-labelColor font-workSans font-semibold"
-                  >
-                    End Date:
-                  </label>
-                  <input
-                    type="date"
-                    id="endDate"
-                    name="endDate"
-                    value={customDates?.endDate}
-                    onChange={handleCustomDates}
-                    className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium text-labelColor"
-                  />
-                </div>
-                <div className="h-full flex items-center gap-x-2">
-                  <button
-                    onClick={handleCancel}
-                    className="px-2 h-full rounded-lg border border-theme text-theme bg-white hover:text-white hover:bg-theme duration-200 group"
-                  >
-                    <ImCross size={24} />
-                  </button>
-                </div>
-              </div>
+              </>
             ) : (
               <div className="font-bold">
                 <Select
@@ -491,6 +516,9 @@ export default function SalesByCustomerSummaryReport() {
                   rows.map((row) => (
                     <tr
                       key={row.id}
+                      onClick={() => {
+                        navigateToDetailPage(row.id);
+                      }}
                       className={`border-b border-gray-200 ${
                         row.isChild ? "bg-gray-50" : ""
                       } ${row.isGroup ? "font-semibold" : ""}`}

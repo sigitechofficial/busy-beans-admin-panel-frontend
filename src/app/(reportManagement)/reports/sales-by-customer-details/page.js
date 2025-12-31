@@ -3,6 +3,7 @@ import BackButton from "@/components/ui/BackButton";
 import Loader from "@/components/ui/Loader";
 import { useDataContext } from "@/utilities/DataContext";
 import GetAPI from "@/utilities/GetAPI";
+import api from "@/utilities/StatusErrorHandler";
 import { drawerSelectStyles } from "@/utilities/SelectStyle";
 import { useState, useEffect } from "react";
 import { CiMenuBurger } from "react-icons/ci";
@@ -16,8 +17,11 @@ import { MdFilterAlt } from "react-icons/md";
 import { HiOutlineUserGroup } from "react-icons/hi";
 import { IoPersonOutline } from "react-icons/io5";
 import UserTypeFilterModal from "@/components/ui/UserTypeFilterModal";
+import { error_toaster } from "@/utilities/Toaster";
+import { useRouter } from "next/navigation";
 
 export default function SalesByCustomerDetailsReport() {
+  const router = useRouter();
   const [customDates, setCustomDates] = useState({
     startDate: "",
     endDate: "",
@@ -44,22 +48,26 @@ export default function SalesByCustomerDetailsReport() {
     const today = dayjs();
     return {
       startDate: "2025-01-01",
-      endDate: today.format("YYYY-MM-DD")
+      endDate: today.format("YYYY-MM-DD"),
     };
   };
 
   const [dateRange, setDateRange] = useState(getInitialDateRange());
 
   // Fetch customers list
-  const { data: customersData } = GetAPI("api/v1/admin/customer-management/customer-list/all");
+  const { data: customersData } = GetAPI(
+    "api/v1/admin/customer-management/customer-list/all"
+  );
   const [customerOptions, setCustomerOptions] = useState([]);
 
   useEffect(() => {
     if (customersData?.data?.data) {
       const options = customersData.data.data.map((customer) => ({
         value: customer.id,
-        label: `${customer.companyName || customer.name}${customer.name && customer.companyName ? ` (${customer.name})` : ""}`,
-        ...customer
+        label: `${customer.companyName || customer.name}${
+          customer.name && customer.companyName ? ` (${customer.name})` : ""
+        }`,
+        ...customer,
       }));
       setCustomerOptions(options);
     }
@@ -74,20 +82,23 @@ export default function SalesByCustomerDetailsReport() {
 
     // Include userId as part of the endpoint path
     let url = `api/v1/admin/admin-reports/customer-detail-report/${selectedCustomer.value}?startDate=${dateRange?.startDate}&endDate=${dateRange?.endDate}`;
-    
+
     if (filters.userType === "admin") {
       url += "&userType=admin";
     } else if (filters.userType === "salesRep") {
       if (filters.salesRepIds === null) {
         // "All" sales reps selected
         url += "&salesRep[ne]=null";
-      } else if (Array.isArray(filters?.salesRepIds) && filters?.salesRepIds?.length > 0) {
+      } else if (
+        Array.isArray(filters?.salesRepIds) &&
+        filters?.salesRepIds?.length > 0
+      ) {
         // Multiple specific sales reps - send as array string
         const salesRepIdsArray = JSON.stringify(filters.salesRepIds);
         url += `&salesRepId=${salesRepIdsArray}`;
       }
     }
-    
+
     return url;
   };
 
@@ -132,7 +143,10 @@ export default function SalesByCustomerDetailsReport() {
         endDate = today.endOf("week").format("YYYY-MM-DD");
         break;
       case "lastYear":
-        startDate = today.subtract(1, "year").startOf("year").format("YYYY-MM-DD");
+        startDate = today
+          .subtract(1, "year")
+          .startOf("year")
+          .format("YYYY-MM-DD");
         endDate = today.subtract(1, "year").endOf("year").format("YYYY-MM-DD");
         break;
       case "last90Days":
@@ -140,15 +154,24 @@ export default function SalesByCustomerDetailsReport() {
         endDate = today.format("YYYY-MM-DD");
         break;
       case "lastMonth":
-        startDate = today.subtract(1, "month").startOf("month").format("YYYY-MM-DD");
-        endDate = today.subtract(1, "month").endOf("month").format("YYYY-MM-DD");
+        startDate = today
+          .subtract(1, "month")
+          .startOf("month")
+          .format("YYYY-MM-DD");
+        endDate = today
+          .subtract(1, "month")
+          .endOf("month")
+          .format("YYYY-MM-DD");
         break;
       case "monthToDate":
         startDate = today.startOf("month").format("YYYY-MM-DD");
         endDate = today.format("YYYY-MM-DD");
         break;
       case "lastWeek":
-        startDate = today.subtract(1, "week").startOf("week").format("YYYY-MM-DD");
+        startDate = today
+          .subtract(1, "week")
+          .startOf("week")
+          .format("YYYY-MM-DD");
         endDate = today.subtract(1, "week").endOf("week").format("YYYY-MM-DD");
         break;
       case "custom":
@@ -170,6 +193,22 @@ export default function SalesByCustomerDetailsReport() {
 
   useEffect(() => {
     if (displayCustomFilters && customDates.startDate && customDates.endDate) {
+      const start = dayjs(customDates.startDate);
+      const end = dayjs(customDates.endDate);
+      const today = dayjs();
+
+      if (start.isAfter(end)) {
+        error_toaster("Start date cannot be after end date.");
+        return;
+      }
+      if (start.isAfter(today) || end.isAfter(today)) {
+        error_toaster("Dates cannot be in the future.");
+        return;
+      }
+      if (start.isBefore(dayjs("2025-01-01"))) {
+        error_toaster("Start date cannot be before January 1, 2025.");
+        return;
+      }
       setDateRange({
         startDate: customDates.startDate,
         endDate: customDates.endDate,
@@ -224,7 +263,8 @@ export default function SalesByCustomerDetailsReport() {
 
   // Process data - handle flat array of transactions
   const processData = () => {
-    if (!data?.data || !Array.isArray(data.data)) return { rows: [], grandTotal: { quantity: 0, amount: 0 } };
+    if (!data?.data || !Array.isArray(data.data))
+      return { rows: [], grandTotal: { quantity: 0, amount: 0 } };
 
     const transactions = data.data;
     let grandTotalQuantity = 0;
@@ -237,7 +277,7 @@ export default function SalesByCustomerDetailsReport() {
       const price = parseFloat(transaction.price || 0);
       // Calculate amount as unit price (sales price) × quantity
       const amount = quantity * price;
-      
+
       grandTotalQuantity += quantity;
       grandTotalAmount += amount;
       runningBalance += amount;
@@ -245,11 +285,25 @@ export default function SalesByCustomerDetailsReport() {
       return {
         id: transaction.id,
         type: "transaction",
-        transactionDate: transaction.date || transaction.transactionDate || transaction.createdAt,
-        transactionType: transaction.type === "product" ? "Invoice" : transaction.type || "Invoice",
-        num: transaction.invoiceNumber || transaction.invoiceId || transaction.orderId || transaction.num,
+        transactionDate:
+          transaction.date ||
+          transaction.transactionDate ||
+          transaction.createdAt,
+        transactionType:
+          transaction.type === "product"
+            ? "Invoice"
+            : transaction.type || "Invoice",
+        num:
+          transaction.invoiceNumber ||
+          transaction.invoiceId ||
+          transaction.orderId ||
+          transaction.num,
         productName: transaction.productName || "-",
-        memo: transaction.description || transaction.memo || transaction.notes || "-",
+        memo:
+          transaction.description ||
+          transaction.memo ||
+          transaction.notes ||
+          "-",
         quantity,
         salesPrice: price, // Unit price
         amount, // Calculated as salesPrice × quantity
@@ -309,25 +363,26 @@ export default function SalesByCustomerDetailsReport() {
   const { toggle, setToggle } = useDataContext();
 
   // Format date range for display (Month Year format)
-  const formattedDateRange = dateRange.startDate && dateRange.endDate
-    ? (() => {
-        const start = dayjs(dateRange.startDate);
-        const end = dayjs(dateRange.endDate);
-        
-        // If same month and year, show "Month Year"
-        if (start.month() === end.month() && start.year() === end.year()) {
-          return start.format("MMMM YYYY");
-        }
-        // If same year but different months
-        else if (start.year() === end.year()) {
-          return `${start.format("MMMM")} - ${end.format("MMMM YYYY")}`;
-        }
-        // Different years
-        else {
-          return `${start.format("MMMM YYYY")} - ${end.format("MMMM YYYY")}`;
-        }
-      })()
-    : "";
+  const formattedDateRange =
+    dateRange.startDate && dateRange.endDate
+      ? (() => {
+          const start = dayjs(dateRange.startDate);
+          const end = dayjs(dateRange.endDate);
+
+          // If same month and year, show "Month Year"
+          if (start.month() === end.month() && start.year() === end.year()) {
+            return start.format("MMMM YYYY");
+          }
+          // If same year but different months
+          else if (start.year() === end.year()) {
+            return `${start.format("MMMM")} - ${end.format("MMMM YYYY")}`;
+          }
+          // Different years
+          else {
+            return `${start.format("MMMM YYYY")} - ${end.format("MMMM YYYY")}`;
+          }
+        })()
+      : "";
 
   const getSortIcon = (field) => {
     if (sortConfig.field !== field) {
@@ -344,13 +399,41 @@ export default function SalesByCustomerDetailsReport() {
     return <HiOutlineArrowDown size={18} />;
   };
 
+  const navigateToDetailPage = async (orderNumber) => {
+    const orderId = orderNumber.replace(/^INV0*/, "");
+    try {
+      const res = await api.get(`api/v1/admin/order-details/${orderId}`, {
+        headers: {
+          feature: "orders",
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+      const order = res.data?.data?.order;
+      if ( order?.user) {
+        // customer order
+        if (order.type === "direct-invoice") {
+          router.push(`/direct-invoices/${orderId}`);
+        } else if (order.type === "regular-order") {
+          router.push(`/orders/detail/${orderId}`);
+        } else {
+          // default
+          router.push(`/direct-invoices/${orderId}`);
+        }
+      } else {
+        // not customer order
+        router.push(`/direct-invoices/${orderId}`);
+      }
+    } catch (error) {
+      // handle error
+      router.push(`/direct-invoices/${orderId}`);
+    }
+  };
+
   return isLoading ? (
     <Loader />
   ) : (
     <div>
-      <div
-        className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
-      >
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
         <div className="flex items-center gap-2">
           <p
             onClick={() => setToggle(!toggle)}
@@ -372,57 +455,62 @@ export default function SalesByCustomerDetailsReport() {
             {/* Date Range Display */}
             {dateRange.startDate && dateRange.endDate && (
               <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-md border border-gray-200">
-                <span className="text-sm font-inter font-medium text-gray-600">Date Range:</span>
+                <span className="text-sm font-inter font-medium text-gray-600">
+                  Date Range:
+                </span>
                 <span className="text-sm font-inter font-semibold text-gray-900">
-                  {dayjs(dateRange.startDate).format("MMM DD, YYYY")} - {dayjs(dateRange.endDate).format("MMM DD, YYYY")}
+                  {dayjs(dateRange.startDate).format("MMM DD, YYYY")} -{" "}
+                  {dayjs(dateRange.endDate).format("MMM DD, YYYY")}
                 </span>
               </div>
             )}
           </div>
           <div className="min-w-40">
             {displayCustomFilters ? (
-              <div className="flex gap-x-2 items-center h-[42px]">
-                <div className="space-x-2">
-                  <label
-                    htmlFor="startDate"
-                    className="text-labelColor font-workSans font-semibold"
-                  >
-                    Start Date:
-                  </label>
-                  <input
-                    type="date"
-                    id="startDate"
-                    name="startDate"
-                    value={customDates?.startDate}
-                    onChange={handleCustomDates}
-                    className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium text-labelColor"
-                  />
+              <>
+                <div className="flex gap-x-2 items-center h-[42px]">
+                  <div className="space-x-2">
+                    <label
+                      htmlFor="startDate"
+                      className="text-labelColor font-workSans font-semibold"
+                    >
+                      Start Date:
+                    </label>
+                    <input
+                      type="date"
+                      id="startDate"
+                      name="startDate"
+                      value={customDates?.startDate}
+                      onChange={handleCustomDates}
+                      className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium text-labelColor"
+                    />
+                  </div>
+                  <div className="space-x-2">
+                    <label
+                      htmlFor="endDate"
+                      className="text-labelColor font-workSans font-semibold"
+                    >
+                      End Date:
+                    </label>
+                    <input
+                      type="date"
+                      id="endDate"
+                      name="endDate"
+                      value={customDates?.endDate}
+                      onChange={handleCustomDates}
+                      className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium text-labelColor"
+                    />
+                  </div>
+                  <div className="h-full flex items-center gap-x-2">
+                    <button
+                      onClick={handleCancel}
+                      className="px-2 h-full rounded-lg border border-theme text-theme bg-white hover:text-white hover:bg-theme duration-200 group"
+                    >
+                      <ImCross size={24} />
+                    </button>
+                  </div>
                 </div>
-                <div className="space-x-2">
-                  <label
-                    htmlFor="endDate"
-                    className="text-labelColor font-workSans font-semibold"
-                  >
-                    End Date:
-                  </label>
-                  <input
-                    type="date"
-                    id="endDate"
-                    name="endDate"
-                    value={customDates?.endDate}
-                    onChange={handleCustomDates}
-                    className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium text-labelColor"
-                  />
-                </div>
-                <div className="h-full flex items-center gap-x-2">
-                  <button
-                    onClick={handleCancel}
-                    className="px-2 h-full rounded-lg border border-theme text-theme bg-white hover:text-white hover:bg-theme duration-200 group"
-                  >
-                    <ImCross size={24} />
-                  </button>
-                </div>
-              </div>
+              </>
             ) : (
               <div className="font-bold">
                 <Select
@@ -454,8 +542,12 @@ export default function SalesByCustomerDetailsReport() {
                     ...provided,
                     minHeight: "52px",
                     borderRadius: "8px",
-                    borderColor: state.isFocused ? "#3b82f6" : provided.borderColor,
-                    boxShadow: state.isFocused ? "0 0 0 3px rgba(59, 130, 246, 0.1)" : provided.boxShadow,
+                    borderColor: state.isFocused
+                      ? "#3b82f6"
+                      : provided.borderColor,
+                    boxShadow: state.isFocused
+                      ? "0 0 0 3px rgba(59, 130, 246, 0.1)"
+                      : provided.boxShadow,
                     "&:hover": {
                       borderColor: state.isFocused ? "#3b82f6" : "#d1d5db",
                     },
@@ -476,7 +568,10 @@ export default function SalesByCustomerDetailsReport() {
                 loadingMessage={() => "Loading customers..."}
                 formatOptionLabel={({ label, ...rest }) => (
                   <div className="flex items-center gap-2 py-1">
-                    <IoPersonOutline className="text-gray-400 flex-shrink-0" size={18} />
+                    <IoPersonOutline
+                      className="text-gray-400 flex-shrink-0"
+                      size={18}
+                    />
                     <span className="font-inter">{label}</span>
                   </div>
                 )}
@@ -484,7 +579,12 @@ export default function SalesByCustomerDetailsReport() {
               {selectedCustomer && (
                 <div className="mt-3 flex items-center gap-2 text-sm text-gray-600">
                   <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  <span className="font-inter">Customer selected: <span className="font-semibold text-gray-900">{selectedCustomer.label}</span></span>
+                  <span className="font-inter">
+                    Customer selected:{" "}
+                    <span className="font-semibold text-gray-900">
+                      {selectedCustomer.label}
+                    </span>
+                  </span>
                 </div>
               )}
             </div>
@@ -527,7 +627,8 @@ export default function SalesByCustomerDetailsReport() {
                 Select Customer to View Report
               </h3>
               <p className="text-base font-inter text-gray-500 max-w-md">
-                Please select a customer from the dropdown above to view their sales details and transactions.
+                Please select a customer from the dropdown above to view their
+                sales details and transactions.
               </p>
             </div>
           ) : (
@@ -535,7 +636,10 @@ export default function SalesByCustomerDetailsReport() {
               {/* Search Bar and Filters */}
               <div className="flex items-center justify-between mb-6 gap-4">
                 <div className="relative w-full max-w-md">
-                  <LuSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                  <LuSearch
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                    size={20}
+                  />
                   <input
                     type="text"
                     placeholder="Search customer, product, or invoice..."
@@ -554,147 +658,160 @@ export default function SalesByCustomerDetailsReport() {
               </div>
 
               {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b-2 border-gray-300">
-                  <th className="text-left py-4 px-4 font-inter font-semibold text-gray-900">
-                    <button
-                      onClick={() => handleSort("transactionDate")}
-                      className="flex items-center gap-2 hover:text-theme transition-colors"
-                    >
-                      Transaction date
-                      {getSortIcon("transactionDate")}
-                    </button>
-                  </th>
-                  <th className="text-left py-4 px-4 font-inter font-semibold text-gray-900">
-                    <button
-                      onClick={() => handleSort("transactionType")}
-                      className="flex items-center gap-2 hover:text-theme transition-colors"
-                    >
-                      Transaction type
-                      {getSortIcon("transactionType")}
-                    </button>
-                  </th>
-                  <th className="text-left py-4 px-4 font-inter font-semibold text-gray-900">
-                    <button
-                      onClick={() => handleSort("num")}
-                      className="flex items-center gap-2 hover:text-theme transition-colors"
-                    >
-                      Num
-                      {getSortIcon("num")}
-                    </button>
-                  </th>
-                  <th className="text-left py-4 px-4 font-inter font-semibold text-gray-900">
-                    <button
-                      onClick={() => handleSort("productName")}
-                      className="flex items-center gap-2 hover:text-theme transition-colors"
-                    >
-                      Product/Service full name
-                      {getSortIcon("productName")}
-                    </button>
-                  </th>
-                  <th className="text-left py-4 px-4 font-inter font-semibold text-gray-900">
-                    Memo/Category
-                  </th>
-                  <th className="text-right py-4 px-4 font-inter font-semibold text-gray-900">
-                    <button
-                      onClick={() => handleSort("quantity")}
-                      className="flex items-center gap-2 ml-auto hover:text-theme transition-colors"
-                    >
-                      Quantity
-                      {getSortIcon("quantity")}
-                    </button>
-                  </th>
-                  <th className="text-right py-4 px-4 font-inter font-semibold text-gray-900">
-                    <button
-                      onClick={() => handleSort("salesPrice")}
-                      className="flex items-center gap-2 ml-auto hover:text-theme transition-colors"
-                    >
-                      Sales price
-                      {getSortIcon("salesPrice")}
-                    </button>
-                  </th>
-                  <th className="text-right py-4 px-4 font-inter font-semibold text-gray-900">
-                    Amount
-                  </th>
-                  {/* <th className="text-right py-4 px-4 font-inter font-semibold text-gray-900">
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b-2 border-gray-300">
+                      <th className="text-left py-4 px-4 font-inter font-semibold text-gray-900">
+                        <button
+                          onClick={() => handleSort("transactionDate")}
+                          className="flex items-center gap-2 hover:text-theme transition-colors"
+                        >
+                          Transaction date
+                          {getSortIcon("transactionDate")}
+                        </button>
+                      </th>
+                      <th className="text-left py-4 px-4 font-inter font-semibold text-gray-900">
+                        <button
+                          onClick={() => handleSort("transactionType")}
+                          className="flex items-center gap-2 hover:text-theme transition-colors"
+                        >
+                          Transaction type
+                          {getSortIcon("transactionType")}
+                        </button>
+                      </th>
+                      <th className="text-left py-4 px-4 font-inter font-semibold text-gray-900">
+                        <button
+                          onClick={() => handleSort("num")}
+                          className="flex items-center gap-2 hover:text-theme transition-colors"
+                        >
+                          Num
+                          {getSortIcon("num")}
+                        </button>
+                      </th>
+                      <th className="text-left py-4 px-4 font-inter font-semibold text-gray-900">
+                        <button
+                          onClick={() => handleSort("productName")}
+                          className="flex items-center gap-2 hover:text-theme transition-colors"
+                        >
+                          Product/Service full name
+                          {getSortIcon("productName")}
+                        </button>
+                      </th>
+                      <th className="text-left py-4 px-4 font-inter font-semibold text-gray-900">
+                        Memo/Category
+                      </th>
+                      <th className="text-right py-4 px-4 font-inter font-semibold text-gray-900">
+                        <button
+                          onClick={() => handleSort("quantity")}
+                          className="flex items-center gap-2 ml-auto hover:text-theme transition-colors"
+                        >
+                          Quantity
+                          {getSortIcon("quantity")}
+                        </button>
+                      </th>
+                      <th className="text-right py-4 px-4 font-inter font-semibold text-gray-900">
+                        <button
+                          onClick={() => handleSort("salesPrice")}
+                          className="flex items-center gap-2 ml-auto hover:text-theme transition-colors"
+                        >
+                          Sales price
+                          {getSortIcon("salesPrice")}
+                        </button>
+                      </th>
+                      <th className="text-right py-4 px-4 font-inter font-semibold text-gray-900">
+                        Amount
+                      </th>
+                      {/* <th className="text-right py-4 px-4 font-inter font-semibold text-gray-900">
                     Balance
                   </th> */}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} className="text-center py-8 text-gray-500">
-                      No data available
-                    </td>
-                  </tr>
-                ) : (
-                  rows.map((row) => (
-                    <tr
-                      key={row.id}
-                      className="border-b border-gray-200 hover:bg-gray-50"
-                    >
-                      <td className="py-3 px-4 font-inter">
-                        {row.transactionDate
-                          ? dayjs(row.transactionDate).format("MM/DD/YYYY")
-                          : "-"}
-                      </td>
-                      <td className="py-3 px-4 font-inter">{row.transactionType || "-"}</td>
-                      <td className="py-3 px-4 font-inter">{row.num ? row.num.toString() : "-"}</td>
-                      <td className="py-3 px-4 font-inter">
-                        {row.productName && row.productName !== "-" ? (
-                          <a
-                            href="#"
-                            className="text-blue-600 hover:text-blue-800 underline"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              // Handle product click
-                            }}
-                          >
-                            {row.productName}
-                          </a>
-                        ) : (
-                          "-"
-                        )}
-                      </td>
-                      <td className="py-3 px-4 font-inter text-gray-700">
-                        {row.memo && row.memo !== "-" ? row.memo : "-"}
-                      </td>
-                      <td className="py-3 px-4 text-right font-inter">
-                        {row.quantity.toFixed(2)}
-                      </td>
-                      <td className="py-3 px-4 text-right font-inter">
-                        {formatUSD(row.salesPrice)}
-                      </td>
-                      <td className="py-3 px-4 text-right font-inter">
-                        {formatUSD(row.amount)}
-                      </td>
-                      {/* <td className="py-3 px-4 text-right font-inter">
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={9}
+                          className="text-center py-8 text-gray-500"
+                        >
+                          No data available
+                        </td>
+                      </tr>
+                    ) : (
+                      rows.map((row) => (
+                        <tr
+                          onClick={() => {
+                            navigateToDetailPage(row.num);
+                          }}
+                          key={row.id}
+                          className="border-b border-gray-200 hover:bg-gray-50 cursor-pointer"
+                        >
+                          <td className="py-3 px-4 font-inter">
+                            {row.transactionDate
+                              ? dayjs(row.transactionDate).format("MM/DD/YYYY")
+                              : "-"}
+                          </td>
+                          <td className="py-3 px-4 font-inter">
+                            {row.transactionType || "-"}
+                          </td>
+                          <td className="py-3 px-4 font-inter">
+                            {row.num ? row.num.toString() : "-"}
+                          </td>
+                          <td className="py-3 px-4 font-inter">
+                            {row.productName && row.productName !== "-" ? (
+                              <a
+                                href="#"
+                                className=""
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  // Handle product click
+                                }}
+                              >
+                                {row.productName}
+                              </a>
+                            ) : (
+                              "-"
+                            )}
+                          </td>
+                          <td className="py-3 px-4 font-inter text-gray-700">
+                            {row.memo && row.memo !== "-" ? row.memo : "-"}
+                          </td>
+                          <td className="py-3 px-4 text-right font-inter">
+                            {row.quantity.toFixed(2)}
+                          </td>
+                          <td className="py-3 px-4 text-right font-inter">
+                            {formatUSD(row.salesPrice)}
+                          </td>
+                          <td className="py-3 px-4 text-right font-inter">
+                            {formatUSD(row.amount)}
+                          </td>
+                          {/* <td className="py-3 px-4 text-right font-inter">
                         {formatUSD(row.balance)}
                       </td> */}
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                  <tfoot>
+                    <tr className="border-t-2 border-gray-300 bg-gray-50">
+                      <td
+                        colSpan={5}
+                        className="py-4 px-4 font-inter font-bold text-gray-900"
+                      >
+                        TOTAL
+                      </td>
+                      <td className="py-4 px-4 text-right font-inter font-bold text-gray-900">
+                        {grandTotal.quantity.toFixed(2)}
+                      </td>
+                      <td className="py-4 px-4 text-right font-inter font-bold text-gray-900"></td>
+                      <td className="py-4 px-4 text-right font-inter font-bold text-gray-900">
+                        {formatUSD(grandTotal.amount)}
+                      </td>
+                      <td className="py-4 px-4 text-right font-inter font-bold text-gray-900"></td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-              <tfoot>
-                <tr className="border-t-2 border-gray-300 bg-gray-50">
-                  <td colSpan={5} className="py-4 px-4 font-inter font-bold text-gray-900">
-                    TOTAL
-                  </td>
-                  <td className="py-4 px-4 text-right font-inter font-bold text-gray-900">
-                    {grandTotal.quantity.toFixed(2)}
-                  </td>
-                  <td className="py-4 px-4 text-right font-inter font-bold text-gray-900"></td>
-                  <td className="py-4 px-4 text-right font-inter font-bold text-gray-900">
-                    {formatUSD(grandTotal.amount)}
-                  </td>
-                  <td className="py-4 px-4 text-right font-inter font-bold text-gray-900"></td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
+                  </tfoot>
+                </table>
+              </div>
             </>
           )}
         </div>

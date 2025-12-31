@@ -12,6 +12,7 @@ import Select from "react-select";
 import { CUSTOMER_REPORT } from "../report.testid";
 import dayjs from "dayjs";
 import { formatUSD } from "@/utilities/constants";
+import { error_toaster } from "@/utilities/Toaster";
 
 export default function CustomerReport() {
   const [customDates, setCustomDates] = useState({
@@ -140,12 +141,26 @@ export default function CustomerReport() {
 
   useEffect(() => {
     if (displayCustomFilters && customDates.startDate && customDates.endDate) {
+      const start = dayjs(customDates.startDate);
+      const end = dayjs(customDates.endDate);
+      const today = dayjs();
+
+      if (start.isAfter(end)) {
+        error_toaster("Start date cannot be after end date.");
+        return;
+      }
+      if (start.isAfter(today) || end.isAfter(today)) {
+        error_toaster("Dates cannot be in the future.");
+        return;
+      }
+      if (start.isBefore(dayjs("2025-01-01"))) {
+        error_toaster("Start date cannot be before January 1, 2025.");
+        return;
+      }
       setDateRange({
         startDate: customDates.startDate,
         endDate: customDates.endDate,
       });
-      // You can use these dates to filter API calls
-      // Example: Call API with startDate and endDate parameters
     }
   }, [customDates.startDate, customDates.endDate, displayCustomFilters]);
 
@@ -208,53 +223,55 @@ export default function CustomerReport() {
           </div>
           <div className="min-w-40">
             {displayCustomFilters ? (
-              <div className="flex gap-x-2 items-center h-[42px]">
-                <div className=" space-x-2">
-                  <label
-                    htmlFor="startDate"
-                    className=" text-labelColor font-workSans font-semibold"
-                  >
-                    Start Date:
-                  </label>
-                  <input
-                    type="date"
-                    id="startDate"
-                    name="startDate"
-                    value={customDates?.startDate}
-                    onChange={handleCustomDates}
-                    className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium 
-                    text-labelColor"
-                    data-testid={CUSTOMER_REPORT.filterStartDate}
-                  />
+              <>
+                <div className="flex gap-x-2 items-center h-[42px]">
+                  <div className=" space-x-2">
+                    <label
+                      htmlFor="startDate"
+                      className=" text-labelColor font-workSans font-semibold"
+                    >
+                      Start Date:
+                    </label>
+                    <input
+                      type="date"
+                      id="startDate"
+                      name="startDate"
+                      value={customDates?.startDate}
+                      onChange={handleCustomDates}
+                      className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium 
+                      text-labelColor"
+                      data-testid={CUSTOMER_REPORT.filterStartDate}
+                    />
+                  </div>
+                  <div className="space-x-2">
+                    <label
+                      htmlFor="endDate"
+                      className=" text-labelColor font-workSans font-semibold"
+                    >
+                      End Date:
+                    </label>
+                    <input
+                      type="date"
+                      id="endDate"
+                      name="endDate"
+                      value={customDates?.endDate}
+                      onChange={handleCustomDates}
+                      data-testid={CUSTOMER_REPORT.filterEndDate}
+                      className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium 
+                              text-labelColor"
+                    />
+                  </div>
+                  <div className="h-full flex items-center gap-x-2">
+                    <button
+                      onClick={handleCancel}
+                      className="px-2 h-full rounded-lg border border-theme text-theme bg-white hover:text-white hover:bg-theme duration-200 group"
+                      data-testid={CUSTOMER_REPORT.filterClearBtn}
+                    >
+                      <ImCross size={24} />
+                    </button>
+                  </div>
                 </div>
-                <div className="space-x-2">
-                  <label
-                    htmlFor="endDate"
-                    className=" text-labelColor font-workSans font-semibold"
-                  >
-                    End Date:
-                  </label>
-                  <input
-                    type="date"
-                    id="endDate"
-                    name="endDate"
-                    value={customDates?.endDate}
-                    onChange={handleCustomDates}
-                    data-testid={CUSTOMER_REPORT.filterEndDate}
-                    className="h-[42px] rounded-md px-3 outline-none border font-workSans font-medium 
-                            text-labelColor"
-                  />
-                </div>
-                <div className="h-full flex items-center gap-x-2">
-                  <button
-                    onClick={handleCancel}
-                    className="px-2 h-full rounded-lg border border-theme text-theme bg-white hover:text-white hover:bg-theme duration-200 group"
-                    data-testid={CUSTOMER_REPORT.filterClearBtn}
-                  >
-                    <ImCross size={24} />
-                  </button>
-                </div>
-              </div>
+              </>
             ) : (
               <div className="font-bold">
                 <Select

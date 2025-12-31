@@ -12,6 +12,7 @@ import Select from "react-select";
 import { PRODUCT_SALE_REPORT } from "../report.testid";
 import dayjs from "dayjs";
 import { formatUSD } from "@/utilities/constants";
+import { error_toaster } from "@/utilities/Toaster";
 
 export default function ProductSale() {
   const [customDates, setCustomDates] = useState({
@@ -169,6 +170,25 @@ export default function ProductSale() {
 
   useEffect(() => {
     if (displayCustomFilters && customDates.startDate && customDates.endDate) {
+      // Validate date range
+      const start = dayjs(customDates.startDate);
+      const end = dayjs(customDates.endDate);
+      const today = dayjs();
+      const minDate = dayjs("2025-01-01");
+
+      if (start.isAfter(end)) {
+        error_toaster("Start date cannot be after end date");
+        return;
+      }
+      if (start.isAfter(today) || end.isAfter(today)) {
+        error_toaster("Dates cannot be in the future");
+        return;
+      }
+      if (start.isBefore(minDate) || end.isBefore(minDate)) {
+        error_toaster("Dates cannot be before January 1, 2025");
+        return;
+      }
+
       setDateRange({
         startDate: customDates.startDate,
         endDate: customDates.endDate,

@@ -96,10 +96,14 @@ export default function RootLayout({ children, params }) {
           name="viewport"
           content="width=device-width, initial-scale=1, minimum-scale=1"
         />
+      </head>
+      <body
+        className={`${switzer.variable} ${satoshi.variable} ${inter.variable} ${nunito.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
         <div
           dangerouslySetInnerHTML={{
             __html: `
-              <!-- Google Tag Manager -->      
+              <!-- Google Tag Manager -->
               <script id="gtm-script" strategy="afterInteractive">
                 (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
                 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -111,10 +115,6 @@ export default function RootLayout({ children, params }) {
             `,
           }}
         />
-      </head>
-      <body
-        className={`${switzer.variable} ${satoshi.variable} ${inter.variable} ${nunito.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
         <div
           dangerouslySetInnerHTML={{
             __html: `

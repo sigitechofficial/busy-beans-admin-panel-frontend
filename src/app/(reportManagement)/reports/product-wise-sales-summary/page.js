@@ -14,6 +14,7 @@ import { LuSearch } from "react-icons/lu";
 import { MdFilterAlt } from "react-icons/md";
 import UserTypeFilterModal from "@/components/ui/UserTypeFilterModal";
 import { FaChevronDown, FaChevronRight } from "react-icons/fa";
+import { error_toaster } from "@/utilities/Toaster";
 
 export default function ProductWiseSalesSummaryReport() {
   if (typeof window !== "undefined") {
@@ -159,6 +160,25 @@ export default function ProductWiseSalesSummaryReport() {
 
   useEffect(() => {
     if (displayCustomFilters && customDates.startDate && customDates.endDate) {
+      // Validate date range
+      const start = dayjs(customDates.startDate);
+      const end = dayjs(customDates.endDate);
+      const today = dayjs();
+      const minDate = dayjs("2025-01-01");
+
+      if (start.isAfter(end)) {
+        error_toaster("Start date cannot be after end date");
+        return;
+      }
+      if (start.isAfter(today) || end.isAfter(today)) {
+        error_toaster("Dates cannot be in the future");
+        return;
+      }
+      if (start.isBefore(minDate) || end.isBefore(minDate)) {
+        error_toaster("Dates cannot be before January 1, 2025");
+        return;
+      }
+
       setDateRange({
         startDate: customDates.startDate,
         endDate: customDates.endDate,

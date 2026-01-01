@@ -31,10 +31,22 @@ import { INVENTORY_MANAGEMENT } from "../stock.testid";
 
 export default function Stock() {
   const [filterId, setFilterId] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(100);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const url = filterId
-    ? `api/v1/admin/product?categoryId=${filterId}`
-    : `api/v1/admin/product`;
+  // Build API URL with pagination, search, and category filter
+  const baseUrl = "api/v1/admin/product";
+  const params = new URLSearchParams();
+  params.set("page", page.toString());
+  params.set("limit", limit.toString());
+  if (filterId) {
+    params.set("categoryId", filterId);
+  }
+  if (searchQuery.trim()) {
+    params.set("search", searchQuery.trim());
+  }
+  const url = `${baseUrl}?${params.toString()}`;
   const { data, reFetch, isLoading } = GetAPI(url, "product");
 
   const { data: category, reFetch: categoryRefetch } = GetAPI(
@@ -405,7 +417,14 @@ export default function Stock() {
   };
 
   const datas = [];
-  data?.data?.data?.map((prod, i) => {
+  // Handle both possible API response structures: { data: [...], pagination: {...} } or { data: { data: [...], pagination: {...} } }
+  const productsArray = Array.isArray(data?.data?.data) 
+    ? data?.data?.data 
+    : Array.isArray(data?.data) 
+    ? data?.data 
+    : [];
+    
+  productsArray.map((prod, i) => {
     return datas.push({
       id: prod?.id,
       sl: i + 1,
@@ -562,13 +581,16 @@ export default function Stock() {
             options={catOptions}
             className="w-full text-black"
             styles={selectStyles2}
-            onChange={(e) => setFilterId(e?.value)}
+            onChange={(e) => {
+              setFilterId(e?.value);
+              setPage(1); // Reset to first page when filter changes
+            }}
           />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
           <ManagementTab
             title="Total Products"
-            desc={data?.data?.data?.length}
+            desc={data?.pagination?.totalItems || data?.data?.pagination?.totalItems || datas?.length || 0}
             data-testid={INVENTORY_MANAGEMENT.totalStocksCard}
           />
           {/* <ManagementTab title="Total Countries" desc="5000" /> */}
@@ -579,8 +601,24 @@ export default function Stock() {
           <MyDataTable
             columns={columns}
             data={datas}
-            placeholder={"Search ..."}
+            placeholder={"Search by Name, Product Code, SKU..."}
             pagination={true}
+            serverPagination={{
+              page: data?.pagination?.page || data?.data?.pagination?.page || page,
+              limit: data?.pagination?.limit || data?.data?.pagination?.limit || limit,
+              totalRecords: data?.pagination?.totalItems || data?.data?.pagination?.totalItems || 0,
+              totalPages: data?.pagination?.totalPages || data?.data?.pagination?.totalPages,
+              onPageChange: (newPage) => setPage(newPage),
+              onLimitChange: (newLimit) => {
+                setLimit(newLimit);
+                setPage(1);
+              },
+            }}
+            searchValue={searchQuery}
+            onSearchChange={(searchValue) => {
+              setSearchQuery(searchValue);
+              setPage(1); // Reset to first page when search changes
+            }}
             search={true}
             rowTestId={(row) => `data-testid-${INVENTORY_MANAGEMENT.row(row.id)}`}
           />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Sidebar } from "primereact/sidebar";
 import Select from "react-select";
 import { useRouter } from "next/navigation";
@@ -37,6 +37,14 @@ const DrawerBeansGenerateInvoice = ({
   const [fullData, setFullData] = useState("");
 
   const [emailOptions, setEmailOptions] = useState([]);
+  
+  // Pagination state for customers
+  const [customerPage, setCustomerPage] = useState(1);
+  const [customerLimit] = useState(30);
+  const [customerHasMore, setCustomerHasMore] = useState(true);
+  const [customerLoading, setCustomerLoading] = useState(false);
+  const [allCustomers, setAllCustomers] = useState([]); // Store all fetched customers
+  const [customerSearchQuery, setCustomerSearchQuery] = useState(""); // Search query for customers
 
   const paymentMethodOptions = [
     { label: "Bank Check", value: "bank check" },
@@ -75,14 +83,26 @@ const DrawerBeansGenerateInvoice = ({
   );
 
   // ======= customers list =======
-  const customerListEndpoint =
-    isEmployee && hasPermission("selected-customer_view")
+  const getCustomerListEndpoint = (page, limit, search = "") => {
+    const base = isEmployee && hasPermission("selected-customer_view")
       ? `api/v1/admin/customer-management/customer-list/employee-id/${userID}`
       : userType === "admin"
         ? `api/v1/admin/customer-management/customer-list/all`
         : userType === "salesRepresentative"
           ? `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}&orderCreation=yes`
           : `api/v1/admin/customer-management/customer-list/all`;
+    const params = new URLSearchParams();
+    params.set("page", page.toString());
+    params.set("limit", limit.toString());
+    if (search.trim()) {
+      params.set("search", search.trim());
+    }
+    // Handle the salesRep endpoint which already has query params
+    if (base.includes("&orderCreation=yes")) {
+      return `${base.split("&")[0]}?${params.toString()}&orderCreation=yes`;
+    }
+    return `${base}?${params.toString()}`;
+  };
 
   // ======= helpers =======
   const mapItemsForPayload = (items) =>
@@ -129,7 +149,7 @@ const DrawerBeansGenerateInvoice = ({
   };
 
   const handleCompanySelect = (companyId) => {
-    const selected = fullData?.find((c) => c?.id === companyId);
+    const selected = allCustomers?.find((c) => c?.id === companyId) || fullData?.find((c) => c?.id === companyId);
     setOrder((prev) => ({
       ...prev,
       userId: selected?.id,
@@ -160,38 +180,119 @@ const DrawerBeansGenerateInvoice = ({
     setCompanyNameOptions([]);
     setEmail([]);
     setAddressOptions([]);
+    // Reset customer pagination state
+    if (!e) {
+      setCustomerPage(1);
+      setAllCustomers([]);
+      setCustomerSearchQuery("");
+    }
   };
 
-  // ✅ Fetch customers (existing)
-  const fetchCustomerData = async () => {
+  // ✅ Fetch customers with pagination and search
+  const fetchCustomerData = async (page, append = false, searchQuery = customerSearchQuery) => {
+    if (customerLoading) return;
+    
+    setCustomerLoading(true);
     try {
-      const token = localStorage.getItem("accessToken");
-      const res = await axios.get(BASE_URL + customerListEndpoint, {
+      const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
+      const endpoint = getCustomerListEndpoint(page, customerLimit, searchQuery);
+      
+      const res = await axios.get(`${BASE_URL}${endpoint}`, {
         headers: {
           "Content-Type": "application/json",
           feature: "customer",
-          Authorization: `Bearer ${token}`,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       });
 
       if (res?.data?.status === "success") {
-        setFullData(res?.data?.data?.data);
-        let nameOptions = [];
-        let emails = [];
+        const customers = res?.data?.data?.data || res?.data?.data || [];
+        const totalItems = res?.data?.pagination?.totalItems || res?.data?.data?.pagination?.totalItems || customers.length;
+        const totalPages = res?.data?.pagination?.totalPages || res?.data?.data?.pagination?.totalPages || Math.ceil(totalItems / customerLimit);
+        
+        const nameOptions = customers.map((user) => ({
+          value: user?.id,
+          label: `${user?.companyName} (${user?.name})`,
+        }));
+        
+        const emails = customers.map((user) => ({
+          value: user?.email,
+          label: user?.email,
+        }));
 
-        res?.data?.data?.data?.forEach((user) => {
-          nameOptions?.push({
-            value: user?.id,
-            label: `${user?.companyName} (${user?.name})`,
-          });
-          emails.push({ value: user?.email, label: user?.email });
-        });
+        if (append) {
+          setCompanyNameOptions((prev) => [...prev, ...nameOptions]);
+          setEmailOptions((prev) => [...prev, ...emails]);
+          setAllCustomers((prev) => [...prev, ...customers]);
+        } else {
+          setCompanyNameOptions(nameOptions);
+          setEmailOptions(emails);
+          setAllCustomers(customers);
+        }
+        
+        // Keep fullData for backward compatibility (handleCompanySelect uses it)
+        setFullData(customers);
 
-        setCompanyNameOptions(nameOptions);
-        setEmailOptions(emails);
+        setCustomerHasMore(page < totalPages);
+        setCustomerPage(page);
       }
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching customers:", error);
+    } finally {
+      setCustomerLoading(false);
+    }
+  };
+
+  // Search timeout ref for debouncing
+  const customerSearchTimeoutRef = useRef(null);
+
+  // Handle search input change with debounce
+  const handleCustomerSearchChange = (inputValue) => {
+    // Clear previous timeout
+    if (customerSearchTimeoutRef.current) {
+      clearTimeout(customerSearchTimeoutRef.current);
+    }
+
+    // Reset to page 1 and fetch with new search query after debounce
+    customerSearchTimeoutRef.current = setTimeout(() => {
+      setCustomerSearchQuery(inputValue);
+      setCustomerPage(1);
+      setCompanyNameOptions([]);
+      setEmailOptions([]);
+      setAllCustomers([]);
+      fetchCustomerData(1, false, inputValue);
+    }, 500); // 500ms debounce
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (customerSearchTimeoutRef.current) {
+        clearTimeout(customerSearchTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Load more customers on scroll
+  const handleMenuScrollToBottom = () => {
+    if (!customerLoading && customerHasMore && !partnersOrder) {
+      fetchCustomerData(customerPage + 1, true, customerSearchQuery);
+    }
+  };
+
+  // Alternative scroll handler for menuListProps
+  const handleMenuScroll = (event) => {
+    if (partnersOrder) return; // Don't handle scroll for partners
+    
+    const { target } = event;
+    if (!target) return;
+    
+    const { scrollTop, scrollHeight, clientHeight } = target;
+    // Check if scrolled near bottom (within 50px)
+    if (scrollHeight - scrollTop <= clientHeight + 50) {
+      if (!customerLoading && customerHasMore) {
+        fetchCustomerData(customerPage + 1, true, customerSearchQuery);
+      }
     }
   };
 
@@ -231,8 +332,13 @@ const DrawerBeansGenerateInvoice = ({
   useEffect(() => {
     if (partnersOrder) {
       fetchDirectPartnerData();
+      // Reset customer pagination when switching to partners
+      setCustomerPage(1);
+      setCompanyNameOptions([]);
+      setAllCustomers([]);
+      setCustomerSearchQuery("");
     } else {
-      fetchCustomerData();
+      fetchCustomerData(1, false, customerSearchQuery);
     }
   }, [partnersOrder]);
 
@@ -368,6 +474,15 @@ const DrawerBeansGenerateInvoice = ({
                 styles={drawerSelectStyles}
                 options={companyNameOptions}
                 onChange={(e) => handleCompanySelect(e.value)}
+                onInputChange={!partnersOrder ? handleCustomerSearchChange : undefined}
+                onMenuScrollToBottom={!partnersOrder ? handleMenuScrollToBottom : undefined}
+                menuListProps={!partnersOrder ? {
+                  onScroll: handleMenuScroll,
+                } : undefined}
+                isSearchable={!partnersOrder}
+                filterOption={!partnersOrder ? () => true : undefined} // Disable client-side filtering, use server-side search
+                isLoading={!partnersOrder ? customerLoading : false}
+                loadingMessage={!partnersOrder ? () => "Loading customers..." : undefined}
               />
             </div>
 

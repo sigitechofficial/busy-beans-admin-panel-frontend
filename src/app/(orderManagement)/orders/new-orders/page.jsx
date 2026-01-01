@@ -15,6 +15,9 @@ import { NEW_ORDERS } from "../orders.testids"
 
 export default function NewOrders() {
   const [type, setType] = useState("dropship");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(100);
+  const [searchQuery, setSearchQuery] = useState("");
   if (typeof window !== "undefined") {
     var userID = localStorage.getItem("userID");
     var userType = localStorage.getItem("userType");
@@ -23,12 +26,23 @@ export default function NewOrders() {
   console.log("🚀 ~ NewOrders ~ userType:", userType, userID);
 
   const router = useRouter();
-  const ordersEndpoint =
-    type === "direct-partner"
-      ? `api/v1/admin/partner-order/orders-list`
-      : (userType === "salesRepresentative"
-          ? `api/v1/admin/orders?salesRepId=${userID}&statusId=1`
-          : `api/v1/admin/orders?statusId=1`);
+  
+  // Build API URL with pagination and search query parameters
+  const baseUrl = type === "direct-partner"
+    ? `api/v1/admin/partner-order/orders-list`
+    : (userType === "salesRepresentative"
+        ? `api/v1/admin/orders?salesRepId=${userID}&statusId=1`
+        : `api/v1/admin/orders?statusId=1`);
+  
+  // Build URL with proper query parameters
+  const [urlBase, existingQuery] = baseUrl.split("?");
+  const params = new URLSearchParams(existingQuery || "");
+  params.set("page", page.toString());
+  params.set("limit", limit.toString());
+  if (searchQuery.trim()) {
+    params.set("search", searchQuery.trim());
+  }
+  const ordersEndpoint = `${urlBase}?${params.toString()}`;
 
   const { data, isLoading } = GetAPI(ordersEndpoint);
 
@@ -60,7 +74,15 @@ export default function NewOrders() {
   ];
 
   const datas = [];
-  data?.data?.data?.map((detail, i) => {
+  
+  // Handle both possible API response structures for pagination
+  const ordersArray = Array.isArray(data?.data?.data)
+    ? data?.data?.data
+    : Array.isArray(data?.data)
+    ? data?.data
+    : [];
+  
+  ordersArray?.map((detail, i) => {
     return datas.push({
       sl: i + 1,
       id: detail?.id,
@@ -150,7 +172,7 @@ export default function NewOrders() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5"
           data-testid={NEW_ORDERS.statsGrid} >
-          <ManagementTab title="Total Orders" desc={data?.data?.data?.length} 
+          <ManagementTab title="Total Orders" desc={data?.pagination?.totalItems || data?.data?.pagination?.totalItems || data?.data?.data?.length || 0} 
             data-testid={NEW_ORDERS.totalOrdersCard}
           />
           {/* <ManagementTab title="New Orders" desc="5%" />
@@ -163,8 +185,24 @@ export default function NewOrders() {
           <MyDataTable
             columns={columns}
             data={datas}
-            placeholder={"Search ..."}
+            placeholder={"Search by Id, invoice number, po number, note, payment method, shipping company"}
             pagination={true}
+            serverPagination={{
+              page: data?.pagination?.page || data?.data?.pagination?.page || page,
+              limit: data?.pagination?.limit || data?.data?.pagination?.limit || limit,
+              totalRecords: data?.pagination?.totalItems || data?.data?.pagination?.totalItems || 0,
+              totalPages: data?.pagination?.totalPages || data?.data?.pagination?.totalPages,
+              onPageChange: (newPage) => setPage(newPage),
+              onLimitChange: (newLimit) => {
+                setLimit(newLimit);
+                setPage(1);
+              },
+            }}
+            searchValue={searchQuery}
+            onSearchChange={(searchValue) => {
+              setSearchQuery(searchValue);
+              setPage(1); // Reset to first page when search changes
+            }}
             search={true}
             onRowClick={(e) => {
               router.push(`/orders/detail/${e?.data?.id}`);

@@ -38,7 +38,15 @@ const DrawerBeans = ({
     var isEmployee = localStorage.getItem("isEmployee") === "true";
   }
   const options = [];
-  const companyNameOptions = [];
+  const [companyNameOptions, setCompanyNameOptions] = useState([]);
+  
+  // ✅ Pagination state for customers
+  const [customerPage, setCustomerPage] = useState(1);
+  const [customerLimit] = useState(30);
+  const [customerHasMore, setCustomerHasMore] = useState(true);
+  const [customerLoading, setCustomerLoading] = useState(false);
+  const [allCustomers, setAllCustomers] = useState([]); // Store all fetched customers
+  const [customerSearchQuery, setCustomerSearchQuery] = useState(""); // Search query for customers
   const paymentMethodOptions = [
     // { label: "COD", value: "cod" },
     { label: "Bank Check", value: "bank check" },
@@ -96,27 +104,124 @@ const DrawerBeans = ({
     return Number(a) + Number(b?.weight) * Number(b?.qty);
   }, 0);
 
-  const customerListEndpoint =
-    isEmployee && hasPermission("selected-customer_view")
+  const getCustomerListEndpoint = (page, limit, search = "") => {
+    const base = isEmployee && hasPermission("selected-customer_view")
       ? `api/v1/admin/customer-management/customer-list/employee-id/${userID}`
       : userType === "admin"
         ? `api/v1/admin/customer-management/customer-list/all`
         : userType === "salesRepresentative"
           ? `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}`
           : `api/v1/admin/customer-management/customer-list/all`;
+    const params = new URLSearchParams();
+    params.set("page", page.toString());
+    params.set("limit", limit.toString());
+    if (search.trim()) {
+      params.set("search", search.trim());
+    }
+    return `${base}?${params.toString()}`;
+  };
 
-  const { data } = GetAPI(customerListEndpoint, "customer");
+  // Fetch customers with pagination and search
+  const fetchCustomers = async (page, append = false, searchQuery = customerSearchQuery) => {
+    if (customerLoading) return;
+    
+    setCustomerLoading(true);
+    try {
+      const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
+      const endpoint = getCustomerListEndpoint(page, customerLimit, searchQuery);
+      
+      const res = await axios.get(`${BASE_URL}${endpoint}`, {
+        headers: {
+          "Content-Type": "application/json",
+          feature: "customer",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
 
-  data?.data?.data?.map((user) =>
-    options.push({ value: user?.email, label: user?.email })
-  );
+      if (res?.data?.status === "success") {
+        const customers = res?.data?.data?.data || res?.data?.data || [];
+        const totalItems = res?.data?.pagination?.totalItems || res?.data?.data?.pagination?.totalItems || customers.length;
+        const totalPages = res?.data?.pagination?.totalPages || res?.data?.data?.pagination?.totalPages || Math.ceil(totalItems / customerLimit);
+        
+        const newOptions = customers.map((user) => ({
+          value: user?.id,
+          label: `${user?.companyName} ( ${user?.name} )`,
+        }));
 
-  data?.data?.data?.map((user) =>
-    companyNameOptions.push({
-      value: user?.id,
-      label: `${user?.companyName} ( ${user?.name} )`,
-    })
-  );
+        if (append) {
+          setCompanyNameOptions((prev) => [...prev, ...newOptions]);
+          setAllCustomers((prev) => [...prev, ...customers]);
+        } else {
+          setCompanyNameOptions(newOptions);
+          setAllCustomers(customers);
+        }
+
+        setCustomerHasMore(page < totalPages);
+        setCustomerPage(page);
+      }
+    } catch (error) {
+      console.error("Error fetching customers:", error);
+    } finally {
+      setCustomerLoading(false);
+    }
+  };
+
+  // Search timeout ref for debouncing
+  const customerSearchTimeoutRef = useRef(null);
+
+  // Handle search input change with debounce
+  const handleCustomerSearchChange = (inputValue) => {
+    // Clear previous timeout
+    if (customerSearchTimeoutRef.current) {
+      clearTimeout(customerSearchTimeoutRef.current);
+    }
+
+    // Reset to page 1 and fetch with new search query after debounce
+    customerSearchTimeoutRef.current = setTimeout(() => {
+      setCustomerSearchQuery(inputValue);
+      setCustomerPage(1);
+      setCompanyNameOptions([]);
+      setAllCustomers([]);
+      fetchCustomers(1, false, inputValue);
+    }, 500); // 500ms debounce
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (customerSearchTimeoutRef.current) {
+        clearTimeout(customerSearchTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Load initial customers
+  useEffect(() => {
+    if (!isDirectPartner && !isSelfOrder) {
+      fetchCustomers(1, false, customerSearchQuery);
+    }
+  }, [isDirectPartner, isSelfOrder]);
+
+  // Load more customers on scroll
+  const handleMenuScrollToBottom = () => {
+    if (!customerLoading && customerHasMore) {
+      fetchCustomers(customerPage + 1, true, customerSearchQuery);
+    }
+  };
+
+  // Alternative scroll handler for menuListProps
+  const handleMenuScroll = (event) => {
+    const { target } = event;
+    if (!target) return;
+    
+    const { scrollTop, scrollHeight, clientHeight } = target;
+    // Check if scrolled near bottom (within 50px)
+    if (scrollHeight - scrollTop <= clientHeight + 50) {
+      if (!customerLoading && customerHasMore) {
+        fetchCustomers(customerPage + 1, true, customerSearchQuery);
+      }
+    }
+  };
 
   // ✅ UPDATED: use GetAPI (not axios) to fetch direct partners
   const fetchDirectPartnerData = async (selfOrder) => {
@@ -454,7 +559,7 @@ const DrawerBeans = ({
 
   const handleEmail = (email) => {
     setEmail(email);
-    const selectedEmail = data?.data?.data?.find(
+    const selectedEmail = allCustomers.find(
       (customer) => customer?.email === email
     );
 
@@ -516,9 +621,14 @@ const DrawerBeans = ({
   };
 
   const handleCompanyName = (id) => {
-    const selectedEmail = data?.data?.data?.find(
+    const selectedEmail = allCustomers.find(
       (customer) => customer?.id === id
     );
+
+    if (!selectedEmail) {
+      console.error("Customer not found:", id);
+      return;
+    }
 
     setOrder((prev) => ({
       ...prev,
@@ -635,7 +745,7 @@ const DrawerBeans = ({
   const maxDiscountPct =
     Number(totalPrice || 0) > 0 ? (priceGap / Number(totalPrice)) * 100 : 0;
 
-  const selectedCustomer = data?.data?.data?.find(
+  const selectedCustomer = allCustomers.find(
     (c) => c?.id === order?.userId
   );
   const bypassDiscountCap = !!selectedCustomer?.salesRepName;
@@ -726,9 +836,17 @@ const DrawerBeans = ({
                           styles={drawerSelectStyles}
                           options={companyNameOptions}
                           onChange={(e) => {
-                            // setEmail(e.value);
                             handleCompanyName(e.value);
                           }}
+                          onInputChange={handleCustomerSearchChange}
+                          onMenuScrollToBottom={handleMenuScrollToBottom}
+                          menuListProps={{
+                            onScroll: handleMenuScroll,
+                          }}
+                          isSearchable={true}
+                          filterOption={() => true} // Disable client-side filtering, use server-side search
+                          isLoading={customerLoading}
+                          loadingMessage={() => "Loading customers..."}
                           data-testid={ORDERS_CREATE_DRAWER.companySelect}
                         />
                       </div>

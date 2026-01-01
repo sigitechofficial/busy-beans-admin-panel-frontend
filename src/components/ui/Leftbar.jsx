@@ -341,10 +341,10 @@ export default function Leftbar(props) {
   //   }
   // }, []);
   const allOrder = overAllData?.data?.data?.reduce(
-    (sum, item) => sum + item?.count,
+    (sum, item) => item?.id !== 7 ? sum + item?.count : sum,
     0
   );
-
+  
   useEffect(() => {
     let timeoutId = null;
 

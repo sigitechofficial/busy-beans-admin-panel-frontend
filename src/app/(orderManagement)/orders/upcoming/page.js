@@ -23,10 +23,21 @@ export default function UpcomingOrders() {
   const [modal, setModal] = useState("");
   const [items, setItems] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(100);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const { data, reFetch, isLoading } = GetAPI(
-    "api/v1/admin/order-frequency/upcomming-orders"
-  );
+  // Build API URL with pagination and search query parameters
+  const baseUrl = "api/v1/admin/order-frequency/upcomming-orders";
+  const params = new URLSearchParams();
+  params.set("page", page.toString());
+  params.set("limit", limit.toString());
+  if (searchQuery.trim()) {
+    params.set("search", searchQuery.trim());
+  }
+  const apiUrl = `${baseUrl}?${params.toString()}`;
+
+  const { data, reFetch, isLoading } = GetAPI(apiUrl);
 
   const handleCancel = () => {
     setModal("");
@@ -95,7 +106,17 @@ export default function UpcomingOrders() {
 
   const datas = [];
   const datasItems = [];
-  data?.data?.order?.map((detail, i) => {
+  
+  // Handle both possible API response structures for pagination
+  const ordersArray = Array.isArray(data?.data?.order)
+    ? data?.data?.order
+    : Array.isArray(data?.data?.data?.order)
+    ? data?.data?.data?.order
+    : Array.isArray(data?.data?.data)
+    ? data?.data?.data
+    : [];
+  
+  ordersArray?.map((detail, i) => {
     return datas.push({
       id: detail?.id,
       sl: i + 1,
@@ -175,7 +196,7 @@ export default function UpcomingOrders() {
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5" data-testid={UPCOMING_ORDERS.statsGrid}>
           <ManagementTab
             title="Total Orders"
-            desc={data?.data?.order?.length}
+            desc={data?.pagination?.totalItems || data?.data?.pagination?.totalItems || data?.data?.order?.length || 0}
             data-testid={UPCOMING_ORDERS.totalOrdersCard}
           />
           {/* <ManagementTab title="New Orders" desc="5%" />
@@ -188,8 +209,24 @@ export default function UpcomingOrders() {
           <MyDataTable
             columns={columns}
             data={datas}
-            placeholder={"Search ..."}
+            placeholder={"Search by Order ID, User ID, Frequency"}
             pagination={true}
+            serverPagination={{
+              page: data?.pagination?.page || data?.data?.pagination?.page || page,
+              limit: data?.pagination?.limit || data?.data?.pagination?.limit || limit,
+              totalRecords: data?.pagination?.totalItems || data?.data?.pagination?.totalItems || 0,
+              totalPages: data?.pagination?.totalPages || data?.data?.pagination?.totalPages,
+              onPageChange: (newPage) => setPage(newPage),
+              onLimitChange: (newLimit) => {
+                setLimit(newLimit);
+                setPage(1);
+              },
+            }}
+            searchValue={searchQuery}
+            onSearchChange={(searchValue) => {
+              setSearchQuery(searchValue);
+              setPage(1); // Reset to first page when search changes
+            }}
             checkbox={true}
             selectedRows={selectedRows}
             setSelectedRows={setSelectedRows}

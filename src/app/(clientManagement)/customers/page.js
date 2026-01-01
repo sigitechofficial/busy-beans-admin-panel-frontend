@@ -25,6 +25,9 @@ import { CLIENT_MANAGEMENT } from "./customer.testid";
 export default function Customers() {
   const router = useRouter();
   const [type, setType] = useState("all");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(100);
+  const [searchQuery, setSearchQuery] = useState("");
   const [loader, setLoader] = useState("");
   const [modal, setModal] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
@@ -33,15 +36,25 @@ export default function Customers() {
     label: "ALL",
   });
 
-  const { data, reFetch, isLoading } = GetAPI(
-    `api/v1/admin/customer-management/customer-list${
-      type === "all"
-        ? "/all"
-        : type === "unassigned"
-        ? "/sale-rep/not-assign"
-        : "/sale-rep/assign"
-    } `
-  );
+  // Build API URL with pagination and search query parameters
+  const baseUrl = `api/v1/admin/customer-management/customer-list${
+    type === "all"
+      ? "/all"
+      : type === "unassigned"
+      ? "/sale-rep/not-assign"
+      : "/sale-rep/assign"
+  }`;
+  
+  // Build URL with proper query parameters
+  const params = new URLSearchParams();
+  params.set("page", page.toString());
+  params.set("limit", limit.toString());
+  if (searchQuery.trim()) {
+    params.set("search", searchQuery.trim());
+  }
+  const apiUrl = `${baseUrl}?${params.toString()}`;
+
+  const { data, reFetch, isLoading } = GetAPI(apiUrl);
 
   const { data: dashboardCards } = GetAPI(
     "api/v1/admin/customer-management/dahboard-cards"
@@ -144,7 +157,13 @@ export default function Customers() {
   const salesRepresentativeDatas = [];
   const StatesOptions = [{ value: "all", label: "All" }];
 
-  const customers = data?.data?.data?.slice()?.reverse();
+  // Handle both possible API response structures for pagination
+  const customersArray = Array.isArray(data?.data?.data)
+    ? data?.data?.data
+    : Array.isArray(data?.data)
+    ? data?.data
+    : [];
+  const customers = customersArray?.slice()?.reverse();
 
   customers?.map((customer, i) => {
     selectedState?.value === "all"
@@ -397,7 +416,10 @@ export default function Customers() {
         <div className="flex justify-between">
           <div>
             <button
-              onClick={() => setType("all")}
+              onClick={() => {
+              setType("all");
+              setPage(1); // Reset to first page when filter changes
+            }}
               className={`${
                 type === "all" ? "bg-black text-white" : "bg-white text-black"
               } font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
@@ -406,7 +428,10 @@ export default function Customers() {
               All Customers
             </button>
             <button
-              onClick={() => setType("unassigned")}
+              onClick={() => {
+              setType("unassigned");
+              setPage(1); // Reset to first page when filter changes
+            }}
               className={`${
                 type === "unassigned"
                   ? "bg-black text-white"
@@ -417,7 +442,10 @@ export default function Customers() {
               Unassigned Local Partner
             </button>
             <button
-              onClick={() => setType("assigned")}
+              onClick={() => {
+              setType("assigned");
+              setPage(1); // Reset to first page when filter changes
+            }}
               className={`${
                 type === "assigned"
                   ? "bg-black text-white"
@@ -466,7 +494,7 @@ export default function Customers() {
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5" data-testid={CLIENT_MANAGEMENT.statsGrid}>
           <ManagementTab
             title="Total Customer"
-            desc={data?.data?.data?.length}
+            desc={data?.pagination?.totalItems || data?.data?.pagination?.totalItems || data?.data?.data?.length || 0}
             data-testid={CLIENT_MANAGEMENT.totalCustomerCard}
           />
           {/* <ManagementTab
@@ -493,8 +521,24 @@ export default function Customers() {
           <MyDataTable
             columns={columns}
             data={datas}
-            placeholder={"Search ..."}
+            placeholder={"Search by ID, Name, Email, Phone ,Company Name"}
             pagination={true}
+            serverPagination={{
+              page: data?.pagination?.page || data?.data?.pagination?.page || page,
+              limit: data?.pagination?.limit || data?.data?.pagination?.limit || limit,
+              totalRecords: data?.pagination?.totalItems || data?.data?.pagination?.totalItems || 0,
+              totalPages: data?.pagination?.totalPages || data?.data?.pagination?.totalPages,
+              onPageChange: (newPage) => setPage(newPage),
+              onLimitChange: (newLimit) => {
+                setLimit(newLimit);
+                setPage(1);
+              },
+            }}
+            searchValue={searchQuery}
+            onSearchChange={(searchValue) => {
+              setSearchQuery(searchValue);
+              setPage(1); // Reset to first page when search changes
+            }}
             checkbox={type === "all" || type === "assigned" ? false : true}
             selectedRows={selectedRows}
             setSelectedRows={setSelectedRows}

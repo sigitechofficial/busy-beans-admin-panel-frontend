@@ -7,21 +7,37 @@ import GetAPI from "@/utilities/GetAPI";
 import Loader from "@/components/ui/Loader";
 import { FaEye } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import dayjs from "dayjs";
 import { CiMenuBurger } from "react-icons/ci";
 import { useDataContext } from "@/utilities/DataContext";
 
 export default function AssignedOrders() {
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(100);
+  const [searchQuery, setSearchQuery] = useState("");
   if (typeof window !== "undefined") {
     var userID = localStorage.getItem("userID");
     var userType = localStorage.getItem("userType");
   }
   const router = useRouter();
-  const { data, isLoading } = GetAPI(
-    userType === "salesRepresentative"
-      ? `api/v1/admin/orders?salesRepId=${userID}&statusId=2`
-      : "api/v1/admin/orders?statusId=2"
-  );
+  
+  // Build API URL with pagination and search query parameters
+  const baseUrl = userType === "salesRepresentative"
+    ? `api/v1/admin/orders?salesRepId=${userID}&statusId=2`
+    : "api/v1/admin/orders?statusId=2";
+  
+  // Build URL with proper query parameters
+  const [urlBase, existingQuery] = baseUrl.split("?");
+  const params = new URLSearchParams(existingQuery || "");
+  params.set("page", page.toString());
+  params.set("limit", limit.toString());
+  if (searchQuery.trim()) {
+    params.set("search", searchQuery.trim());
+  }
+  const apiUrl = `${urlBase}?${params.toString()}`;
+  
+  const { data, isLoading } = GetAPI(apiUrl);
 
   const columns = [
     // { field: "sl", header: "SL", sort: true },
@@ -51,7 +67,15 @@ export default function AssignedOrders() {
   ];
 
   const datas = [];
-  data?.data?.data?.map((detail, i) => {
+  
+  // Handle both possible API response structures for pagination
+  const ordersArray = Array.isArray(data?.data?.data)
+    ? data?.data?.data
+    : Array.isArray(data?.data)
+    ? data?.data
+    : [];
+  
+  ordersArray?.map((detail, i) => {
     return datas.push({
       sl: i + 1,
       id: detail?.id,
@@ -114,7 +138,7 @@ export default function AssignedOrders() {
         </div> */}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-          <ManagementTab title="Total Orders" desc={data?.data?.data?.length} />
+          <ManagementTab title="Total Orders" desc={data?.pagination?.totalItems || data?.data?.pagination?.totalItems || data?.data?.data?.length || 0} />
           {/* <ManagementTab title="New Orders" desc="5%" />
          <ManagementTab title="Pending Orders" desc="5000" />
          <ManagementTab title="In progress Orders" desc="5,000" />
@@ -125,11 +149,27 @@ export default function AssignedOrders() {
           <MyDataTable
             columns={columns}
             data={datas}
-            placeholder={"Search ..."}
+            placeholder={"Search by Id, invoice number, po number, note, payment method, shipping company"}
             pagination={true}
+            serverPagination={{
+              page: data?.pagination?.page || data?.data?.pagination?.page || page,
+              limit: data?.pagination?.limit || data?.data?.pagination?.limit || limit,
+              totalRecords: data?.pagination?.totalItems || data?.data?.pagination?.totalItems || 0,
+              totalPages: data?.pagination?.totalPages || data?.data?.pagination?.totalPages,
+              onPageChange: (newPage) => setPage(newPage),
+              onLimitChange: (newLimit) => {
+                setLimit(newLimit);
+                setPage(1);
+              },
+            }}
+            searchValue={searchQuery}
+            onSearchChange={(searchValue) => {
+              setSearchQuery(searchValue);
+              setPage(1); // Reset to first page when search changes
+            }}
             search={true}
             onRowClick={(e) => {
-              Example: router.push(`/orders/detail/${e.data.id}`);
+              router.push(`/orders/detail/${e.data.id}`);
             }}
           />
         </div>

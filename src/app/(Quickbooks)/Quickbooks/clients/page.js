@@ -16,6 +16,9 @@ export default function CustomersByEmployee() {
   const [type, setType] = useState("qbo-registered");
   const [selectedRows, setSelectedRows] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(100);
+  const [searchQuery, setSearchQuery] = useState("");
   const { toggle, setToggle } = useDataContext();
 
   // Get accessToken and realmId from localStorage
@@ -55,16 +58,26 @@ export default function CustomersByEmployee() {
   //   );
   // }
 
+  // Build API URL with pagination and search query parameters
+  const baseUrl = `api/v1/admin/qbo-customer-management/customer-list${
+    type === "qbo-registered"
+      ? "/qbo-registered"
+      : type === "qbo-not-registered"
+      ? "/qbo-not-registered"
+      : " "
+  }`;
+  
+  // Build URL with proper query parameters
+  const params = new URLSearchParams();
+  params.set("page", page.toString());
+  params.set("limit", limit.toString());
+  if (searchQuery.trim()) {
+    params.set("search", searchQuery.trim());
+  }
+  const apiUrl = `${baseUrl.trim()}?${params.toString()}`;
+
   // Fetch data if authenticated
-  const { data } = GetAPI(
-    `api/v1/admin/qbo-customer-management/customer-list${
-      type === "qbo-registered"
-        ? "/qbo-registered"
-        : type === "qbo-not-registered"
-        ? "/qbo-not-registered"
-        : " "
-    } `
-  );
+  const { data, isLoading } = GetAPI(apiUrl);
 
   const columns = [
     { field: "name", header: "Name" },
@@ -75,7 +88,14 @@ export default function CustomersByEmployee() {
   ];
 
   const datas = [];
-  data?.data?.data?.map((customer, i) => {
+  // Handle both possible API response structures: { data: [...], pagination: {...} } or { data: { data: [...], pagination: {...} } }
+  const customersArray = Array.isArray(data?.data?.data) 
+    ? data?.data?.data 
+    : Array.isArray(data?.data) 
+    ? data?.data 
+    : [];
+    
+  customersArray.map((customer, i) => {
     datas.push({
       id: customer?.id,
       sl: i + 1,
@@ -137,7 +157,7 @@ export default function CustomersByEmployee() {
     }
   };
 
-  return !data ? (
+  return isLoading ? (
     <Loader />
   ) : (
     <div>
@@ -159,7 +179,10 @@ export default function CustomersByEmployee() {
         <div className="flex justify-between items-center mt-6">
           <div>
             <button
-              onClick={() => setType("qbo-registered")}
+              onClick={() => {
+                setType("qbo-registered");
+                setPage(1); // Reset to first page when filter changes
+              }}
               className={`${
                 type === "qbo-registered"
                   ? "bg-black text-white"
@@ -170,7 +193,10 @@ export default function CustomersByEmployee() {
             </button>
 
             <button
-              onClick={() => setType("qbo-not-registered")}
+              onClick={() => {
+                setType("qbo-not-registered");
+                setPage(1); // Reset to first page when filter changes
+              }}
               className={`${
                 type === "qbo-not-registered"
                   ? "bg-black text-white"
@@ -197,15 +223,31 @@ export default function CustomersByEmployee() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-          <ManagementTab title="Total Customers" desc={datas?.length} />
+          <ManagementTab title="Total Customers" desc={data?.pagination?.totalItems || data?.data?.pagination?.totalItems || datas?.length || 0} />
         </div>
 
         {/* MyDataTable */}
         <MyDataTable
           columns={columns}
           data={datas}
-          placeholder={"Search ..."}
+          placeholder={"Search by Name, Main Contact, Employee..."}
           pagination={true}
+          serverPagination={{
+            page: data?.pagination?.page || data?.data?.pagination?.page || page,
+            limit: data?.pagination?.limit || data?.data?.pagination?.limit || limit,
+            totalRecords: data?.pagination?.totalItems || data?.data?.pagination?.totalItems || 0,
+            totalPages: data?.pagination?.totalPages || data?.data?.pagination?.totalPages,
+            onPageChange: (newPage) => setPage(newPage),
+            onLimitChange: (newLimit) => {
+              setLimit(newLimit);
+              setPage(1);
+            },
+          }}
+          searchValue={searchQuery}
+          onSearchChange={(searchValue) => {
+            setSearchQuery(searchValue);
+            setPage(1); // Reset to first page when search changes
+          }}
           search={true}
           checkbox={type !== "qbo-registered"}
           selectedRows={selectedRows}

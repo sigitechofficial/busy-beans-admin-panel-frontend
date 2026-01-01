@@ -23,13 +23,26 @@ export default function Orders() {
 
   const router = useRouter();
   const [type, setType] = useState("all");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(100);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const { data, isLoading } = GetAPI(
-    userType === "salesRepresentative"
-      ? `api/v1/admin/orders?salesRepId=${userID}`
-      : "api/v1/admin/orders",
-    "orders"
-  );
+  // Build API URL with pagination and search query parameters
+  const baseUrl = userType === "salesRepresentative"
+    ? `api/v1/admin/orders?salesRepId=${userID}`
+    : "api/v1/admin/orders";
+  
+  // Build URL with proper query parameters
+  const [urlBase, existingQuery] = baseUrl.split("?");
+  const params = new URLSearchParams(existingQuery || "");
+  params.set("page", page.toString());
+  params.set("limit", limit.toString());
+  if (searchQuery.trim()) {
+    params.set("search", searchQuery.trim());
+  }
+  const apiUrl = `${urlBase}?${params.toString()}`;
+
+  const { data, isLoading, reFetch } = GetAPI(apiUrl, "orders");
 
   const columns = [
     // { field: "sl", header: "SL", sort: true },
@@ -59,7 +72,13 @@ export default function Orders() {
   ];
 
   const datas = [];
-  const resultedOrders = data?.data?.data?.filter((detail, i) => {
+  // Handle both possible API response structures: { data: [...], pagination: {...} } or { data: { data: [...], pagination: {...} } }
+  const ordersArray = Array.isArray(data?.data?.data) 
+    ? data?.data?.data 
+    : Array.isArray(data?.data) 
+    ? data?.data 
+    : [];
+  const resultedOrders = ordersArray.filter((detail, i) => {
     return (
       (type === "paid"
         ? detail?.paymentStatus === "done"
@@ -132,7 +151,10 @@ export default function Orders() {
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
         <div data-testid={ALL_ORDERS.filtersBar}>
           <button
-            onClick={() => setType("all")}
+            onClick={() => {
+              setType("all");
+              setPage(1);
+            }}
             className={`${
               type === "all" ? "bg-black text-white" : "bg-white text-black"
             } font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
@@ -142,7 +164,10 @@ export default function Orders() {
             All Orders
           </button>
           <button
-            onClick={() => setType("paid")}
+            onClick={() => {
+              setType("paid");
+              setPage(1);
+            }}
             className={`${
               type === "paid" ? "bg-black text-white" : "bg-white text-black"
             }  font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
@@ -152,7 +177,10 @@ export default function Orders() {
             Paid Orders
           </button>
           <button
-            onClick={() => setType("unpaid")}
+            onClick={() => {
+              setType("unpaid");
+              setPage(1);
+            }}
             className={`${
               type === "unpaid" ? "bg-black text-white" : "bg-white text-black"
             }  font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
@@ -164,7 +192,7 @@ export default function Orders() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-          <ManagementTab title="Total Orders" desc={resultedOrders?.length} 
+          <ManagementTab title="Total Orders" desc={data?.pagination?.totalItems || resultedOrders?.length ||0} 
           data-testid={ALL_ORDERS.totalOrdersCard}/>
           {/* <ManagementTab title="New Orders" desc="5%" />
         <ManagementTab title="Pending Orders" desc="5000" />
@@ -176,10 +204,26 @@ export default function Orders() {
           <MyDataTable
             columns={columns}
             data={datas}
-            placeholder={"Search ..."}
+            placeholder={"Search by Id, invoice number, po number, note, payment method, shipping company"}
             pagination={true}
+            serverPagination={{
+              page: data?.pagination?.page || data?.data?.pagination?.page || page,
+              limit: data?.pagination?.limit || data?.data?.pagination?.limit || limit,
+              totalRecords: data?.pagination?.totalItems || data?.data?.pagination?.totalItems || 0,
+              totalPages: data?.pagination?.totalPages || data?.data?.pagination?.totalPages,
+              onPageChange: (newPage) => setPage(newPage),
+              onLimitChange: (newLimit) => {
+                setLimit(newLimit);
+                setPage(1);
+              },
+            }}
+            searchValue={searchQuery}
+            onSearchChange={(searchValue) => {
+              setSearchQuery(searchValue);
+              setPage(1); // Reset to first page when search changes
+            }}
             onRowClick={(e) => {
-              Example: router.push(`/orders/detail/${e.data.id}`);
+              router.push(`/orders/detail/${e.data.id}`);
             }}
             search={true}
             data-testid={ALL_ORDERS.table}

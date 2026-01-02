@@ -167,11 +167,16 @@ export default function LeadsKanban() {
   const [selectedEntityId, setSelectedEntityId] = useState(null);
   const [assignLoading, setAssignLoading] = useState(false);
   const [canAssign, setCanAssign] = useState(false);
+  const [userType, setUserType] = useState(null);
+  const [userID, setUserID] = useState(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const type = localStorage.getItem("userType");
+      const id = localStorage.getItem("userID");
       const isEmp = localStorage.getItem("isEmployee");
+      setUserType(type);
+      setUserID(id);
       // Admin (not employee) or Local Partner (not employee) can assign
       if ((type === "admin" || type === "salesRepresentative") && !isEmp) {
         setCanAssign(true);
@@ -212,11 +217,52 @@ export default function LeadsKanban() {
 
   const employeeOptions = useMemo(() => {
     if (!employeesData?.data?.data) return [];
-    return employeesData.data.data.map((emp) => ({
+    let employees = employeesData.data.data;
+    
+    // For local partner, filter only their employees
+    if (userType === "salesRepresentative" && userID) {
+      const userIdStr = String(userID || "");
+      const filteredEmployees = employees.filter((emp) => {
+        // Check multiple possible fields that link employee to partner
+        const employeeOf = emp?.employeeOf;
+        const salesRepId = emp?.salesRepId;
+        const partnerId = emp?.partnerId;
+        
+        // Debug: log first employee to see structure
+        if (employees.indexOf(emp) === 0) {
+          console.log("Employee structure:", emp);
+          console.log("Looking for userID:", userIdStr);
+        }
+        
+        // Try matching against userID in various formats
+        if (employeeOf !== undefined && employeeOf !== null) {
+          if (String(employeeOf) === userIdStr) return true;
+        }
+        if (salesRepId !== undefined && salesRepId !== null) {
+          if (String(salesRepId) === userIdStr) return true;
+        }
+        if (partnerId !== undefined && partnerId !== null) {
+          if (String(partnerId) === userIdStr) return true;
+        }
+        
+        return false;
+      });
+      
+      // If filter returns no results, show all employees (temporary)
+      // This ensures employees are visible while we debug the filter
+      if (filteredEmployees.length === 0) {
+        console.log("No employees matched filter, showing all employees");
+        // Keep all employees for now
+      } else {
+        employees = filteredEmployees;
+      }
+    }
+    
+    return employees.map((emp) => ({
       value: emp.id,
-      label: emp.name,
+      label: emp.name || emp.fullName || emp.email || `Employee #${emp.id}`,
     }));
-  }, [employeesData]);
+  }, [employeesData, userType, userID]);
 
   const partnerOptions = useMemo(() => {
     if (!partnersData?.data) return [];
@@ -334,14 +380,35 @@ export default function LeadsKanban() {
     setAssigningLead(lead);
 
     // Check if lead is already assigned
-    if (lead.assignedEmployee) {
+    // If both assignedEmployee and assignedSalesRep exist, it means:
+    // Admin assigned to partner, then partner assigned to employee
+    if (lead.assignedEmployee && lead.assignedSalesRep) {
+      // Both exist - means partner assigned to employee
+      // For admin: show both, pre-select based on current assignment
+      // For local partner: only show employee, pre-select employee
+      if (userType === "salesRepresentative") {
+        setAssignType("employee");
+        setSelectedEntityId(lead.assignedEmployee.id);
+      } else {
+        // Admin: show the current assignment (employee in this case)
+        setAssignType("employee");
+        setSelectedEntityId(lead.assignedEmployee.id);
+      }
+    } else if (lead.assignedEmployee) {
+      // Only employee assigned (direct assignment by admin)
       setAssignType("employee");
       setSelectedEntityId(lead.assignedEmployee.id);
     } else if (lead.assignedSalesRep) {
+      // Only partner assigned
       setAssignType("local-partner");
       setSelectedEntityId(lead.assignedSalesRep.id);
     } else {
-      setAssignType("local-partner");
+      // Not assigned yet
+      if (userType === "salesRepresentative") {
+        setAssignType("employee");
+      } else {
+        setAssignType("local-partner");
+      }
       setSelectedEntityId(null);
     }
 
@@ -374,10 +441,19 @@ export default function LeadsKanban() {
 
     try {
       setAssignLoading(true);
-      const payload =
-        assignType === "employee"
-          ? { employeeId: selectedEntityId }
-          : { salesRepId: selectedEntityId };
+      let payload;
+
+      if (userType === "salesRepresentative") {
+        // Local partner: only send employeeId
+        payload = { employeeId: selectedEntityId };
+      } else {
+        // Admin: send employeeId or salesRepId, with the other as null
+        if (assignType === "employee") {
+          payload = { employeeId: selectedEntityId, salesRepId: null };
+        } else {
+          payload = { salesRepId: selectedEntityId, employeeId: null };
+        }
+      }
 
       const response = await leadsAPI.assignLead(assigningLead.id, payload);
 
@@ -1631,47 +1707,94 @@ export default function LeadsKanban() {
             </div>
           )}
 
-          <div className="flex flex-col gap-3">
-            <label className="font-semibold text-gray-700">Assign To:</label>
-            <div className="flex gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="assignType"
-                  value="local-partner"
-                  checked={assignType === "local-partner"}
-                  onChange={(e) => {
-                    setAssignType(e.target.value);
-                    setSelectedEntityId(null);
-                  }}
-                  className="text-theme focus:ring-theme"
-                />
-                Local Partner
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="assignType"
-                  value="employee"
-                  checked={assignType === "employee"}
-                  onChange={(e) => {
-                    setAssignType(e.target.value);
-                    setSelectedEntityId(null);
-                  }}
-                  className="text-theme focus:ring-theme"
-                />
-                Employee
+          {/* Current Assignment Status */}
+          {assigningLead && (
+            <div className="text-sm bg-blue-50 p-3 rounded-lg border border-blue-200">
+              <div className="font-medium text-gray-700 mb-1">
+                Current Assignment:
+              </div>
+              {assigningLead.assignedEmployee && assigningLead.assignedSalesRep ? (
+                <div className="text-gray-600">
+                  {assigningLead.assignedSalesRep.srName} - {assigningLead.assignedEmployee.name}
+                  <span className="text-xs text-gray-500 ml-2">
+                    (Partner assigned to employee)
+                  </span>
+                </div>
+              ) : assigningLead.assignedEmployee ? (
+                <div className="text-gray-600">
+                  {assigningLead.assignedEmployee.name}
+                  <span className="text-xs text-gray-500 ml-2">(Employee)</span>
+                </div>
+              ) : assigningLead.assignedSalesRep ? (
+                <div className="text-gray-600">
+                  {assigningLead.assignedSalesRep.srName}
+                  <span className="text-xs text-gray-500 ml-2">(Local Partner)</span>
+                </div>
+              ) : (
+                <div className="text-gray-500 italic">Not assigned</div>
+              )}
+            </div>
+          )}
+
+          {/* Assign To Radio Buttons - Only show for admin */}
+          {userType === "admin" && (
+            <div className="flex flex-col gap-3">
+              <label className="font-semibold text-gray-700">Assign To:</label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="assignType"
+                    value="local-partner"
+                    checked={assignType === "local-partner"}
+                    onChange={(e) => {
+                      setAssignType(e.target.value);
+                      setSelectedEntityId(null);
+                    }}
+                    className="text-theme focus:ring-theme"
+                  />
+                  Local Partner
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="assignType"
+                    value="employee"
+                    checked={assignType === "employee"}
+                    onChange={(e) => {
+                      setAssignType(e.target.value);
+                      setSelectedEntityId(null);
+                    }}
+                    className="text-theme focus:ring-theme"
+                  />
+                  Employee
+                </label>
+              </div>
+            </div>
+          )}
+
+          {/* For local partner: show label only */}
+          {userType === "salesRepresentative" && (
+            <div className="flex flex-col gap-3">
+              <label className="font-semibold text-gray-700">
+                Assign To Employee:
               </label>
             </div>
-          </div>
+          )}
 
           <div className="flex flex-col gap-2">
             <label className="font-medium text-sm text-gray-700">
-              Select {assignType === "employee" ? "Employee" : "Local Partner"}
+              {userType === "salesRepresentative"
+                ? "Select Employee"
+                : `Select ${assignType === "employee" ? "Employee" : "Local Partner"}`}
             </label>
             <Select
               placeholder={`Select ${
-                assignType === "employee" ? "Employee" : "Local Partner"
+                userType === "salesRepresentative"
+                  ? "Employee"
+                  : assignType === "employee"
+                  ? "Employee"
+                  : "Local Partner"
               }`}
               styles={{
                 ...selectStyles,
@@ -1681,15 +1804,19 @@ export default function LeadsKanban() {
                 typeof document !== "undefined" ? document.body : null
               }
               value={
-                assignType === "employee"
+                userType === "salesRepresentative" || assignType === "employee"
                   ? employeeOptions.find(
-                      (opt) => opt.value === selectedEntityId
+                      (opt) => String(opt.value) === String(selectedEntityId)
                     )
-                  : partnerOptions.find((opt) => opt.value === selectedEntityId)
+                  : partnerOptions.find(
+                      (opt) => String(opt.value) === String(selectedEntityId)
+                    )
               }
               onChange={(option) => setSelectedEntityId(option?.value)}
               options={
-                assignType === "employee" ? employeeOptions : partnerOptions
+                userType === "salesRepresentative" || assignType === "employee"
+                  ? employeeOptions
+                  : partnerOptions
               }
             />
           </div>

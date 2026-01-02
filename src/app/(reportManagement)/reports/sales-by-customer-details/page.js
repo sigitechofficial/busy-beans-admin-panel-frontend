@@ -5,7 +5,9 @@ import { useDataContext } from "@/utilities/DataContext";
 import GetAPI from "@/utilities/GetAPI";
 import api from "@/utilities/StatusErrorHandler";
 import { drawerSelectStyles } from "@/utilities/SelectStyle";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import axios from "axios";
+import { BASE_URL } from "@/utilities/URL";
 import { CiMenuBurger } from "react-icons/ci";
 import { ImCross } from "react-icons/im";
 import Select from "react-select";
@@ -54,24 +56,131 @@ export default function SalesByCustomerDetailsReport() {
 
   const [dateRange, setDateRange] = useState(getInitialDateRange());
 
-  // Fetch customers list
-  const { data: customersData } = GetAPI(
-    "api/v1/admin/customer-management/customer-list/all"
-  );
+  // Customer dropdown pagination state
+  const [customerPage, setCustomerPage] = useState(1);
+  const [customerLimit] = useState(30); // Default 30 customers per load
+  const [customerHasMore, setCustomerHasMore] = useState(true);
+  const [customerLoading, setCustomerLoading] = useState(false);
   const [customerOptions, setCustomerOptions] = useState([]);
+  const [allCustomers, setAllCustomers] = useState([]);
+  const [customerSearchQuery, setCustomerSearchQuery] = useState("");
+  const customerSearchTimeoutRef = useRef(null);
 
-  useEffect(() => {
-    if (customersData?.data?.data) {
-      const options = customersData.data.data.map((customer) => ({
-        value: customer.id,
-        label: `${customer.companyName || customer.name}${
-          customer.name && customer.companyName ? ` (${customer.name})` : ""
-        }`,
-        ...customer,
-      }));
-      setCustomerOptions(options);
+  // Build customer list API endpoint
+  const getCustomerListEndpoint = (page, limit, search = "") => {
+    const base = "api/v1/admin/customer-management/customer-list/all";
+    const params = new URLSearchParams();
+    params.set("page", page.toString());
+    params.set("limit", limit.toString());
+    if (search.trim()) {
+      params.set("search", search.trim());
     }
-  }, [customersData]);
+    return `${base}?${params.toString()}`;
+  };
+
+  // Fetch customers with pagination and search
+  const fetchCustomers = async (page, append = false, searchQuery = customerSearchQuery) => {
+    if (customerLoading) return;
+    
+    setCustomerLoading(true);
+    try {
+      const token = typeof window !== "undefined"
+        ? localStorage.getItem("token") || localStorage.getItem("accessToken")
+        : "";
+      const endpoint = getCustomerListEndpoint(page, customerLimit, searchQuery);
+      
+      const res = await axios.get(`${BASE_URL}${endpoint}`, {
+        headers: {
+          "Content-Type": "application/json",
+          feature: "customer",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        withCredentials: true,
+      });
+
+      if (res?.data?.status === "success") {
+        const customers = res?.data?.data?.data || res?.data?.data || [];
+        const totalItems = res?.data?.pagination?.totalItems || res?.data?.data?.pagination?.totalItems || customers.length;
+        const totalPages = res?.data?.pagination?.totalPages || res?.data?.data?.pagination?.totalPages || Math.ceil(totalItems / customerLimit);
+        
+        const newOptions = customers.map((customer) => ({
+          value: customer.id,
+          label: `${customer.companyName || customer.name}${
+            customer.name && customer.companyName ? ` (${customer.name})` : ""
+          }`,
+          ...customer,
+        }));
+
+        if (append) {
+          setCustomerOptions((prev) => [...prev, ...newOptions]);
+          setAllCustomers((prev) => [...prev, ...customers]);
+        } else {
+          setCustomerOptions(newOptions);
+          setAllCustomers(customers);
+        }
+
+        setCustomerHasMore(page < totalPages);
+        setCustomerPage(page);
+      }
+    } catch (error) {
+      console.error("Error fetching customers:", error);
+    } finally {
+      setCustomerLoading(false);
+    }
+  };
+
+  // Handle search input change with debounce
+  const handleCustomerSearchChange = (inputValue) => {
+    // Clear previous timeout
+    if (customerSearchTimeoutRef.current) {
+      clearTimeout(customerSearchTimeoutRef.current);
+    }
+
+    // Reset to page 1 and fetch with new search query after debounce
+    customerSearchTimeoutRef.current = setTimeout(() => {
+      setCustomerSearchQuery(inputValue);
+      setCustomerPage(1);
+      setCustomerOptions([]);
+      setAllCustomers([]);
+      fetchCustomers(1, false, inputValue);
+    }, 500); // 500ms debounce
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (customerSearchTimeoutRef.current) {
+        clearTimeout(customerSearchTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Load initial customers
+  useEffect(() => {
+    fetchCustomers(1, false, "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
+
+  // Load more customers on scroll
+  const handleMenuScrollToBottom = () => {
+    if (!customerLoading && customerHasMore) {
+      fetchCustomers(customerPage + 1, true, customerSearchQuery);
+    }
+  };
+
+  // Alternative scroll handler for menuListProps
+  const handleMenuScroll = (event) => {
+    const { target } = event;
+    if (!target) return;
+    
+    const { scrollTop, scrollHeight, clientHeight } = target;
+    // Check if scrolled near bottom (within 50px)
+    if (scrollHeight - scrollTop <= clientHeight + 50) {
+      if (!customerLoading && customerHasMore) {
+        fetchCustomers(customerPage + 1, true, customerSearchQuery);
+      }
+    }
+  };
 
   // Build API URL with filters - only if customer is selected
   const buildApiUrl = () => {
@@ -564,7 +673,14 @@ export default function SalesByCustomerDetailsReport() {
                 options={customerOptions}
                 isClearable
                 isSearchable
-                noOptionsMessage={() => "No customers found"}
+                filterOption={() => true} // Disable client-side filtering, use server-side search
+                onInputChange={handleCustomerSearchChange}
+                onMenuScrollToBottom={handleMenuScrollToBottom}
+                menuListProps={{
+                  onScroll: handleMenuScroll,
+                }}
+                isLoading={customerLoading}
+                noOptionsMessage={() => customerLoading ? "Loading customers..." : "No customers found"}
                 loadingMessage={() => "Loading customers..."}
                 formatOptionLabel={({ label, ...rest }) => (
                   <div className="flex items-center gap-2 py-1">

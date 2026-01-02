@@ -614,14 +614,23 @@ export default function LeadDetails() {
                 </p>
               </div>
 
-              {lead.assignedEmployee || lead.assignedSalesRep && <div className="flex items-center gap-3">
-                <div className="text-gray-400">
-                  <MdPerson />
+              {(lead.assignedEmployee || lead.assignedSalesRep) && (
+                <div className="flex items-center gap-3">
+                  <div className="text-gray-400">
+                    <MdPerson />
+                  </div>
+                  <p className="text-sm text-gray-900">
+                    Assigned To:{" "}
+                    {lead.assignedEmployee && lead.assignedSalesRep
+                      ? `${lead.assignedSalesRep.srName} - ${lead.assignedEmployee.name}`
+                      : lead.assignedEmployee
+                        ? lead.assignedEmployee.name
+                        : lead.assignedSalesRep
+                          ? lead.assignedSalesRep.srName
+                          : "-"}
+                  </p>
                 </div>
-                <p className="text-sm text-gray-900">
-                  Assigned To: {lead.assignedEmployee ? lead.assignedEmployee.name : lead.assignedSalesRep ? lead.assignedSalesRep.srName : "-"}
-                </p>
-              </div>}
+              )}
 
               {lead.assignedEmployee && lead.assignedEmployee.employeeOf && (
                 <div className="flex items-center gap-3">

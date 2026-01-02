@@ -29,6 +29,7 @@ if (!CURRENT) {
 }
 
 export const BASE_URL = CURRENT?.BASE_URL || "";
+
 export const STRIPE_PUBLIC_KEY = CURRENT?.STRIPE_PUBLIC_KEY || "";
 
 export const GOOGLE_API_KEY = "AIzaSyD68_vw1gGE7LVVjJ5ZShy7qWwm9Rq0CBQ";

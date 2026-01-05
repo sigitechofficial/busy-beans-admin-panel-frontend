@@ -37,9 +37,9 @@ const DrawerBeans = ({
     var partnerType = localStorage.getItem("partnerType");
     var isEmployee = localStorage.getItem("isEmployee") === "true";
   }
-  const options = [];
   const [companyNameOptions, setCompanyNameOptions] = useState([]);
-  
+  const [emailOptions, setEmailOptions] = useState([]);
+
   // ✅ Pagination state for customers
   const [customerPage, setCustomerPage] = useState(1);
   const [customerLimit] = useState(30);
@@ -91,27 +91,30 @@ const DrawerBeans = ({
         ? JSON.parse(localStorage.getItem("createOrderData")) || []
         : JSON.parse(localStorage.getItem("quotationData")) || [];
   }
+
   const totalPrice = cartItems?.reduce((a, b) => {
     return (
       Number(a) +
-      (isDirectPartner || isSelfOrder ? parseFloat(b?.wholesalePrice) : parseFloat(b?.price)) *
-      Number(b?.qty)
+      (isDirectPartner || isSelfOrder
+        ? parseFloat(b?.wholesalePrice)
+        : parseFloat(b?.price)) *
+        Number(b?.qty)
     );
   }, 0);
-
 
   const totalWeight = cartItems?.reduce((a, b) => {
     return Number(a) + Number(b?.weight) * Number(b?.qty);
   }, 0);
 
   const getCustomerListEndpoint = (page, limit, search = "") => {
-    const base = isEmployee && hasPermission("selected-customer_view")
-      ? `api/v1/admin/customer-management/customer-list/employee-id/${userID}`
-      : userType === "admin"
+    const base =
+      isEmployee && hasPermission("selected-customer_view")
+        ? `api/v1/admin/customer-management/customer-list/employee-id/${userID}`
+        : userType === "admin"
         ? `api/v1/admin/customer-management/customer-list/all`
         : userType === "salesRepresentative"
-          ? `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}`
-          : `api/v1/admin/customer-management/customer-list/all`;
+        ? `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}`
+        : `api/v1/admin/customer-management/customer-list/all`;
     const params = new URLSearchParams();
     params.set("page", page.toString());
     params.set("limit", limit.toString());
@@ -122,14 +125,23 @@ const DrawerBeans = ({
   };
 
   // Fetch customers with pagination and search
-  const fetchCustomers = async (page, append = false, searchQuery = customerSearchQuery) => {
+  const fetchCustomers = async (
+    page,
+    append = false,
+    searchQuery = customerSearchQuery
+  ) => {
     if (customerLoading) return;
-    
+
     setCustomerLoading(true);
     try {
-      const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
-      const endpoint = getCustomerListEndpoint(page, customerLimit, searchQuery);
-      
+      const token =
+        localStorage.getItem("token") || localStorage.getItem("accessToken");
+      const endpoint = getCustomerListEndpoint(
+        page,
+        customerLimit,
+        searchQuery
+      );
+
       const res = await axios.get(`${BASE_URL}${endpoint}`, {
         headers: {
           "Content-Type": "application/json",
@@ -140,24 +152,56 @@ const DrawerBeans = ({
 
       if (res?.data?.status === "success") {
         const customers = res?.data?.data?.data || res?.data?.data || [];
-        const totalItems = res?.data?.pagination?.totalItems || res?.data?.data?.pagination?.totalItems || customers.length;
-        const totalPages = res?.data?.pagination?.totalPages || res?.data?.data?.pagination?.totalPages || Math.ceil(totalItems / customerLimit);
-        
+        const totalItems =
+          res?.data?.pagination?.totalItems ||
+          res?.data?.data?.pagination?.totalItems ||
+          customers.length;
+        const totalPages =
+          res?.data?.pagination?.totalPages ||
+          res?.data?.data?.pagination?.totalPages ||
+          Math.ceil(totalItems / customerLimit);
+
+        // Ensure customers is an array
+        if (!Array.isArray(customers)) {
+          console.error("Customers data is not an array:", customers);
+          setCustomerLoading(false);
+          return;
+        }
+
         const newOptions = customers.map((user) => ({
           value: user?.id,
-          label: `${user?.companyName} ( ${user?.name} )`,
+          label: `${user?.companyName || ""} ( ${user?.name || ""} )`.trim(),
         }));
+
+        // Create email options from customers
+        const newEmailOptions = customers
+          .filter((user) => user?.email && user?.email.trim() !== "") // Only include customers with valid email
+          .map((user) => ({
+            value: user?.email,
+            label: user?.email,
+          }));
 
         if (append) {
           setCompanyNameOptions((prev) => [...prev, ...newOptions]);
+          setEmailOptions((prev) => {
+            // Avoid duplicate emails
+            const existingEmails = new Set(prev.map((opt) => opt.value));
+            const uniqueNewEmails = newEmailOptions.filter(
+              (opt) => !existingEmails.has(opt.value)
+            );
+            return [...prev, ...uniqueNewEmails];
+          });
           setAllCustomers((prev) => [...prev, ...customers]);
         } else {
           setCompanyNameOptions(newOptions);
+          setEmailOptions(newEmailOptions);
           setAllCustomers(customers);
         }
 
         setCustomerHasMore(page < totalPages);
         setCustomerPage(page);
+      } else {
+        console.error("Failed to fetch customers:", res?.data);
       }
     } catch (error) {
       console.error("Error fetching customers:", error);
@@ -181,6 +225,7 @@ const DrawerBeans = ({
       setCustomerSearchQuery(inputValue);
       setCustomerPage(1);
       setCompanyNameOptions([]);
+      setEmailOptions([]);
       setAllCustomers([]);
       fetchCustomers(1, false, inputValue);
     }, 500); // 500ms debounce
@@ -197,10 +242,20 @@ const DrawerBeans = ({
 
   // Load initial customers
   useEffect(() => {
-    if (!isDirectPartner && !isSelfOrder) {
-      fetchCustomers(1, false, customerSearchQuery);
+    // For Send Quotation: fetch customers when drawer opens (unless direct partner toggle is on)
+    // For Create Order: only fetch when not direct partner and not self order
+    if (type !== "createOrder") {
+      // Send Quotation - fetch customers unless direct partner mode is enabled
+      if (!isDirectPartner && open) {
+        fetchCustomers(1, false, customerSearchQuery);
+      }
+    } else {
+      // Create Order - only fetch when not direct partner and not self order
+      if (!isDirectPartner && !isSelfOrder && open) {
+        fetchCustomers(1, false, customerSearchQuery);
+      }
     }
-  }, [isDirectPartner, isSelfOrder]);
+  }, [isDirectPartner, isSelfOrder, type, open]);
 
   // Load more customers on scroll
   const handleMenuScrollToBottom = () => {
@@ -213,7 +268,7 @@ const DrawerBeans = ({
   const handleMenuScroll = (event) => {
     const { target } = event;
     if (!target) return;
-    
+
     const { scrollTop, scrollHeight, clientHeight } = target;
     // Check if scrolled near bottom (within 50px)
     if (scrollHeight - scrollTop <= clientHeight + 50) {
@@ -271,6 +326,7 @@ const DrawerBeans = ({
       }));
       setEmail("");
       setAddressOptions([]);
+
       fetchDirectPartnerData();
     } else {
       setOrder((prev) => ({
@@ -317,10 +373,12 @@ const DrawerBeans = ({
   }, [partners]);
 
   const handleSrNameSelect = (selectedOption) => {
-    const selectedPartner = partners.find(
+    const selectedPartner = partners?.find(
       (p) => p?.id === selectedOption?.value
     );
+
     setEmail(selectedPartner?.email || "");
+
     setOrder((prev) => ({
       ...prev,
       salesRepId: selectedPartner?.id,
@@ -410,14 +468,13 @@ const DrawerBeans = ({
     return updatedCart;
   };
 
-
-
-
   const handleSendQuotation = async () => {
     const dp = parseFloat(order?.discountPercentage || 0);
     const discountAmt = (parseFloat(totalPrice || 0) * dp) / 100;
     const subTotalAfterDiscount =
-      dp > 0 ? parseFloat(totalPrice || 0) - discountAmt : parseFloat(totalPrice || 0);
+      dp > 0
+        ? parseFloat(totalPrice || 0) - discountAmt
+        : parseFloat(totalPrice || 0);
     const totalBillCalc =
       subTotalAfterDiscount + parseFloat(order?.shippingCharges || 0);
 
@@ -455,9 +512,9 @@ const DrawerBeans = ({
             shippingCharges: parseFloat(order?.shippingCharges || 0).toFixed(2),
             ...(isDirectPartner || isSelfOrder
               ? {
-                salesRepId: order?.salesRepId || userID,
-                addressId: order?.addressId,
-              } // direct-partner
+                  salesRepId: order?.salesRepId || userID,
+                  addressId: order?.addressId,
+                } // direct-partner
               : { userId: order?.userId, addressId: order?.addressId }), // normal customer
           };
 
@@ -465,8 +522,8 @@ const DrawerBeans = ({
             isDirectPartner || isSelfOrder
               ? `api/v1/admin/partner-order/book-new-order`
               : userType === "admin"
-                ? `api/v1/admin/book-new-order`
-                : `api/v1/admin/sales-rep/book-new-order/${userID}`;
+              ? `api/v1/admin/book-new-order`
+              : `api/v1/admin/sales-rep/book-new-order/${userID}`;
 
           const res = await PostAPI(
             endpoint,
@@ -495,10 +552,16 @@ const DrawerBeans = ({
         }
       }
     } else {
-      if (!email) {
-        info_toaster("Email cannot be empty");
-      } else if (cartItems.length === 0) {
+      // Send Quotation flow
+      if (cartItems.length === 0) {
         info_toaster("Product cannot be empty");
+      } else if (!email?.trim()) {
+        info_toaster("Email cannot be empty");
+      } else if (isDirectPartner && !order?.salesRepId) {
+        info_toaster("Please select a partner");
+      } else if (!isDirectPartner && !order?.addressId && partnerType !== "direct-partner") {
+        // For local partners, address is auto-selected in handleEmail, so skip validation
+        info_toaster("Address cannot be empty");
       } else {
         setLoader(true);
         try {
@@ -511,29 +574,38 @@ const DrawerBeans = ({
           const totalBillCalc =
             subTotalAfterDiscount + Number(order?.shippingCharges || 0);
 
-          // const res = await PostAPI("api/v1/admin/send-quotation", {
+          // Build order payload - include partner/address info if direct partner
+          const orderPayload = {
+            totalBill: totalBillCalc.toFixed(2),
+            subTotal: subTotalAfterDiscount.toFixed(2),
+            discountPrice: discountAmt.toFixed(2),
+            discountPercentage: dp,
+            itemsPrice: Number(totalPrice || 0).toFixed(2),
+            vat: 0.0,
+            totalWeight: totalWeight,
+            shippingCharges: Number(order?.shippingCharges || 0).toFixed(2),
+            note: order?.note || "",
+            poNumber: order?.poNumber || "",
+            ...(isDirectPartner || isSelfOrder
+              ? {
+                  salesRepId: order?.salesRepId || userID,
+                  addressId: order?.addressId,
+                }
+              : {
+                  userId: order?.userId,
+                  addressId: order?.addressId,
+                }),
+          };
+
           const res = await PostAPI(
             `api/v1/admin/send-quotation/sales-rep/${userID}`,
             {
               email: [email],
-              order: {
-                // totalBill: totalPrice,
-                // subTotal: totalPrice,
-                // itemsPrice: totalPrice,
-                // vat: 0.0,
-                // totalWeight: totalWeight,
-                totalBill: totalBillCalc.toFixed(2),
-                subTotal: subTotalAfterDiscount.toFixed(2),
-                discountPrice: discountAmt.toFixed(2),
-                discountPercentage: dp,
-                itemsPrice: Number(totalPrice || 0).toFixed(2),
-                vat: 0.0,
-                totalWeight: totalWeight,
-                shippingCharges: Number(order?.shippingCharges || 0).toFixed(2),
-              },
+              order: orderPayload,
               items: cartItems,
             }
           );
+
           if (res?.data?.status === "success") {
             setOpen(false);
             success_toaster("Quotation send Successfully");
@@ -543,6 +615,18 @@ const DrawerBeans = ({
             setQuotationData([]);
             setEmail("");
             setEmailType(true);
+            setOrder({
+              note: "",
+              poNumber: "",
+              discountPercentage: "",
+              shippingCharges: "",
+              paymentMethod: "",
+              orderFrequency: "",
+              userId: "",
+              salesRepId: "",
+              addressId: "",
+            });
+            setAddressOptions([]);
           } else {
             throw new Error(
               res?.data?.message || "An unexpected error occurred."
@@ -558,17 +642,18 @@ const DrawerBeans = ({
   };
 
   const handleEmail = (email) => {
+    // For direct partner toggle mode, don't allow email selection
+    if (isDirectPartner) return;
+
     setEmail(email);
     const selectedEmail = allCustomers.find(
       (customer) => customer?.email === email
     );
 
-    setOrder((prev) => ({
-      ...prev,
-      userId: selectedEmail?.id,
-      // salesRepId: "",
-    }));
-    const addressList = (selectedEmail?.addresses ?? []).map((address) => {
+    if (!selectedEmail) return;
+
+    const addresses = selectedEmail?.addresses ?? [];
+    const addressList = addresses.map((address) => {
       const parts = [
         address.companyaddress,
         address.addressLineOne,
@@ -583,7 +668,21 @@ const DrawerBeans = ({
         label: parts.length > 0 ? parts.join(", ") : "",
       };
     });
+
     setAddressOptions([...addressList]);
+
+    // For local partners (partnerType === "direct-partner"), automatically select first address
+    const isLocalPartner = partnerType === "direct-partner";
+    const firstAddressId = addresses.length > 0 ? addresses[0]?.id : null;
+
+    setOrder((prev) => ({
+      ...prev,
+      userId: selectedEmail?.id,
+      // Auto-select first address for local partners when sending quotation
+      addressId: isLocalPartner && type !== "createOrder" && firstAddressId 
+        ? firstAddressId 
+        : prev.addressId,
+    }));
   };
 
   const fetchChargesForCustomer = async (customerId, weight) => {
@@ -621,9 +720,7 @@ const DrawerBeans = ({
   };
 
   const handleCompanyName = (id) => {
-    const selectedEmail = allCustomers.find(
-      (customer) => customer?.id === id
-    );
+    const selectedEmail = allCustomers.find((customer) => customer?.id === id);
 
     if (!selectedEmail) {
       console.error("Customer not found:", id);
@@ -745,9 +842,7 @@ const DrawerBeans = ({
   const maxDiscountPct =
     Number(totalPrice || 0) > 0 ? (priceGap / Number(totalPrice)) * 100 : 0;
 
-  const selectedCustomer = allCustomers.find(
-    (c) => c?.id === order?.userId
-  );
+  const selectedCustomer = allCustomers.find((c) => c?.id === order?.userId);
   const bypassDiscountCap = !!selectedCustomer?.salesRepName;
 
   return (
@@ -805,23 +900,23 @@ const DrawerBeans = ({
                   {["direct-partner", "dropship-partner"].includes(
                     partnerType
                   ) && (
-                      <div className="flex items-center gap-x-2 justify-end">
-                        <label className="text-white font-medium">
-                          Self Order
-                        </label>
-                        <Switch
-                          onChange={(e) => selfOrderSwitch(e)}
-                          checked={isSelfOrder}
-                          uncheckedIcon={false}
-                          checkedIcon={false}
-                          onColor="#3E342C"
-                          onHandleColor="#fff"
-                          className="react-switch"
-                          boxShadow="none"
-                          data-testid={ORDERS_CREATE_DRAWER.selfOrderSwitch}
-                        />
-                      </div>
-                    )}
+                    <div className="flex items-center gap-x-2 justify-end">
+                      <label className="text-white font-medium">
+                        Self Order
+                      </label>
+                      <Switch
+                        onChange={(e) => selfOrderSwitch(e)}
+                        checked={isSelfOrder}
+                        uncheckedIcon={false}
+                        checkedIcon={false}
+                        onColor="#3E342C"
+                        onHandleColor="#fff"
+                        className="react-switch"
+                        boxShadow="none"
+                        data-testid={ORDERS_CREATE_DRAWER.selfOrderSwitch}
+                      />
+                    </div>
+                  )}
 
                   {/* Company flow */}
                   {!isDirectPartner && !isSelfOrder && (
@@ -950,8 +1045,8 @@ const DrawerBeans = ({
                       value={
                         order.paymentMethod
                           ? paymentMethodOptions.find(
-                            (opt) => opt.value === order.paymentMethod
-                          ) || null
+                              (opt) => opt.value === order.paymentMethod
+                            ) || null
                           : null
                       }
                       options={paymentMethodOptions}
@@ -1024,8 +1119,9 @@ const DrawerBeans = ({
                         <input
                           type="text"
                           id="courier-note"
-                          className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${order?.note ? "placeholder-transparent" : ""
-                            }`}
+                          className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${
+                            order?.note ? "placeholder-transparent" : ""
+                          }`}
                           value={order?.note}
                           onChange={(e) =>
                             setOrder({ ...order, note: e.target.value })
@@ -1034,10 +1130,11 @@ const DrawerBeans = ({
                         />
                         <label
                           htmlFor="courier-note"
-                          className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${order?.note
+                          className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${
+                            order?.note
                               ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
                               : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
-                            }`}
+                          }`}
                         >
                           {order?.note
                             ? "Note for the supplier (optional)"
@@ -1051,8 +1148,9 @@ const DrawerBeans = ({
                         <input
                           type="text"
                           id="poNumber"
-                          className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${order?.note ? "placeholder-transparent" : ""
-                            }`}
+                          className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${
+                            order?.note ? "placeholder-transparent" : ""
+                          }`}
                           value={order?.poNumber}
                           onChange={(e) =>
                             setOrder({ ...order, poNumber: e.target.value })
@@ -1061,10 +1159,11 @@ const DrawerBeans = ({
                         />
                         <label
                           htmlFor="poNumber"
-                          className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${order?.poNumber
+                          className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${
+                            order?.poNumber
                               ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
                               : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
-                            }`}
+                          }`}
                         >
                           {order?.poNumber
                             ? "Purchase Order Number"
@@ -1085,10 +1184,19 @@ const DrawerBeans = ({
                         placeholder="Select email"
                         className="w-full"
                         styles={drawerSelectStyles}
-                        options={options}
+                        options={emailOptions}
                         onChange={(e) => {
-                          setEmail(e.value);
+                          handleEmail(e.value);
                         }}
+                        onInputChange={handleCustomerSearchChange}
+                        onMenuScrollToBottom={handleMenuScrollToBottom}
+                        menuListProps={{
+                          onScroll: handleMenuScroll,
+                        }}
+                        isSearchable={true}
+                        filterOption={() => true} // Disable client-side filtering, use server-side search
+                        isLoading={customerLoading}
+                        loadingMessage={() => "Loading emails..."}
                       />
                     ) : (
                       <input
@@ -1107,8 +1215,9 @@ const DrawerBeans = ({
                         setEmail("");
                         setEmailType(!emailType);
                       }}
-                      className={`${emailType ? "w-40" : "w-auto"
-                        } h-12 bg-white text-black px-[7px] rounded-md`}
+                      className={`${
+                        emailType ? "w-40" : "w-auto"
+                      } h-12 bg-white text-black px-[7px] rounded-md`}
                     >
                       {emailType ? "Custom Email" : <RxCross2 size={32} />}
                     </button>
@@ -1142,7 +1251,11 @@ const DrawerBeans = ({
                               <div className="flex items-center gap-x-3">
                                 <span className="font-semibold text-sm text-white mt-1">
                                   {"$ "}
-                                  {parseFloat(isDirectPartner || isSelfOrder ? cartI?.wholesalePrice : cartI?.price)}{" "}
+                                  {parseFloat(
+                                    isDirectPartner || isSelfOrder
+                                      ? cartI?.wholesalePrice
+                                      : cartI?.price
+                                  )}{" "}
                                 </span>
                               </div>
                             </div>
@@ -1271,8 +1384,9 @@ const DrawerBeans = ({
           )}
 
           <div
-            className={`absolute bottom-0 left-0 py-5 flex justify-center w-full px-4 sm:px-0 sm:left-[30px] sm:w-[452px] ${loader ? "opacity-60" : "bg-theme"
-              }`}
+            className={`absolute bottom-0 left-0 py-5 flex justify-center w-full px-4 sm:px-0 sm:left-[30px] sm:w-[452px] ${
+              loader ? "opacity-60" : "bg-theme"
+            }`}
           >
             <button
               disabled={loader}

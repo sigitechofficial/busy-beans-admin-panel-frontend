@@ -55,6 +55,9 @@ const DrawerBeansGenerateInvoice = ({
   const [email, setEmail] = useState("");
   const [loader, setLoader] = useState(false);
   const [partnersOrder, setPartnersOrder] = useState(false);
+  const [isSelfOrder, setIsSelfOrder] = useState(false); // For sales rep self order
+  const [partners, setPartners] = useState([]); // Store partner data for self order
+  const [srNameOptions, setSrNameOptions] = useState([]); // Partner options for self order
 
   // Drawer form state
   const [order, setOrder] = useState({
@@ -63,6 +66,7 @@ const DrawerBeansGenerateInvoice = ({
     poNumber: "",
     addressId: "",
     userId: "",
+    salesRepId: "",
     shippingCharges: "",
     // categoryDiscounts: [],
   });
@@ -89,7 +93,7 @@ const DrawerBeansGenerateInvoice = ({
       : userType === "admin"
         ? `api/v1/admin/customer-management/customer-list/all`
         : userType === "salesRepresentative"
-          ? `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}&orderCreation=yes`
+          ? `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}`
           : `api/v1/admin/customer-management/customer-list/all`;
     const params = new URLSearchParams();
     params.set("page", page.toString());
@@ -174,14 +178,176 @@ const DrawerBeansGenerateInvoice = ({
     fetchChargesForCustomer(selected?.id, totalWeight);
   };
 
+  // Handle partner selection for self order
+  const handleSrNameSelect = (selectedOption) => {
+    if (!selectedOption || !selectedOption.value) {
+      setEmail("");
+      setAddressOptions([]);
+      setOrder((prev) => ({
+        ...prev,
+        salesRepId: "",
+        addressId: "",
+      }));
+      return;
+    }
+
+    const selectedPartner = partners?.find(
+      (p) => p?.id === selectedOption?.value
+    );
+
+    if (!selectedPartner) {
+      setEmail("");
+      setAddressOptions([]);
+      return;
+    }
+
+    // Set email
+    setEmail(selectedPartner?.email || "");
+
+    // Update order state
+    setOrder((prev) => ({
+      ...prev,
+      salesRepId: selectedPartner?.id,
+      userId: "",
+      addressId: "",
+    }));
+
+    // Map addresses to options
+    const addresses = selectedPartner?.addresses || [];
+    const addressList = addresses
+      .filter((address) => address && address.id != null)
+      .map((address) => {
+        const parts = [
+          address.companyaddress,
+          address.addressLineOne,
+          address.addressLineTwo,
+          address.town,
+          address.state,
+          address.zipCode,
+          address.country,
+        ].filter((part) => part != null && String(part).trim() !== "");
+
+        return {
+          value: address.id,
+          label: parts.length > 0 ? parts.join(", ") : `Address ${address.id}`,
+        };
+      });
+
+    setAddressOptions(addressList);
+  };
+
+  // Fetch sales rep's own data for self order
+  const fetchSalesRepSelfData = async () => {
+    try {
+      const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+      const res = await axios.get(
+        `${BASE_URL}api/v1/admin/sales-rep/${userID}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        }
+      );
+      if (res?.data?.status === "success") {
+        const salesRepData = res?.data?.data?.data || res?.data?.data || {};
+        
+        // Auto-fill email and name
+        const salesRepEmail = salesRepData?.email || localStorage.getItem("email") || "";
+        setEmail(salesRepEmail);
+        
+        // Set sales rep ID
+        setOrder((prev) => ({
+          ...prev,
+          salesRepId: salesRepData?.id || userID,
+          userId: "",
+          addressId: "",
+        }));
+
+        // Map addresses to options
+        const addresses = salesRepData?.addresses || [];
+        const addressList = addresses
+          .filter((address) => address && address.id != null)
+          .map((address) => {
+            const parts = [
+              address.companyaddress,
+              address.addressLineOne,
+              address.addressLineTwo,
+              address.town,
+              address.state,
+              address.zipCode,
+              address.country,
+            ].filter((part) => part != null && String(part).trim() !== "");
+
+            return {
+              value: address.id,
+              label: parts.length > 0 ? parts.join(", ") : `Address ${address.id}`,
+            };
+          });
+
+        setAddressOptions(addressList);
+      }
+    } catch (error) {
+      console.error(error);
+      ErrorHandler(error);
+    }
+  };
+
+  // Handle self order toggle for sales representatives
+  const handleSelfOrderToggle = (checked) => {
+    setIsSelfOrder(checked);
+
+    if (checked) {
+      // Reset order state
+      setOrder((prev) => ({
+        ...prev,
+        salesRepId: "",
+        userId: "",
+        addressId: "",
+      }));
+      setEmail("");
+      setAddressOptions([]);
+      // Fetch sales rep's own data for self order
+      fetchSalesRepSelfData();
+    } else {
+      // Reset and fetch customers
+      setOrder((prev) => ({
+        ...prev,
+        salesRepId: "",
+      }));
+      setEmail("");
+      setAddressOptions([]);
+      setPartners([]);
+      setSrNameOptions([]);
+      // Fetch customers
+      fetchCustomerData(1, false, customerSearchQuery);
+    }
+  };
+
   const handlePartnerOrder = (e) => {
     setPartnersOrder(e);
-    setOrder({})
+    // Clear all input data when toggling (for admin only)
+    setOrder({
+      note: "",
+      paymentMethod: "",
+      poNumber: "",
+      addressId: "",
+      userId: "",
+      salesRepId: "",
+      shippingCharges: "",
+    });
     setCompanyNameOptions([]);
-    setEmail([]);
+    setEmail("");
     setAddressOptions([]);
+    setEmailOptions([]);
     // Reset customer pagination state
     if (!e) {
+      // Toggle OFF: Reset and will fetch customers
+      setCustomerPage(1);
+      setAllCustomers([]);
+      setCustomerSearchQuery("");
+    } else {
+      // Toggle ON: Don't fetch customers, just clear everything
       setCustomerPage(1);
       setAllCustomers([]);
       setCustomerSearchQuery("");
@@ -296,11 +462,12 @@ const DrawerBeansGenerateInvoice = ({
     }
   };
 
-  const fetchDirectPartnerData = async () => {
+  const fetchDirectPartnerData = async (selfOrder = false) => {
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+      let selfOrderUser = selfOrder ? `&&salesRepId=${userID}` : "";
       const res = await axios.get(
-        `${BASE_URL}api/v1/admin/sales-rep/for-order-creation?partnerType=direct-partner`,
+        `${BASE_URL}api/v1/admin/sales-rep/for-order-creation?partnerType=direct-partner${selfOrderUser}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -309,27 +476,38 @@ const DrawerBeansGenerateInvoice = ({
         }
       );
       if (res?.data?.status === "success") {
-        setFullData(res?.data?.data);
         const list = res?.data?.data || [];
-        let options = [];
-        let emails = [];
-        list?.map((elem) => {
-          options.push({
-            value: elem?.id,
-            label: `${elem?.srName} (${elem?.territoryName})`,
+        
+        if (isSelfOrder) {
+          // For self order, store partners and create options
+          setPartners(list);
+          setSrNameOptions(
+            list?.map((p) => ({
+              value: p?.id,
+              label: p?.srName + ` ( ${p?.territoryName} )`,
+            }))
+          );
+        } else {
+          // For regular partners order
+          setFullData(list);
+          let options = [];
+          list?.map((elem) => {
+            options.push({
+              value: elem?.id,
+              label: `${elem?.srName} (${elem?.territoryName})`,
+            });
           });
-          // emails.push({value:"",label:""})
-        });
-
-        setCompanyNameOptions(options);
-        // setEmailOptions(emails);
+          setCompanyNameOptions(options);
+        }
       }
     } catch (error) {
       console.error(error);
+      ErrorHandler(error);
     }
   };
 
   useEffect(() => {
+    // For admin: when partners toggle is ON, don't fetch customers
     if (partnersOrder) {
       fetchDirectPartnerData();
       // Reset customer pagination when switching to partners
@@ -337,10 +515,20 @@ const DrawerBeansGenerateInvoice = ({
       setCompanyNameOptions([]);
       setAllCustomers([]);
       setCustomerSearchQuery("");
-    } else {
+      // Don't call fetchCustomerData when partners toggle is ON
+    } else if (!isSelfOrder) {
+      // Only fetch customers if not in self order mode and partners toggle is OFF
+      // This applies to both admin (when toggle is OFF) and sales rep (when self order is OFF)
       fetchCustomerData(1, false, customerSearchQuery);
     }
-  }, [partnersOrder]);
+  }, [partnersOrder, isSelfOrder]);
+
+  // Fetch sales rep's own data when self order is toggled
+  useEffect(() => {
+    if (isSelfOrder && userType === "salesRepresentative" && open) {
+      fetchSalesRepSelfData();
+    }
+  }, [isSelfOrder, open]);
 
   console.log(
     order?.userId,
@@ -362,7 +550,8 @@ const DrawerBeansGenerateInvoice = ({
       info_toaster("Email cannot be empty.");
       return;
     }
-    if (!order?.addressId) {
+    // For self order, address is auto-selected, so skip validation
+    if (!order?.addressId && !isSelfOrder) {
       info_toaster("Address cannot be empty.");
       return;
     }
@@ -389,7 +578,9 @@ const DrawerBeansGenerateInvoice = ({
         note: order?.note,
         poNumber: order?.poNumber,
         addressId: order?.addressId,
-        ...(partnersOrder ? { salesRepId: order?.userId } : { userId: order?.userId }),
+        ...(partnersOrder || isSelfOrder
+          ? { salesRepId: isSelfOrder ? order?.salesRepId : order?.userId }
+          : { userId: order?.userId }),
         paymentMethod: order?.paymentMethod,
         invoiceOnly: true,
         type: "direct-invoice"
@@ -399,13 +590,20 @@ const DrawerBeansGenerateInvoice = ({
 
     setLoader(true);
     try {
-      const res = await PostAPI(
-        userType === "admin"
-          ? partnersOrder ? `api/v1/admin/partner-order/book-new-order` : `api/v1/admin/book-new-order`
-          : `api/v1/admin/sales-rep/book-new-order/${userID}`,
-        payload,
-        "invoices"
-      );
+      // Determine endpoint based on user type and order type
+      let endpoint;
+      if (userType === "admin") {
+        endpoint = partnersOrder 
+          ? `api/v1/admin/partner-order/book-new-order` 
+          : `api/v1/admin/book-new-order`;
+      } else {
+        // For sales rep: use partner order endpoint if self order, otherwise regular endpoint
+        endpoint = isSelfOrder
+          ? `api/v1/admin/partner-order/book-new-order`
+          : `api/v1/admin/sales-rep/book-new-order/${userID}`;
+      }
+
+      const res = await PostAPI(endpoint, payload, "invoices");
 
       if (res?.data?.status === "success") {
         const orderId = res?.data?.data?.id;
@@ -415,7 +613,7 @@ const DrawerBeansGenerateInvoice = ({
         setOpen(false);
         if (orderId) {
           // router.push(`/orders/detail/${orderId}/add-invoice`);
-          router.push( partnersOrder ? `/direct-invoices/partner/${orderId}/add-invoice` : `/direct-invoices/${orderId}/add-invoice`);
+          router.push( (partnersOrder || isSelfOrder) ? `/direct-invoices/partner/${orderId}/add-invoice` : `/direct-invoices/${orderId}/add-invoice`);
         }
       } else {
         throw new Error(res?.data?.message || "Failed to generate invoice.");
@@ -444,47 +642,85 @@ const DrawerBeansGenerateInvoice = ({
             </h2>
           </div>
 
-          <div className="flex items-center gap-x-2 justify-end">
-            <label className="text-white font-medium">
-              {partnersOrder ? "Partners" : "Customers"}
-            </label>
-            <Switch
-              onChange={(e) => handlePartnerOrder(e)}
-              checked={partnersOrder}
-              uncheckedIcon={false}
-              checkedIcon={false}
-              onColor="#3E342C"
-              onHandleColor="#fff"
-              className="react-switch"
-              boxShadow="none"
-            // data-testid={ORDERS_CREATE_DRAWER.selfOrderSwitch}
-            />
-          </div>
+          {/* Toggle for Partners (Admin only) */}
+          {userType === "admin" && (
+            <div className="flex items-center gap-x-2 justify-end">
+              <label className="text-white font-medium">
+                {partnersOrder ? "Partners" : "Customers"}
+              </label>
+              <Switch
+                onChange={(e) => handlePartnerOrder(e)}
+                checked={partnersOrder}
+                uncheckedIcon={false}
+                checkedIcon={false}
+                onColor="#3E342C"
+                onHandleColor="#fff"
+                className="react-switch"
+                boxShadow="none"
+              />
+            </div>
+          )}
+
+          {/* Self Order Toggle for Sales Representatives */}
+          {userType === "salesRepresentative" && (
+            <div className="flex items-center gap-x-2 justify-end">
+              <label className="text-white font-medium">
+                Self Order
+              </label>
+              <Switch
+                onChange={(e) => handleSelfOrderToggle(e)}
+                checked={isSelfOrder}
+                uncheckedIcon={false}
+                checkedIcon={false}
+                onColor="#3E342C"
+                onHandleColor="#fff"
+                className="react-switch"
+                boxShadow="none"
+              />
+            </div>
+          )}
 
           {/* Body */}
           <div className="relative space-y-6 font-sf pb-20 bg-theme text-white">
-            {/* Company */}
-            <div className="flex flex-col gap-y-2">
-              <label className="text-white font-medium font-satoshi">
-                Company Name
-              </label>
-              <Select
-                placeholder="Select Company"
-                className="w-full"
-                styles={drawerSelectStyles}
-                options={companyNameOptions}
-                onChange={(e) => handleCompanySelect(e.value)}
-                onInputChange={!partnersOrder ? handleCustomerSearchChange : undefined}
-                onMenuScrollToBottom={!partnersOrder ? handleMenuScrollToBottom : undefined}
-                menuListProps={!partnersOrder ? {
-                  onScroll: handleMenuScroll,
-                } : undefined}
-                isSearchable={!partnersOrder}
-                filterOption={!partnersOrder ? () => true : undefined} // Disable client-side filtering, use server-side search
-                isLoading={!partnersOrder ? customerLoading : false}
-                loadingMessage={!partnersOrder ? () => "Loading customers..." : undefined}
-              />
-            </div>
+            {/* Company / Partner Selection */}
+            {isSelfOrder && userType === "salesRepresentative" ? (
+              // Self Order: Show sales rep's name (auto-filled, read-only)
+              <div className="flex flex-col gap-y-2">
+                <label className="text-white font-medium font-satoshi">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  value={localStorage.getItem("userName") || ""}
+                  className="w-full bg-white text-black rounded px-3 py-3 outline-none cursor-not-allowed font-satoshi placeholder-theme focus:ring-0 focus:border-theme"
+                  disabled
+                  readOnly
+                />
+              </div>
+            ) : (
+              // Regular: Show company/customer selection
+              <div className="flex flex-col gap-y-2">
+                <label className="text-white font-medium font-satoshi">
+                  Company Name
+                </label>
+                <Select
+                  placeholder="Select Company"
+                  className="w-full"
+                  styles={drawerSelectStyles}
+                  options={companyNameOptions}
+                  onChange={(e) => handleCompanySelect(e.value)}
+                  onInputChange={!partnersOrder ? handleCustomerSearchChange : undefined}
+                  onMenuScrollToBottom={!partnersOrder ? handleMenuScrollToBottom : undefined}
+                  menuListProps={!partnersOrder ? {
+                    onScroll: handleMenuScroll,
+                  } : undefined}
+                  isSearchable={!partnersOrder}
+                  filterOption={!partnersOrder ? () => true : undefined} // Disable client-side filtering, use server-side search
+                  isLoading={!partnersOrder ? customerLoading : false}
+                  loadingMessage={!partnersOrder ? () => "Loading customers..." : undefined}
+                />
+              </div>
+            )}
 
             {/* Email */}
             <div className="flex flex-col gap-y-2">

@@ -223,7 +223,9 @@ export default function SubscriptionModal({ visible, onHide, machine }) {
       }));
 
       // Prepare extra items with type: "extra" and add them to addons array
+      // Extra items don't have an addonId, so set it to null
       const extraItemsPayload = extraItems.map((item) => ({
+        addonId: null, // Extra items don't have an ID
         name: item.name,
         type: "extra",
         quantity: item.quantity || 1,

@@ -805,7 +805,7 @@ export default function Leftbar(props) {
           {hasPermission("subscription_view") && (
             <ListHead
               title="Machine Subscriptions"
-              active={pathname === "/subscription" || pathname === "/purchased"}
+              active={pathname === "/subscription" || pathname === "/purchased" || pathname === "/addons"}
               data-testid={LEFTBAR.subscriptionManagementSection}
               Icon={MdCoffeeMaker}
               status={
@@ -839,6 +839,14 @@ export default function Leftbar(props) {
                     data-testid={LEFTBAR.listItem(
                       "machineSubscriptions",
                       "Purchased"
+                    )}
+                  />
+                  <ListItems
+                    title="Addons"
+                    to="/addons"
+                    data-testid={LEFTBAR.listItem(
+                      "addons",
+                      "Addons"
                     )}
                   />
                   {/* <ListItems

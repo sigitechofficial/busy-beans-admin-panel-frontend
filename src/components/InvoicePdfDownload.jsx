@@ -426,6 +426,7 @@ export default function InvoicePDFDownload({ invoiceData, reFetch, adminAddress 
                               className="w-12 text-center outline-none bg-transparent border rounded font-semibold"
                               type="text"
                               value={prod?.qty}
+                              disabled
                               onChange={(e) => handleChange(index, e.target.value)}
                             />
                           )}
@@ -479,13 +480,7 @@ export default function InvoicePDFDownload({ invoiceData, reFetch, adminAddress 
         >
           Download Invoice
         </button>
-        {(hasPermission("invoice_update")) && (
-          <button
-            onClick={handleUpdate}
-            className="mb-4 px-4 py-2 bg-theme text-white rounded"
-          >
-            Update Invoice
-          </button>)}
+  
       </div>
     </div>
   );

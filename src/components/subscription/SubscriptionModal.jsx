@@ -857,13 +857,13 @@ export default function SubscriptionModal({ visible, onHide, machine }) {
             </div>
             <h3 className="text-2xl font-bold text-green-700">Success!</h3>
             <p className="text-gray-600">
-              Subscription to <strong>{machine.name}</strong> has been successfully created for{" "}
+              Subscription to <strong>{machine?.name}</strong> has been successfully created for{" "}
               <strong>{selectedUser?.label || selectedUser?.name}</strong>.
             </p>
             <button
               onClick={() => {
                 onHide();
-                window.location.href = "/purchased";
+                router.push("/purchased");
               }}
               className="mt-6 bg-theme text-white px-8 py-3 rounded-lg hover:bg-orange-600"
             >

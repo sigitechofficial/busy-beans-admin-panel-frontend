@@ -4,7 +4,7 @@ import Loader from "@/components/ui/Loader";
 import { useDataContext } from "@/utilities/DataContext";
 import GetAPI from "@/utilities/GetAPI";
 import { drawerSelectStyles } from "@/utilities/SelectStyle";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { CiMenuBurger } from "react-icons/ci";
 import { ImCross } from "react-icons/im";
 import Select from "react-select";
@@ -16,10 +16,11 @@ import { LuSearch } from "react-icons/lu";
 import { MdFilterAlt } from "react-icons/md";
 import UserTypeFilterModal from "@/components/ui/UserTypeFilterModal";
 import { error_toaster } from "@/utilities/Toaster";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function SalesByCustomerSummaryReport() {
+function SalesByCustomerSummaryReport() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   if (typeof window !== "undefined") {
     var userType = localStorage.getItem("userType");
   }
@@ -51,6 +52,38 @@ export default function SalesByCustomerSummaryReport() {
   };
 
   const [dateRange, setDateRange] = useState(getInitialDateRange());
+
+  // Get date range from URL query parameters on mount
+  useEffect(() => {
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
+    
+    // Auto-fill date range if provided in URL
+    if (startDate && endDate) {
+      setDateRange({
+        startDate: startDate,
+        endDate: endDate,
+      });
+      
+      // Also set the selected option based on the date range
+      const today = dayjs();
+      const mtdStart = today.startOf("month").format("YYYY-MM-DD");
+      const mtdEnd = today.format("YYYY-MM-DD");
+      const lastMonthStart = today.subtract(1, "month").startOf("month").format("YYYY-MM-DD");
+      const lastMonthEnd = today.subtract(1, "month").endOf("month").format("YYYY-MM-DD");
+      
+      if (startDate === mtdStart && endDate === mtdEnd) {
+        setSelectedOption({ value: "monthToDate", label: "Month to date" });
+      } else if (startDate === lastMonthStart && endDate === lastMonthEnd) {
+        setSelectedOption({ value: "lastMonth", label: "Last Month" });
+      } else {
+        setSelectedOption({ value: "custom", label: "Custom" });
+        setDisplayCustomFilters(true);
+        setCustomDates({ startDate, endDate });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Build API URL with filters
   const buildApiUrl = () => {
@@ -581,5 +614,13 @@ export default function SalesByCustomerSummaryReport() {
         initialFilters={filters}
       />
     </div>
+  );
+}
+
+export default function SalesByCustomerSummaryReportWrapper() {
+  return (
+    <Suspense fallback={<Loader />}>
+      <SalesByCustomerSummaryReport />
+    </Suspense>
   );
 }

@@ -5,7 +5,7 @@ import { useDataContext } from "@/utilities/DataContext";
 import GetAPI from "@/utilities/GetAPI";
 import api from "@/utilities/StatusErrorHandler";
 import { drawerSelectStyles } from "@/utilities/SelectStyle";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import axios from "axios";
 import { BASE_URL } from "@/utilities/URL";
 import { CiMenuBurger } from "react-icons/ci";
@@ -20,10 +20,11 @@ import { HiOutlineUserGroup } from "react-icons/hi";
 import { IoPersonOutline } from "react-icons/io5";
 import UserTypeFilterModal from "@/components/ui/UserTypeFilterModal";
 import { error_toaster } from "@/utilities/Toaster";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function SalesByCustomerDetailsReport() {
+function SalesByCustomerDetailsReport() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [customDates, setCustomDates] = useState({
     startDate: "",
     endDate: "",
@@ -44,6 +45,7 @@ export default function SalesByCustomerDetailsReport() {
     order: null, // 'asc' or 'desc'
   });
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [customerIdFromUrl, setCustomerIdFromUrl] = useState(null);
 
   // Initialize dateRange with All Time default (January 1, 2025 to today)
   const getInitialDateRange = () => {
@@ -154,6 +156,99 @@ export default function SalesByCustomerDetailsReport() {
       }
     };
   }, []);
+
+  // Get customerId and date range from URL query parameters on mount
+  useEffect(() => {
+    const customerId = searchParams.get("customerId");
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
+    
+    if (customerId) {
+      setCustomerIdFromUrl(customerId);
+    }
+    
+    // Auto-fill date range if provided in URL
+    if (startDate && endDate) {
+      setDateRange({
+        startDate: startDate,
+        endDate: endDate,
+      });
+      
+      // Also set the selected option based on the date range
+      const today = dayjs();
+      const mtdStart = today.startOf("month").format("YYYY-MM-DD");
+      const mtdEnd = today.format("YYYY-MM-DD");
+      const lastMonthStart = today.subtract(1, "month").startOf("month").format("YYYY-MM-DD");
+      const lastMonthEnd = today.subtract(1, "month").endOf("month").format("YYYY-MM-DD");
+      
+      if (startDate === mtdStart && endDate === mtdEnd) {
+        setSelectedOption({ value: "monthToDate", label: "Month to date" });
+      } else if (startDate === lastMonthStart && endDate === lastMonthEnd) {
+        setSelectedOption({ value: "lastMonth", label: "Last Month" });
+      } else {
+        setSelectedOption({ value: "custom", label: "Custom" });
+        setDisplayCustomFilters(true);
+        setCustomDates({ startDate, endDate });
+      }
+    }
+  }, [searchParams]);
+
+  // Auto-select customer when customerIdFromUrl is available and customers are loaded
+  useEffect(() => {
+    if (customerIdFromUrl && customerOptions.length > 0 && !selectedCustomer) {
+      // Try to find customer in loaded options
+      const existingCustomer = customerOptions.find(
+        (opt) => String(opt.value) === String(customerIdFromUrl)
+      );
+      
+      if (existingCustomer) {
+        setSelectedCustomer(existingCustomer);
+      } else {
+        // If not found in loaded options, fetch the specific customer
+        const fetchCustomerById = async () => {
+          try {
+            const token = typeof window !== "undefined"
+              ? localStorage.getItem("token") || localStorage.getItem("accessToken")
+              : "";
+            
+            // Fetch customer by ID directly
+            const res = await axios.get(
+              `${BASE_URL}api/v1/admin/view-customer-detail/${customerIdFromUrl}`,
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                  feature: "customer",
+                  ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+                withCredentials: true,
+              }
+            );
+
+            if (res?.data?.status === "success" && res?.data?.data?.customer) {
+              const customer = res.data.data.customer;
+              const customerOption = {
+                value: customer.id,
+                label: `${customer.companyName || customer.name}${
+                  customer.name && customer.companyName ? ` (${customer.name})` : ""
+                }`,
+                ...customer,
+              };
+              setSelectedCustomer(customerOption);
+              // Add to options if not already there
+              if (!customerOptions.find((opt) => String(opt.value) === String(customerOption.value))) {
+                setCustomerOptions((prev) => [customerOption, ...prev]);
+              }
+            }
+          } catch (error) {
+            console.error("Error fetching customer by ID:", error);
+          }
+        };
+
+        fetchCustomerById();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customerIdFromUrl, customerOptions.length, selectedCustomer]);
 
   // Load initial customers
   useEffect(() => {
@@ -378,6 +473,7 @@ export default function SalesByCustomerDetailsReport() {
     const transactions = data.data;
     let grandTotalQuantity = 0;
     let grandTotalAmount = 0;
+    let grandTotalSalesPrice = 0; // Sum of all unit prices (sales prices)
     let runningBalance = 0;
 
     // Map transactions to rows
@@ -389,6 +485,7 @@ export default function SalesByCustomerDetailsReport() {
 
       grandTotalQuantity += quantity;
       grandTotalAmount += amount;
+      grandTotalSalesPrice += price; // Sum of unit prices for the Amount column
       runningBalance += amount;
 
       return {
@@ -459,11 +556,15 @@ export default function SalesByCustomerDetailsReport() {
       });
     }
 
+    // Recalculate totals based on filtered/sorted rows (sum of sales prices)
+    const filteredTotalQuantity = rows.reduce((sum, row) => sum + row.quantity, 0);
+    const filteredTotalSalesPrice = rows.reduce((sum, row) => sum + row.salesPrice, 0);
+
     return {
       rows,
       grandTotal: {
-        quantity: grandTotalQuantity,
-        amount: grandTotalAmount,
+        quantity: filteredTotalQuantity,
+        amount: filteredTotalSalesPrice, // Sum of all sales prices (unit prices) from visible rows
       },
     };
   };
@@ -827,15 +928,6 @@ export default function SalesByCustomerDetailsReport() {
                         </button>
                       </th>
                       <th className="text-right py-4 px-4 font-inter font-semibold text-gray-900">
-                        <button
-                          onClick={() => handleSort("salesPrice")}
-                          className="flex items-center gap-2 ml-auto hover:text-theme transition-colors"
-                        >
-                          Sales price
-                          {getSortIcon("salesPrice")}
-                        </button>
-                      </th>
-                      <th className="text-right py-4 px-4 font-inter font-semibold text-gray-900">
                         Amount
                       </th>
                       {/* <th className="text-right py-4 px-4 font-inter font-semibold text-gray-900">
@@ -847,7 +939,7 @@ export default function SalesByCustomerDetailsReport() {
                     {rows.length === 0 ? (
                       <tr>
                         <td
-                          colSpan={9}
+                          colSpan={8}
                           className="text-center py-8 text-gray-500"
                         >
                           No data available
@@ -898,9 +990,6 @@ export default function SalesByCustomerDetailsReport() {
                           <td className="py-3 px-4 text-right font-inter">
                             {formatUSD(row.salesPrice)}
                           </td>
-                          <td className="py-3 px-4 text-right font-inter">
-                            {formatUSD(row.amount)}
-                          </td>
                           {/* <td className="py-3 px-4 text-right font-inter">
                         {formatUSD(row.balance)}
                       </td> */}
@@ -919,7 +1008,6 @@ export default function SalesByCustomerDetailsReport() {
                       <td className="py-4 px-4 text-right font-inter font-bold text-gray-900">
                         {grandTotal.quantity.toFixed(2)}
                       </td>
-                      <td className="py-4 px-4 text-right font-inter font-bold text-gray-900"></td>
                       <td className="py-4 px-4 text-right font-inter font-bold text-gray-900">
                         {formatUSD(grandTotal.amount)}
                       </td>
@@ -941,5 +1029,13 @@ export default function SalesByCustomerDetailsReport() {
         initialFilters={filters}
       /> */}
     </div>
+  );
+}
+
+export default function SalesByCustomerDetailsReportWrapper() {
+  return (
+    <Suspense fallback={<Loader />}>
+      <SalesByCustomerDetailsReport />
+    </Suspense>
   );
 }

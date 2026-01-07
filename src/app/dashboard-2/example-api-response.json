@@ -1,0 +1,118 @@
+{
+  "status": "success",
+  "data": {
+    "monthToDateSales": {
+      "totalSales": "103.67",
+      "orders": 4,
+      "avgOrderValue": "25.917500",
+      "vsLastMonthPercent": 0
+    },
+    "mtdSalesByCustomer": [
+      {
+        "customerId": 1,
+        "customerName": "Sigi tech",
+        "totalSales": 52.72
+      },
+      {
+        "customerId": 2,
+        "customerName": "main local ka customer hun",
+        "totalSales": 34.35
+      },
+      {
+        "customerId": 3,
+        "customerName": "Test Script 2",
+        "totalSales": 16.6
+      },
+      {
+        "customerId": 4,
+        "customerName": "ABC Law Group",
+        "totalSales": 12.5
+      },
+      {
+        "customerId": 5,
+        "customerName": "Midtown Dental",
+        "totalSales": 8.2
+      }
+    ],
+    "lastMonthSales": {
+      "totalSales": "361.00",
+      "orders": 10,
+      "avgOrderValue": "36.100000",
+      "monthClosed": "Completed"
+    },
+    "lastMonthSalesByCustomer": [
+      {
+        "customerId": 6,
+        "customerName": "test",
+        "totalSales": 116.6
+      },
+      {
+        "customerId": 7,
+        "customerName": "Revive Coffee",
+        "totalSales": 85.6
+      },
+      {
+        "customerId": 8,
+        "customerName": "test company",
+        "totalSales": 66.4
+      },
+      {
+        "customerId": 9,
+        "customerName": "Demo company florida",
+        "totalSales": 59.2
+      },
+      {
+        "customerId": 3,
+        "customerName": "Test Script 2",
+        "totalSales": 33.2
+      }
+    ],
+    "mtdSalesByFranchisee": [
+      {
+        "franchiseeId": 1,
+        "salesRepId": 10,
+        "franchiseeName": "Downtown Cafe",
+        "territoryName": "Downtown Cafe",
+        "totalSales": 42300.50
+      },
+      {
+        "franchiseeId": 2,
+        "salesRepId": 11,
+        "franchiseeName": "Westside Brew",
+        "territoryName": "Westside Brew",
+        "totalSales": 33750.25
+      },
+      {
+        "franchiseeId": 3,
+        "salesRepId": 12,
+        "franchiseeName": "Central Coffee Hub",
+        "territoryName": "Central Coffee Hub",
+        "totalSales": 28900.75
+      }
+    ],
+    "ytdSalesByFranchisee": [
+      {
+        "franchiseeId": 1,
+        "salesRepId": 10,
+        "franchiseeName": "Downtown Cafe",
+        "territoryName": "Downtown Cafe",
+        "totalSales": 520800.00
+      },
+      {
+        "franchiseeId": 2,
+        "salesRepId": 11,
+        "franchiseeName": "Westside Brew",
+        "territoryName": "Westside Brew",
+        "totalSales": 405600.50
+      },
+      {
+        "franchiseeId": 3,
+        "salesRepId": 12,
+        "franchiseeName": "Central Coffee Hub",
+        "territoryName": "Central Coffee Hub",
+        "totalSales": 389200.25
+      }
+    ]
+  }
+}
+

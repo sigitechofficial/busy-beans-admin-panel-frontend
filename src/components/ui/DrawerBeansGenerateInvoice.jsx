@@ -24,6 +24,7 @@ const DrawerBeansGenerateInvoice = ({
   setDrawerOpen: setOpen,
   invoiceData,
   setInvoiceData,
+  onNext,
 }) => {
   const router = useRouter();
 
@@ -37,7 +38,7 @@ const DrawerBeansGenerateInvoice = ({
   const [fullData, setFullData] = useState("");
 
   const [emailOptions, setEmailOptions] = useState([]);
-  
+
   // Pagination state for customers
   const [customerPage, setCustomerPage] = useState(1);
   const [customerLimit] = useState(30);
@@ -88,13 +89,15 @@ const DrawerBeansGenerateInvoice = ({
 
   // ======= customers list =======
   const getCustomerListEndpoint = (page, limit, search = "") => {
-    const base = isEmployee && hasPermission("selected-customer_view")
-      ? `api/v1/admin/customer-management/customer-list/employee-id/${userID}`
-      : userType === "admin"
+    const base =
+      isEmployee && hasPermission("selected-customer_view")
+        ? `api/v1/admin/customer-management/customer-list/employee-id/${userID}`
+        : userType === "admin"
         ? `api/v1/admin/customer-management/customer-list/all`
         : userType === "salesRepresentative"
-          ? `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}`
-          : `api/v1/admin/customer-management/customer-list/all`;
+        ? `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}`
+        : `api/v1/admin/customer-management/customer-list/all`;
+
     const params = new URLSearchParams();
     params.set("page", page.toString());
     params.set("limit", limit.toString());
@@ -153,7 +156,9 @@ const DrawerBeansGenerateInvoice = ({
   };
 
   const handleCompanySelect = (companyId) => {
-    const selected = allCustomers?.find((c) => c?.id === companyId) || fullData?.find((c) => c?.id === companyId);
+    const selected =
+      allCustomers?.find((c) => c?.id === companyId) ||
+      fullData?.find((c) => c?.id === companyId);
     setOrder((prev) => ({
       ...prev,
       userId: selected?.id,
@@ -239,7 +244,8 @@ const DrawerBeansGenerateInvoice = ({
   // Fetch sales rep's own data for self order
   const fetchSalesRepSelfData = async () => {
     try {
-      const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+      const token =
+        localStorage.getItem("accessToken") || localStorage.getItem("token");
       const res = await axios.get(
         `${BASE_URL}api/v1/admin/sales-rep/${userID}`,
         {
@@ -251,11 +257,12 @@ const DrawerBeansGenerateInvoice = ({
       );
       if (res?.data?.status === "success") {
         const salesRepData = res?.data?.data?.data || res?.data?.data || {};
-        
+
         // Auto-fill email and name
-        const salesRepEmail = salesRepData?.email || localStorage.getItem("email") || "";
+        const salesRepEmail =
+          salesRepData?.email || localStorage.getItem("email") || "";
         setEmail(salesRepEmail);
-        
+
         // Set sales rep ID
         setOrder((prev) => ({
           ...prev,
@@ -281,7 +288,8 @@ const DrawerBeansGenerateInvoice = ({
 
             return {
               value: address.id,
-              label: parts.length > 0 ? parts.join(", ") : `Address ${address.id}`,
+              label:
+                parts.length > 0 ? parts.join(", ") : `Address ${address.id}`,
             };
           });
 
@@ -355,14 +363,23 @@ const DrawerBeansGenerateInvoice = ({
   };
 
   // ✅ Fetch customers with pagination and search
-  const fetchCustomerData = async (page, append = false, searchQuery = customerSearchQuery) => {
+  const fetchCustomerData = async (
+    page,
+    append = false,
+    searchQuery = customerSearchQuery
+  ) => {
     if (customerLoading) return;
-    
+
     setCustomerLoading(true);
     try {
-      const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
-      const endpoint = getCustomerListEndpoint(page, customerLimit, searchQuery);
-      
+      const token =
+        localStorage.getItem("token") || localStorage.getItem("accessToken");
+      const endpoint = getCustomerListEndpoint(
+        page,
+        customerLimit,
+        searchQuery
+      );
+
       const res = await axios.get(`${BASE_URL}${endpoint}`, {
         headers: {
           "Content-Type": "application/json",
@@ -373,14 +390,20 @@ const DrawerBeansGenerateInvoice = ({
 
       if (res?.data?.status === "success") {
         const customers = res?.data?.data?.data || res?.data?.data || [];
-        const totalItems = res?.data?.pagination?.totalItems || res?.data?.data?.pagination?.totalItems || customers.length;
-        const totalPages = res?.data?.pagination?.totalPages || res?.data?.data?.pagination?.totalPages || Math.ceil(totalItems / customerLimit);
-        
+        const totalItems =
+          res?.data?.pagination?.totalItems ||
+          res?.data?.data?.pagination?.totalItems ||
+          customers.length;
+        const totalPages =
+          res?.data?.pagination?.totalPages ||
+          res?.data?.data?.pagination?.totalPages ||
+          Math.ceil(totalItems / customerLimit);
+
         const nameOptions = customers.map((user) => ({
           value: user?.id,
           label: `${user?.companyName} (${user?.name})`,
         }));
-        
+
         const emails = customers.map((user) => ({
           value: user?.email,
           label: user?.email,
@@ -395,7 +418,7 @@ const DrawerBeansGenerateInvoice = ({
           setEmailOptions(emails);
           setAllCustomers(customers);
         }
-        
+
         // Keep fullData for backward compatibility (handleCompanySelect uses it)
         setFullData(customers);
 
@@ -449,10 +472,10 @@ const DrawerBeansGenerateInvoice = ({
   // Alternative scroll handler for menuListProps
   const handleMenuScroll = (event) => {
     if (partnersOrder) return; // Don't handle scroll for partners
-    
+
     const { target } = event;
     if (!target) return;
-    
+
     const { scrollTop, scrollHeight, clientHeight } = target;
     // Check if scrolled near bottom (within 50px)
     if (scrollHeight - scrollTop <= clientHeight + 50) {
@@ -464,7 +487,8 @@ const DrawerBeansGenerateInvoice = ({
 
   const fetchDirectPartnerData = async (selfOrder = false) => {
     try {
-      const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+      const token =
+        localStorage.getItem("accessToken") || localStorage.getItem("token");
       let selfOrderUser = selfOrder ? `&&salesRepId=${userID}` : "";
       const res = await axios.get(
         `${BASE_URL}api/v1/admin/sales-rep/for-order-creation?partnerType=direct-partner${selfOrderUser}`,
@@ -477,7 +501,7 @@ const DrawerBeansGenerateInvoice = ({
       );
       if (res?.data?.status === "success") {
         const list = res?.data?.data || [];
-        
+
         if (isSelfOrder) {
           // For self order, store partners and create options
           setPartners(list);
@@ -530,98 +554,47 @@ const DrawerBeansGenerateInvoice = ({
     }
   }, [isSelfOrder, open]);
 
-  console.log(
-    order?.userId,
-    totalWeight,
-    "order?.userId, totalWeightorder?.userId, totalWeight"
-  );
   useEffect(() => {
     if (open && order?.userId) {
       fetchChargesForCustomer(order?.userId, totalWeight);
     }
   }, [open, order?.userId, totalWeight]);
 
-  const handleGenerate = async () => {
-    // if (cartItems.length === 0) {
-    //   info_toaster("No products selected.");
-    //   return;
-    // }
+  // Validate form and move to items step
+  const handleNext = () => {
     if (!email?.trim()) {
       info_toaster("Email cannot be empty.");
       return;
     }
-    // For self order, address is auto-selected, so skip validation
     if (!order?.addressId && !isSelfOrder) {
       info_toaster("Address cannot be empty.");
       return;
     }
-    if (!order?.paymentMethod) {
-      info_toaster("Select payment method.");
+    if (!order?.paymentMethod?.trim()) {
+      info_toaster("Payment method cannot be empty.");
       return;
     }
 
-    const itemsPrice = Number(totalPrice || 0);
-    const shipping = Number(order?.shippingCharges || 0);
-    const totalBill = itemsPrice + shipping;
-
-    const payload = {
-      email: [email],
-      order: {
-        totalBill: totalBill.toFixed(2),
-        subTotal: itemsPrice.toFixed(2),
-        discountPrice: (0).toFixed(2),
-        discountPercentage: 0,
-        itemsPrice: itemsPrice.toFixed(2),
-        vat: 0.0,
-        totalWeight,
-        shippingCharges: shipping.toFixed(2),
-        note: order?.note,
-        poNumber: order?.poNumber,
-        addressId: order?.addressId,
-        ...(partnersOrder || isSelfOrder
-          ? { salesRepId: isSelfOrder ? order?.salesRepId : order?.userId }
-          : { userId: order?.userId }),
-        paymentMethod: order?.paymentMethod,
-        invoiceOnly: true,
-        type: "direct-invoice"
-      },
-      items: mapItemsForPayload(cartItems),
+    // Store form data in localStorage to pass to items selection page
+    const formData = {
+      email,
+      order,
+      partnersOrder,
+      isSelfOrder,
+      userType,
+      userID,
+      cartItems,
+      totalPrice,
+      totalWeight,
+      shippingCharges: order?.shippingCharges || "",
     };
+    localStorage.setItem("invoiceFormData", JSON.stringify(formData));
 
-    setLoader(true);
-    try {
-      // Determine endpoint based on user type and order type
-      let endpoint;
-      if (userType === "admin") {
-        endpoint = partnersOrder 
-          ? `api/v1/admin/partner-order/book-new-order` 
-          : `api/v1/admin/book-new-order`;
-      } else {
-        // For sales rep: use partner order endpoint if self order, otherwise regular endpoint
-        endpoint = isSelfOrder
-          ? `api/v1/admin/partner-order/book-new-order`
-          : `api/v1/admin/sales-rep/book-new-order/${userID}`;
-      }
-
-      const res = await PostAPI(endpoint, payload, "invoices");
-
-      if (res?.data?.status === "success") {
-        const orderId = res?.data?.data?.id;
-        // success_toaster("Invoice generated successfully");
-        localStorage.setItem("createOrderData", JSON.stringify([]));
-        setInvoiceData?.([]);
-        setOpen(false);
-        if (orderId) {
-          // router.push(`/orders/detail/${orderId}/add-invoice`);
-          router.push( (partnersOrder || isSelfOrder) ? `/direct-invoices/partner/${orderId}/add-invoice` : `/direct-invoices/${orderId}/add-invoice`);
-        }
-      } else {
-        throw new Error(res?.data?.message || "Failed to generate invoice.");
-      }
-    } catch (err) {
-      ErrorHandler(err);
-    } finally {
-      setLoader(false);
+    // Use callback if provided, otherwise navigate
+    if (onNext) {
+      onNext(formData);
+    } else {
+      router.push("/create-invoice/add-items");
     }
   };
 
@@ -664,9 +637,7 @@ const DrawerBeansGenerateInvoice = ({
           {/* Self Order Toggle for Sales Representatives */}
           {userType === "salesRepresentative" && (
             <div className="flex items-center gap-x-2 justify-end">
-              <label className="text-white font-medium">
-                Self Order
-              </label>
+              <label className="text-white font-medium">Self Order</label>
               <Switch
                 onChange={(e) => handleSelfOrderToggle(e)}
                 checked={isSelfOrder}
@@ -708,16 +679,31 @@ const DrawerBeansGenerateInvoice = ({
                   className="w-full"
                   styles={drawerSelectStyles}
                   options={companyNameOptions}
+                  value={
+                    companyNameOptions?.find(
+                      (opt) => opt?.value === order?.userId
+                    ) || null
+                  }
                   onChange={(e) => handleCompanySelect(e.value)}
-                  onInputChange={!partnersOrder ? handleCustomerSearchChange : undefined}
-                  onMenuScrollToBottom={!partnersOrder ? handleMenuScrollToBottom : undefined}
-                  menuListProps={!partnersOrder ? {
-                    onScroll: handleMenuScroll,
-                  } : undefined}
+                  onInputChange={
+                    !partnersOrder ? handleCustomerSearchChange : undefined
+                  }
+                  onMenuScrollToBottom={
+                    !partnersOrder ? handleMenuScrollToBottom : undefined
+                  }
+                  menuListProps={
+                    !partnersOrder
+                      ? {
+                          onScroll: handleMenuScroll,
+                        }
+                      : undefined
+                  }
                   isSearchable={!partnersOrder}
                   filterOption={!partnersOrder ? () => true : undefined} // Disable client-side filtering, use server-side search
                   isLoading={!partnersOrder ? customerLoading : false}
-                  loadingMessage={!partnersOrder ? () => "Loading customers..." : undefined}
+                  loadingMessage={
+                    !partnersOrder ? () => "Loading customers..." : undefined
+                  }
                 />
               </div>
             )}
@@ -742,8 +728,9 @@ const DrawerBeansGenerateInvoice = ({
                 className="w-full"
                 styles={drawerSelectStyles}
                 value={
-                  addressOptions?.find((opt) => opt?.value === order?.addressId) ||
-                  null
+                  addressOptions?.find(
+                    (opt) => opt?.value === order?.addressId
+                  ) || null
                 }
                 options={addressOptions}
                 onChange={(e) =>
@@ -761,8 +748,8 @@ const DrawerBeansGenerateInvoice = ({
                 value={
                   order.paymentMethod
                     ? paymentMethodOptions.find(
-                      (opt) => opt.value === order.paymentMethod
-                    ) || null
+                        (opt) => opt.value === order.paymentMethod
+                      ) || null
                     : null
                 }
                 options={paymentMethodOptions}
@@ -778,8 +765,9 @@ const DrawerBeansGenerateInvoice = ({
                   <input
                     type="text"
                     id="courier-note"
-                    className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${order?.note ? "placeholder-transparent" : ""
-                      }`}
+                    className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${
+                      order?.note ? "placeholder-transparent" : ""
+                    }`}
                     value={order?.note}
                     onChange={(e) =>
                       setOrder({ ...order, note: e.target.value })
@@ -787,10 +775,11 @@ const DrawerBeansGenerateInvoice = ({
                   />
                   <label
                     htmlFor="courier-note"
-                    className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${order?.note
-                      ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
-                      : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
-                      }`}
+                    className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${
+                      order?.note
+                        ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
+                        : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
+                    }`}
                   >
                     {order?.note
                       ? "Note for the supplier (optional)"
@@ -805,8 +794,9 @@ const DrawerBeansGenerateInvoice = ({
                   <input
                     type="text"
                     id="poNumber"
-                    className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${order?.poNumber ? "placeholder-transparent" : ""
-                      }`}
+                    className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${
+                      order?.poNumber ? "placeholder-transparent" : ""
+                    }`}
                     value={order?.poNumber}
                     onChange={(e) =>
                       setOrder({ ...order, poNumber: e.target.value })
@@ -814,10 +804,11 @@ const DrawerBeansGenerateInvoice = ({
                   />
                   <label
                     htmlFor="poNumber"
-                    className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${order?.poNumber
-                      ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
-                      : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
-                      }`}
+                    className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${
+                      order?.poNumber
+                        ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
+                        : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
+                    }`}
                   >
                     {order?.poNumber
                       ? "Purchase Order Number"
@@ -830,12 +821,13 @@ const DrawerBeansGenerateInvoice = ({
 
           {/* Footer */}
           <div
-            className={`absolute bottom-0 left-0 py-5 flex justify-center w-full px-4 sm:px-0 sm:left-[30px] sm:w-[452px] ${loader ? "opacity-60" : "bg-theme"
-              }`}
+            className={`absolute bottom-0 left-0 py-5 flex justify-center w-full px-4 sm:px-0 sm:left-[30px] sm:w-[452px] ${
+              loader ? "opacity-60" : "bg-theme"
+            }`}
           >
             <button
               disabled={loader}
-              onClick={handleGenerate}
+              onClick={handleNext}
               className="bg-themeLight font-bold text-white rounded-[4px] px-5 min-h-14 w-full flex items-center justify-between"
             >
               <div className="flex space-x-4 items-center">

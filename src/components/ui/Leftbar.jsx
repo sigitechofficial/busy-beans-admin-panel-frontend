@@ -878,7 +878,8 @@ export default function Leftbar(props) {
               active={
                 pathname === "/all-invoices" ||
                 pathname === "/customer-invoices" ||
-                pathname === "/direct-invoices"
+                pathname === "/direct-invoices" ||
+                pathname === "/create-invoice"
               }
               Angle={FaAngleRight}
               onClick={() =>

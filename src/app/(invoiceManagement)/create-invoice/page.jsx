@@ -1,0 +1,1790 @@
+"use client";
+
+import ManagementTab from "@/components/ui/ManagementTab";
+import GetAPI from "@/utilities/GetAPI";
+import Loader from "@/components/ui/Loader";
+import dayjs from "dayjs";
+import { useDataContext } from "@/utilities/DataContext";
+import { CiMenuBurger } from "react-icons/ci";
+import { useState, useEffect, useMemo, useRef } from "react";
+// import DrawerBeansGenerateInvoice from "@/components/ui/DrawerBeansGenerateInvoice";
+import MiniLoader from "@/components/ui/MiniLoader";
+import { PostAPI } from "@/utilities/PostAPI";
+import { selectStyles2, drawerSelectStyles } from "@/utilities/SelectStyle";
+import { success_toaster, info_toaster } from "@/utilities/Toaster";
+import { useRouter } from "next/navigation";
+import { Dialog } from "primereact/dialog";
+import { IoIosSearch } from "react-icons/io";
+import Select from "react-select";
+import { QuickbooksPingCheck } from "@/utilities/constants";
+import axios from "axios";
+import { BASE_URL } from "@/utilities/URL";
+import ErrorHandler from "@/utilities/ErrorHandler";
+import { hasPermission } from "@/utilities/Permission";
+import Switch from "react-switch";
+import { MdInsertComment, MdOutlineConfirmationNumber } from "react-icons/md";
+
+export default function CreateInvoice() {
+  const router = useRouter();
+  let userID, userType;
+  if (typeof window !== "undefined") {
+    userID = localStorage.getItem("userID");
+    userType = localStorage.getItem("userType");
+  }
+
+  const { data, isLoading } = GetAPI(
+    userType === "salesRepresentative"
+      ? `api/v1/admin/orders?salesRepId=${userID}`
+      : `api/v1/admin/orders`
+  );
+
+  const datas = [];
+  const resultedOrders = data?.data?.data?.filter((detail) => {
+    return (
+      (detail?.paymentStatus === "pending" || detail?.paymentStatus === "done") &&
+      datas.push({
+        id: detail?.id,
+        invoiceNumber: detail?.invoiceNumber,
+        companyName: detail?.companyName,
+        totalBill: "$" + detail?.totalBill,
+        paymentStatus: detail?.paymentStatus === "done" ? "Paid" : "Unpaid",
+        orderDate: dayjs(detail?.on).format("MM/DD/YYYY"),
+      })
+    );
+  });
+
+  const { toggle, setToggle } = useDataContext();
+  const [invoiceData, setInvoiceData] = useState([]);
+  
+  // Single page - no step management needed
+
+  // ========== DRAWER FUNCTIONALITY STATE ==========
+  const [companyNameOptions, setCompanyNameOptions] = useState([]);
+  const [fullData, setFullData] = useState("");
+  const [emailOptions, setEmailOptions] = useState([]);
+  const [addressOptions, setAddressOptions] = useState([]);
+  const [email, setEmail] = useState("");
+  const [loader, setLoader] = useState(false);
+  const [partnersOrder, setPartnersOrder] = useState(false);
+  const [isSelfOrder, setIsSelfOrder] = useState(false);
+  const [partners, setPartners] = useState([]);
+  const [srNameOptions, setSrNameOptions] = useState([]);
+
+  // Pagination state for customers
+  const [customerPage, setCustomerPage] = useState(1);
+  const [customerLimit] = useState(30);
+  const [customerHasMore, setCustomerHasMore] = useState(true);
+  const [customerLoading, setCustomerLoading] = useState(false);
+  const [allCustomers, setAllCustomers] = useState([]);
+  const [customerSearchQuery, setCustomerSearchQuery] = useState("");
+  const customerSearchTimeoutRef = useRef(null);
+
+  // Drawer form state
+  const [order, setOrder] = useState({
+    note: "",
+    paymentMethod: "",
+    poNumber: "",
+    addressId: "",
+    userId: "",
+    salesRepId: "",
+    shippingCharges: "",
+  });
+
+  // Cart items from localStorage
+  let cartItems = [];
+  if (typeof window !== "undefined") {
+    cartItems = JSON.parse(localStorage.getItem("createOrderData")) || [];
+  }
+
+  const totalPriceFromCart = cartItems?.reduce(
+    (a, b) => Number(a) + Number(b?.price) * Number(b?.qty),
+    0
+  );
+  const totalWeightFromCart = cartItems?.reduce(
+    (a, b) => Number(a) + Number(b?.weight || 0) * Number(b?.qty || 0),
+    0
+  );
+
+  const paymentMethodOptions = [
+    { label: "Bank Check", value: "bank check" },
+    { label: "Card", value: "card" },
+  ];
+
+  let isEmployee;
+  if (typeof window !== "undefined") {
+    isEmployee = localStorage.getItem("isEmployee") === "true";
+  }
+
+  // Items section state
+  const [filterId, setFilterId] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [manual, setManual] = useState({
+    shippingCharge: "",
+    show: false,
+  });
+  const [modal, setModal] = useState(false);
+  const [search, setSearch] = useState("");
+
+  // Use current state values directly (no formData needed)
+
+  const { data: shippingChargesData } = GetAPI(
+    "api/v1/admin/shipping-charges-list",
+    "charges"
+  );
+  const { data: category } = GetAPI(`api/v1/admin/category`);
+  
+  let categoryList = [{ value: "", label: "All" }];
+  if (category) {
+    category?.data?.data?.map((cat) => {
+      categoryList.push({ value: cat?.id, label: cat?.name });
+    });
+  }
+  const url = filterId
+    ? `api/v1/admin/product?categoryId=${filterId}`
+    : `api/v1/admin/product`;
+  const { data: ProductList, reFetch: ProductRefetch } = GetAPI(url);
+
+  const getToday = () => {
+    const today = new Date();
+    return today.toISOString().split("T")[0];
+  };
+
+  const getDueDate = () => {
+    const due = new Date();
+    due.setDate(due.getDate() + 30);
+    return due.toISOString().split("T")[0];
+  };
+
+  // States for invoice fields
+  const [invoiceFields, setInvoiceFields] = useState({
+    invoiceNumber: "",
+    poNumber: order?.poNumber || "",
+    invoiceDate: getToday(),
+    terms: "30",
+    dueDate: getDueDate(),
+    discountPercentage: 0,
+    note: order?.note || "",
+    emailInvoiceToCustomer: false,
+    invoicePdf: "",
+    shippingCharges: order?.shippingCharges || "",
+  });
+
+  // Update invoice fields when order changes
+  useEffect(() => {
+    setInvoiceFields((prev) => ({
+      ...prev,
+      poNumber: order?.poNumber || prev.poNumber,
+      note: order?.note || prev.note,
+      shippingCharges: order?.shippingCharges || prev.shippingCharges,
+    }));
+  }, [order?.poNumber, order?.note, order?.shippingCharges]);
+
+  // Items state - initialize from cartItems
+  const [items, setItems] = useState([]);
+  useEffect(() => {
+    if (cartItems && cartItems.length > 0) {
+      setItems(
+        cartItems.map((item) => ({
+          ...item,
+          checked: true,
+          qty: item.qty || 1,
+          weight: item.weight,
+          unit: item.price / (item.qty || 1),
+          product: item.name,
+          productCode: item.productCode || item.code || "",
+          productId: item.productId || item.id,
+        }))
+      );
+    }
+  }, [cartItems]);
+
+  // Extra rows state (for added delivery/extra charges)
+  const [extraRows, setExtraRows] = useState([]);
+
+  // Extra Charge Rows
+  const [extraCharges, setExtraCharges] = useState([]);
+
+  // Calculate if all items are checked
+  const allChecked =
+    items.length > 0 &&
+    items.every((item) => item.checked) &&
+    (extraRows.length === 0 || extraRows.every((item) => item.checked));
+
+  // Master checkbox handler
+  const handleCheckAll = (checked) => {
+    setItems((prev) => prev.map((item) => ({ ...item, checked })));
+    setExtraRows((prev) => prev.map((item) => ({ ...item, checked })));
+  };
+
+  // Item checkbox handler
+  const handleItemCheck = (itemIdx, checked) => {
+    setItems((prev) =>
+      prev.map((item, idx) => (idx === itemIdx ? { ...item, checked } : item))
+    );
+  };
+
+  const normalizeQty = (rawValue) => {
+    let clean = String(rawValue).replace(/\D/g, "");
+    if (clean === "") return "";
+    if (clean === "0") return 1;
+    return parseInt(clean, 10);
+  };
+
+  // Item qty handler
+  const handleItemQtyChange = (itemIdx, value) => {
+    setItems((prev) =>
+      prev.map((item, idx) =>
+        idx === itemIdx ? { ...item, qty: normalizeQty(value) } : item
+      )
+    );
+  };
+
+  // Extra row checkbox handler
+  const handleExtraRowCheck = (rowIdx, checked) => {
+    setExtraRows((prev) =>
+      prev.map((item, idx) => (idx === rowIdx ? { ...item, checked } : item))
+    );
+  };
+
+  // Add delivery/extra charges row
+  const handleAddExtra = (prod) => {
+    const itemIdx = items.findIndex((item) => item.productId == prod?.id);
+    if (itemIdx !== -1) {
+      setItems((prev) =>
+        prev.map((item, idx) =>
+          idx === itemIdx ? { ...item, qty: +item.qty + 1 } : item
+        )
+      );
+      setModal(false);
+      return;
+    }
+
+    setExtraRows((prev) => {
+      const existingIdx = prev.findIndex((item) => item.productId == prod?.id);
+      if (existingIdx !== -1) {
+        return prev.map((item, idx) =>
+          idx === existingIdx ? { ...item, qty: +item.qty + 1 } : item
+        );
+      }
+      return [
+        ...prev,
+        {
+          id: `extra-${Date.now()}`,
+          productId: prod?.id,
+          code: "",
+          name: prod?.name,
+          qty: prod?.qty || 1,
+          unit: prod?.price,
+          checked: true,
+          weight: prod?.weight,
+          productCode: prod?.productCode,
+        },
+      ];
+    });
+
+    setModal(false);
+  };
+
+  // Handle input change for extra rows
+  const handleExtraInputChange = (rowIdx, field, value) => {
+    setExtraRows((prev) =>
+      prev.map((item, idx) => {
+        if (idx !== rowIdx) return item;
+        if (field === "qty") {
+          return { ...item, qty: normalizeQty(value) };
+        }
+        return {
+          ...item,
+          [field]: field === "unit" ? parseFloat(value) || 0 : value,
+        };
+      })
+    );
+  };
+
+  const handleInvoiceFieldChange = (field, value) => {
+    if (field === "emailInvoiceToCustomer" && value) {
+      setInvoiceFields((prev) => ({
+        ...prev,
+        [field]: value,
+        invoiceDate: value ? prev.invoiceDate || getToday() : prev.invoiceDate,
+      }));
+    } else {
+      setInvoiceFields((prev) => ({
+        ...prev,
+        [field]: value,
+      }));
+    }
+  };
+
+  const handleAddChargeRow = () => {
+    setExtraCharges((prev) => [
+      ...prev,
+      {
+        type: "charges",
+        code: "",
+        name: "",
+        qty: 1,
+        unit: 0,
+        checked: true,
+      },
+    ]);
+  };
+
+  const handleChargeInputChange = (rowIdx, field, value) => {
+    setExtraCharges((prev) =>
+      prev.map((item, idx) => {
+        if (idx !== rowIdx) return item;
+        if (field === "qty") {
+          return { ...item, qty: normalizeQty(value) };
+        }
+        return {
+          ...item,
+          [field]: field === "unit" ? parseFloat(value) || 0 : value,
+        };
+      })
+    );
+  };
+
+  const handleChargeRowCheck = (rowIdx, checked) => {
+    setExtraCharges((prev) =>
+      prev.map((item, idx) => (idx === rowIdx ? { ...item, checked } : item))
+    );
+  };
+
+  const chargesForApi = (extraCharges || [])
+    .filter((item) => item.checked)
+    .map((item) => ({
+      type: "charges",
+      code: item.code,
+      name: item.name,
+      qty: item.qty,
+      price: String(item.unit),
+      total: item.qty * item.unit,
+    }));
+
+  // Calculate total weight
+  const calculatedTotalWeight = useMemo(() => {
+    return (
+      items
+        .filter((item) => item.checked)
+        .reduce(
+          (sum, item) => sum + (Number(item.weight) || 0) * (item.qty || 1),
+          0
+        ) +
+      extraRows
+        .filter((item) => item.checked)
+        .reduce(
+          (sum, item) => sum + (Number(item.weight) || 0) * (item.qty || 1),
+          0
+        )
+    );
+  }, [items, extraRows]);
+
+  // Find the shipping charge based on totalWeight
+  const shippingChargeObj = shippingChargesData?.data?.data?.find(
+    (sc) => calculatedTotalWeight >= sc.weightFrom && calculatedTotalWeight <= sc.weightTo
+  );
+  let shippingCharge = shippingChargeObj
+    ? Number(shippingChargeObj.charges)
+    : 0;
+
+  // Update shipping charges when total weight changes (auto calculate mode)
+  useEffect(() => {
+    if (!manual.show && calculatedTotalWeight > 0 && shippingChargesData?.data?.data) {
+      const shippingChargeObj = shippingChargesData.data.data.find(
+        (sc) => calculatedTotalWeight >= sc.weightFrom && calculatedTotalWeight <= sc.weightTo
+      );
+      if (shippingChargeObj) {
+        const calculatedCharge = Number(shippingChargeObj.charges);
+        setInvoiceFields((prev) => ({
+          ...prev,
+          shippingCharges: calculatedCharge.toFixed(2),
+        }));
+      } else {
+        setInvoiceFields((prev) => ({
+          ...prev,
+          shippingCharges: "",
+        }));
+      }
+    }
+  }, [calculatedTotalWeight, manual.show, shippingChargesData]);
+
+  // ========== DRAWER FUNCTIONALITY FUNCTIONS ==========
+  
+  // Get customer list endpoint
+  const getCustomerListEndpoint = (page, limit, search = "") => {
+    const base =
+      isEmployee && hasPermission("selected-customer_view")
+        ? `api/v1/admin/customer-management/customer-list/employee-id/${userID}`
+        : userType === "admin"
+        ? `api/v1/admin/customer-management/customer-list/all`
+        : userType === "salesRepresentative"
+        ? `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}`
+        : `api/v1/admin/customer-management/customer-list/all`;
+
+    const params = new URLSearchParams();
+    params.set("page", page.toString());
+    params.set("limit", limit.toString());
+    if (search.trim()) {
+      params.set("search", search.trim());
+    }
+    if (base.includes("&orderCreation=yes")) {
+      return `${base.split("&")[0]}?${params.toString()}&orderCreation=yes`;
+    }
+    return `${base}?${params.toString()}`;
+  };
+
+  // Fetch charges for customer
+  const fetchChargesForCustomer = async (customerId, weight) => {
+    if (!customerId || !weight) return;
+    try {
+      const res = await PostAPI(
+        `api/v1/admin/shipping-charges-on-weight/customer/${customerId}`,
+        { weight }
+      );
+      if (res?.data?.status === "success") {
+        const payload = res?.data?.data || {};
+        const shipping = Number(
+          payload?.shippingCharges ?? payload?.charges ?? 0
+        );
+        setOrder((prev) => ({
+          ...prev,
+          shippingCharges: shipping,
+        }));
+      } else {
+        throw new Error(res?.data?.message || "Failed to fetch charges.");
+      }
+    } catch (err) {
+      ErrorHandler(err);
+    }
+  };
+
+  // Handle company/customer selection
+  const handleCompanySelect = (companyId) => {
+    const selected =
+      allCustomers?.find((c) => c?.id === companyId) ||
+      fullData?.find((c) => c?.id === companyId);
+    setOrder((prev) => ({
+      ...prev,
+      userId: selected?.id,
+      addressId: "",
+      paymentMethod: selected?.preferredPaymentMethod || "",
+    }));
+    setEmail(selected?.email || "");
+
+    const addressList = (selected?.addresses ?? []).map((address) => {
+      const parts = [
+        address.companyaddress,
+        address.addressLineOne,
+        address.addressLineTwo,
+        address.town,
+        address.state,
+        address.zipCode,
+        address.country,
+      ].filter((p) => p && p.trim() !== "");
+      return { value: address.id, label: parts.join(", ") };
+    });
+    setAddressOptions(addressList);
+    fetchChargesForCustomer(selected?.id, totalWeightFromCart);
+  };
+
+  // Handle partner selection for self order
+  const handleSrNameSelect = (selectedOption) => {
+    if (!selectedOption || !selectedOption.value) {
+      setEmail("");
+      setAddressOptions([]);
+      setOrder((prev) => ({
+        ...prev,
+        salesRepId: "",
+        addressId: "",
+      }));
+      return;
+    }
+
+    const selectedPartner = partners?.find(
+      (p) => p?.id === selectedOption?.value
+    );
+
+    if (!selectedPartner) {
+      setEmail("");
+      setAddressOptions([]);
+      return;
+    }
+
+    setEmail(selectedPartner?.email || "");
+
+    setOrder((prev) => ({
+      ...prev,
+      salesRepId: selectedPartner?.id,
+      userId: "",
+      addressId: "",
+    }));
+
+    const addresses = selectedPartner?.addresses || [];
+    const addressList = addresses
+      .filter((address) => address && address.id != null)
+      .map((address) => {
+        const parts = [
+          address.companyaddress,
+          address.addressLineOne,
+          address.addressLineTwo,
+          address.town,
+          address.state,
+          address.zipCode,
+          address.country,
+        ].filter((part) => part != null && String(part).trim() !== "");
+
+        return {
+          value: address.id,
+          label: parts.length > 0 ? parts.join(", ") : `Address ${address.id}`,
+        };
+      });
+
+    setAddressOptions(addressList);
+  };
+
+  // Fetch sales rep's own data for self order
+  const fetchSalesRepSelfData = async () => {
+    try {
+      const token =
+        localStorage.getItem("accessToken") || localStorage.getItem("token");
+      const res = await axios.get(
+        `${BASE_URL}api/v1/admin/sales-rep/${userID}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        }
+      );
+      if (res?.data?.status === "success") {
+        const salesRepData = res?.data?.data?.data || res?.data?.data || {};
+
+        const salesRepEmail =
+          salesRepData?.email || localStorage.getItem("email") || "";
+        setEmail(salesRepEmail);
+
+        setOrder((prev) => ({
+          ...prev,
+          salesRepId: salesRepData?.id || userID,
+          userId: "",
+          addressId: "",
+        }));
+
+        const addresses = salesRepData?.addresses || [];
+        const addressList = addresses
+          .filter((address) => address && address.id != null)
+          .map((address) => {
+            const parts = [
+              address.companyaddress,
+              address.addressLineOne,
+              address.addressLineTwo,
+              address.town,
+              address.state,
+              address.zipCode,
+              address.country,
+            ].filter((part) => part != null && String(part).trim() !== "");
+
+            return {
+              value: address.id,
+              label:
+                parts.length > 0 ? parts.join(", ") : `Address ${address.id}`,
+            };
+          });
+
+        setAddressOptions(addressList);
+      }
+    } catch (error) {
+      console.error(error);
+      ErrorHandler(error);
+    }
+  };
+
+  // Handle self order toggle for sales representatives
+  const handleSelfOrderToggle = (checked) => {
+    setIsSelfOrder(checked);
+
+    if (checked) {
+      setOrder((prev) => ({
+        ...prev,
+        salesRepId: "",
+        userId: "",
+        addressId: "",
+      }));
+      setEmail("");
+      setAddressOptions([]);
+      fetchSalesRepSelfData();
+    } else {
+      setOrder((prev) => ({
+        ...prev,
+        salesRepId: "",
+      }));
+      setEmail("");
+      setAddressOptions([]);
+      setPartners([]);
+      setSrNameOptions([]);
+      fetchCustomerData(1, false, customerSearchQuery);
+    }
+  };
+
+  // Handle partner order toggle (admin only)
+  const handlePartnerOrder = (e) => {
+    setPartnersOrder(e);
+    setOrder({
+      note: "",
+      paymentMethod: "",
+      poNumber: "",
+      addressId: "",
+      userId: "",
+      salesRepId: "",
+      shippingCharges: "",
+    });
+    setCompanyNameOptions([]);
+    setEmail("");
+    setAddressOptions([]);
+    setEmailOptions([]);
+    if (!e) {
+      setCustomerPage(1);
+      setAllCustomers([]);
+      setCustomerSearchQuery("");
+    } else {
+      setCustomerPage(1);
+      setAllCustomers([]);
+      setCustomerSearchQuery("");
+    }
+  };
+
+  // Fetch customers with pagination and search
+  const fetchCustomerData = async (
+    page,
+    append = false,
+    searchQuery = customerSearchQuery
+  ) => {
+    if (customerLoading || partnersOrder) return;
+
+    setCustomerLoading(true);
+    try {
+      const token =
+        localStorage.getItem("token") || localStorage.getItem("accessToken");
+      const endpoint = getCustomerListEndpoint(
+        page,
+        customerLimit,
+        searchQuery
+      );
+
+      const res = await axios.get(`${BASE_URL}${endpoint}`, {
+        headers: {
+          "Content-Type": "application/json",
+          feature: "customer",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      if (res?.data?.status === "success") {
+        const customers = res?.data?.data?.data || res?.data?.data || [];
+        const totalItems =
+          res?.data?.pagination?.totalItems ||
+          res?.data?.data?.pagination?.totalItems ||
+          customers.length;
+        const totalPages =
+          res?.data?.pagination?.totalPages ||
+          res?.data?.data?.pagination?.totalPages ||
+          Math.ceil(totalItems / customerLimit);
+
+        const nameOptions = customers.map((user) => ({
+          value: user?.id,
+          label: `${user?.companyName} (${user?.name})`,
+        }));
+
+        const emails = customers.map((user) => ({
+          value: user?.email,
+          label: user?.email,
+        }));
+
+        if (append) {
+          setCompanyNameOptions((prev) => [...prev, ...nameOptions]);
+          setEmailOptions((prev) => [...prev, ...emails]);
+          setAllCustomers((prev) => [...prev, ...customers]);
+        } else {
+          setCompanyNameOptions(nameOptions);
+          setEmailOptions(emails);
+          setAllCustomers(customers);
+        }
+
+        setFullData(customers);
+        setCustomerHasMore(page < totalPages);
+        setCustomerPage(page);
+      }
+    } catch (error) {
+      console.error("Error fetching customers:", error);
+    } finally {
+      setCustomerLoading(false);
+    }
+  };
+
+  // Handle search input change with debounce
+  const handleCustomerSearchChange = (inputValue) => {
+    if (customerSearchTimeoutRef.current) {
+      clearTimeout(customerSearchTimeoutRef.current);
+    }
+
+    customerSearchTimeoutRef.current = setTimeout(() => {
+      setCustomerSearchQuery(inputValue);
+      setCustomerPage(1);
+      setCompanyNameOptions([]);
+      setEmailOptions([]);
+      setAllCustomers([]);
+      fetchCustomerData(1, false, inputValue);
+    }, 500);
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (customerSearchTimeoutRef.current) {
+        clearTimeout(customerSearchTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Load more customers on scroll
+  const handleMenuScrollToBottom = () => {
+    if (!customerLoading && customerHasMore && !partnersOrder) {
+      fetchCustomerData(customerPage + 1, true, customerSearchQuery);
+    }
+  };
+
+  // Alternative scroll handler
+  const handleMenuScroll = (event) => {
+    if (partnersOrder) return;
+
+    const { target } = event;
+    if (!target) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = target;
+    if (scrollHeight - scrollTop <= clientHeight + 50) {
+      if (!customerLoading && customerHasMore) {
+        fetchCustomerData(customerPage + 1, true, customerSearchQuery);
+      }
+    }
+  };
+
+  // Fetch direct partner data
+  const fetchDirectPartnerData = async (selfOrder = false) => {
+    try {
+      const token =
+        localStorage.getItem("accessToken") || localStorage.getItem("token");
+      let selfOrderUser = selfOrder ? `&&salesRepId=${userID}` : "";
+      const res = await axios.get(
+        `${BASE_URL}api/v1/admin/sales-rep/for-order-creation?partnerType=direct-partner${selfOrderUser}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        }
+      );
+      if (res?.data?.status === "success") {
+        const list = res?.data?.data || [];
+
+        if (isSelfOrder) {
+          setPartners(list);
+          setSrNameOptions(
+            list?.map((p) => ({
+              value: p?.id,
+              label: p?.srName + ` ( ${p?.territoryName} )`,
+            }))
+          );
+        } else {
+          setFullData(list);
+          let options = [];
+          list?.map((elem) => {
+            options.push({
+              value: elem?.id,
+              label: `${elem?.srName} (${elem?.territoryName})`,
+            });
+          });
+          setCompanyNameOptions(options);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      ErrorHandler(error);
+    }
+  };
+
+  // Fetch data on mount and when toggles change
+  useEffect(() => {
+    if (partnersOrder) {
+      fetchDirectPartnerData();
+      setCustomerPage(1);
+      setCompanyNameOptions([]);
+      setAllCustomers([]);
+      setCustomerSearchQuery("");
+    } else if (!isSelfOrder) {
+      fetchCustomerData(1, false, customerSearchQuery);
+    }
+  }, [partnersOrder, isSelfOrder]);
+
+  // Fetch sales rep's own data when self order is toggled
+  useEffect(() => {
+    if (isSelfOrder && userType === "salesRepresentative") {
+      fetchSalesRepSelfData();
+    }
+  }, [isSelfOrder]);
+
+  // Fetch charges when customer is selected
+  useEffect(() => {
+    if (order?.userId && !partnersOrder && !isSelfOrder) {
+      fetchChargesForCustomer(order?.userId, totalWeightFromCart);
+    }
+  }, [order?.userId, totalWeightFromCart, partnersOrder, isSelfOrder]);
+
+  // Validate form before generating invoice
+  const validateForm = () => {
+    if (!email?.trim()) {
+      info_toaster("Email cannot be empty.");
+      return false;
+    }
+    if (!order?.addressId && !isSelfOrder) {
+      info_toaster("Address cannot be empty.");
+      return false;
+    }
+    if (!order?.paymentMethod?.trim()) {
+      info_toaster("Payment method cannot be empty.");
+      return false;
+    }
+    return true;
+  };
+
+  // Calculate total
+  const total =
+    items
+      .filter((item) => item.checked)
+      .reduce(
+        (sum, item) =>
+          sum +
+          (item.qty || 1) *
+          (item.unit !== undefined
+            ? item.unit
+            : item.price !== undefined
+              ? item.price
+              : 0),
+        0
+      ) +
+    extraRows
+      .filter((item) => item.checked)
+      .reduce((sum, item) => sum + item.qty * item.unit, 0) +
+    extraCharges
+      .filter((item) => item.checked)
+      .reduce((sum, item) => sum + item.qty * item.unit, 0) +
+    (manual.show
+      ? parseFloat(shippingCharge)
+      : parseFloat(invoiceFields?.shippingCharges) || 0);
+
+  // Count checked items
+  const checkedCount =
+    items.filter((item) => item.checked).length +
+    extraRows.filter((item) => item.checked).length +
+    extraCharges.filter((item) => item.checked).length;
+
+  // Map items for payload
+  const mapItemsForPayload = (items) =>
+    items?.map((item) => ({
+      categoryId: item?.categoryId,
+      createdAt: item?.createdAt,
+      deleted: false,
+      desc: item?.desc,
+      productId: item?.productId || item?.id,
+      image: item?.image,
+      name: item?.name || item?.product,
+      price: item?.price || (item?.unit * item?.qty),
+      qty: item?.qty,
+      quantity: item?.quantity,
+      status: true,
+      unit: item?.unit || item?.price,
+      updatedAt: item?.updatedAt,
+      weight: item?.weight,
+      wholesalePrice: item?.wholesalePrice,
+    })) || [];
+
+  const handleGenerateInvoice = async () => {
+    // Validate form first
+    if (!validateForm()) {
+      return;
+    }
+
+    if (Number(total) <= 0) {
+      info_toaster("Invoice total must be greater than 0.");
+      return;
+    }
+
+    const hasEmptyExtraChargeName = (extraCharges || [])
+      .filter((c) => c.checked)
+      .some((c) => !String(c.name || "").trim());
+
+    if (hasEmptyExtraChargeName) {
+      info_toaster("Please enter a name for all extra charges.");
+      return;
+    }
+
+    setLoading(true);
+
+    // Prepare items for API
+    const itemsForApi = [
+      ...items
+        .filter((item) => item.checked)
+        .map((item) => ({
+          productId: item.productId || item.id,
+          product: item.product || item.name,
+          productCode: item.productCode || item.code || "",
+          qty: item.qty,
+          price: item.price || (item.unit * item.qty),
+          discount: item.discount || 0,
+          wholesalePrice: item.wholesalePrice || 0,
+        })),
+      ...extraRows
+        .filter((item) => item.checked)
+        .map((item) => ({
+          productId: item.productId,
+          product: item.product ?? item.productName ?? item.name,
+          productCode: item.productCode ?? item.code,
+          qty: item.qty,
+          price: String(item.unit * item.qty),
+          discount: item.discount || 0,
+          wholesalePrice: item.wholesalePrice || 0,
+        })),
+    ];
+
+    const itemsPrice = Number(total - (parseFloat(invoiceFields?.shippingCharges) || 0));
+    const shipping = Number(invoiceFields?.shippingCharges || order?.shippingCharges || 0);
+    const totalBill = itemsPrice + shipping;
+
+    const payload = {
+      email: [email || ""],
+      order: {
+        totalBill: totalBill.toFixed(2),
+        subTotal: itemsPrice.toFixed(2),
+        discountPrice: (0).toFixed(2),
+        discountPercentage: Number(invoiceFields.discountPercentage || 0),
+        itemsPrice: itemsPrice.toFixed(2),
+        vat: 0.0,
+        totalWeight: calculatedTotalWeight,
+        shippingCharges: shipping.toFixed(2),
+        invoiceNumber: invoiceFields.invoiceNumber || "",
+        poNumber: invoiceFields.poNumber || order?.poNumber || "",
+        termDays: invoiceFields.terms || "",
+        dueDate: invoiceFields.dueDate || "",
+        note: invoiceFields.note || order?.note || "",
+        addressId: order?.addressId,
+        ...(partnersOrder || isSelfOrder
+          ? { salesRepId: isSelfOrder ? order?.salesRepId : order?.userId }
+          : { userId: order?.userId }),
+        paymentMethod: order?.paymentMethod,
+        invoiceOnly: true,
+        type: "direct-invoice",
+        emailInvoiceToCustomer: invoiceFields.emailInvoiceToCustomer,
+        invoiceDate: invoiceFields.emailInvoiceToCustomer ? invoiceFields.invoiceDate : null,
+      },
+      items: mapItemsForPayload(items.filter((item) => item.checked).concat(extraRows.filter((item) => item.checked))),
+      typeCharges: chargesForApi,
+    };
+
+    try {
+      // Determine endpoint based on user type and order type
+      let endpoint;
+      if (userType === "admin") {
+        endpoint = partnersOrder 
+          ? `api/v1/admin/partner-order/book-new-order` 
+          : `api/v1/admin/book-new-order`;
+      } else {
+        endpoint = isSelfOrder
+          ? `api/v1/admin/partner-order/book-new-order`
+          : `api/v1/admin/sales-rep/book-new-order/${userID}`;
+      }
+
+      const res = await PostAPI(endpoint, payload, "invoices");
+
+      if (res?.data?.status === "success") {
+        const orderId = res?.data?.data?.id;
+        success_toaster("Invoice generated successfully");
+        localStorage.setItem("createOrderData", JSON.stringify([]));
+        localStorage.removeItem("invoiceFormData");
+        if (orderId) {
+          router.push(
+            partnersOrder || isSelfOrder
+              ? `/direct-invoices/partner/${orderId}/add-invoice`
+              : `/direct-invoices/${orderId}/add-invoice`
+          );
+        }
+      } else {
+        throw new Error(res?.data?.message || "Failed to generate invoice.");
+      }
+    } catch (err) {
+      info_toaster(err?.message || "Failed to generate invoice.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFilter = () => {
+    const filteredData = ProductList?.data?.data?.filter((item) =>
+      item?.name?.toLowerCase().includes(search.toLowerCase() || "")
+    );
+    return filteredData;
+  };
+
+  useEffect(() => {
+    QuickbooksPingCheck();
+  }, []);
+
+  // Single page layout - all sections visible
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  return (
+    <div className="w-full">
+      {/* Header */}
+      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed">
+        <div className="flex items-center gap-2">
+          <p onClick={() => setToggle(!toggle)} className="cursor-pointer md:hidden">
+            <CiMenuBurger size={20} />
+          </p>
+          <h2 className="text-xl font-inter font-semibold">Create Invoice</h2>
+        </div>
+      </div>
+
+      <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
+        {/* ========== TOP SECTION: USER TYPE TOGGLES ========== */}
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold text-theme-black-2">Invoice Details</h2>
+          </div>
+          
+          {/* Toggle for Partners (Admin only) */}
+          {userType === "admin" && (
+            <div className="flex items-center gap-x-2 justify-end mb-4">
+              <label className="text-gray-700 font-medium">
+                {partnersOrder ? "Partners" : "Customers"}
+              </label>
+              <Switch
+                onChange={(e) => handlePartnerOrder(e)}
+                checked={partnersOrder}
+                uncheckedIcon={false}
+                checkedIcon={false}
+                onColor="#3E342C"
+                onHandleColor="#fff"
+                className="react-switch"
+                boxShadow="none"
+              />
+            </div>
+          )}
+
+          {/* Self Order Toggle for Sales Representatives */}
+          {userType === "salesRepresentative" && (
+            <div className="flex items-center gap-x-2 justify-end mb-4">
+              <label className="text-gray-700 font-medium">Self Order</label>
+              <Switch
+                onChange={(e) => handleSelfOrderToggle(e)}
+                checked={isSelfOrder}
+                uncheckedIcon={false}
+                checkedIcon={false}
+                onColor="#3E342C"
+                onHandleColor="#fff"
+                className="react-switch"
+                boxShadow="none"
+              />
+            </div>
+          )}
+
+          {/* ========== MIDDLE SECTION: FORM FIELDS ========== */}
+          <div className="space-y-6 font-sf border-t pt-6 mt-6">
+            {/* Form Body */}
+            <div className="relative space-y-6 font-sf">
+              {/* Company / Partner Selection */}
+              {isSelfOrder && userType === "salesRepresentative" ? (
+                <div className="flex flex-col gap-y-2">
+                  <label className="text-gray-700 font-medium font-satoshi">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    value={localStorage.getItem("userName") || ""}
+                    className="w-full bg-white text-black border border-gray-300 rounded px-3 py-3 outline-none cursor-not-allowed font-satoshi"
+                    disabled
+                    readOnly
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col gap-y-2">
+                  <label className="text-gray-700 font-medium font-satoshi">
+                    Company Name
+                  </label>
+                  <Select
+                    placeholder="Select Company"
+                    className="w-full"
+                    styles={drawerSelectStyles}
+                    options={companyNameOptions}
+                    value={
+                      companyNameOptions?.find(
+                        (opt) => opt?.value === order?.userId
+                      ) || null
+                    }
+                    onChange={(e) => handleCompanySelect(e.value)}
+                    onInputChange={
+                      !partnersOrder ? handleCustomerSearchChange : undefined
+                    }
+                    onMenuScrollToBottom={
+                      !partnersOrder ? handleMenuScrollToBottom : undefined
+                    }
+                    menuListProps={
+                      !partnersOrder
+                        ? {
+                            onScroll: handleMenuScroll,
+                          }
+                        : undefined
+                    }
+                    isSearchable={!partnersOrder}
+                    filterOption={!partnersOrder ? () => true : undefined}
+                    isLoading={!partnersOrder ? customerLoading : false}
+                    loadingMessage={
+                      !partnersOrder ? () => "Loading customers..." : undefined
+                    }
+                  />
+                </div>
+              )}
+
+              {/* Email */}
+              <div className="flex flex-col gap-y-2">
+                <label className="text-gray-700 font-medium font-satoshi">
+                  Email
+                </label>
+                <input
+                  type="text"
+                  value={email}
+                  placeholder="Email"
+                  className="w-full bg-white text-black border border-gray-300 rounded px-3 py-3 outline-none cursor-not-allowed font-satoshi"
+                  disabled
+                />
+              </div>
+
+              {/* Address */}
+              <div className="flex flex-col gap-y-2">
+                <label className="text-gray-700 font-medium font-satoshi">
+                  Address
+                </label>
+                <Select
+                  placeholder="Select Address"
+                  className="w-full"
+                  styles={drawerSelectStyles}
+                  value={
+                    addressOptions?.find(
+                      (opt) => opt?.value === order?.addressId
+                    ) || null
+                  }
+                  options={addressOptions}
+                  onChange={(e) =>
+                    setOrder({ ...order, addressId: e?.value || "" })
+                  }
+                />
+              </div>
+
+              {/* Payment Method */}
+              <div className="flex flex-col gap-y-2">
+                <label className="text-gray-700 font-medium font-satoshi">
+                  Payment Method
+                </label>
+                <Select
+                  placeholder="Select Payment Method"
+                  className="w-full"
+                  styles={drawerSelectStyles}
+                  value={
+                    order.paymentMethod
+                      ? paymentMethodOptions.find(
+                          (opt) => opt.value === order.paymentMethod
+                        ) || null
+                      : null
+                  }
+                  options={paymentMethodOptions}
+                  onChange={(e) => setOrder({ ...order, paymentMethod: e.value })}
+                />
+              </div>
+
+              {/* NOTE + PO Number */}
+              <div>
+                <div className="w-full font-sf font-normal text-base text-theme-black-2 flex items-center gap-3 px-5 py-[5px] duration-300 border-2 border-gray-300 hover:border-goldenLight focus-within:border-goldenLight rounded-t">
+                  <MdInsertComment size={24} />
+                  <div className="relative w-full">
+                    <input
+                      type="text"
+                      id="courier-note"
+                      className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${
+                        order?.note ? "placeholder-transparent" : ""
+                      }`}
+                      value={order?.note}
+                      onChange={(e) =>
+                        setOrder({ ...order, note: e.target.value })
+                      }
+                    />
+                    <label
+                      htmlFor="courier-note"
+                      className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${
+                        order?.note
+                          ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
+                          : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
+                      }`}
+                    >
+                      {order?.note
+                        ? "Note for the supplier (optional)"
+                        : "Add note for the supplier (optional)"}
+                    </label>
+                  </div>
+                </div>
+
+                <div className="w-full font-sf font-normal text-base text-theme-black-2 flex items-center gap-3 px-5 py-[5px] duration-300 border-2 border-gray-300 hover:border-goldenLight focus-within:border-goldenLight rounded-b">
+                  <MdOutlineConfirmationNumber size={24} />
+                  <div className="relative w-full">
+                    <input
+                      type="text"
+                      id="poNumber"
+                      className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${
+                        order?.poNumber ? "placeholder-transparent" : ""
+                      }`}
+                      value={order?.poNumber}
+                      onChange={(e) =>
+                        setOrder({ ...order, poNumber: e.target.value })
+                      }
+                    />
+                    <label
+                      htmlFor="poNumber"
+                      className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${
+                        order?.poNumber
+                          ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
+                          : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
+                      }`}
+                    >
+                      {order?.poNumber
+                        ? "Purchase Order Number"
+                        : "Add Purchase Order Number (optional)"}
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* ========== BOTTOM SECTION: ITEMS SELECTION ========== */}
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-theme-black-2">Items & Invoice Details</h2>
+          </div>
+
+          <div className="mb-6">
+            <p className="font-semibold text-gray-700">Invoice To</p>
+            <p className="text-sm text-gray-500">{email || "Not selected"}</p>
+          </div>
+
+          <div className="grid grid-cols-4 2xl:grid-cols-5 gap-5 2xl:gap-10 mb-6">
+          <div className="flex flex-col gap-y-2">
+            <label className="text-labelColor font-medium font-satoshi">
+              Invoice Number
+            </label>
+            <input
+              type="text"
+              name="invoiceNumber"
+              minLength={3}
+              min={3}
+              value={invoiceFields.invoiceNumber ?? ""}
+              placeholder="INV-000"
+              className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+              onChange={(e) =>
+                handleInvoiceFieldChange("invoiceNumber", e.target.value)
+              }
+            />
+          </div>
+          <div className="flex flex-col gap-y-2">
+            <label className="text-labelColor font-medium font-satoshi">
+              P.O. Number
+            </label>
+            <input
+              type="text"
+              name="poNumber"
+              value={invoiceFields.poNumber ?? ""}
+              placeholder=""
+              className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+              onChange={(e) =>
+                handleInvoiceFieldChange("poNumber", e.target.value)
+              }
+            />
+          </div>
+          <div className="flex flex-col gap-y-2">
+            <label className="text-labelColor font-medium font-satoshi">
+              Invoice Date
+            </label>
+            <input
+              type="date"
+              name="invoiceDate"
+              value={invoiceFields.invoiceDate ?? ""}
+              placeholder=""
+              className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+              onChange={(e) =>
+                handleInvoiceFieldChange("invoiceDate", e.target.value)
+              }
+            />
+          </div>
+          <div className="flex flex-col gap-y-2 w-full">
+            <label className="text-labelColor font-medium font-satoshi">
+              Terms (days)
+            </label>
+            <Select
+              placeholder=""
+              options={[
+                { label: "immediate", value: "1" },
+                { label: "15", value: "15" },
+                { label: "21", value: "21" },
+                { label: "30", value: "30" },
+              ]}
+              className="w-full text-black"
+              styles={selectStyles2}
+              value={
+                invoiceFields.terms
+                  ? [
+                    { label: "immediate", value: "1" },
+                    { label: "15", value: "15" },
+                    { label: "21", value: "21" },
+                    { label: "30", value: "30" },
+                  ].find((opt) => opt.value === invoiceFields.terms)
+                  : null
+              }
+              onChange={(option) =>
+                handleInvoiceFieldChange("terms", option?.value || "")
+              }
+            />
+          </div>
+
+          <div className="flex flex-col gap-y-2">
+            <label className="text-labelColor font-medium font-satoshi">
+              Due Date
+            </label>
+            <input
+              type="date"
+              name="dueDate"
+              value={invoiceFields.dueDate ?? ""}
+              placeholder=""
+              className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+              onChange={(e) =>
+                handleInvoiceFieldChange("dueDate", e.target.value)
+              }
+            />
+          </div>
+        </div>
+
+        <div className="w-full overflow-x-auto">
+          <table className="w-full border border-gray-200 text-sm border-collapse">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="py-2 px-2 text-center border border-gray-200">
+                  <input
+                    type="checkbox"
+                    checked={allChecked}
+                    onChange={(e) => handleCheckAll(e.target.checked)}
+                  />
+                </th>
+                <th className="py-2 px-2 text-left border border-gray-200">
+                  Code
+                </th>
+                <th className="py-2 px-2 text-left border border-gray-200">
+                  Name
+                </th>
+                <th className="py-2 px-2 text-center border border-gray-200">
+                  Qty.
+                </th>
+                {(userType === "admin" ||
+                  userType === "salesRepresentative") && (
+                    <th className="py-2 px-2 text-right border border-gray-200">
+                      Unit $
+                    </th>
+                  )}
+                {(userType === "admin" ||
+                  userType === "salesRepresentative") && (
+                    <th className="py-2 px-2 text-right border border-gray-200">
+                      Total $
+                    </th>
+                  )}
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item, itemIdx) => (
+                <tr key={item.id || itemIdx}>
+                  <td className="py-2 px-2 border border-gray-200 text-center">
+                    <input
+                      type="checkbox"
+                      checked={item.checked}
+                      onChange={(e) =>
+                        handleItemCheck(itemIdx, e.target.checked)
+                      }
+                    />
+                  </td>
+                  <td className="py-2 px-2 border border-gray-200">
+                    {item.productCode || item.code}
+                  </td>
+                  <td className="py-2 px-2 font-semibold border border-gray-200">
+                    {item.product || item.productName || item.name}
+                  </td>
+                  <td className="py-2 px-2 text-center border border-gray-200">
+                    <input
+                      type="number"
+                      min={1}
+                      className="w-16 border border-gray-200 rounded px-1 py-1 text-center"
+                      value={item.qty ?? 1}
+                      onWheel={(e) => e.currentTarget.blur()}
+                      onChange={(e) =>
+                        handleItemQtyChange(itemIdx, e.target.value)
+                      }
+                    />
+                  </td>
+                  {(userType === "admin" ||
+                    userType === "salesRepresentative") && (
+                      <td className="py-2 px-2 text-right border border-gray-200">
+                        {item.unit !== undefined
+                          ? item.unit
+                          : item.price !== undefined
+                            ? item.price
+                            : 0}
+                      </td>
+                    )}
+                  {(userType === "admin" ||
+                    userType === "salesRepresentative") && (
+                      <td className="py-2 px-2 text-right border border-gray-200">
+                        $
+                        {(
+                          (item.qty || 1) *
+                          (item.unit !== undefined
+                            ? item.unit
+                            : item.price !== undefined
+                              ? item.price
+                              : 0)
+                        ).toFixed(2)}
+                      </td>
+                    )}
+                </tr>
+              ))}
+              {extraRows.map((item, idx) => (
+                <tr key={item.id || idx}>
+                  <td className="py-2 px-2 border border-gray-200 text-center">
+                    <input
+                      type="checkbox"
+                      checked={item.checked}
+                      onChange={(e) =>
+                        handleExtraRowCheck(idx, e.target.checked)
+                      }
+                    />
+                  </td>
+                  <td className="py-2 px-2 border border-gray-200">
+                    <input
+                      disabled
+                      type="text"
+                      className="w-full border border-gray-200 rounded px-1 py-1"
+                      value={item.productCode ?? ""}
+                      placeholder="Code"
+                    />
+                  </td>
+                  <td className="py-2 px-2 border border-gray-200">
+                    <input
+                      type="text"
+                      className="w-full border border-gray-200 rounded px-1 py-1"
+                      value={item.name ?? ""}
+                      disabled
+                      placeholder="Name"
+                    />
+                  </td>
+                  <td className="py-2 px-2 text-center border border-gray-200">
+                    <input
+                      type="number"
+                      min={1}
+                      className="w-16 border border-gray-200 rounded px-1 py-1 text-center"
+                      value={item.qty ?? 1}
+                      onChange={(e) =>
+                        handleExtraInputChange(idx, "qty", e.target.value)
+                      }
+                    />
+                  </td>
+                  {(userType === "admin" ||
+                    userType === "salesRepresentative") && (
+                      <td className="py-2 px-2 border border-gray-200 text-right">
+                        <input
+                          type="number"
+                          min={0}
+                          disabled
+                          step="0.01"
+                          className="w-20 border border-gray-200 rounded px-1 py-1 text-right"
+                          value={item.unit ?? 0}
+                        />
+                      </td>
+                    )}
+                  {(userType === "admin" ||
+                    userType === "salesRepresentative") && (
+                      <td className="py-2 px-2 border border-gray-200 text-right">
+                        ${(item.qty * item.unit).toFixed(2)}
+                      </td>
+                    )}
+                </tr>
+              ))}
+
+              {extraCharges.map((item, idx) => (
+                <tr key={item.id || idx}>
+                  <td className="py-2 px-2 border border-gray-200 text-center">
+                    <input
+                      type="checkbox"
+                      checked={item.checked}
+                      onChange={(e) =>
+                        handleChargeRowCheck(idx, e.target.checked)
+                      }
+                    />
+                  </td>
+                  <td className="py-2 px-2 border border-gray-200">
+                    <input
+                      type="text"
+                      className="w-full rounded px-1 py-1 border border-gray-200 bg-gray-50 cursor-default select-text focus:outline-none focus:ring-0 focus:border-gray-200"
+                      value={item.code}
+                      readOnly
+                      placeholder="Code"
+                    />
+                  </td>
+                  <td className="py-2 px-2 border border-gray-200">
+                    <input
+                      type="text"
+                      className="w-full border rounded px-1 py-1"
+                      value={item.name}
+                      onChange={(e) =>
+                        handleChargeInputChange(idx, "name", e.target.value)
+                      }
+                      placeholder="Name"
+                    />
+                  </td>
+                  <td className="py-2 px-2 text-center border border-gray-200">
+                    <input
+                      type="number"
+                      min={1}
+                      className="w-16 border rounded px-1 py-1 text-center"
+                      value={item.qty}
+                      onWheel={(e) => e.currentTarget.blur()}
+                      onChange={(e) =>
+                        handleChargeInputChange(idx, "qty", e.target.value)
+                      }
+                    />
+                  </td>
+                  <td className="py-2 px-2 border border-gray-200 text-right">
+                    <input
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      className="w-20 border rounded px-1 py-1 text-right"
+                      value={item.unit}
+                      onWheel={(e) => e.currentTarget.blur()}
+                      onChange={(e) =>
+                        handleChargeInputChange(idx, "unit", e.target.value)
+                      }
+                    />
+                  </td>
+                  <td className="py-2 px-2 border border-gray-200 text-right">
+                    ${(item.qty * item.unit).toFixed(2)}
+                  </td>
+                </tr>
+              ))}
+
+              <tr>
+                <td colSpan={6} className="py-2 px-2 border border-gray-200">
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="border px-2 py-2"
+                      onClick={() => setModal(true)}
+                    >
+                      Add Item
+                    </button>
+
+                    <button
+                      className="border px-2 py-2"
+                      onClick={handleAddChargeRow}
+                    >
+                      Add Extra Charges
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td colSpan={4} className="border border-gray-200"></td>
+                <td className="py-2 px-2 text-right font-bold border border-gray-200">
+                  Total weight (lbs)
+                </td>
+                <td className="py-2 px-2 text-right font-bold border border-gray-200">
+                  {parseFloat(calculatedTotalWeight).toFixed(2)}
+                </td>
+              </tr>
+
+              {(userType === "admin" || userType === "salesRepresentative") && (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="border border-gray-200 w-max py-2 px-2 "
+                  >
+                    <button
+                      className="border px-2 py-2"
+                      onClick={() =>
+                        setManual({ ...manual, show: !manual.show })
+                      }
+                    >
+                      {manual.show ? "Manual Calculate" : "Auto Calculate"}
+                    </button>
+                  </td>
+                  <td className="py-2 px-2 text-right font-bold border border-gray-200">
+                    Shipping Charges
+                  </td>
+                  <td className="py-2 px-2 text-right font-bold border border-gray-200">
+                    {!manual?.show ? (
+                      <input
+                        className="w-20 border border-gray-200 rounded px-1 py-1 text-right"
+                        value={invoiceFields?.shippingCharges ? parseFloat(invoiceFields.shippingCharges).toFixed(2) : ""}
+                        type="text"
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                            setInvoiceFields((prev) => ({
+                              ...prev,
+                              shippingCharges: value,
+                            }));
+                          }
+                        }}
+                        onBlur={(e) => {
+                          const value = e.target.value;
+                          if (value && !isNaN(value)) {
+                            setInvoiceFields((prev) => ({
+                              ...prev,
+                              shippingCharges: parseFloat(value).toFixed(2),
+                            }));
+                          }
+                        }}
+                      />
+                    ) : shippingCharge ? (
+                      "$" + parseFloat(shippingCharge)?.toFixed(2)
+                    ) : (
+                      "Not dealing"
+                    )}
+                  </td>
+                </tr>
+              )}
+              {(userType === "admin" || userType === "salesRepresentative") && (
+                <tr>
+                  <td colSpan={4} className="border border-gray-200"></td>
+                  <td className="py-2 px-2 text-right font-bold border border-gray-200">
+                    Total USD ({checkedCount} items)
+                  </td>
+                  <td className="py-2 px-2 text-right font-bold border border-gray-200">
+                    ${parseFloat(total)?.toFixed(2)}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="w-full space-y-5">
+          <div className="space-y-2">
+            <p>Comments</p>
+            <textarea
+              className="w-full h-48 border resize-none border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+              value={invoiceFields.note ?? ""}
+              onChange={(e) => handleInvoiceFieldChange("note", e.target.value)}
+            ></textarea>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              className="size-5"
+              checked={invoiceFields.emailInvoiceToCustomer}
+              onChange={(e) =>
+                handleInvoiceFieldChange(
+                  "emailInvoiceToCustomer",
+                  e.target.checked
+                )
+              }
+            />
+            <p>Email the invoice to the customer?</p>
+          </div>
+
+          <div className="pt-10 border-t mt-6">
+            <button
+              disabled={loading}
+              className="rounded-lg font-inter font-medium text-white px-6 py-3 bg-theme hover:bg-theme/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleGenerateInvoice}
+            >
+              {loading ? "Generating..." : "Generate Invoice"}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal */}
+      <Dialog
+        visible={modal}
+        style={{ width: "40vw" }}
+        className="font-nunito"
+        dismissableMask={true}
+        onHide={() => setModal(false)}
+        header={
+          <div className="font-nunito font-bold text-2xl text-center">
+            Add Items to Order
+          </div>
+        }
+      >
+        {ProductList?.length === 0 ? (
+          <MiniLoader />
+        ) : (
+          <div className="flex flex-col">
+            <div className="sticky top-0 space-y-2 bg-white pb-2">
+              <div className="w-full h-14 rounded-md border relative">
+                <div className="absolute top-1/2 -translate-y-1/2 left-2">
+                  <IoIosSearch size={25} color="gray" />
+                </div>
+                <input
+                  className="w-full h-full outline-none bg-transparent pl-10 pr-4"
+                  type="text"
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search Product..."
+                />
+              </div>
+              <div className="w-full">
+                <Select
+                  placeholder="Select Category"
+                  options={categoryList}
+                  className="w-full text-black"
+                  styles={selectStyles2}
+                  onChange={(e) => setFilterId(e?.value)}
+                />
+              </div>
+            </div>
+
+            {handleFilter()?.map((item, idx) => {
+              return (
+                <div
+                  key={item.id || idx}
+                  onClick={() => handleAddExtra(item)}
+                  className="text-sm text-start text-gray-500 cursor-pointer h-12 border-b flex items-center hover:bg-gray-100 px-2 hover:text-black hover:font-semibold"
+                >
+                  <p>{item?.name}</p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Dialog>
+      </div>
+    </div>
+  );
+}
+

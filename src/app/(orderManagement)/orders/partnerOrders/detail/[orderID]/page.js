@@ -415,7 +415,7 @@ export default function OrderDetail() {
       await navigator.clipboard.writeText(fullUrl);
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 1200);
-    } catch { }
+    } catch {}
   };
 
   const handleSelfOrderPullout = async (id) => {
@@ -457,24 +457,25 @@ export default function OrderDetail() {
             {data?.data?.order?.id}
           </span>
           <p
-            className={`text-xs font-medium px-3 py-1 rounded-full text-white whitespace-nowrap ${data?.data?.order?.orderCurrentStatus?.includes("Cancelled")
-              ? "bg-red-500 "
-              : "bg-themeGreen "
-              }`}
+            className={`text-xs font-medium px-3 py-1 rounded-full text-white whitespace-nowrap ${
+              data?.data?.order?.orderCurrentStatus?.includes("Cancelled")
+                ? "bg-red-500 "
+                : "bg-themeGreen "
+            }`}
             data-testid={ORDER_DETAIL.statusPill}
           >
             {data?.data?.order?.statusId == 4 ||
-              data?.data?.order?.statusId == 5
+            data?.data?.order?.statusId == 5
               ? "Shipped"
               : data?.data?.order?.statusId == 1
-                ? "Order Placed"
-                : data?.data?.order?.statusId == 2
-                  ? "Dispatched"
-                  : data?.data?.order?.statusId == 3
-                    ? "Acknowledged"
-                    : data?.data?.order?.statusId == 6
-                      ? "Cancelled"
-                      : "fulfilled"}
+              ? "Order Placed"
+              : data?.data?.order?.statusId == 2
+              ? "Dispatched"
+              : data?.data?.order?.statusId == 3
+              ? "Acknowledged"
+              : data?.data?.order?.statusId == 6
+              ? "Cancelled"
+              : "fulfilled"}
           </p>
         </div>
 
@@ -562,10 +563,10 @@ export default function OrderDetail() {
                     {data?.data?.order?.statusId === 1
                       ? "Dispatch to Supplier"
                       : data?.data?.order?.statusId === 2
-                        ? "Acknowledge Supplier"
-                        : data?.data?.order?.statusId === 3
-                          ? "Ship Order"
-                          : "Dispatch Order"}
+                      ? "Acknowledge Supplier"
+                      : data?.data?.order?.statusId === 3
+                      ? "Ship Order"
+                      : "Dispatch Order"}
                   </button>
                 )}
 
@@ -586,7 +587,7 @@ export default function OrderDetail() {
                 <button
                   disabled={
                     data?.data?.order?.statusId === 5 ||
-                      data?.data?.order?.statusId === 6
+                    data?.data?.order?.statusId === 6
                       ? true
                       : false
                   }
@@ -609,7 +610,7 @@ export default function OrderDetail() {
                   className="bg-red-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                   title={
                     data?.data?.order?.statusId === 4 ||
-                      data?.data?.order?.statusId === 5
+                    data?.data?.order?.statusId === 5
                       ? "Shipped orders cannot be deleted"
                       : ""
                   }
@@ -628,7 +629,6 @@ export default function OrderDetail() {
           <div className="grid grid-cols-1 gap-6 lg:gap-8 xl:gap-x-12">
             {/* Left side */}
             <div className="space-y-6">
-
               <div className="w-full bg-blue-50 flex justify-between bg-blue-50 rounded-md w-full px-4 lg:px-6 py-6 ">
                 <div
                   className="flex gap-x-2"
@@ -641,17 +641,17 @@ export default function OrderDetail() {
                     <p className="font-semibold">
                       This order is{" "}
                       {data?.data?.order?.statusId == 4 ||
-                        data?.data?.order?.statusId == 5
+                      data?.data?.order?.statusId == 5
                         ? "Shipped"
                         : data?.data?.order?.statusId == 1
-                          ? "New"
-                          : data?.data?.order?.statusId == 2
-                            ? "Dispatched to Supplier"
-                            : data?.data?.order?.statusId == 3
-                              ? "Acknowledged by Supplier"
-                              : data?.data?.order?.statusId == 6
-                                ? "Cancelled"
-                                : "fulfilled"}
+                        ? "New"
+                        : data?.data?.order?.statusId == 2
+                        ? "Dispatched to Supplier"
+                        : data?.data?.order?.statusId == 3
+                        ? "Acknowledged by Supplier"
+                        : data?.data?.order?.statusId == 6
+                        ? "Cancelled"
+                        : "fulfilled"}
                     </p>
                     <p>Optional actions:</p>
 
@@ -659,53 +659,69 @@ export default function OrderDetail() {
                       <p className="font-semibold">Record a payment:</p>
                       {(userType === "admin" ||
                         userType === "salesRepresentative") && (
-                          <div className="flex">
-                            {/* <span className="text-black/60 w-2/4">Payment Status:</span> */}
+                        <div className="flex">
+                          {/* <span className="text-black/60 w-2/4">Payment Status:</span> */}
 
-                            {((userType === "admin" ||
-                              userType === "salesRepresentative") &&
-                              data?.data?.order?.paymentMethod === "card") ||
-                              data?.data?.order?.statusId === 6 ? (
-                              <div
-                                className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none"
-                                data-testid={ORDER_DETAIL.paymentStatusReadonly}
-                              >
-                                {data?.data?.order?.paymentStatus === "done"
-                                  ? "Paid"
-                                  : "Unpaid"}
-                              </div>
-                            ) : (
-                              <span
-                                className="w-40"
-                                data-testid={ORDER_DETAIL.paymentStatusSelect}
-                              >
-                                <Select
-                                  placeholder="Select Payment Status"
-                                  className="w-full"
-                                  value={
-                                    data?.data?.order?.paymentStatus === "pending"
-                                      ? { value: "pending", label: "Unpaid" }
-                                      : { value: "done", label: "Paid" }
-                                  }
-                                  styles={selectStyles2}
-                                  options={paymentStausOptions}
-                                  onChange={(e) => {
-                                    handlePaymentStatus(e);
-                                  }}
-                                  isDisabled={data?.data?.order?.selfOrder}
-                                />
-                              </span>
-                            )}
-                          </div>
-                        )}
+                          {((userType === "admin" ||
+                            userType === "salesRepresentative") &&
+                            data?.data?.order?.paymentMethod === "card") ||
+                          data?.data?.order?.statusId === 6 ? (
+                            <div
+                              className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none"
+                              data-testid={ORDER_DETAIL.paymentStatusReadonly}
+                            >
+                              {data?.data?.order?.paymentStatus === "done"
+                                ? "Paid"
+                                : "Unpaid"}
+                            </div>
+                          ) : (
+                            <span
+                              className="w-40"
+                              data-testid={ORDER_DETAIL.paymentStatusSelect}
+                            >
+                              <Select
+                                placeholder="Select Payment Status"
+                                className="w-full"
+                                value={
+                                  data?.data?.order?.paymentStatus === "pending"
+                                    ? { value: "pending", label: "Unpaid" }
+                                    : { value: "done", label: "Paid" }
+                                }
+                                styles={selectStyles2}
+                                options={paymentStausOptions}
+                                onChange={(e) => {
+                                  handlePaymentStatus(e);
+                                }}
+                                isDisabled={data?.data?.order?.selfOrder}
+                              />
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
 
-                <p className="font-semibold">Invoice Sent: {data?.data?.order?.invoiceDate ? dayjs(data?.data?.order?.invoiceDate).format("MM/DD/YYYY") : "Not Sent"}</p>
-
+                <div>
+                  <p className="font-semibold">
+                    Invoice Sent:{" "}
+                    {data?.data?.order?.invoiceDate
+                      ? dayjs(data?.data?.order?.invoiceDate).format(
+                          "MM/DD/YYYY"
+                        )
+                      : "Not Sent"}
+                  </p>
+                  {data?.data?.order?.invoiceReminder &&
+                    data?.data?.order?.invoiceDate && (
+                      <p className="font-semibold">
+                        Invoice Reminder:{" "}
+                        {dayjs(data?.data?.order?.invoiceReminder).format(
+                          "MM/DD/YYYY"
+                        )}
+                      </p>
+                    )}
+                </div>
               </div>
-
 
               <div
                 className="w-full grid xl:grid-cols-2 gap-10 xl:gap-20 py-4 px-4 2xl:px-8 space-y-4 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm"
@@ -819,92 +835,96 @@ export default function OrderDetail() {
                   {data?.data?.order?.paymentStatus === "done" &&
                     (data?.data?.order?.paymentIntentId
                       ? (() => {
-                        const intentId = data?.data?.order?.paymentIntentId;
-                        const connectAccountId =
-                          data?.data?.order?.salesRep?.connectAccountId;
-                        const intentUrl = stripeUrlForUser(
-                          intentId,
-                          userType,
-                          connectAccountId
-                        );
+                          const intentId = data?.data?.order?.paymentIntentId;
+                          const connectAccountId =
+                            data?.data?.order?.salesRep?.connectAccountId;
+                          const intentUrl = stripeUrlForUser(
+                            intentId,
+                            userType,
+                            connectAccountId
+                          );
 
-                        return (
-                          <div className="flex items-center gap-2 border-b">
-                            <p className="w-32">Payment Intent ID</p>
-                            <div className="flex items-center gap-2">
-                              <button
-                                type="button"
-                                className={`underline text-blue-600 hover:text-blue-800 transition ${copiedId === intentId ? "animate-pulse" : ""
+                          return (
+                            <div className="flex items-center gap-2 border-b">
+                              <p className="w-32">Payment Intent ID</p>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  className={`underline text-blue-600 hover:text-blue-800 transition ${
+                                    copiedId === intentId ? "animate-pulse" : ""
                                   }`}
-                                title="Open in Stripe Dashboard"
-                                onClick={() =>
-                                  window.open(
-                                    intentUrl,
-                                    "_blank",
-                                    "noopener,noreferrer"
-                                  )
-                                }
-                              >
-                                {shortId(intentId)}
-                              </button>
-                              <FiCopy
-                                className={`cursor-pointer text-gray-500 hover:text-black ${copiedId === intentId ? "animate-pulse" : ""
+                                  title="Open in Stripe Dashboard"
+                                  onClick={() =>
+                                    window.open(
+                                      intentUrl,
+                                      "_blank",
+                                      "noopener,noreferrer"
+                                    )
+                                  }
+                                >
+                                  {shortId(intentId)}
+                                </button>
+                                <FiCopy
+                                  className={`cursor-pointer text-gray-500 hover:text-black ${
+                                    copiedId === intentId ? "animate-pulse" : ""
                                   }`}
-                                onClick={() =>
-                                  copyLink(intentUrl, intentId, setCopiedId)
-                                }
-                                title="Copy Stripe dashboard link"
-                              />
+                                  onClick={() =>
+                                    copyLink(intentUrl, intentId, setCopiedId)
+                                  }
+                                  title="Copy Stripe dashboard link"
+                                />
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })()
+                          );
+                        })()
                       : data?.data?.order?.invoiceId &&
-                      (() => {
-                        const sessionId = data?.data?.order?.invoiceId;
-                        const connectAccountId =
-                          data?.data?.order?.salesRep?.connectAccountId;
-                        const sessionUrl = stripeUrlForUser(
-                          sessionId,
-                          userType,
-                          connectAccountId
-                        );
+                        (() => {
+                          const sessionId = data?.data?.order?.invoiceId;
+                          const connectAccountId =
+                            data?.data?.order?.salesRep?.connectAccountId;
+                          const sessionUrl = stripeUrlForUser(
+                            sessionId,
+                            userType,
+                            connectAccountId
+                          );
 
-                        return (
-                          <div className="flex items-center gap-2 border-b">
-                            <p className="w-32">Checkout Session ID</p>
-                            <div className="flex items-center gap-2">
-                              <button
-                                type="button"
-                                className={`underline text-blue-600 hover:text-blue-800 transition ${copiedId === sessionId
-                                  ? "animate-pulse"
-                                  : ""
+                          return (
+                            <div className="flex items-center gap-2 border-b">
+                              <p className="w-32">Checkout Session ID</p>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  className={`underline text-blue-600 hover:text-blue-800 transition ${
+                                    copiedId === sessionId
+                                      ? "animate-pulse"
+                                      : ""
                                   }`}
-                                title="Open in Stripe Dashboard"
-                                onClick={() =>
-                                  window.open(
-                                    sessionUrl,
-                                    "_blank",
-                                    "noopener,noreferrer"
-                                  )
-                                }
-                              >
-                                {shortId(sessionId)}
-                              </button>
-                              <FiCopy
-                                className={`cursor-pointer text-gray-500 hover:text-black ${copiedId === sessionId
-                                  ? "animate-pulse"
-                                  : ""
+                                  title="Open in Stripe Dashboard"
+                                  onClick={() =>
+                                    window.open(
+                                      sessionUrl,
+                                      "_blank",
+                                      "noopener,noreferrer"
+                                    )
+                                  }
+                                >
+                                  {shortId(sessionId)}
+                                </button>
+                                <FiCopy
+                                  className={`cursor-pointer text-gray-500 hover:text-black ${
+                                    copiedId === sessionId
+                                      ? "animate-pulse"
+                                      : ""
                                   }`}
-                                onClick={() =>
-                                  copyLink(sessionUrl, sessionId, setCopiedId)
-                                }
-                                title="Copy Stripe dashboard link"
-                              />
+                                  onClick={() =>
+                                    copyLink(sessionUrl, sessionId, setCopiedId)
+                                  }
+                                  title="Copy Stripe dashboard link"
+                                />
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })())}
+                          );
+                        })())}
 
                   {data?.data?.order?.shippingCompany && (
                     <div
@@ -942,8 +962,8 @@ export default function OrderDetail() {
                       <p>
                         {data?.data?.order?.invoiceDate
                           ? dayjs(data?.data?.order?.invoiceDate).format(
-                            "MM/DD/YYYY"
-                          )
+                              "MM/DD/YYYY"
+                            )
                           : ""}
                       </p>
                     </div>
@@ -957,8 +977,8 @@ export default function OrderDetail() {
                       <p>
                         {data?.data?.order?.invoicePaidDate
                           ? dayjs(data?.data?.order?.invoicePaidDate).format(
-                            "MM/DD/YYYY"
-                          )
+                              "MM/DD/YYYY"
+                            )
                           : ""}
                       </p>
                     </div>
@@ -969,8 +989,8 @@ export default function OrderDetail() {
                       <p>
                         {data?.data?.order?.pulloutDate
                           ? dayjs(data?.data?.order?.pulloutDate).format(
-                            "MM/DD/YYYY"
-                          )
+                              "MM/DD/YYYY"
+                            )
                           : ""}
                       </p>
                     </div>
@@ -984,58 +1004,58 @@ export default function OrderDetail() {
                     <div className="items-center uppercase">
                       {data?.data?.order?.salesRep?.billingAddresses?.[0]
                         ?.addressLineOne && (
-                          <p>
-                            {
-                              data?.data?.order?.salesRep?.billingAddresses[0]
-                                .addressLineOne
-                            }
-                          </p>
-                        )}
+                        <p>
+                          {
+                            data?.data?.order?.salesRep?.billingAddresses[0]
+                              .addressLineOne
+                          }
+                        </p>
+                      )}
                       {data?.data?.order?.salesRep?.billingAddresses?.[0]
                         ?.addressLineTwo && (
-                          <p>
-                            {
-                              data?.data?.order?.salesRep?.billingAddresses[0]
-                                .addressLineTwo
-                            }
-                          </p>
-                        )}
+                        <p>
+                          {
+                            data?.data?.order?.salesRep?.billingAddresses[0]
+                              .addressLineTwo
+                          }
+                        </p>
+                      )}
                       {data?.data?.order?.salesRep?.billingAddresses?.[0]
                         ?.town && (
-                          <p>
-                            {
-                              data?.data?.order?.salesRep?.billingAddresses[0]
-                                .town
-                            }
-                          </p>
-                        )}
+                        <p>
+                          {
+                            data?.data?.order?.salesRep?.billingAddresses[0]
+                              .town
+                          }
+                        </p>
+                      )}
                       {data?.data?.order?.salesRep?.billingAddresses?.[0]
                         ?.state && (
-                          <p>
-                            {
-                              data?.data?.order?.salesRep?.billingAddresses[0]
-                                .state
-                            }
-                          </p>
-                        )}
+                        <p>
+                          {
+                            data?.data?.order?.salesRep?.billingAddresses[0]
+                              .state
+                          }
+                        </p>
+                      )}
                       {data?.data?.order?.salesRep?.billingAddresses?.[0]
                         ?.zipCode && (
-                          <p>
-                            {
-                              data?.data?.order?.salesRep?.billingAddresses[0]
-                                .zipCode
-                            }
-                          </p>
-                        )}
+                        <p>
+                          {
+                            data?.data?.order?.salesRep?.billingAddresses[0]
+                              .zipCode
+                          }
+                        </p>
+                      )}
                       {data?.data?.order?.salesRep?.billingAddresses?.[0]
                         ?.country && (
-                          <p>
-                            {
-                              data?.data?.order?.salesRep?.billingAddresses[0]
-                                .country
-                            }
-                          </p>
-                        )}
+                        <p>
+                          {
+                            data?.data?.order?.salesRep?.billingAddresses[0]
+                              .country
+                          }
+                        </p>
+                      )}
                     </div>
                     {/* {(hasPermission("customer_update") || hasPermission("selected-customer_update")) && (
                     <span
@@ -1071,15 +1091,15 @@ export default function OrderDetail() {
                     </div>
                     {(data?.data?.order?.salesRep?.countryCode ||
                       data?.data?.order?.salesRep?.phoneNumber) && (
-                        <div>
-                          {[
-                            data?.data?.order?.salesRep?.countryCode || "+1",
-                            data?.data?.order?.salesRep?.phoneNumber,
-                          ]
-                            .filter(Boolean)
-                            .join(" ")}
-                        </div>
-                      )}
+                      <div>
+                        {[
+                          data?.data?.order?.salesRep?.countryCode || "+1",
+                          data?.data?.order?.salesRep?.phoneNumber,
+                        ]
+                          .filter(Boolean)
+                          .join(" ")}
+                      </div>
+                    )}
                     {/* {(hasPermission("customer_update") || hasPermission("selected-customer_update")) && (
                     <span
                       onClick={() => router.push(`${pathname}/edit`)}
@@ -1107,8 +1127,8 @@ export default function OrderDetail() {
                       <p>
                         {data?.data?.order?.invoiceDate
                           ? dayjs(data?.data?.order?.invoiceDate).format(
-                            "MM/DD/YYYY"
-                          )
+                              "MM/DD/YYYY"
+                            )
                           : ""}
                       </p>
                     </div>
@@ -1124,8 +1144,8 @@ export default function OrderDetail() {
                         {" "}
                         {data?.data?.order?.orderHistories
                           ? dayjs(
-                            data?.data?.order?.orderHistories?.[4]?.on
-                          ).format("MM/DD/YYYY")
+                              data?.data?.order?.orderHistories?.[4]?.on
+                            ).format("MM/DD/YYYY")
                           : ""}
                       </p>
                     </div>
@@ -1179,10 +1199,10 @@ export default function OrderDetail() {
               {modal?.type === "cancelOrder"
                 ? "Cancel Order"
                 : modal?.type === "addCheque"
-                  ? "Add Bank Check"
-                  : modal?.type === "editCheque"
-                    ? "Edit Bank Check"
-                    : "Delete Order"}
+                ? "Add Bank Check"
+                : modal?.type === "editCheque"
+                ? "Edit Bank Check"
+                : "Delete Order"}
             </div>
           }
           data-testid={ORDER_DETAIL.dialog.root}
@@ -1192,8 +1212,8 @@ export default function OrderDetail() {
             className="space-y-4 flex flex-col items-center"
           >
             {loader === "cancelOrder" ||
-              loader === "addCheque" ||
-              loader === "deleteOrder" ? (
+            loader === "addCheque" ||
+            loader === "deleteOrder" ? (
               <MiniLoader data-testid={ORDER_DETAIL.miniLoader} />
             ) : (
               <div className="w-full space-y-4">
@@ -1347,10 +1367,10 @@ export default function OrderDetail() {
                     {modal?.type === "cancelOrder"
                       ? "Cancel Order"
                       : modal?.type === "addCheque"
-                        ? "Add Bank Check"
-                        : modal?.type === "editCheque"
-                          ? "Update Bank Check"
-                          : "Delete Order"}
+                      ? "Add Bank Check"
+                      : modal?.type === "editCheque"
+                      ? "Update Bank Check"
+                      : "Delete Order"}
                   </button>
                 </div>
               </div>

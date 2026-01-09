@@ -78,6 +78,8 @@ export default function CreateInvoice() {
   const [allCustomers, setAllCustomers] = useState([]);
   const [customerSearchQuery, setCustomerSearchQuery] = useState("");
   const customerSearchTimeoutRef = useRef(null);
+  const selectedCustomerRef = useRef(null);
+  const isSelectingRef = useRef(false);
 
   // Drawer form state
   const [order, setOrder] = useState({
@@ -164,7 +166,7 @@ export default function CreateInvoice() {
     dueDate: getDueDate(),
     discountPercentage: 0,
     note: order?.note || "",
-    emailInvoiceToCustomer: false,
+    emailInvoiceToCustomer: true,
     invoicePdf: "",
     shippingCharges: order?.shippingCharges || "",
   });
@@ -461,9 +463,16 @@ export default function CreateInvoice() {
 
   // Handle company/customer selection
   const handleCompanySelect = (companyId) => {
+    // Set flag to prevent API calls during selection
+    isSelectingRef.current = true;
+    
     const selected =
       allCustomers?.find((c) => c?.id === companyId) ||
       fullData?.find((c) => c?.id === companyId);
+    
+    // Store selected customer in ref to preserve it during searches
+    selectedCustomerRef.current = selected;
+    
     setOrder((prev) => ({
       ...prev,
       userId: selected?.id,
@@ -485,7 +494,12 @@ export default function CreateInvoice() {
       return { value: address.id, label: parts.join(", ") };
     });
     setAddressOptions(addressList);
-    fetchChargesForCustomer(selected?.id, totalWeightFromCart);
+    
+    // Reset flag after a short delay to allow state updates
+    setTimeout(() => {
+      isSelectingRef.current = false;
+    }, 100);
+    // fetchChargesForCustomer is called automatically by useEffect when order.userId changes
   };
 
   // Handle partner selection for self order
@@ -623,6 +637,8 @@ export default function CreateInvoice() {
       setAddressOptions([]);
       setPartners([]);
       setSrNameOptions([]);
+      // Clear selected customer ref when toggling self order off
+      selectedCustomerRef.current = null;
       fetchCustomerData(1, false, customerSearchQuery);
     }
   };
@@ -643,6 +659,8 @@ export default function CreateInvoice() {
     setEmail("");
     setAddressOptions([]);
     setEmailOptions([]);
+    // Clear selected customer ref when toggling
+    selectedCustomerRef.current = null;
     if (!e) {
       setCustomerPage(1);
       setAllCustomers([]);
@@ -702,13 +720,47 @@ export default function CreateInvoice() {
         }));
 
         if (append) {
-          setCompanyNameOptions((prev) => [...prev, ...nameOptions]);
-          setEmailOptions((prev) => [...prev, ...emails]);
-          setAllCustomers((prev) => [...prev, ...customers]);
+          setCompanyNameOptions((prev) => {
+            // Remove duplicates
+            const existingIds = new Set(prev.map(opt => opt.value));
+            const newOptions = nameOptions.filter(opt => !existingIds.has(opt.value));
+            return [...prev, ...newOptions];
+          });
+          setEmailOptions((prev) => {
+            const existingEmails = new Set(prev.map(opt => opt.value));
+            const newEmails = emails.filter(opt => !existingEmails.has(opt.value));
+            return [...prev, ...newEmails];
+          });
+          setAllCustomers((prev) => {
+            const existingIds = new Set(prev.map(c => c.id));
+            const newCustomers = customers.filter(c => !existingIds.has(c.id));
+            return [...prev, ...newCustomers];
+          });
         } else {
-          setCompanyNameOptions(nameOptions);
+          // Always include selected customer in options if it exists and is not in results
+          let finalNameOptions = nameOptions;
+          let finalCustomers = customers;
+          
+          const selectedCustomer = selectedCustomerRef.current;
+          // Only add selected customer if it's valid and has required fields
+          if (selectedCustomer && 
+              selectedCustomer.id && 
+              selectedCustomer.companyName && 
+              selectedCustomer.name &&
+              !customers.find(c => c.id === selectedCustomer.id)) {
+            finalCustomers = [selectedCustomer, ...customers];
+            finalNameOptions = [
+              {
+                value: selectedCustomer.id,
+                label: `${selectedCustomer.companyName} (${selectedCustomer.name})`,
+              },
+              ...nameOptions
+            ];
+          }
+          
+          setCompanyNameOptions(finalNameOptions);
           setEmailOptions(emails);
-          setAllCustomers(customers);
+          setAllCustomers(finalCustomers);
         }
 
         setFullData(customers);
@@ -723,7 +775,24 @@ export default function CreateInvoice() {
   };
 
   // Handle search input change with debounce
-  const handleCustomerSearchChange = (inputValue) => {
+  const handleCustomerSearchChange = (inputValue, actionMeta) => {
+    // Prevent API call if we're currently selecting a customer
+    if (isSelectingRef.current) {
+      return;
+    }
+    
+    // Prevent API call on selection or menu actions - only search when user is actually typing
+    if (actionMeta?.action === 'input-blur' || 
+        actionMeta?.action === 'menu-close' || 
+        actionMeta?.action === 'set-value') {
+      return;
+    }
+    
+    // Don't refetch if search query hasn't changed
+    if (inputValue === customerSearchQuery) {
+      return;
+    }
+
     if (customerSearchTimeoutRef.current) {
       clearTimeout(customerSearchTimeoutRef.current);
     }
@@ -731,10 +800,21 @@ export default function CreateInvoice() {
     customerSearchTimeoutRef.current = setTimeout(() => {
       setCustomerSearchQuery(inputValue);
       setCustomerPage(1);
-      setCompanyNameOptions([]);
-      setEmailOptions([]);
-      setAllCustomers([]);
-      fetchCustomerData(1, false, inputValue);
+      
+      // Only clear and refetch if we're doing a new search
+      // Don't clear if input is empty and we have a selected customer
+      if (inputValue.trim() !== "" || !order?.userId) {
+        // Don't clear selected customer from allCustomers - preserve it
+        setCompanyNameOptions([]);
+        setEmailOptions([]);
+        // Only clear customers that aren't the selected one
+        if (order?.userId && selectedCustomerRef.current) {
+          setAllCustomers([selectedCustomerRef.current]);
+        } else {
+          setAllCustomers([]);
+        }
+        fetchCustomerData(1, false, inputValue);
+      }
     }, 500);
   };
 
@@ -821,7 +901,11 @@ export default function CreateInvoice() {
       setCompanyNameOptions([]);
       setAllCustomers([]);
       setCustomerSearchQuery("");
+      // Clear selected customer ref when switching to partners
+      selectedCustomerRef.current = null;
     } else if (!isSelfOrder) {
+      // Clear selected customer ref when switching back to customers to avoid stale data
+      selectedCustomerRef.current = null;
       fetchCustomerData(1, false, customerSearchQuery);
     }
   }, [partnersOrder, isSelfOrder]);
@@ -833,12 +917,12 @@ export default function CreateInvoice() {
     }
   }, [isSelfOrder]);
 
-  // Fetch charges when customer is selected
-  useEffect(() => {
-    if (order?.userId && !partnersOrder && !isSelfOrder) {
-      fetchChargesForCustomer(order?.userId, totalWeightFromCart);
-    }
-  }, [order?.userId, totalWeightFromCart, partnersOrder, isSelfOrder]);
+  // Fetch charges when customer is selected - DISABLED to prevent API call on customer selection
+  // useEffect(() => {
+  //   if (order?.userId && !partnersOrder && !isSelfOrder) {
+  //     fetchChargesForCustomer(order?.userId, totalWeightFromCart);
+  //   }
+  // }, [order?.userId, totalWeightFromCart, partnersOrder, isSelfOrder]);
 
   // Validate form before generating invoice
   const validateForm = () => {
@@ -1129,9 +1213,19 @@ export default function CreateInvoice() {
                     value={
                       companyNameOptions?.find(
                         (opt) => opt?.value === order?.userId
-                      ) || null
+                      ) || (order?.userId && selectedCustomerRef.current && 
+                            selectedCustomerRef.current.id && 
+                            selectedCustomerRef.current.companyName && 
+                            selectedCustomerRef.current.name ? {
+                        value: selectedCustomerRef.current.id,
+                        label: `${selectedCustomerRef.current.companyName} (${selectedCustomerRef.current.name})`
+                      } : null)
                     }
-                    onChange={(e) => handleCompanySelect(e.value)}
+                    onChange={(e) => {
+                      if (e) {
+                        handleCompanySelect(e.value);
+                      }
+                    }}
                     onInputChange={
                       !partnersOrder ? handleCustomerSearchChange : undefined
                     }

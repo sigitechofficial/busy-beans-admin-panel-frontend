@@ -23,10 +23,22 @@ export default function Dashboard2() {
     userID = localStorage.getItem("userID");
   }
 
-  // Determine the API endpoint based on user type
-  const dashboardEndpoint = userType === "salesRepresentative" && userID
-    ? `api/v1/admin/dashboard/local-partner-sales/${userID}`
-    : "api/v1/admin/dashboard/sales";
+  // Calculate date ranges for API query parameters
+  const today = dayjs();
+  const mtdStart = today.startOf("month").format("YYYY-MM-DD");
+  const mtdEnd = today.format("YYYY-MM-DD");
+  const lastMonthStart = today.subtract(1, "month").startOf("month").format("YYYY-MM-DD");
+  const lastMonthEnd = today.subtract(1, "month").endOf("month").format("YYYY-MM-DD");
+
+  // Determine the base API endpoint based on user type
+  // const baseEndpoint = userType === "salesRepresentative" && userID
+  //   ? `api/v1/admin/dashboard/local-partner-sales/${userID}`
+  //   : "api/v1/admin/dashboard/sales";
+
+  const baseEndpoint = "api/v1/admin/dashboard/sales";
+
+  // Construct the endpoint with query parameters
+  const dashboardEndpoint = `${baseEndpoint}?mtdStart=${mtdStart}&mtdEnd=${mtdEnd}&lastMonthStart=${lastMonthStart}&lastMonthEnd=${lastMonthEnd}`;
 
   // Fetch sales dashboard data from the appropriate API endpoint
   const { data: salesData, isLoading: salesLoading } = GetAPI(
@@ -104,13 +116,6 @@ export default function Dashboard2() {
         sales: parseFloat(franchisee.totalSales || 0),
       }))
     : [];
-
-  // Calculate date ranges for navigation
-  const today = dayjs();
-  const mtdStart = today.startOf("month").format("YYYY-MM-DD");
-  const mtdEnd = today.format("YYYY-MM-DD");
-  const lastMonthStart = today.subtract(1, "month").startOf("month").format("YYYY-MM-DD");
-  const lastMonthEnd = today.subtract(1, "month").endOf("month").format("YYYY-MM-DD");
 
   // Navigation handlers
   const handleCustomerClick = (customerId, isLastMonth = false) => {
@@ -218,13 +223,13 @@ export default function Dashboard2() {
                 MTD Sales by Customer
               </h3>
             </div>
-            <div className="space-y-3">
+            <div>
               {processedMtdCustomers.length > 0 ? (
                 processedMtdCustomers.map((customer, idx) => (
                   <div
                     key={idx}
                     onClick={() => handleCustomerClick(customer.id, false)}
-                    className={`flex items-center justify-between py-2 border-b last:border-b-0 hover:bg-gray-50 px-2 rounded transition-colors ${
+                    className={`flex items-center justify-between py-3 border-b last:border-b-0 hover:bg-gray-50 px-2 rounded transition-colors ${
                       customer.id ? "cursor-pointer" : "cursor-default"
                     }`}
                   >
@@ -301,13 +306,13 @@ export default function Dashboard2() {
                 Last Month Sales by Customer
               </h3>
             </div>
-            <div className="space-y-3">
+            <div>
               {processedLastMonthCustomers.length > 0 ? (
                 processedLastMonthCustomers.map((customer, idx) => (
                   <div
                     key={idx}
                     onClick={() => customer.id && handleCustomerClick(customer.id, true)}
-                    className={`flex items-center justify-between py-2 border-b last:border-b-0 hover:bg-gray-50 px-2 rounded transition-colors ${
+                    className={`flex items-center justify-between py-3 border-b last:border-b-0 hover:bg-gray-50 px-2 rounded transition-colors ${
                       customer.id ? "cursor-pointer" : "cursor-default"
                     }`}
                   >

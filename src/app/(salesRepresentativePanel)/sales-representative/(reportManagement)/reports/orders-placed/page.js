@@ -4,9 +4,11 @@ import Loader from "@/components/ui/Loader";
 import MyDataTable from "@/components/ui/MyDataTable";
 import GetAPI from "@/utilities/GetAPI";
 import selectStyles, { drawerSelectStyles } from "@/utilities/SelectStyle";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ImCross } from "react-icons/im";
 import Select from "react-select";
+import dayjs from "dayjs";
+import { error_toaster } from "@/utilities/Toaster";
 
 export default function UnpaidPartnerBalance() {
   if (typeof window !== "undefined") {
@@ -22,11 +24,86 @@ export default function UnpaidPartnerBalance() {
   });
 
   const [displayCustomFilters, setDisplayCustomFilters] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(100);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const { data, isLoading } = GetAPI(
-    `api/v1/admin/sales-rep-reports/orders-placed-report/${userID}`
-  );
-  console.log("🚀 ~ UnpaidPartnerBalance ~ data:", data?.data);
+  // Initialize dateRange with All Time default (January 1, 2025 to today)
+  const getInitialDateRange = () => {
+    const today = dayjs();
+    return {
+      startDate: "2025-01-01",
+      endDate: today.format("YYYY-MM-DD")
+    };
+  };
+  
+  const [dateRange, setDateRange] = useState(getInitialDateRange());
+
+  const calculateDateRange = (filterValue) => {
+    const today = dayjs();
+    let startDate = "";
+    let endDate = "";
+
+    switch (filterValue) {
+      case "allTime":
+        startDate = "2025-01-01";
+        endDate = today.format("YYYY-MM-DD");
+        break;
+      case "currentYear":
+        startDate = today.startOf("year").format("YYYY-MM-DD");
+        endDate = today.endOf("year").format("YYYY-MM-DD");
+        break;
+      case "currentMonth":
+        startDate = today.startOf("month").format("YYYY-MM-DD");
+        endDate = today.endOf("month").format("YYYY-MM-DD");
+        break;
+      case "currentWeek":
+        startDate = today.startOf("week").format("YYYY-MM-DD");
+        endDate = today.endOf("week").format("YYYY-MM-DD");
+        break;
+      case "lastYear":
+        startDate = today.subtract(1, "year").startOf("year").format("YYYY-MM-DD");
+        endDate = today.subtract(1, "year").endOf("year").format("YYYY-MM-DD");
+        break;
+      case "last90Days":
+        startDate = today.subtract(90, "days").format("YYYY-MM-DD");
+        endDate = today.format("YYYY-MM-DD");
+        break;
+      case "lastMonth":
+        startDate = today.subtract(1, "month").startOf("month").format("YYYY-MM-DD");
+        endDate = today.subtract(1, "month").endOf("month").format("YYYY-MM-DD");
+        break;
+      case "lastWeek":
+        startDate = today.subtract(1, "week").startOf("week").format("YYYY-MM-DD");
+        endDate = today.subtract(1, "week").endOf("week").format("YYYY-MM-DD");
+        break;
+      case "custom":
+        break;
+      default:
+        startDate = "";
+        endDate = "";
+    }
+
+    return { startDate, endDate };
+  };
+
+  // Build API URL with pagination, search, and date filters
+  const buildApiUrl = () => {
+    const baseUrl = `api/v1/admin/sales-rep-reports/orders-placed-report/${userID}`;
+    const params = new URLSearchParams();
+    params.set("startDate", dateRange?.startDate || "");
+    params.set("endDate", dateRange?.endDate || "");
+    params.set("page", page.toString());
+    params.set("limit", limit.toString());
+    if (searchQuery.trim()) {
+      params.set("search", searchQuery.trim());
+    }
+    return `${baseUrl}?${params.toString()}`;
+  };
+
+  const apiUrl = buildApiUrl();
+
+  const { data, isLoading } = GetAPI(apiUrl);
 
   const options = [
     { value: "allTime", label: "All Time" },
@@ -42,6 +119,7 @@ export default function UnpaidPartnerBalance() {
 
   const columns = [
     { field: "sl", header: "SL", sort: true },
+    { field: "invoiceNumber", header: "Invoice #", sort: true },
     { field: "customerName", header: "Customer Name" },
     { field: "productNames", header: "Product" },
     { field: "productsSellingPrice", header: "Selling Price" },
@@ -49,12 +127,15 @@ export default function UnpaidPartnerBalance() {
     { field: "commission", header: "Partner Profits" },
     { field: "orderDate", header: "Order Date" },
     { field: "orderCurrentStatus", header: "Order Status" },
+    { field: "shippingCharges", header: "Shipping Charges" },
+    { field: "totalBill", header: "Total bill" },
   ];
 
   const datas = [];
   data?.data?.data?.map((report, i) =>
     datas.push({
       sl: i + 1,
+      invoiceNumber: report?.invoiceNumber,
       customerName: report?.customerName,
       productNames: report?.productNames,
       productsSellingPrice: `$${report?.productsSellingPrice ?? 0}`,
@@ -64,8 +145,47 @@ export default function UnpaidPartnerBalance() {
       }`,
       orderDate: report?.orderDate,
       orderCurrentStatus: report?.orderCurrentStatus,
+      shippingCharges: `$${report?.shippingCharges}`,
+      totalBill: `$${report?.totalBill}`,
     })
   );
+
+  useEffect(() => {
+    if (selectedOption.value !== "custom" && !displayCustomFilters) {
+      const dates = calculateDateRange(selectedOption.value);
+      setDateRange(dates);
+      setPage(1); // Reset to first page when date filter changes
+    }
+  }, [selectedOption, displayCustomFilters]);
+
+  useEffect(() => {
+    if (displayCustomFilters && customDates.startDate && customDates.endDate) {
+      // Validate date range
+      const start = dayjs(customDates.startDate);
+      const end = dayjs(customDates.endDate);
+      const today = dayjs();
+      const minDate = dayjs("2025-01-01");
+
+      if (start.isAfter(end)) {
+        error_toaster("Start date cannot be after end date");
+        return;
+      }
+      if (start.isAfter(today) || end.isAfter(today)) {
+        error_toaster("Dates cannot be in the future");
+        return;
+      }
+      if (start.isBefore(minDate) || end.isBefore(minDate)) {
+        error_toaster("Dates cannot be before January 1, 2025");
+        return;
+      }
+
+      setDateRange({
+        startDate: customDates.startDate,
+        endDate: customDates.endDate,
+      });
+      setPage(1); // Reset to first page when custom date range changes
+    }
+  }, [customDates.startDate, customDates.endDate, displayCustomFilters]);
 
   const handleChange = (val) => {
     if (val?.value === "custom") {
@@ -73,8 +193,9 @@ export default function UnpaidPartnerBalance() {
     } else {
       setSelectedOption(val);
       setDisplayCustomFilters(false);
-      //   const filteredDates = handleDatesForFilter(val?.value);
-      //   setCustomDates(filteredDates);
+      const dates = calculateDateRange(val?.value);
+      setDateRange(dates);
+      setCustomDates({ startDate: "", endDate: "" });
     }
   };
 
@@ -85,6 +206,8 @@ export default function UnpaidPartnerBalance() {
       value: "allTime",
       label: "All Time",
     });
+    setDateRange(getInitialDateRange());
+    setPage(1); // Reset to first page when canceling filters
   };
 
   const handleCustomDates = (e) => {
@@ -181,8 +304,24 @@ export default function UnpaidPartnerBalance() {
           <MyDataTable
             columns={columns}
             data={datas}
-            placeholder={"Search ..."}
+            placeholder={"Search by invoice number, company name..."}
             pagination={true}
+            serverPagination={{
+              page: data?.pagination?.page || data?.data?.pagination?.page || page,
+              limit: data?.pagination?.limit || data?.data?.pagination?.limit || limit,
+              totalRecords: data?.pagination?.totalItems || data?.data?.pagination?.totalItems || 0,
+              totalPages: data?.pagination?.totalPages || data?.data?.pagination?.totalPages,
+              onPageChange: (newPage) => setPage(newPage),
+              onLimitChange: (newLimit) => {
+                setLimit(newLimit);
+                setPage(1);
+              },
+            }}
+            searchValue={searchQuery}
+            onSearchChange={(searchValue) => {
+              setSearchQuery(searchValue);
+              setPage(1); // Reset to first page when search changes
+            }}
             search={true}
           />
         </div>

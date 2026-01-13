@@ -5,8 +5,9 @@ import ErrorHandler from "@/utilities/ErrorHandler";
 import { getMessagingInstance, onMessage } from "@/utilities/firebase";
 import { loginAPI } from "@/utilities/PostAPI";
 import { requestDeviceToken } from "@/utilities/requestFCMToken";
-import { error_toaster, success_toaster } from "@/utilities/Toaster";
-import { BASE_URL, RECAPTCHA_SITE_KEY } from "@/utilities/URL";
+import { error_toaster, success_toaster, info_toaster } from "@/utilities/Toaster";
+import { BASE_URL, RECAPTCHA_SITE_KEY, RETURN_URL } from "@/utilities/URL";
+import api from "@/utilities/StatusErrorHandler";
 import { useFormik } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -146,14 +147,71 @@ export default function SignIn() {
             }
             localStorage.setItem("employeeId", res?.data?.data?.user?.id);
 
+            let shouldRedirectToOnboarding = false;
+
             if (res?.data?.data?.user?.employeeOf) {
               localStorage.setItem("isEmployee", "true");
               localStorage.setItem(
                 "employeeOf",
                 res?.data?.data?.user?.employeeOf
               );
+              
+              // Call Stripe Connect Account API for employee
+              try {
+                const employeeId = res?.data?.data?.user?.id;
+                const stripeResponse = await api.post(
+                  `api/v1/admin/employee/${employeeId}/stripe-connect-account`,
+                  {
+                    returnUrl: RETURN_URL,
+                  },
+                  {
+                    suppressSuccessToast: true,
+                  }
+                );
+                
+                // Handle Stripe Connect Account response
+                if (stripeResponse?.data?.status === "success") {
+                  const stripeData = stripeResponse?.data?.data;
+                  
+                  // Store account ID
+                  if (stripeData?.accountId) {
+                    localStorage.setItem("employeeStripeAccountId", stripeData.accountId);
+                  }
+                  
+                  // Store account state
+                  if (stripeData?.accountState !== undefined) {
+                    localStorage.setItem("employeeStripeAccountState", stripeData.accountState.toString());
+                  }
+                  
+                  // Scenario A: Account is active
+                  if (stripeData?.accountState === true) {
+                    // Account is fully connected and active
+                    if (stripeData?.account) {
+                      localStorage.setItem("employeeStripeAccount", JSON.stringify(stripeData.account));
+                    }
+                  }
+                  // Scenario B & C: Account exists but not active OR new account created
+                  else if (stripeData?.accountState === false && stripeData?.onboardingLink) {
+                    // Store onboarding link for later use
+                    localStorage.setItem("employeeStripeOnboardingLink", stripeData.onboardingLink);
+                    // Show info message about pending onboarding
+                    info_toaster(stripeData?.message || "Stripe account setup required");
+                    // Set flag to redirect
+                    shouldRedirectToOnboarding = true;
+                    // Navigate to onboarding link
+                    window.location.href = stripeData.onboardingLink;
+                  }
+                }
+              } catch (error) {
+                // Silently handle error - don't block login if this fails
+                console.error("Error fetching Stripe Connect account:", error);
+              }
             }
-            success_toaster("Login Successfully");
+            
+            // Only show success toast if not redirecting to onboarding
+            if (!shouldRedirectToOnboarding) {
+              success_toaster("Login Successfully");
+            }
             if (type === "sales-rep") {
               localStorage.setItem(
                 "connectAccountId",

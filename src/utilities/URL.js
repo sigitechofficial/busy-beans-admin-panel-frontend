@@ -7,18 +7,21 @@ const CONFIG = {
     BASE_URL: "http://192.168.18.21:8013/",
     STRIPE_PUBLIC_KEY:
       "pk_test_51RPXZNCxTuXimvwHkvKO6MrVTckQ45X3JC2AkCVyV9fxLCK442YPbG8yM2NOexEqnD3wNAXdKfrOyEH2dTSzYKpt00WTyK7kzl",
+    RETURN_URL: "http://192.168.18.36:3000",
   },
 
   staging: {
     BASE_URL: "https://testingbb.trimworldwide.com/",
     STRIPE_PUBLIC_KEY:
       "pk_test_51RPXZNCxTuXimvwHkvKO6MrVTckQ45X3JC2AkCVyV9fxLCK442YPbG8yM2NOexEqnD3wNAXdKfrOyEH2dTSzYKpt00WTyK7kzl",
+    RETURN_URL: "https://stageadmin.busybeancoffee.com/",
   },
 
   production: {
     BASE_URL: "https://backendbb.trimworldwide.com/",
     STRIPE_PUBLIC_KEY:
       "pk_live_51HGqhQECVLSM4sc2wb1g4dx3lUe61VcK3BMjnUPk28Y5qaRC9sDQ6X6Ar5OZHmVoAIVe2rXncVOxHUax10qb4d8L00KCAdXpd5",
+    RETURN_URL: "https://admin.busybeancoffee.com/",
   },
 };
 
@@ -31,6 +34,8 @@ if (!CURRENT) {
 export const BASE_URL = CURRENT?.BASE_URL || "";
 
 export const STRIPE_PUBLIC_KEY = CURRENT?.STRIPE_PUBLIC_KEY || "";
+
+export const RETURN_URL = CURRENT?.RETURN_URL || "";
 
 export const GOOGLE_API_KEY = "AIzaSyD68_vw1gGE7LVVjJ5ZShy7qWwm9Rq0CBQ";
 

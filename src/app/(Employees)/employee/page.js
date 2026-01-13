@@ -42,6 +42,10 @@ export default function Employee() {
   const [loader, setLoader] = useState("");
   const [visible, setVisible] = useState(false);
   const [changePasswordStatus, setChangePasswordStatus] = useState(false);
+  const [commissionModal, setCommissionModal] = useState(false);
+  const [commissionEmployeeId, setCommissionEmployeeId] = useState("");
+  const [commissionPercentage, setCommissionPercentage] = useState("");
+  const [commissionLoader, setCommissionLoader] = useState(false);
   const ADMIN_FEATURES = ["dashboard", "orders", "supplier", "invoice", "customer", "selected-customer", "local-partner", "product", "category", "employees", "country", "charges", "payment-pullout", "report","leads-dashboard"];
   const SALES_REP_FEATURES = ["dashboard", "quotation", "customer", "selected-customer", "orders", "invoice", "payment-pullout", "employees", "account", "wallet", "report", "subscription","leads-dashboard"];
   const allFeatures = userType === "salesRepresentative" ? SALES_REP_FEATURES : ADMIN_FEATURES;
@@ -244,10 +248,47 @@ export default function Employee() {
     { field: "name", header: "Name" },
     { field: "email", header: "Email" },
     { field: "phoneNumber", header: "Phone Number" },
+    { field: "commissionPercentage", header: "Commission %" },
     // { field: "currentStatus", header: "Current Status" },
     { field: "changeStatus", header: "Change Status" },
     { field: "action", header: "Action" },
   ];
+
+  const handleCommissionSubmit = async (e) => {
+    e.preventDefault();
+    if (!commissionPercentage || isNaN(commissionPercentage) || parseFloat(commissionPercentage) < 0 || parseFloat(commissionPercentage) > 100) {
+      return info_toaster("Please enter a valid commission percentage (0-100)");
+    }
+    setCommissionLoader(true);
+    try {
+      const res = await PatchAPI(
+        `api/v1/admin/employee/${commissionEmployeeId}/commission`,
+        {
+          commissionPercentage: parseFloat(commissionPercentage),
+        },
+        "employees"
+      );
+      if (res?.data?.status === "success") {
+        success_toaster("Commission percentage updated successfully");
+        setCommissionModal(false);
+        setCommissionEmployeeId("");
+        setCommissionPercentage("");
+        reFetch();
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
+    } finally {
+      setCommissionLoader(false);
+    }
+  };
+
+  const handleOpenCommissionModal = (employeeId, currentCommission) => {
+    setCommissionEmployeeId(employeeId);
+    setCommissionPercentage(currentCommission || "");
+    setCommissionModal(true);
+  };
 
   const datas = [];
   data?.data?.data?.map((cat, i) => {
@@ -256,6 +297,19 @@ export default function Employee() {
       name: cat?.name,
       email: cat?.email,
       phoneNumber: (<div> {cat?.countryCode && `+${cat?.countryCode} `}{cat?.phoneNumber || ""} </div>),
+      commissionPercentage: (
+        <div className="flex items-center gap-2">
+          <span>{cat?.commissionPercentage ? `${cat.commissionPercentage}%` : "N/A"}</span>
+          {hasPermission("employees_update") && (
+            <button
+              className="text-theme hover:text-themeDark text-sm font-medium underline"
+              onClick={() => handleOpenCommissionModal(cat?.id, cat?.commissionPercentage)}
+            >
+              {cat?.commissionPercentage ? "Edit" : "Add"}
+            </button>
+          )}
+        </div>
+      ),
       currentStatus: (
         <div>
           {cat?.status ? (
@@ -683,6 +737,69 @@ export default function Employee() {
                           ? "Delete"
                           : ""}{" "}
                     Employee
+                  </button>
+                </div>
+              </div>
+            )}
+          </form>
+        </Dialog>
+
+        {/* Commission Percentage Modal */}
+        <Dialog
+          visible={commissionModal}
+          className="font-nunito w-[80%] lg:w-[40vw]"
+          dismissableMask={true}
+          onHide={() => {
+            setCommissionModal(false);
+            setCommissionEmployeeId("");
+            setCommissionPercentage("");
+          }}
+          header={
+            <div className="font-nunito font-bold text-sm lg:text-2xl text-center">
+             Update Commission Percentage
+            </div>
+          }
+        >
+          <form onSubmit={handleCommissionSubmit} className="space-y-4 flex flex-col items-center">
+            {commissionLoader ? (
+              <MiniLoader />
+            ) : (
+              <div className="w-full space-y-4">
+                <div className="flex flex-col gap-y-2">
+                  <label className="text-labelColor font-medium font-satoshi">
+                    Commission Percentage (%)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={commissionPercentage}
+                    onChange={(e) => setCommissionPercentage(e.target.value)}
+                    placeholder="Enter commission percentage (0-100)"
+                    className="border border-borderColor rounded-[4px] px-2.5 py-3"
+                    required
+                  />
+                  <p className="text-sm text-gray-500">
+                    Enter a value between 0 and 100
+                  </p>
+                </div>
+                <div className="flex justify-end gap-3 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCommissionModal(false);
+                      setCommissionEmployeeId("");
+                      setCommissionPercentage("");
+                    }}
+                    className="px-4 py-2 border rounded hover:bg-gray-100"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-theme text-white rounded hover:bg-themeDark disabled:opacity-70"
+                  >
+                   Update Commission
                   </button>
                 </div>
               </div>

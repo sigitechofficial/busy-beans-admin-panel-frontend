@@ -55,6 +55,10 @@ export default function Leftbar(props) {
     var connectAccountId = localStorage.getItem("connectAccountId");
     var isAccountConnected = localStorage.getItem("isAccountConnected");
     var isEmployee = localStorage.getItem("isEmployee") ? true : false;
+    var employeeStripeAccountState = localStorage.getItem(
+      "employeeStripeAccountState"
+    );
+    var employeeId = localStorage.getItem("employeeId");
     var url = window.location.href;
   }
 
@@ -316,6 +320,41 @@ export default function Leftbar(props) {
       }
     }
   };
+
+  const handleEmployeeStripeDashboard = async () => {
+    if (typeof window === "undefined" || !employeeId) return;
+    try {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("token") || localStorage.getItem("accessToken")
+          : "";
+      const res = await axios.get(
+        BASE_URL +
+          `api/v1/admin/employee/${employeeId}/stripe-connect-account-dashboard`,
+        {
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        }
+      );
+      if (res?.data?.status === "success") {
+        success_toaster(res?.data?.data?.message);
+        if (res?.data?.data?.data?.connectAccount) {
+          const link = document.createElement("a");
+          link.href = res?.data?.data?.data?.connectAccount;
+          link.target = "_blank";
+          link.click();
+        }
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
+    }
+  };
+
   // useEffect(() => {
   //   const stripeAccountStatus = async () => {
   //     try {
@@ -341,10 +380,10 @@ export default function Leftbar(props) {
   //   }
   // }, []);
   const allOrder = overAllData?.data?.data?.reduce(
-    (sum, item) => item?.id !== 7 ? sum + item?.count : sum,
+    (sum, item) => (item?.id !== 7 ? sum + item?.count : sum),
     0
   );
-  
+
   useEffect(() => {
     let timeoutId = null;
 
@@ -805,7 +844,11 @@ export default function Leftbar(props) {
           {hasPermission("subscription_view") && (
             <ListHead
               title="Machine Subscriptions"
-              active={pathname === "/subscription" || pathname === "/purchased" || pathname === "/addons"}
+              active={
+                pathname === "/subscription" ||
+                pathname === "/purchased" ||
+                pathname === "/addons"
+              }
               data-testid={LEFTBAR.subscriptionManagementSection}
               Icon={MdCoffeeMaker}
               status={
@@ -844,10 +887,7 @@ export default function Leftbar(props) {
                   <ListItems
                     title="Addons"
                     to="/addons"
-                    data-testid={LEFTBAR.listItem(
-                      "addons",
-                      "Addons"
-                    )}
+                    data-testid={LEFTBAR.listItem("addons", "Addons")}
                   />
                   {/* <ListItems
                     title="Requests"
@@ -1355,6 +1395,17 @@ export default function Leftbar(props) {
             />
           )}
 
+          {/* Stripe Dashboard for Employees */}
+          {isEmployee && employeeStripeAccountState === "true" && (
+            <ListHead
+              title="Stripe Dashboard"
+              Icon={MdPayments}
+              onClick={handleEmployeeStripeDashboard}
+              active={false}
+              data-testid={LEFTBAR.employeeStripeDashboard}
+            />
+          )}
+
           <ListHead
             title="QuickBooks"
             Icon={MdAccountBalance}
@@ -1373,12 +1424,14 @@ export default function Leftbar(props) {
             active?.quickbooks?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                {!isEmployee &&  <button
-                    onClick={authenticateQuickbooks}
-                    className="w-full flex gap-x-2 text-wrap items-center py-2 px-2 rounded-lg font-inter font-medium text-themeLightGray hover:bg-theme hover:text-white duration-200"
-                  >
-                    Go to QuickBooks
-                  </button>}
+                  {!isEmployee && (
+                    <button
+                      onClick={authenticateQuickbooks}
+                      className="w-full flex gap-x-2 text-wrap items-center py-2 px-2 rounded-lg font-inter font-medium text-themeLightGray hover:bg-theme hover:text-white duration-200"
+                    >
+                      Go to QuickBooks
+                    </button>
+                  )}
                   <ListItems
                     title="Clients"
                     to="/Quickbooks/clients"

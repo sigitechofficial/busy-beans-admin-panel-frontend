@@ -537,6 +537,7 @@ export default function LeadsKanban() {
         snapshotTimeline: newLead.snapshotTimeline,
         estimatedValue: newLead.estimatedValue,
         notes: newLead.notes,
+        ...(userType === "salesRepresentative" && { salesRepId: userID }),
         machineId: newLead.machineId,
         machineName: newLead.machineName,
       };

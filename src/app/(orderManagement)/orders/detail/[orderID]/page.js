@@ -685,24 +685,27 @@ export default function OrderDetail() {
                 ? "Invoice reminder"
                 : "Send Invoice"}
             </button> */}
-            {hasPermission("invoice_update") && (
-              <button
-                type="button"
-                onClick={() => router.push(`${pathname}/add-invoice`)}
-                className="border border-buttonBorderColor shadow-buttonShadow"
-                data-testid={ORDER_DETAIL.addOrUpdateInvoiceBtn}
-              >
-                {data?.data?.order?.invoiceDate
-                  ? "Update Invoice"
-                  : "Add Invoice"}
-              </button>
-            )}
+            {/* Hide Add Invoice button when order is cancelled */}
+            {hasPermission("invoice_update") &&
+              data?.data?.order?.statusId !== 6 && (
+                <button
+                  type="button"
+                  onClick={() => router.push(`${pathname}/add-invoice`)}
+                  className="border border-buttonBorderColor shadow-buttonShadow"
+                  data-testid={ORDER_DETAIL.addOrUpdateInvoiceBtn}
+                >
+                  {data?.data?.order?.invoiceDate
+                    ? "Update Invoice"
+                    : "Add Invoice"}
+                </button>
+              )}
 
             {(!isEmployee || hasPermission("orders_update")) && (
               <button
                 disabled={
                   data?.data?.order?.statusId === 5 ||
-                  data?.data?.order?.statusId === 6
+                  data?.data?.order?.statusId === 6 ||
+                  data?.data?.order?.paymentStatus === "done"
                     ? true
                     : false
                 }
@@ -711,7 +714,9 @@ export default function OrderDetail() {
                 className="bg-theme text-white disabled:cursor-not-allowed"
                 data-testid={ORDER_DETAIL.cancelOrderBtn}
               >
-                Cancel Order
+                {data?.data?.order?.statusId === 6
+                  ? "Cancelled"
+                  : "Cancel Order"}
               </button>
             )}
             {(!isEmployee || hasPermission("orders_delete")) && (
@@ -720,13 +725,16 @@ export default function OrderDetail() {
                 onClick={handleDeleteOrder}
                 disabled={
                   data?.data?.order?.statusId === 4 ||
-                  data?.data?.order?.statusId === 5
+                  data?.data?.order?.statusId === 5 ||
+                  data?.data?.order?.paymentStatus === "done"
                 }
                 className="bg-red-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 title={
                   data?.data?.order?.statusId === 4 ||
                   data?.data?.order?.statusId === 5
                     ? "Shipped orders cannot be deleted"
+                    : data?.data?.order?.paymentStatus === "done"
+                    ? "Paid orders cannot be deleted"
                     : ""
                 }
                 data-testid={ORDER_DETAIL.deleteOrderBtn}

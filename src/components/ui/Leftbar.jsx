@@ -1262,6 +1262,11 @@ export default function Leftbar(props) {
                     to="/employee"
                     data-testid={LEFTBAR.listItem("employees", "Employee")}
                   />
+                  <ListItems
+                    title="Payouts"
+                    to="/payouts"
+                    data-testid={LEFTBAR.listItem("employees", "Payouts")}
+                  />
                 </div>
                 <hr className="w-full" />
               </>
@@ -1403,6 +1408,17 @@ export default function Leftbar(props) {
               onClick={handleEmployeeStripeDashboard}
               active={false}
               data-testid={LEFTBAR.employeeStripeDashboard}
+            />
+          )}
+
+          {/* Payouts for Employees */}
+          {isEmployee && (
+            <ListHead
+              title="Payouts"
+              Icon={MdReceiptLong}
+              to="/payouts"
+              active={pathname === "/payouts"}
+              data-testid={LEFTBAR.employeePayouts}
             />
           )}
 
@@ -2237,6 +2253,11 @@ export default function Leftbar(props) {
                     title="Employee"
                     to="/employee"
                     data-testid={LEFTBAR.listItem("employees", "Employee")}
+                  />
+                  <ListItems
+                    title="Payouts"
+                    to="/payouts"
+                    data-testid={LEFTBAR.listItem("employees", "Payouts")}
                   />
                 </div>
                 <hr className="w-full" />

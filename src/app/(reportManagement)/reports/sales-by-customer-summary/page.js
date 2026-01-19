@@ -312,7 +312,7 @@ function SalesByCustomerSummaryReport() {
         // Regular row
         rows.push({
           id: item.id || item.customerId,
-          customer: item.customerName || item.name,
+          customer: item.companyName || item.customerName,
           total: total,
           isGroup: false,
         });

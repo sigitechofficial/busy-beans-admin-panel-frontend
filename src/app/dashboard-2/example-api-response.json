@@ -2,115 +2,197 @@
   "status": "success",
   "data": {
     "monthToDateSales": {
-      "totalSales": "103.67",
-      "orders": 4,
-      "avgOrderValue": "25.917500",
+      "totalSales": "5814.52",
+      "orders": 55,
+      "avgOrderValue": "105.718545",
       "vsLastMonthPercent": 0
     },
     "mtdSalesByCustomer": [
       {
-        "customerId": 1,
-        "customerName": "Sigi tech",
-        "totalSales": 52.72
-      },
-      {
-        "customerId": 2,
-        "customerName": "main local ka customer hun",
-        "totalSales": 34.35
-      },
-      {
-        "customerId": 3,
+        "customerId": 277,
         "customerName": "Test Script 2",
-        "totalSales": 16.6
+        "totalSales": 2143.67
       },
       {
-        "customerId": 4,
-        "customerName": "ABC Law Group",
-        "totalSales": 12.5
+        "customerId": 114783,
+        "customerName": "Sigi tech 74",
+        "totalSales": 1949.2
       },
       {
-        "customerId": 5,
-        "customerName": "Midtown Dental",
-        "totalSales": 8.2
+        "customerId": 247,
+        "customerName": "test company",
+        "totalSales": 409.8
+      },
+      {
+        "customerId": 278,
+        "customerName": "Billing customer",
+        "totalSales": 273.2
+      },
+      {
+        "customerId": 114778,
+        "customerName": "Test Company 6 99996",
+        "totalSales": 236.6
       }
     ],
     "lastMonthSales": {
-      "totalSales": "361.00",
-      "orders": 10,
-      "avgOrderValue": "36.100000",
+      "totalSales": "11328769.85",
+      "orders": 200130,
+      "avgOrderValue": "56.607055",
       "monthClosed": "Completed"
     },
     "lastMonthSalesByCustomer": [
       {
-        "customerId": 6,
-        "customerName": "test",
-        "totalSales": 116.6
-      },
-      {
-        "customerId": 7,
-        "customerName": "Revive Coffee",
-        "totalSales": 85.6
-      },
-      {
-        "customerId": 8,
+        "customerId": 247,
         "customerName": "test company",
-        "totalSales": 66.4
+        "totalSales": 11326298.75
       },
       {
-        "customerId": 9,
-        "customerName": "Demo company florida",
-        "totalSales": 59.2
-      },
-      {
-        "customerId": 3,
+        "customerId": 277,
         "customerName": "Test Script 2",
-        "totalSales": 33.2
+        "totalSales": 1563.06
+      },
+      {
+        "customerId": 278,
+        "customerName": "Billing customer",
+        "totalSales": 567.6
+      },
+      {
+        "customerId": 56,
+        "customerName": "Fishers Café & Pub",
+        "totalSales": 169.05
+      },
+      {
+        "customerId": 279,
+        "customerName": "sigikl",
+        "totalSales": 104.79
       }
     ],
     "mtdSalesByFranchisee": [
       {
-        "franchiseeId": 1,
+        "franchiseeId": 5,
+        "salesRepId": 5,
+        "franchiseeName": "Joe Argyle",
+        "territoryName": "Busy Bean Coffee of Central Florida",
+        "totalSales": 4834.36
+      },
+      {
+        "franchiseeId": 10,
         "salesRepId": 10,
-        "franchiseeName": "Downtown Cafe",
-        "territoryName": "Downtown Cafe",
-        "totalSales": 42300.50
+        "franchiseeName": "Travis Estes",
+        "territoryName": "Busy Bean Coffee of South Carolina",
+        "totalSales": 166.6
       },
       {
-        "franchiseeId": 2,
-        "salesRepId": 11,
-        "franchiseeName": "Westside Brew",
-        "territoryName": "Westside Brew",
-        "totalSales": 33750.25
-      },
-      {
-        "franchiseeId": 3,
-        "salesRepId": 12,
-        "franchiseeName": "Central Coffee Hub",
-        "territoryName": "Central Coffee Hub",
-        "totalSales": 28900.75
+        "franchiseeId": 27,
+        "salesRepId": 27,
+        "franchiseeName": "Texas local partner",
+        "territoryName": "texas partner",
+        "totalSales": 96.6
       }
     ],
     "ytdSalesByFranchisee": [
       {
-        "franchiseeId": 1,
+        "franchiseeId": 5,
+        "salesRepId": 5,
+        "franchiseeName": "Joe Argyle",
+        "territoryName": "Busy Bean Coffee of Central Florida",
+        "totalSales": 4834.36
+      },
+      {
+        "franchiseeId": 10,
         "salesRepId": 10,
-        "franchiseeName": "Downtown Cafe",
-        "territoryName": "Downtown Cafe",
-        "totalSales": 520800.00
+        "franchiseeName": "Travis Estes",
+        "territoryName": "Busy Bean Coffee of South Carolina",
+        "totalSales": 166.6
       },
       {
-        "franchiseeId": 2,
-        "salesRepId": 11,
-        "franchiseeName": "Westside Brew",
-        "territoryName": "Westside Brew",
-        "totalSales": 405600.50
+        "franchiseeId": 27,
+        "salesRepId": 27,
+        "franchiseeName": "Texas local partner",
+        "territoryName": "texas partner",
+        "totalSales": 96.6
+      }
+    ],
+    "mtdSalesByProduct": [
+      {
+        "productId": 94,
+        "productName": "Coffee 2",
+        "totalQuantity": 39,
+        "totalSales": 1560
       },
       {
-        "franchiseeId": 3,
-        "salesRepId": 12,
-        "franchiseeName": "Central Coffee Hub",
-        "territoryName": "Central Coffee Hub",
-        "totalSales": 389200.25
+        "productId": 93,
+        "productName": "Coffee 2",
+        "totalQuantity": 34,
+        "totalSales": 1360
+      },
+      {
+        "productId": 80,
+        "productName": "Caramel Cappuccino",
+        "totalQuantity": 3,
+        "totalSales": 330
+      },
+      {
+        "productId": 87,
+        "productName": "youtube product",
+        "totalQuantity": 4,
+        "totalSales": 240
+      },
+      {
+        "productId": 91,
+        "productName": "Coffee 2",
+        "totalQuantity": 4,
+        "totalSales": 160
+      }
+    ],
+    "ytdSalesByProduct": [
+      {
+        "productId": 94,
+        "productName": "Coffee 2",
+        "totalQuantity": 39,
+        "totalSales": 1560
+      },
+      {
+        "productId": 93,
+        "productName": "Coffee 2",
+        "totalQuantity": 34,
+        "totalSales": 1360
+      },
+      {
+        "productId": 80,
+        "productName": "Caramel Cappuccino",
+        "totalQuantity": 3,
+        "totalSales": 330
+      },
+      {
+        "productId": 87,
+        "productName": "youtube product",
+        "totalQuantity": 4,
+        "totalSales": 240
+      },
+      {
+        "productId": 91,
+        "productName": "Coffee 2",
+        "totalQuantity": 4,
+        "totalSales": 160
+      }
+    ],
+    "mtdSalesByEmployee": [
+      {
+        "employeeId": 2,
+        "employeeName": "employee 4",
+        "employeeEmail": "employee4@gmail.com",
+        "totalOrders": 2,
+        "totalSales": 193.2
+      }
+    ],
+    "ytdSalesByEmployee": [
+      {
+        "employeeId": 2,
+        "employeeName": "employee 4",
+        "employeeEmail": "employee4@gmail.com",
+        "totalOrders": 2,
+        "totalSales": 193.2
       }
     ]
   }

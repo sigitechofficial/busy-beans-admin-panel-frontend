@@ -117,6 +117,60 @@ export default function Dashboard2() {
       }))
     : [];
 
+  // MTD Sales by Product
+  const mtdSalesByProduct = salesResponse?.mtdSalesByProduct || [];
+
+  // Process MTD product data
+  const processedMtdProducts = Array.isArray(mtdSalesByProduct)
+    ? mtdSalesByProduct.slice(0, 5).map((product) => ({
+        id: product.productId || product.id || null,
+        name: product.productName || "N/A",
+        quantity: product.totalQuantity || 0,
+        sales: parseFloat(product.totalSales || 0),
+      }))
+    : [];
+
+  // YTD Sales by Product
+  const ytdSalesByProduct = salesResponse?.ytdSalesByProduct || [];
+
+  // Process YTD product data
+  const processedYtdProducts = Array.isArray(ytdSalesByProduct)
+    ? ytdSalesByProduct.slice(0, 5).map((product) => ({
+        id: product.productId || product.id || null,
+        name: product.productName || "N/A",
+        quantity: product.totalQuantity || 0,
+        sales: parseFloat(product.totalSales || 0),
+      }))
+    : [];
+
+  // MTD Sales by Employee
+  const mtdSalesByEmployee = salesResponse?.mtdSalesByEmployee || [];
+
+  // Process MTD employee data
+  const processedMtdEmployees = Array.isArray(mtdSalesByEmployee)
+    ? mtdSalesByEmployee.slice(0, 5).map((employee) => ({
+        id: employee.employeeId || employee.id || null,
+        name: employee.employeeName || "N/A",
+        email: employee.employeeEmail || "N/A",
+        orders: employee.totalOrders || 0,
+        sales: parseFloat(employee.totalSales || 0),
+      }))
+    : [];
+
+  // YTD Sales by Employee
+  const ytdSalesByEmployee = salesResponse?.ytdSalesByEmployee || [];
+
+  // Process YTD employee data
+  const processedYtdEmployees = Array.isArray(ytdSalesByEmployee)
+    ? ytdSalesByEmployee.slice(0, 5).map((employee) => ({
+        id: employee.employeeId || employee.id || null,
+        name: employee.employeeName || "N/A",
+        email: employee.employeeEmail || "N/A",
+        orders: employee.totalOrders || 0,
+        sales: parseFloat(employee.totalSales || 0),
+      }))
+    : [];
+
   // Navigation handlers
   const handleCustomerClick = (customerId, isLastMonth = false) => {
     if (customerId) {
@@ -406,6 +460,146 @@ export default function Dashboard2() {
             </div>
           </div>
           </div>
+        )}
+
+        {/* Additional Row Cards - Sales by Product */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* MTD Sales by Product Card */}
+          <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                <MdBarChart className="text-theme" size={24} />
+                MTD Sales by Product
+              </h3>
+            </div>
+            <div className="space-y-3">
+              {processedMtdProducts.length > 0 ? (
+                processedMtdProducts.map((product, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between py-3 border-b last:border-b-0 hover:bg-gray-50 px-2 rounded transition-colors"
+                  >
+                    <div>
+                      <p className="text-gray-700 font-medium">{product.name}</p>
+                      <p className="text-xs text-gray-500">Qty: {product.quantity}</p>
+                    </div>
+                    <span className="text-gray-900 font-semibold">
+                      {formatUSD(product.sales)}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500 text-sm py-4">No product data available</p>
+              )}
+            </div>
+          </div>
+
+          {/* YTD Sales by Product Card */}
+          <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                <MdBarChart className="text-theme" size={24} />
+                YTD Sales by Product
+              </h3>
+            </div>
+            <div className="mb-3">
+              <p className="text-sm text-gray-600 font-medium">
+                Fiscal Year to Date →
+              </p>
+            </div>
+            <div className="space-y-3">
+              {processedYtdProducts.length > 0 ? (
+                processedYtdProducts.map((product, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between py-3 border-b last:border-b-0 hover:bg-gray-50 px-2 rounded transition-colors"
+                  >
+                    <div>
+                      <p className="text-gray-700 font-medium">{product.name}</p>
+                      <p className="text-xs text-gray-500">Qty: {product.quantity}</p>
+                    </div>
+                    <span className="text-gray-900 font-semibold">
+                      {formatUSD(product.sales)}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500 text-sm py-4">No product data available</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Sales by Employee Row - Only show for admin */}
+        {userType === "admin" && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* MTD Sales by Employee Card */}
+          <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                <MdPerson className="text-theme" size={24} />
+                MTD Sales by Employee
+              </h3>
+            </div>
+            <div className="space-y-3">
+              {processedMtdEmployees.length > 0 ? (
+                processedMtdEmployees.map((employee, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between py-3 border-b last:border-b-0 hover:bg-gray-50 px-2 rounded transition-colors"
+                  >
+                    <div>
+                      <p className="text-gray-700 font-medium">{employee.name}</p>
+                      <p className="text-xs text-gray-500">{employee.email}</p>
+                      <p className="text-xs text-gray-400">Orders: {employee.orders}</p>
+                    </div>
+                    <span className="text-gray-900 font-semibold">
+                      {formatUSD(employee.sales)}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500 text-sm py-4">No employee data available</p>
+              )}
+            </div>
+          </div>
+
+          {/* YTD Sales by Employee Card */}
+          <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                <MdPerson className="text-theme" size={24} />
+                YTD Sales by Employee
+              </h3>
+            </div>
+            <div className="mb-3">
+              <p className="text-sm text-gray-600 font-medium">
+                Fiscal Year to Date →
+              </p>
+            </div>
+            <div className="space-y-3">
+              {processedYtdEmployees.length > 0 ? (
+                processedYtdEmployees.map((employee, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between py-3 border-b last:border-b-0 hover:bg-gray-50 px-2 rounded transition-colors"
+                  >
+                    <div>
+                      <p className="text-gray-700 font-medium">{employee.name}</p>
+                      <p className="text-xs text-gray-500">{employee.email}</p>
+                      <p className="text-xs text-gray-400">Orders: {employee.orders}</p>
+                    </div>
+                    <span className="text-gray-900 font-semibold">
+                      {formatUSD(employee.sales)}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500 text-sm py-4">No employee data available</p>
+              )}
+            </div>
+          </div>
+        </div>
         )}
         </div>
       </div>

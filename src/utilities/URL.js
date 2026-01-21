@@ -20,7 +20,7 @@ const CONFIG = {
   production: {
     BASE_URL: "https://backendbb.trimworldwide.com/",
     STRIPE_PUBLIC_KEY:
-      "pk_live_51HGqhQECVLSM4sc2wb1g4dx3lUe61VcK3BMjnUPk28Y5qaRC9sDQ6X6Ar5OZHmVoAIVe2rXncVOxHUax10qb4d8L00KCAdXpd5",
+      "pk_live_51HGqhQECVLSM4sc2866ixi0jd0ea0W098psMgLPNLRQZ6GpoSXQnK96aeIS9wxKVm3tF0HLQKDt7ezUjZxW65NJZ00Am8ZIdU3",
     RETURN_URL: "https://admin.busybeancoffee.com/",
   },
 };

@@ -60,13 +60,16 @@ export default function EmployeePayouts() {
 
   const columns = [
     { field: "sl", header: "SL", sort: true,minWidth: 50 },
+    { field: "invoice", header: "Invoice #", sort: true, minWidth: 200  },
     ...(isAdmin ? [{ field: "employeeName", header: "Employee Name" }] : []),
     { field: "companyName", header: "Company Name" },
     { field: "stripeConnected", header: "Stripe Connected" },
     { field: "employeeCommisionAmount", header: "Employee Commission Amount",minWidth: 200 },
     { field: "appliedEmployeeCommisionPercentage", header: "Applied Commission %" },
     { field: "paymentStatus", header: "Payment Status" },
-    { field: "totalBill", header: "Total Bill" },
+    { field: "shippingCharges", header: "Shiping Charges" },
+    { field: "orderAmount", header: "Order Amount" },
+    { field: "totalBill", header: "Totals" },
   ];
 
   // Filter data by selected employee (for admin)
@@ -84,6 +87,7 @@ export default function EmployeePayouts() {
       id: order?.id || i, // Add id for checkbox selection
       employeeId: order?.employeeId, // Store employeeId for validation
       sl: i + 1,
+      invoice: order?.invoiceNumber,
       ...(isAdmin ? { employeeName: order?.employeeName || "-" } : {}),
       companyName: order?.companyName || "-",
       stripeConnected: (
@@ -104,16 +108,18 @@ export default function EmployeePayouts() {
       paymentStatus: (
         <div>
           {order?.paymentStatus === "done" ? (
-            <div className="w-24 bg-green-500 text-white font-semibold p-2 rounded-md flex justify-center">
+            <div className="w-24 text-green-500 font-bold p-2 rounded-md flex justify-center">
               Paid
             </div>
           ) : (
-            <div className="w-24 bg-yellow-500 text-white font-semibold p-2 rounded-md flex justify-center">
+            <div className="w-24 text-red-500 font-semibold p-2 rounded-md flex justify-center">
               Pending
             </div>
           )}
         </div>
       ),
+      shippingCharges: `$${order?.shippingCharges || 0}`,
+      orderAmount: `$${order?.subTotal || 0}`,
       totalBill: `$${order?.totalBill || 0}`,
     })
   );

@@ -68,9 +68,9 @@ function ProductWiseSalesSummaryReport() {
       setSelectedProductId(productId);
     }
 
-    // Parse userType and salesRepIds from URL (passed from dashboard)
+    // Parse userType and salesRepIds from URL
     if (userTypeParam) {
-      let newFilters = { userType: userTypeParam, salesRepIds: null };
+      let newFilters = { ...filters, userType: userTypeParam };
       
       if (userTypeParam === "salesRep" && salesRepIdsParam) {
         try {
@@ -555,7 +555,17 @@ function ProductWiseSalesSummaryReport() {
               </div>
             )}
           </div>
-          <div className="min-w-40">
+          <div className="flex items-center gap-2">
+            {userType === "admin" && (
+              <button
+                onClick={() => setFilterModalVisible(true)}
+                className="flex items-center gap-2 px-4 py-2 h-[42px] rounded-md border border-theme text-theme bg-white hover:bg-theme hover:text-white transition-colors font-workSans font-medium"
+              >
+                <MdFilterAlt size={18} />
+                Filters
+              </button>
+            )}
+            <div className="min-w-40">
             {displayCustomFilters ? (
               <div className="flex gap-x-2 items-center h-[42px]">
                 <div className="space-x-2">
@@ -611,6 +621,7 @@ function ProductWiseSalesSummaryReport() {
                 />
               </div>
             )}
+            </div>
           </div>
         </div>
 

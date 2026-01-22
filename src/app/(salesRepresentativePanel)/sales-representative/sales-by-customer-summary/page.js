@@ -306,7 +306,7 @@ function SalesByCustomerSummaryReport() {
   };
 
   const navigateToDetailPage = (customerId) => {
-    router.push(`/reports/sales-by-customer-details?customerId=${customerId}`);
+    router.push(`/sales-representative/sales-by-customer-details?customerId=${customerId}`);
   };
 
   // Process data to handle grouped customers

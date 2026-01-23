@@ -981,6 +981,7 @@ export default function Dashboard2() {
         onHide={() => setFilterModalVisible(false)}
         onApply={handleFilterApply}
         initialFilters={filters}
+        allowMultiSelect={false}
       />
     </div>
   );

@@ -10,61 +10,90 @@ export default function UserTypeFilterModal({
   visible, 
   onHide, 
   onApply, 
-  initialFilters = { userType: null, salesRepIds: null } 
+  initialFilters = { userType: null, salesRepIds: null },
+  allowMultiSelect = true // Default to true for backward compatibility
 }) {
   const [selectedUserType, setSelectedUserType] = useState(initialFilters.userType);
   const [selectedSalesReps, setSelectedSalesReps] = useState(() => {
-    if (initialFilters.salesRepIds === null && initialFilters.userType === "salesRep") {
-      // "ALL" is selected (null means all sales reps)
-      return [{ value: "all", label: "ALL" }];
+    if (allowMultiSelect) {
+      if (initialFilters.salesRepIds === null && initialFilters.userType === "salesRep") {
+        // "ALL" is selected (null means all sales reps) - only for multi-select
+        return [{ value: "all", label: "ALL" }];
+      }
+      if (Array.isArray(initialFilters.salesRepIds) && initialFilters.salesRepIds.length > 0) {
+        // Map IDs to options (will be populated when sales rep data loads)
+        return initialFilters.salesRepIds.map(id => ({ value: id, label: `Sales Rep ${id}` }));
+      }
+      return [];
+    } else {
+      // Single select mode
+      if (Array.isArray(initialFilters.salesRepIds) && initialFilters.salesRepIds.length > 0) {
+        // For single select, take the first ID
+        return { value: initialFilters.salesRepIds[0], label: `Sales Rep ${initialFilters.salesRepIds[0]}` };
+      }
+      return null;
     }
-    if (Array.isArray(initialFilters.salesRepIds) && initialFilters.salesRepIds.length > 0) {
-      // Map IDs to options (will be populated when sales rep data loads)
-      return initialFilters.salesRepIds.map(id => ({ value: id, label: `Sales Rep ${id}` }));
-    }
-    return [];
   });
   const [showSalesRepDropdown, setShowSalesRepDropdown] = useState(initialFilters.userType === "salesRep");
 
   // Fetch sales reps list
   const { data: salesRepData } = GetAPI("api/v1/admin/sales-rep");
 
-  const salesRepOptions = [
-    { value: "all", label: "ALL" },
-    ...(salesRepData?.data?.data
-      ? salesRepData.data.data.map((rep) => ({
-          value: rep.id,
-          label: rep.srName || rep.name,
-        }))
-      : []),
-  ];
+  const salesRepOptions = allowMultiSelect
+    ? [
+        { value: "all", label: "ALL" },
+        ...(salesRepData?.data?.data
+          ? salesRepData.data.data.map((rep) => ({
+              value: rep.id,
+              label: rep.srName || rep.name,
+            }))
+          : []),
+      ]
+    : (salesRepData?.data?.data
+        ? salesRepData.data.data.map((rep) => ({
+            value: rep.id,
+            label: rep.srName || rep.name,
+          }))
+        : []);
 
   // Update selectedSalesReps labels when data loads (for cases where data loads after modal opens)
   useEffect(() => {
-    if (visible && salesRepData?.data?.data && selectedSalesReps.length > 0) {
-      // Skip if "All" is selected
-      if (selectedSalesReps[0].value === "all") return;
-      
-      // Check if any label is "Loading..." or needs update
-      const needsUpdate = selectedSalesReps.some(selected => 
-        selected.label === "Loading..." || 
-        !salesRepData.data.data.find(r => r.id === selected.value && (r.srName || r.name) === selected.label)
-      );
-      
-      if (needsUpdate) {
-        const updated = selectedSalesReps.map(selected => {
-          if (selected.value === "all") return selected;
-          const rep = salesRepData.data.data.find(r => r.id === selected.value);
-          if (rep) {
-            return { value: rep.id, label: rep.srName || rep.name };
+    if (visible && salesRepData?.data?.data) {
+      if (allowMultiSelect) {
+        if (selectedSalesReps.length > 0) {
+          // Skip if "All" is selected
+          if (selectedSalesReps[0].value === "all") return;
+          
+          // Check if any label is "Loading..." or needs update
+          const needsUpdate = selectedSalesReps.some(selected => 
+            selected.label === "Loading..." || 
+            !salesRepData.data.data.find(r => r.id === selected.value && (r.srName || r.name) === selected.label)
+          );
+          
+          if (needsUpdate) {
+            const updated = selectedSalesReps.map(selected => {
+              if (selected.value === "all") return selected;
+              const rep = salesRepData.data.data.find(r => r.id === selected.value);
+              if (rep) {
+                return { value: rep.id, label: rep.srName || rep.name };
+              }
+              return selected;
+            });
+            setSelectedSalesReps(updated);
           }
-          return selected;
-        });
-        setSelectedSalesReps(updated);
+        }
+      } else {
+        // Single select mode
+        if (selectedSalesReps && selectedSalesReps.value) {
+          const rep = salesRepData.data.data.find(r => r.id === selectedSalesReps.value);
+          if (rep && (rep.srName || rep.name) !== selectedSalesReps.label) {
+            setSelectedSalesReps({ value: rep.id, label: rep.srName || rep.name });
+          }
+        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [salesRepData, visible]);
+  }, [salesRepData, visible, allowMultiSelect]);
 
   // Sync with initialFilters when modal opens
   useEffect(() => {
@@ -72,67 +101,89 @@ export default function UserTypeFilterModal({
       setSelectedUserType(initialFilters.userType);
       if (initialFilters.userType === "salesRep") {
         setShowSalesRepDropdown(true);
-        if (initialFilters.salesRepIds === null) {
-          // "ALL" is selected (null means all sales reps)
-          setSelectedSalesReps([{ value: "all", label: "ALL" }]);
-        } else if (Array.isArray(initialFilters.salesRepIds) && initialFilters.salesRepIds.length > 0) {
-          // Map IDs to options with proper labels if data is available
-          if (salesRepData?.data?.data) {
-            const mapped = initialFilters.salesRepIds.map(id => {
-              const rep = salesRepData.data.data.find(r => r.id === id);
-              return rep 
-                ? { value: rep.id, label: rep.srName || rep.name }
-                : { value: id, label: `Sales Rep ${id}` };
-            });
-            setSelectedSalesReps(mapped);
+        if (allowMultiSelect) {
+          if (initialFilters.salesRepIds === null) {
+            // "ALL" is selected (null means all sales reps) - only for multi-select
+            setSelectedSalesReps([{ value: "all", label: "ALL" }]);
+          } else if (Array.isArray(initialFilters.salesRepIds) && initialFilters.salesRepIds.length > 0) {
+            // Map IDs to options with proper labels if data is available
+            if (salesRepData?.data?.data) {
+              const mapped = initialFilters.salesRepIds.map(id => {
+                const rep = salesRepData.data.data.find(r => r.id === id);
+                return rep 
+                  ? { value: rep.id, label: rep.srName || rep.name }
+                  : { value: id, label: `Sales Rep ${id}` };
+              });
+              setSelectedSalesReps(mapped);
+            } else {
+              // Data not loaded yet, will be updated in next effect
+              setSelectedSalesReps(initialFilters.salesRepIds.map(id => ({ value: id, label: `Loading...` })));
+            }
           } else {
-            // Data not loaded yet, will be updated in next effect
-            setSelectedSalesReps(initialFilters.salesRepIds.map(id => ({ value: id, label: `Loading...` })));
+            setSelectedSalesReps([]);
           }
         } else {
-          setSelectedSalesReps([]);
+          // Single select mode
+          if (Array.isArray(initialFilters.salesRepIds) && initialFilters.salesRepIds.length > 0) {
+            const firstId = initialFilters.salesRepIds[0];
+            if (salesRepData?.data?.data) {
+              const rep = salesRepData.data.data.find(r => r.id === firstId);
+              setSelectedSalesReps(rep 
+                ? { value: rep.id, label: rep.srName || rep.name }
+                : { value: firstId, label: `Sales Rep ${firstId}` });
+            } else {
+              setSelectedSalesReps({ value: firstId, label: `Loading...` });
+            }
+          } else {
+            setSelectedSalesReps(null);
+          }
         }
       } else {
         setShowSalesRepDropdown(false);
-        setSelectedSalesReps([]);
+        setSelectedSalesReps(allowMultiSelect ? [] : null);
       }
     }
-  }, [visible, initialFilters, salesRepData]);
+  }, [visible, initialFilters, salesRepData, allowMultiSelect]);
 
   useEffect(() => {
     if (selectedUserType === "salesRep") {
       setShowSalesRepDropdown(true);
     } else {
       setShowSalesRepDropdown(false);
-      setSelectedSalesReps([]);
+      setSelectedSalesReps(allowMultiSelect ? [] : null);
     }
-  }, [selectedUserType]);
+  }, [selectedUserType, allowMultiSelect]);
 
   const handleUserTypeChange = (option) => {
     setSelectedUserType(option?.value || null);
     if (option?.value !== "salesRep") {
-      setSelectedSalesReps([]);
+      setSelectedSalesReps(allowMultiSelect ? [] : null);
     }
   };
 
   const handleSalesRepChange = (selectedOptions) => {
-    if (!selectedOptions) {
-      setSelectedSalesReps([]);
-      return;
-    }
+    if (allowMultiSelect) {
+      if (!selectedOptions) {
+        setSelectedSalesReps([]);
+        return;
+      }
 
-    // Handle both single selection (object) and multi-selection (array)
-    const optionsArray = Array.isArray(selectedOptions) ? selectedOptions : [selectedOptions];
-    
-    // Check if "ALL" is in the new selection
-    const hasAllOption = optionsArray.some(opt => opt.value === "all");
-    
-    if (hasAllOption) {
-      // If "ALL" is selected, only keep "ALL" option and remove others
-      setSelectedSalesReps([{ value: "all", label: "ALL" }]);
+      // Handle both single selection (object) and multi-selection (array)
+      const optionsArray = Array.isArray(selectedOptions) ? selectedOptions : [selectedOptions];
+      
+      // Check if "ALL" is in the new selection
+      const hasAllOption = optionsArray.some(opt => opt.value === "all");
+      
+      if (hasAllOption) {
+        // If "ALL" is selected, only keep "ALL" option and remove others
+        setSelectedSalesReps([{ value: "all", label: "ALL" }]);
+      } else {
+        // If specific partners are selected (without "ALL"), keep the selection
+        setSelectedSalesReps(optionsArray);
+      }
     } else {
-      // If specific partners are selected (without "ALL"), keep the selection
-      setSelectedSalesReps(optionsArray);
+      // Single select mode - selectedOptions is a single object or null
+      setSelectedSalesReps(selectedOptions || null);
     }
   };
 
@@ -150,24 +201,37 @@ export default function UserTypeFilterModal({
       filters = { userType: "admin", salesRepIds: null };
     } else if (selectedUserType === "salesRep") {
       // Sales rep selected
-      if (selectedSalesReps.length === 0) {
-        // No selection - don't apply filter (user must select at least one)
-        return;
-      } else {
-        // Check if "ALL" is selected
-        const hasAllOption = selectedSalesReps.some(rep => rep.value === "all");
-        
-        if (hasAllOption) {
-          // "ALL" selected - set salesRepIds to null (API will handle as "All" sales reps)
-          filters = {
-            userType: "salesRep",
-            salesRepIds: null,
-          };
+      if (allowMultiSelect) {
+        if (selectedSalesReps.length === 0) {
+          // No selection - don't apply filter (user must select at least one)
+          return;
         } else {
-          // Specific sales reps selected (can be single or multiple)
+          // Check if "ALL" is selected
+          const hasAllOption = selectedSalesReps.some(rep => rep.value === "all");
+          
+          if (hasAllOption) {
+            // "ALL" selected - set salesRepIds to null (API will handle as "All" sales reps)
+            filters = {
+              userType: "salesRep",
+              salesRepIds: null,
+            };
+          } else {
+            // Specific sales reps selected (can be single or multiple)
+            filters = {
+              userType: "salesRep",
+              salesRepIds: selectedSalesReps.map((rep) => rep.value),
+            };
+          }
+        }
+      } else {
+        // Single select mode
+        if (!selectedSalesReps || !selectedSalesReps.value) {
+          // No selection - don't apply filter (user must select one)
+          return;
+        } else {
           filters = {
             userType: "salesRep",
-            salesRepIds: selectedSalesReps.map((rep) => rep.value),
+            salesRepIds: [selectedSalesReps.value],
           };
         }
       }
@@ -179,7 +243,7 @@ export default function UserTypeFilterModal({
 
   const handleReset = () => {
     setSelectedUserType(null);
-    setSelectedSalesReps([]);
+    setSelectedSalesReps(allowMultiSelect ? [] : null);
     setShowSalesRepDropdown(false);
   };
 
@@ -227,16 +291,18 @@ export default function UserTypeFilterModal({
                 ...drawerSelectStyles,
                 menuPortal: (base) => ({ ...base, zIndex: 9999 }),
               }}
-              placeholder="Select Local Partner(s)"
+              placeholder={allowMultiSelect ? "Select Local Partner(s)" : "Select Local Partner"}
               value={selectedSalesReps}
               onChange={handleSalesRepChange}
               options={salesRepOptions}
-              isMulti
+              isMulti={allowMultiSelect}
               isClearable
               menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
             />
             <p className="text-xs text-gray-500 mt-1">
-              Select one or more local partners. You can select multiple partners.
+              {allowMultiSelect 
+                ? "Select one or more local partners. You can select multiple partners."
+                : "Select a local partner."}
             </p>
           </div>
         )}

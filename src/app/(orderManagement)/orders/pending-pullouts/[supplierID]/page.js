@@ -97,9 +97,9 @@ export default function PendingPulloutsOrders() {
         `api/v1/admin/pull-payments-from-patners-banka-account/${supplierID}`,
         {
           amount: receivableAmount,
-          orderList: orderList,
-          dateAndTime: Date.now(),
-        }
+          orderList: orderList,   
+          dateAndTime: new Date(),  
+          }
       );
       if (res?.data?.status === "success") {
         success_toaster("Admin Receivable Amount pullout successfully");

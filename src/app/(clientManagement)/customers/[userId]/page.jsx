@@ -42,6 +42,7 @@ function CustomerDetails() {
   const [allOrders, setAllOrders] = useState([]); // Store all loaded orders for scroll pagination
   const [isLoadingMoreOrders, setIsLoadingMoreOrders] = useState(false);
   const [hasMoreOrders, setHasMoreOrders] = useState(true);
+  const [isManualPagination, setIsManualPagination] = useState(false); // Track if user is using manual pagination
   const scrollObserverRef = useRef(null);
 
   // Build orders API URL with pagination and search
@@ -143,11 +144,11 @@ function CustomerDetails() {
   useEffect(() => {
     if (userOrders?.data?.data) {
       const newOrders = userOrders.data.data;
-      if (orderPage === 1 || orderSearchQuery.trim()) {
-        // Reset on first page or when searching
+      if (orderPage === 1 || orderSearchQuery.trim() || isManualPagination) {
+        // Reset on first page, when searching, or when using manual pagination
         setAllOrders(newOrders);
       } else {
-        // Append for scroll pagination (avoid duplicates)
+        // Append for scroll pagination (avoid duplicates) - only when not using manual pagination
         setAllOrders((prev) => {
           const existingIds = new Set(prev.map(o => o?.id));
           const uniqueNew = newOrders.filter(o => !existingIds.has(o?.id));
@@ -162,7 +163,7 @@ function CustomerDetails() {
       setHasMoreOrders(currentPage < totalPages);
       setIsLoadingMoreOrders(false);
     }
-  }, [userOrders]);
+  }, [userOrders, orderPage, orderSearchQuery, isManualPagination]);
 
   // Reset orders when search changes
   useEffect(() => {
@@ -173,15 +174,28 @@ function CustomerDetails() {
     }
   }, [orderSearchQuery]);
 
-  // Scroll-based pagination using Intersection Observer (only when not searching)
+  // Scroll-based pagination using Intersection Observer (only when not searching and not using manual pagination)
   useEffect(() => {
-    if (!hasMoreOrders || isLoadingMoreOrders || orderSearchQuery.trim()) {
-      return; // Don't load more if no more data, already loading, or searching
+    // Disable scroll pagination if:
+    // - No more orders
+    // - Already loading
+    // - Searching
+    // - Using manual pagination
+    // - Not on page 1 (scroll pagination should only work from page 1)
+    if (!hasMoreOrders || isLoadingMoreOrders || orderSearchQuery.trim() || isManualPagination || orderPage !== 1) {
+      return;
     }
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMoreOrders && !isLoadingMoreOrders && !orderSearchQuery.trim()) {
+        if (
+          entries[0].isIntersecting && 
+          hasMoreOrders && 
+          !isLoadingMoreOrders && 
+          !orderSearchQuery.trim() && 
+          !isManualPagination &&
+          orderPage === 1
+        ) {
           setIsLoadingMoreOrders(true);
           setOrderPage((prev) => prev + 1);
         }
@@ -199,7 +213,7 @@ function CustomerDetails() {
         observer.unobserve(currentRef);
       }
     };
-  }, [hasMoreOrders, isLoadingMoreOrders, orderSearchQuery]);
+  }, [hasMoreOrders, isLoadingMoreOrders, orderSearchQuery, isManualPagination, orderPage]);
 
   const orderDatas = [];
 
@@ -1148,6 +1162,8 @@ function CustomerDetails() {
                       totalRecords: userOrders?.pagination?.totalItems || userOrders?.data?.pagination?.totalItems || allOrders.length,
                       totalPages: userOrders?.pagination?.totalPages || userOrders?.data?.pagination?.totalPages,
                       onPageChange: (newPage) => {
+                        // Only disable scroll pagination if navigating away from page 1
+                        setIsManualPagination(newPage !== 1);
                         setOrderPage(newPage);
                         setAllOrders([]); // Reset when manually changing page
                         setIsLoadingMoreOrders(false);
@@ -1157,10 +1173,12 @@ function CustomerDetails() {
                         setOrderPage(1);
                         setAllOrders([]);
                         setIsLoadingMoreOrders(false);
+                        setIsManualPagination(false); // Reset to allow scroll pagination on page 1
                       },
                     }}
                     searchValue={orderSearchQuery}
                     onSearchChange={(searchValue) => {
+                      setIsManualPagination(false); // Reset manual pagination flag on search
                       setOrderSearchQuery(searchValue);
                       setOrderPage(1);
                       setAllOrders([]);
@@ -1180,8 +1198,8 @@ function CustomerDetails() {
                     }}
                   />
                 </div>
-                {/* Scroll observer for infinite scroll */}
-                {hasMoreOrders && !orderSearchQuery.trim() && (
+                {/* Scroll observer for infinite scroll - only when not using manual pagination and on page 1 */}
+                {hasMoreOrders && !orderSearchQuery.trim() && !isManualPagination && orderPage === 1 && (
                   <div ref={scrollObserverRef} className="h-10 flex items-center justify-center py-4">
                     {isLoadingMoreOrders && (
                       <div className="text-sm text-gray-500">Loading more orders...</div>

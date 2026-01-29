@@ -49,27 +49,153 @@ import { LEFTBAR } from "@/components/ui/leftbar.testid";
 
 export default function Leftbar(props) {
   // Use state to avoid hydration mismatch (localStorage only available on client)
-  const [userType, setUserType] = useState(null);
-  const [partnerType, setPartnerType] = useState(null);
-  const [userID, setUserID] = useState(null);
-  const [connectAccountId, setConnectAccountId] = useState(null);
-  const [isAccountConnected, setIsAccountConnected] = useState(null);
-  const [isEmployee, setIsEmployee] = useState(false);
-  const [employeeStripeAccountState, setEmployeeStripeAccountState] = useState(null);
-  const [employeeId, setEmployeeId] = useState(null);
+  // Initialize with values from localStorage if available (for immediate render)
+  const [userType, setUserType] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("userType");
+    }
+    return null;
+  });
+  const [partnerType, setPartnerType] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("partnerType");
+    }
+    return null;
+  });
+  const [userID, setUserID] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("userID");
+    }
+    return null;
+  });
+  const [connectAccountId, setConnectAccountId] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("connectAccountId");
+    }
+    return null;
+  });
+  const [isAccountConnected, setIsAccountConnected] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("isAccountConnected");
+    }
+    return null;
+  });
+  const [isEmployee, setIsEmployee] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("isEmployee") === "true";
+    }
+    return false;
+  });
+  const [employeeStripeAccountState, setEmployeeStripeAccountState] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("employeeStripeAccountState");
+    }
+    return null;
+  });
+  const [employeeId, setEmployeeId] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("employeeId");
+    }
+    return null;
+  });
+  const [forceUpdate, setForceUpdate] = useState(0); // Force re-render trigger
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setUserType(localStorage.getItem("userType"));
-      setPartnerType(localStorage.getItem("partnerType"));
-      setUserID(localStorage.getItem("userID"));
-      setConnectAccountId(localStorage.getItem("connectAccountId"));
-      setIsAccountConnected(localStorage.getItem("isAccountConnected"));
-      setIsEmployee(localStorage.getItem("isEmployee") ? true : false);
-      setEmployeeStripeAccountState(localStorage.getItem("employeeStripeAccountState"));
-      setEmployeeId(localStorage.getItem("employeeId"));
+      const updateState = () => {
+        setUserType(localStorage.getItem("userType"));
+        setPartnerType(localStorage.getItem("partnerType"));
+        setUserID(localStorage.getItem("userID"));
+        setConnectAccountId(localStorage.getItem("connectAccountId"));
+        setIsAccountConnected(localStorage.getItem("isAccountConnected"));
+        const isEmp = localStorage.getItem("isEmployee") === "true";
+        setIsEmployee(isEmp);
+        setEmployeeStripeAccountState(localStorage.getItem("employeeStripeAccountState"));
+        setEmployeeId(localStorage.getItem("employeeId"));
+      };
+      
+      // Update immediately
+      updateState();
+      
+      // Check multiple times to catch values set during/after login redirect
+      const timeoutIds = [
+        setTimeout(updateState, 100),
+        setTimeout(updateState, 300),
+        setTimeout(updateState, 500),
+        setTimeout(updateState, 1000),
+      ];
+      
+      return () => timeoutIds.forEach(id => clearTimeout(id));
     }
   }, []);
+
+  // Listen for storage changes to update state immediately (for cross-tab updates)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleStorageChange = (e) => {
+      if (e.key === "isEmployee") {
+        setIsEmployee(e.newValue === "true");
+        setForceUpdate(prev => prev + 1);
+      }
+      if (e.key === "employeeStripeAccountState") {
+        setEmployeeStripeAccountState(e.newValue);
+        setForceUpdate(prev => prev + 1);
+      }
+      if (e.key === "employeeId") {
+        setEmployeeId(e.newValue);
+        setForceUpdate(prev => prev + 1);
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  // Poll localStorage for employee-related values (only when component is mounted and userType is set)
+  // This catches same-tab localStorage changes that don't trigger storage events
+  useEffect(() => {
+    if (typeof window === "undefined" || !userType) return;
+
+    let lastIsEmployee = isEmployee;
+    let lastStripeState = employeeStripeAccountState;
+    let lastEmployeeId = employeeId;
+
+    const checkLocalStorage = () => {
+      const currentIsEmployee = localStorage.getItem("isEmployee") === "true";
+      const currentStripeState = localStorage.getItem("employeeStripeAccountState");
+      const currentEmployeeId = localStorage.getItem("employeeId");
+
+      if (
+        currentIsEmployee !== lastIsEmployee ||
+        currentStripeState !== lastStripeState ||
+        currentEmployeeId !== lastEmployeeId
+      ) {
+        setIsEmployee(currentIsEmployee);
+        setEmployeeStripeAccountState(currentStripeState);
+        setEmployeeId(currentEmployeeId);
+        setForceUpdate(prev => prev + 1);
+        
+        lastIsEmployee = currentIsEmployee;
+        lastStripeState = currentStripeState;
+        lastEmployeeId = currentEmployeeId;
+      }
+    };
+
+    // Check immediately
+    checkLocalStorage();
+
+    // Then check periodically (only for a limited time after mount to avoid infinite polling)
+    const intervalId = setInterval(checkLocalStorage, 200);
+    const stopPollingId = setTimeout(() => {
+      clearInterval(intervalId);
+    }, 5000); // Stop polling after 5 seconds
+
+    return () => {
+      clearInterval(intervalId);
+      clearTimeout(stopPollingId);
+    };
+  }, [userType]); // Re-run when userType changes (e.g., after login)
 
   const generateUrl =
     userType === "admin"
@@ -1428,7 +1554,26 @@ export default function Leftbar(props) {
           )}
 
           {/* Stripe Dashboard for Employees */}
-          {isEmployee && employeeStripeAccountState === "true" && (
+          {(() => {
+            // Always check localStorage directly to ensure we have the latest value
+            // This ensures the tab appears immediately when values are set, even before state updates
+            if (typeof window === "undefined") {
+              return isEmployee && employeeStripeAccountState === "true";
+            }
+            
+            const checkIsEmployee = localStorage.getItem("isEmployee") === "true";
+            const checkStripeState = localStorage.getItem("employeeStripeAccountState");
+            
+            // Update state if localStorage has different values (to keep state in sync)
+            if (checkIsEmployee !== isEmployee) {
+              setIsEmployee(checkIsEmployee);
+            }
+            if (checkStripeState !== employeeStripeAccountState) {
+              setEmployeeStripeAccountState(checkStripeState);
+            }
+            
+            return checkIsEmployee && checkStripeState === "true";
+          })() && (
             <ListHead
               title="Stripe Dashboard"
               Icon={MdPayments}

@@ -117,14 +117,14 @@ export default function UnpaidPartnerBalance() {
   const columns = [
     { field: "sl", header: "SL", sort: true },
     { field: "type", header: "Type" },
-    { field: "srName", header: "Supplier Name" },
+    { field: "localpartner", header: "Local Partner" },
     { field: "outstandingBalance", header: "Outstanding Balance", sort: true },
     { field: "ordersOnCredit", header: "Orders on credit", sort: true },
   ];
 
   const columns1 = [
     { field: "sl", header: "SL", sort: true },
-    { field: "srName", header: "Name" },
+    { field: "localpartner", header: "Local Partner" },
     { field: "outstandingBalance", header: "Outstanding Balance", sort: true },
     {
       field: "customerOutstandingBalance",
@@ -155,7 +155,7 @@ export default function UnpaidPartnerBalance() {
     id: report?.id,
     sl: i + 1,
     type: report?.partnerType,
-    srName: report?.srName,
+    localpartner: report?.srName,
     outstandingBalance: formatUSD(parseFloat(report?.outstandingBalance) || 0),
     ordersOnCredit: `${report?.ordersOnCredit ?? 0}`,
   }));
@@ -164,7 +164,7 @@ export default function UnpaidPartnerBalance() {
   const datas1 = rawData.map((report, i) => ({
     id: report?.id,
     sl: i + 1,
-    srName: report?.srName,
+    localpartner: report?.srName,
     outstandingBalance: formatUSD(
       (parseFloat(report?.outstandingBalance) || 0) +
       (parseFloat(report?.selfOrdersOutstandingBalance) || 0)

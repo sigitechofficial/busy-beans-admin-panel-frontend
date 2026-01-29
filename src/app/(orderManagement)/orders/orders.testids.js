@@ -3,6 +3,10 @@ const ORDERS_CREATE = {
   root: "root",
   headerBar: "header-bar",
 
+  // view mode (admin only)
+  viewModeSelect: "view-mode-select",
+  salesRepSelect: "sales-rep-select",
+
   // filters/search
   categorySelect: "category-select",
   searchInput: "search-input",

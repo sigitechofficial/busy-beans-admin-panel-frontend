@@ -574,7 +574,7 @@ function SalesByCustomerSummaryReport() {
               <thead>
                 <tr className="border-b-2 border-gray-300">
                   <th className="text-left py-4 px-4 font-inter font-semibold text-gray-900">
-                    Customer
+                    Company Name
                   </th>
                   <th className="text-right py-4 px-4 font-inter font-semibold text-gray-900">
                     <button

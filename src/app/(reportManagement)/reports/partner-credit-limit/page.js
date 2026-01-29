@@ -107,7 +107,7 @@ export default function PartnerCreditLimit() {
 
   const columns = [
     { field: "sl", header: "SL", sort: true },
-    { field: "srName", header: "Supplier Name" },
+    { field: "localpartner", header: "Local Partner" },
     { field: "creditLimit", header: "Credit Limit", sort: true },
     { field: "creditUsed", header: "Credit Used", sort: true },
     {
@@ -122,7 +122,7 @@ export default function PartnerCreditLimit() {
     datas.push({
       id: report?.id,
       sl: i + 1,
-      srName: report?.srName,
+      localpartner: report?.srName,
       creditLimit: formatUSD(parseFloat(report?.creditLimit) || 0),
       creditUsed: formatUSD(parseFloat(report?.creditUsed) || 0),
       creditUsedPercentage: report?.creditLimit

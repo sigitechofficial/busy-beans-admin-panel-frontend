@@ -48,33 +48,46 @@ import { hasPermission } from "@/utilities/Permission";
 import { LEFTBAR } from "@/components/ui/leftbar.testid";
 
 export default function Leftbar(props) {
-  if (typeof window !== "undefined") {
-    var userType = localStorage.getItem("userType");
-    var partnerType = localStorage.getItem("partnerType");
-    var userID = localStorage.getItem("userID");
-    var connectAccountId = localStorage.getItem("connectAccountId");
-    var isAccountConnected = localStorage.getItem("isAccountConnected");
-    var isEmployee = localStorage.getItem("isEmployee") ? true : false;
-    var employeeStripeAccountState = localStorage.getItem(
-      "employeeStripeAccountState"
-    );
-    var employeeId = localStorage.getItem("employeeId");
-    var url = window.location.href;
-  }
+  // Use state to avoid hydration mismatch (localStorage only available on client)
+  const [userType, setUserType] = useState(null);
+  const [partnerType, setPartnerType] = useState(null);
+  const [userID, setUserID] = useState(null);
+  const [connectAccountId, setConnectAccountId] = useState(null);
+  const [isAccountConnected, setIsAccountConnected] = useState(null);
+  const [isEmployee, setIsEmployee] = useState(false);
+  const [employeeStripeAccountState, setEmployeeStripeAccountState] = useState(null);
+  const [employeeId, setEmployeeId] = useState(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setUserType(localStorage.getItem("userType"));
+      setPartnerType(localStorage.getItem("partnerType"));
+      setUserID(localStorage.getItem("userID"));
+      setConnectAccountId(localStorage.getItem("connectAccountId"));
+      setIsAccountConnected(localStorage.getItem("isAccountConnected"));
+      setIsEmployee(localStorage.getItem("isEmployee") ? true : false);
+      setEmployeeStripeAccountState(localStorage.getItem("employeeStripeAccountState"));
+      setEmployeeId(localStorage.getItem("employeeId"));
+    }
+  }, []);
 
   const generateUrl =
     userType === "admin"
       ? "api/v1/admin/order-navigation-counts"
       : userType === "salesRepresentative"
       ? `api/v1/admin/order-navigation-counts/sales-rep/${userID}`
-      : `api/v1/admin/order-navigation-counts/supplier/${userID}`;
+      : userType === "supplier"
+      ? `api/v1/admin/order-navigation-counts/supplier/${userID}`
+      : null;
 
   const PartnerCountUrl =
     userType === "admin"
       ? "api/v1/admin/partner-order-navigation-counts"
       : userType === "salesRepresentative"
       ? `api/v1/admin/partner-order-navigation-counts/sales-rep/${userID}`
-      : `api/v1/admin/partner-order-navigation-counts/supplier/${userID}`;
+      : userType === "supplier"
+      ? `api/v1/admin/partner-order-navigation-counts/supplier/${userID}`
+      : null;
 
   const overAllData = GetAPI(generateUrl);
   const PartnerCounts = GetAPI(PartnerCountUrl);
@@ -135,6 +148,14 @@ export default function Leftbar(props) {
       status: false,
     },
     inventoryManagement: {
+      tab: "",
+      status: false,
+    },
+    quotationManagement: {
+      tab: "",
+      status: false,
+    },
+    salesRepInventoryManagement: {
       tab: "",
       status: false,
     },
@@ -415,11 +436,17 @@ export default function Leftbar(props) {
   useEffect(() => {
     if (
       typeof window !== "undefined" &&
+      userType &&
       !["admin", "supplier", "salesRepresentative"].includes(userType)
     ) {
       router.push("/sign-in");
     }
-  }, []);
+  }, [userType]);
+
+  // Prevent hydration mismatch: render null until userType is loaded
+  if (!userType) {
+    return null;
+  }
 
   return (
     <section
@@ -1773,31 +1800,68 @@ export default function Leftbar(props) {
               Icon={MdReceiptLong}
               data-testid={LEFTBAR.quotationManagementSection}
               status={
-                active?.inventoryManagement?.tab === "inventoryManagement" &&
-                active?.inventoryManagement?.status
+                active?.quotationManagement?.tab === "quotationManagement" &&
+                active?.quotationManagement?.status
                   ? true
                   : false
               }
               Angle={FaAngleRight}
               onClick={() =>
                 handleActive(
-                  "inventoryManagement",
-                  active?.inventoryManagement?.status
+                  "quotationManagement",
+                  active?.quotationManagement?.status
                 )
               }
             />
           )}
 
-          {active?.inventoryManagement?.tab === "inventoryManagement" &&
-            active?.inventoryManagement?.status && (
+          {active?.quotationManagement?.tab === "quotationManagement" &&
+            active?.quotationManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
                   <ListItems
                     title="Quotation"
                     to="/sales-representative/quotation"
                     data-testid={LEFTBAR.listItem(
-                      "inventoryManagement",
+                      "quotationManagement",
                       "Quotation"
+                    )}
+                  />
+                </div>
+                <hr className="w-full" />
+              </>
+            )}
+
+          <ListHead
+            title="Inventory Management"
+            active={pathname === "/sales-representative/inventory/stock"}
+            data-testid={LEFTBAR.inventoryManagementSection}
+            Icon={MdInventory}
+            status={
+              active?.salesRepInventoryManagement?.tab === "salesRepInventoryManagement" &&
+              active?.salesRepInventoryManagement?.status
+                ? true
+                : false
+            }
+            Angle={FaAngleRight}
+            onClick={() =>
+              handleActive(
+                "salesRepInventoryManagement",
+                active?.salesRepInventoryManagement?.status
+              )
+            }
+          />
+
+          {active?.salesRepInventoryManagement?.tab === "salesRepInventoryManagement" &&
+            active?.salesRepInventoryManagement?.status && (
+              <>
+                <div className="m-2 relative space-y-1">
+                  <ListItems
+                    title="Inventory Stock"
+                    to="/sales-representative/inventory/stock"
+                    data-testid={LEFTBAR.listItem(
+                      "salesRepInventoryManagement",
+                      "Inventory Stock"
                     )}
                   />
                 </div>

@@ -23,12 +23,13 @@ import SubscriptionModal from "@/components/subscription/SubscriptionModal";
 export default function MachineSubscriptions() {
   const { data, reFetch } = GetAPI("api/v1/admin/coffee-machine");
   // const { machinesData } = GetAPI(`api/v1/admin/machines`);
-  const list = data?.data?.data ?? [];
+  const allMachines = data?.data?.data ?? [];
   const [modal, setModal] = useState("");
   const [loading, setLoading] = useState("");
   const [machineId, setMachineId] = useState("");
   const [preview, setPreview] = useState("");
   const [subscribingMachine, setSubscribingMachine] = useState(null);
+  const [filterType, setFilterType] = useState(""); // "" means "All"
 
   const [form, setForm] = useState({
     name: "",
@@ -51,6 +52,29 @@ export default function MachineSubscriptions() {
     { value: "professional", label: "Professional" },
     { value: "enterprise", label: "Enterprise" },
   ];
+
+  // Extract unique types from API response
+  const uniqueTypes = Array.from(
+    new Set(
+      allMachines
+        .map((machine) => machine?.type)
+        .filter((type) => type != null && type !== "")
+    )
+  ).sort();
+
+  // Create filter options with "All" option
+  const filterOptions = [
+    { value: "", label: "All" },
+    ...uniqueTypes.map((type) => ({
+      value: type,
+      label: type.charAt(0).toUpperCase() + type.slice(1), // Capitalize first letter
+    })),
+  ];
+
+  // Filter list based on selected filter
+  const list = filterType
+    ? allMachines.filter((machine) => machine?.type === filterType)
+    : allMachines;
 
   const columns = [
     { field: "sl", header: "SL", sort: true },
@@ -241,11 +265,9 @@ export default function MachineSubscriptions() {
             placeholder="Filters"
             styles={selectStyles}
             className="w-40"
-            options={[
-              { value: "drip", label: "Drip" },
-              { value: "espresso", label: "Espresso" },
-              { value: "commercial", label: "Commercial" },
-            ]}
+            options={filterOptions}
+            value={filterOptions.find((opt) => opt.value === filterType) || filterOptions[0]}
+            onChange={(selected) => setFilterType(selected?.value ?? "")}
           />
           {hasPermission("machine_create") && (
             <button
@@ -266,69 +288,89 @@ export default function MachineSubscriptions() {
           {list?.map((machine) => (
             <div
               key={machine?.id}
-              className="border border-orange-900/50 rounded-lg overflow-hidden relative group"
+              className="bg-white border border-gray-200 rounded-xl overflow-hidden relative group shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col"
             >
+              {/* Delete button on hover */}
               <span
                 onClick={() => {
                   setModal("delete");
                   setMachineId(machine?.id);
                 }}
-                className="absolute top-3 right-3 size-8 rounded-full bg-theme cursor-pointer opacity-0 duration-300 transition-all group-hover:opacity-100 flex justify-center items-center"
+                className="absolute top-3 right-3 z-10 size-8 rounded-full bg-red-500 cursor-pointer opacity-0 group-hover:opacity-100 duration-300 transition-all flex justify-center items-center shadow-lg hover:bg-red-600 hover:scale-110"
               >
-                <MdDelete size={18} color="white" />
+                <MdDelete size={16} color="white" />
               </span>
 
-              <div className="text-center">
-                <div className="bg-[#fef1d8] rounded-t-lg overflow-hidden">
+              {/* Compact Image Container */}
+              <div className="bg-gradient-to-br from-[#fef1d8] via-[#fef7e8] to-[#fff9f0] overflow-hidden">
+                <div className="relative h-[180px] flex items-center justify-center p-4">
                   <img
                     src={
                       BASE_URL + machine?.image || "/images/coffeemachine.png"
                     }
                     alt={machine?.name}
-                    className="h-[240px] object-contain mx-auto"
+                    className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                    onError={(e) => {
+                      if (e.target.src !== "/images/coffeemachine.png") {
+                        e.target.src = "/images/coffeemachine.png";
+                      }
+                    }}
                   />
                 </div>
+              </div>
 
-                <div className="p-5 space-y-3">
-                  <h3 className="text-2xl font-semibold line-clamp-1">
+              {/* Compact Content Section */}
+              <div className="p-4 flex flex-col flex-1">
+                {/* Title and Type - Compact */}
+                <div className="mb-2">
+                  <h3 className="text-lg font-bold text-gray-900 line-clamp-1 capitalize mb-1">
                     {machine?.name}
                   </h3>
+                  <div className="inline-flex items-center px-2 py-0.5 rounded-md bg-theme/10 text-theme text-xs font-medium capitalize">
+                    {machine?.type}
+                  </div>
+                </div>
 
-                  <p className="text-lg">{machine?.type}</p>
-
-                  <p className="text-sm px-4 h-20 flex justify-center line-clamp-4 overflow-ellipsis">
+                {/* Description - Compact */}
+                {machine?.desc && (
+                  <p className="text-xs text-gray-600 line-clamp-2 mb-3 leading-snug">
                     {machine?.desc}
                   </p>
+                )}
 
-                  <div className="text-xl font-bold">{`$${machine?.price}/${machine?.pricePer}`}</div>
-
-                  <div className="mt-4 text-center">
-                    <div className="flex justify-center">
-                      <FaPeopleGroup size={35} />
-                    </div>
-
-                    <p className="text-sm text-gray-500">
-                      Up to {machine?.uptoEmployees} employees
-                    </p>
-
-                    <div className="flex items-center gap-x-3">
-                      {hasPermission("machine_update") && (
-                        <button
-                          onClick={() => openEdit(machine?.id)}
-                          className="bg-black text-white w-max h-[56px] py-2 px-6 mt-8 rounded-md"
-                        >
-                          Edit
-                        </button>
-                      )}
-
-                      <button
-                        onClick={() => setSubscribingMachine(machine)}
-                        className="bg-theme text-white w-full h-[56px] py-2 px-6 mt-8 rounded-md"
-                      >
-                        Subscribe plan
-                      </button>
+                {/* Price and Employee - Side by Side */}
+                <div className="flex items-center justify-between mb-3 pt-2 border-t border-gray-100">
+                  <div>
+                    <div className="text-xl font-bold text-gray-900">
+                      ${machine?.price}
+                      <span className="text-xs font-normal text-gray-500 ml-1">
+                        /{machine?.pricePer || "mo"}
+                      </span>
                     </div>
                   </div>
+                  <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                    <FaPeopleGroup size={16} className="text-theme" />
+                    <span className="font-medium">{machine?.uptoEmployees}</span>
+                  </div>
+                </div>
+
+                {/* Compact Action Buttons */}
+                <div className="flex items-center gap-2 mt-auto">
+                  {hasPermission("machine_update") && (
+                    <button
+                      onClick={() => openEdit(machine?.id)}
+                      className="flex-1 bg-gray-900 text-white h-10 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-800 transition-all duration-200 active:scale-95"
+                    >
+                      Edit
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => setSubscribingMachine(machine)}
+                    className={`${hasPermission("machine_update") ? "flex-1" : "w-full"} bg-theme text-white h-10 py-2 px-3 rounded-lg text-sm font-medium hover:bg-theme/90 transition-all duration-200 active:scale-95`}
+                  >
+                    Subscribe
+                  </button>
                 </div>
               </div>
             </div>

@@ -16,7 +16,7 @@ import axios from "axios";
 import { BASE_URL } from "@/utilities/URL";
 import { useParams, useRouter } from "next/navigation";
 import { Dialog } from "primereact/dialog";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import Select from "react-select";
 import { CiMenuBurger } from "react-icons/ci";
 import { hasPermission } from "@/utilities/Permission";
@@ -34,17 +34,34 @@ function CustomerDetails() {
   const { data, reFetch } = GetAPI(
     `api/v1/admin/view-customer-detail/${userId}`, "customer"
   );
-  // const { data: userOrders } = GetAPI(`api/v1/admin/orders?userid=${userId}`);
+  
+  // Pagination and search state for orders
+  const [orderPage, setOrderPage] = useState(1);
+  const [orderLimit, setOrderLimit] = useState(100);
+  const [orderSearchQuery, setOrderSearchQuery] = useState("");
+  const [allOrders, setAllOrders] = useState([]); // Store all loaded orders for scroll pagination
+  const [isLoadingMoreOrders, setIsLoadingMoreOrders] = useState(false);
+  const [hasMoreOrders, setHasMoreOrders] = useState(true);
+  const scrollObserverRef = useRef(null);
 
-  //   const { data: userOrders } = GetAPI(
-  //   `api/v1/admin/orders?userid=${userId}&paymentStatus=pending&salesRepId=${data?.data?.customer?.salesRepId}&statusId[ne]=6`
-  // );
-
-  let url =
-    userType === "admin"
+  // Build orders API URL with pagination and search
+  const buildOrdersUrl = () => {
+    const baseUrl = userType === "admin"
       ? `api/v1/admin/orders?userid=${userId}&statusId[ne]=6&type=all`
       : `api/v1/admin/orders?userid=${userId}&salesRepId=${salesRepId}&statusId[ne]=6&type=all`;
-  const { data: userOrders, isLoading } = GetAPI(url);
+    
+    const [urlBase, existingQuery] = baseUrl.split("?");
+    const params = new URLSearchParams(existingQuery || "");
+    params.set("page", orderPage.toString());
+    params.set("limit", orderLimit.toString());
+    if (orderSearchQuery.trim()) {
+      params.set("search", orderSearchQuery.trim());
+    }
+    return `${urlBase}?${params.toString()}`;
+  };
+
+  const ordersUrl = buildOrdersUrl();
+  const { data: userOrders, isLoading, reFetch: reFetchOrders } = GetAPI(ordersUrl, "customer-orders");
   
   const { data: employeesData } = GetAPI("api/v1/admin/employees", "employee");
 
@@ -122,9 +139,71 @@ function CustomerDetails() {
     return 3; // paid
   };
 
+  // Update allOrders when new data arrives
+  useEffect(() => {
+    if (userOrders?.data?.data) {
+      const newOrders = userOrders.data.data;
+      if (orderPage === 1 || orderSearchQuery.trim()) {
+        // Reset on first page or when searching
+        setAllOrders(newOrders);
+      } else {
+        // Append for scroll pagination (avoid duplicates)
+        setAllOrders((prev) => {
+          const existingIds = new Set(prev.map(o => o?.id));
+          const uniqueNew = newOrders.filter(o => !existingIds.has(o?.id));
+          return [...prev, ...uniqueNew];
+        });
+      }
+      
+      // Check if there are more orders
+      const totalItems = userOrders?.pagination?.totalItems || userOrders?.data?.pagination?.totalItems || 0;
+      const currentPage = userOrders?.pagination?.page || userOrders?.data?.pagination?.page || orderPage;
+      const totalPages = userOrders?.pagination?.totalPages || userOrders?.data?.pagination?.totalPages || 1;
+      setHasMoreOrders(currentPage < totalPages);
+      setIsLoadingMoreOrders(false);
+    }
+  }, [userOrders]);
+
+  // Reset orders when search changes
+  useEffect(() => {
+    if (orderSearchQuery.trim() !== "") {
+      setOrderPage(1);
+      setAllOrders([]);
+      setHasMoreOrders(true);
+    }
+  }, [orderSearchQuery]);
+
+  // Scroll-based pagination using Intersection Observer (only when not searching)
+  useEffect(() => {
+    if (!hasMoreOrders || isLoadingMoreOrders || orderSearchQuery.trim()) {
+      return; // Don't load more if no more data, already loading, or searching
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMoreOrders && !isLoadingMoreOrders && !orderSearchQuery.trim()) {
+          setIsLoadingMoreOrders(true);
+          setOrderPage((prev) => prev + 1);
+        }
+      },
+      { threshold: 0.1, rootMargin: "100px" }
+    );
+
+    const currentRef = scrollObserverRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef);
+      }
+    };
+  }, [hasMoreOrders, isLoadingMoreOrders, orderSearchQuery]);
+
   const orderDatas = [];
 
-  userOrders?.data?.data?.map((elem, idx) => {
+  allOrders?.map((elem, idx) => {
     const today = dayjs();
     const invoiceDate = dayjs(elem?.invoiceDate);
     const daysSinceInvoice = invoiceDate.isValid() ? today.diff(invoiceDate, "day") : 0;
@@ -980,7 +1059,7 @@ function CustomerDetails() {
                 </div>
               </div>
             )}
-          {userOrders?.data?.data?.length > 0 && (
+          {(userOrders || allOrders.length > 0 || orderSearchQuery.trim()) && (
             <div className="bg-white">
               <div className="flex items-center justify-between mb-8">
                 <h2 className="text-lg font-semibold text-gray-800">Orders</h2>
@@ -1057,26 +1136,58 @@ function CustomerDetails() {
                   </tbody>
                 </table> */}
 
-                <MyDataTable
-                  columns={orderColumn}
-                  data={orderDatas}
-                  placeholder={"Search ..."}
-                  pagination={false}
-                  checkbox={true}
-                  selectedRows={selectedRows}
-                  setSelectedRows={setSelectedRows}
-                  search={false}
-                  hide
-                  Styles
-                  onRowClick={(e) => {
-                    if(e.data.type === "direct-invoice") {
-                      router.push(`/direct-invoices/${e.data.id}`);
-                    } else {
-                      router.push(`/orders/detail/${e.data.id}`);
-                    }
-                  
-                  }}
-                />
+                <div className="[&_div.relative]:mb-4">
+                  <MyDataTable
+                    columns={orderColumn}
+                    data={orderDatas}
+                    placeholder={"Search by order id and invoice number"}
+                    pagination={true}
+                    serverPagination={{
+                      page: userOrders?.pagination?.page || userOrders?.data?.pagination?.page || orderPage,
+                      limit: userOrders?.pagination?.limit || userOrders?.data?.pagination?.limit || orderLimit,
+                      totalRecords: userOrders?.pagination?.totalItems || userOrders?.data?.pagination?.totalItems || allOrders.length,
+                      totalPages: userOrders?.pagination?.totalPages || userOrders?.data?.pagination?.totalPages,
+                      onPageChange: (newPage) => {
+                        setOrderPage(newPage);
+                        setAllOrders([]); // Reset when manually changing page
+                        setIsLoadingMoreOrders(false);
+                      },
+                      onLimitChange: (newLimit) => {
+                        setOrderLimit(newLimit);
+                        setOrderPage(1);
+                        setAllOrders([]);
+                        setIsLoadingMoreOrders(false);
+                      },
+                    }}
+                    searchValue={orderSearchQuery}
+                    onSearchChange={(searchValue) => {
+                      setOrderSearchQuery(searchValue);
+                      setOrderPage(1);
+                      setAllOrders([]);
+                    }}
+                    search={true}
+                    checkbox={true}
+                    selectedRows={selectedRows}
+                    setSelectedRows={setSelectedRows}
+                    hide
+                    Styles
+                    onRowClick={(e) => {
+                      if(e.data.type === "direct-invoice") {
+                        router.push(`/direct-invoices/${e.data.id}`);
+                      } else {
+                        router.push(`/orders/detail/${e.data.id}`);
+                      }
+                    }}
+                  />
+                </div>
+                {/* Scroll observer for infinite scroll */}
+                {hasMoreOrders && !orderSearchQuery.trim() && (
+                  <div ref={scrollObserverRef} className="h-10 flex items-center justify-center py-4">
+                    {isLoadingMoreOrders && (
+                      <div className="text-sm text-gray-500">Loading more orders...</div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}

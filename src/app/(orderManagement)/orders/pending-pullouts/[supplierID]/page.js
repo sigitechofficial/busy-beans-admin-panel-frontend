@@ -14,6 +14,7 @@ import { PostAPI } from "@/utilities/PostAPI";
 import MiniLoader from "@/components/ui/MiniLoader";
 import { success_toaster } from "@/utilities/Toaster";
 import dayjs from "dayjs";
+import { formatUSD } from "@/utilities/constants";
 
 export default function PendingPulloutsOrders() {
   const { supplierID } = useParams();
@@ -83,7 +84,6 @@ export default function PendingPulloutsOrders() {
         invoiceNumber: order?.invoiceNumber,
       })
     );
-    console.log("🚀 ~ handlePulloutPayments ~ orderList:", orderList);
     const receivableAmount = selectedRows?.reduce((total, order) => {
       const amount = parseFloat(
         order?.adminReceivableAmount?.replace("$", "") || 0
@@ -98,6 +98,7 @@ export default function PendingPulloutsOrders() {
         {
           amount: receivableAmount,
           orderList: orderList,
+          dateAndTime: Date.now(),
         }
       );
       if (res?.data?.status === "success") {
@@ -152,7 +153,7 @@ export default function PendingPulloutsOrders() {
           />
           <ManagementTab
             title="Total Admin Receivable Amount"
-            desc={`$${totalAdminReceivableAmount ?? 0}`}
+            desc={formatUSD(totalAdminReceivableAmount) ?? 0}
           />
           {/* <ManagementTab title="New Orders" desc="5%" />
         <ManagementTab title="Pending Orders" desc="5000" />

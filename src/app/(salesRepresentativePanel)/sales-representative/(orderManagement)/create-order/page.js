@@ -33,9 +33,16 @@ export default function CreateOrder() {
       categoryList.push({ value: cat?.id, label: cat?.name });
     });
   }
-  const url = filterId
-    ? `api/v1/admin/product?categoryId=${filterId}`
-    : `api/v1/admin/product`;
+  
+  // Use same endpoint as inventory stock page for sales rep
+  const baseUrl = "api/v1/admin/products/sales-rep";
+  const params = new URLSearchParams();
+  params.set("page", "1");
+  params.set("limit", "100");
+  if (filterId) {
+    params.set("categoryId", String(filterId));
+  }
+  const url = `${baseUrl}?${params.toString()}`;
 
   const { data, reFetch } = GetAPI(url);
 
@@ -169,11 +176,15 @@ export default function CreateOrder() {
         </div>
 
         <Select
-          onChange={(e) => setFilterId(e?.value)}
+          onChange={(e) => {
+            // If "All" is selected (value is ""), remove categoryId filter
+            setFilterId(e?.value ?? "");
+          }}
           placeholder="Category"
           options={categoryList}
           className="w-40"
           styles={selectStyles}
+          defaultValue={categoryList[0]} // Default to "All"
         />
       </div>
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">

@@ -1174,8 +1174,8 @@ export default function AddInvoice() {
       <Dialog
         visible={modal}
         data-testid={ORDER_ADD_INVOICE.modal.root}
-        style={{ width: "40vw" }}
-        // breakpoints={{ "1496px": "40vw", "1024px": "70vw", "641px": "80vw" }}
+        style={{ width: "50vw", maxWidth: "700px" }}
+        breakpoints={{ "1024px": "70vw", "768px": "85vw", "640px": "95vw" }}
         className="font-nunito"
         dismissableMask={true}
         onHide={() => setModal(false)}
@@ -1188,11 +1188,8 @@ export default function AddInvoice() {
         {ProductList?.length === 0 ? (
           <MiniLoader />
         ) : (
-          <div
-            // onSubmit={handleStock}
-            className="flex flex-col"
-          >
-            <div className="sticky top-0 space-y-2 bg-white pb-2">
+          <div className="flex flex-col">
+            <div className="sticky top-0 space-y-2 bg-white pb-3 z-10">
               <div className="w-full h-14 rounded-md border relative">
                 <div className="absolute top-1/2 -translate-y-1/2 left-2">
                   <IoIosSearch size={25} color="gray" />
@@ -1220,18 +1217,53 @@ export default function AddInvoice() {
               </div>
             </div>
 
+            <div className="overflow-y-auto max-h-96">
             {handleFilter()?.map((item, idx) => {
               return (
                 <div
                   key={item.id || idx}
                   onClick={() => handleAddExtra(item)}
-                  className="text-sm text-start text-gray-500 cursor-pointer h-12 border-b flex items-center hover:bg-gray-100 px-2 hover:text-black hover:font-semibold"
+                  className="text-sm cursor-pointer border-b flex items-center justify-between hover:bg-gray-100 px-3 py-3 hover:shadow-sm transition-all group"
                   data-testid={ORDER_ADD_INVOICE.modal.productRow(item.id)}
                 >
-                  <p>{item?.name}</p>
+                  <div className="flex-1 space-y-1">
+                    <p className="font-semibold text-gray-800 group-hover:text-theme">
+                      {item?.name}
+                    </p>
+                    <div className="flex items-center gap-3 text-xs text-gray-500">
+                      {item?.sku && (
+                        <span className="bg-gray-100 px-2 py-0.5 rounded">
+                          SKU: {item?.sku}
+                        </span>
+                      )}
+                      {item?.productCode && (
+                        <span className="bg-gray-100 px-2 py-0.5 rounded">
+                          Code: {item?.productCode}
+                        </span>
+                      )}
+                      {item?.weight && item?.unit && (
+                        <span className="text-gray-400">
+                          {item?.weight} {item?.unit}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-1 ml-4">
+                    {item?.price && (
+                      <span className="font-bold text-lg text-theme">
+                        ${parseFloat(item?.price).toFixed(2)}
+                      </span>
+                    )}
+                    {item?.wholesalePrice && (
+                      <span className="text-xs text-gray-500">
+                        Wholesale: ${parseFloat(item?.wholesalePrice).toFixed(2)}
+                      </span>
+                    )}
+                  </div>
                 </div>
               );
             })}
+            </div>
           </div>
         )}
       </Dialog>

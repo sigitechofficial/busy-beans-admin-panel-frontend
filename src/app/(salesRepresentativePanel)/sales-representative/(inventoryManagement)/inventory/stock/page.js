@@ -7,10 +7,7 @@ import { useState, useEffect } from "react";
 import { PostAPI } from "@/utilities/PostAPI";
 import { PatchAPI } from "@/utilities/PatchAPI";
 import { DeleteAPI } from "@/utilities/DeleteAPI";
-import {
-  info_toaster,
-  success_toaster,
-} from "@/utilities/Toaster";
+import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import GetAPI from "@/utilities/GetAPI";
 import ManagementTab from "@/components/ui/ManagementTab";
 import MyDataTable from "@/components/ui/MyDataTable";
@@ -22,6 +19,7 @@ import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
 import { FaEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
+import Image from "next/image";
 
 export default function SalesRepInventoryStockPage() {
   const [userType, setUserType] = useState(null);
@@ -30,7 +28,9 @@ export default function SalesRepInventoryStockPage() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     setUserType(localStorage.getItem("userType") || "");
-    setUserID(localStorage.getItem("userId") || localStorage.getItem("userID") || "");
+    setUserID(
+      localStorage.getItem("userId") || localStorage.getItem("userID") || "",
+    );
   }, []);
 
   const [filterId, setFilterId] = useState("");
@@ -87,11 +87,13 @@ export default function SalesRepInventoryStockPage() {
   const productsArray = Array.isArray(data?.data?.data)
     ? data?.data?.data
     : Array.isArray(data?.data)
-    ? data?.data
-    : [];
+      ? data?.data
+      : [];
 
   const salesRepPriceEntries =
-    salesRepProductPriceData?.data?.data ?? salesRepProductPriceData?.data ?? [];
+    salesRepProductPriceData?.data?.data ??
+    salesRepProductPriceData?.data ??
+    [];
   const existingProductIds = Array.isArray(salesRepPriceEntries)
     ? salesRepPriceEntries.map((e) => e?.productId).filter(Boolean)
     : [];
@@ -109,17 +111,18 @@ export default function SalesRepInventoryStockPage() {
   const columns = isSalesRep
     ? [
         { field: "sl", header: "SL", sort: true },
+        { field: "image", header: "Image" },
         { field: "name", header: "Name" },
         // { field: "quantity", header: "Quantity" },
         { field: "weight", header: "Weight", sort: true },
         { field: "price", header: "Price ($)", sort: true },
         { field: "productCode", header: "Product Code" },
         { field: "sku", header: "SKU" },
-        { field: "image", header: "Image" },
         { field: "action", header: "Action" },
       ]
     : [
         { field: "sl", header: "SL", sort: true },
+        { field: "image", header: "Image" },
         { field: "name", header: "Name" },
         // { field: "quantity", header: "Quantity" },
         { field: "weight", header: "Weight", sort: true },
@@ -127,7 +130,6 @@ export default function SalesRepInventoryStockPage() {
         { field: "wholesalePrice", header: "Whole Sale Price ($)" },
         { field: "productCode", header: "Product Code" },
         { field: "sku", header: "SKU" },
-        { field: "image", header: "Image" },
         { field: "action", header: "Action" },
       ];
 
@@ -144,21 +146,26 @@ export default function SalesRepInventoryStockPage() {
       productCode: prod?.productCode ?? "",
       sku: prod?.sku ?? "",
       image: (
-        <img
-          src={
-            prod?.image && prod.image.trim() !== ""
-              ? BASE_URL + prod.image
-              : "/images/logocoffee.png"
-          }
-          alt={prod?.image || "product"}
-          className="w-20 h-12 object-contain"
-          onError={(e) => {
-            // Show default brand logo if image fails to load (even if path exists but is incorrect)
-            if (e.target.src !== "/images/logocoffee.png") {
-              e.target.src = "/images/logocoffee.png";
+        <div className="size-20 p-1 bg-gray-100 rounded-sm flex items-center justify-center">
+          <Image
+            src={
+              prod?.image && prod.image.trim() !== ""
+                ? BASE_URL + prod.image
+                : "/images/logocoffee.png"
             }
-          }}
-        />
+            alt={prod?.image || "product"}
+            width={80}
+            height={80}
+            className="w-20 object-contain"
+            onError={(e) => {
+              // Show default brand logo if image fails to load (even if path exists but is incorrect)
+              if (e.target.src !== "/images/logocoffee.png") {
+                e.target.src = "/images/logocoffee.png";
+              }
+            }}
+            unoptimized
+          />
+        </div>
       ),
       action: isSalesRep ? (
         <div className="flex gap-x-2">
@@ -206,7 +213,7 @@ export default function SalesRepInventoryStockPage() {
             feature: "sales-rep-product-price",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
-        }
+        },
       );
       const json = await res.json();
       if (json?.status === "success" && json?.data?.data?.length > 0) {
@@ -219,12 +226,13 @@ export default function SalesRepInventoryStockPage() {
   };
 
   const handleEditClick = async (productId, productName, productPrice) => {
-    const entry = customPriceMap[productId] || (await fetchProductEntry(productId));
+    const entry =
+      customPriceMap[productId] || (await fetchProductEntry(productId));
     setEditEntryId(entry?.pid ?? null);
     setEditProductId(productId);
     setEditProductName(productName ?? "");
     setEditPrice(
-      entry?.price != null ? String(entry.price) : String(productPrice ?? "")
+      entry?.price != null ? String(entry.price) : String(productPrice ?? ""),
     );
     setEditModalOpen(true);
   };
@@ -259,7 +267,7 @@ export default function SalesRepInventoryStockPage() {
         const res = await PatchAPI(
           "api/v1/admin/sales-rep-product-price",
           [{ id: pid, price: priceNum }],
-          "sales-rep-product-price"
+          "sales-rep-product-price",
         );
         if (res?.data?.status === "success") {
           success_toaster("Price updated successfully.");
@@ -281,7 +289,7 @@ export default function SalesRepInventoryStockPage() {
         const res = await PatchAPI(
           "api/v1/admin/sales-rep-product-price",
           payload,
-          "sales-rep-product-price"
+          "sales-rep-product-price",
         );
         if (res?.data?.status === "success") {
           success_toaster("Product added to your inventory.");
@@ -307,17 +315,14 @@ export default function SalesRepInventoryStockPage() {
   };
 
   const handleDeleteConfirm = async () => {
-    console.log("🚀 ~ handleDeleteConfirm ~ deleteProductId:", deleteProductId)
+    console.log("🚀 ~ handleDeleteConfirm ~ deleteProductId:", deleteProductId);
     if (!deleteProductId) return;
     setDeleteLoader(true);
     try {
-    
-    
-      
       // DELETE API with product pid in parameter
       const res = await DeleteAPI(
         `api/v1/admin/sales-rep-product-price/${deleteProductId}`,
-        "sales-rep-product-price"
+        "sales-rep-product-price",
       );
       if (res?.data?.status === "success") {
         success_toaster("Product removed from your inventory.");
@@ -352,7 +357,10 @@ export default function SalesRepInventoryStockPage() {
     setSelectedProducts((prev) => {
       const exists = prev.some((p) => p.productId === productId);
       if (exists) return prev.filter((p) => p.productId !== productId);
-      return [...prev, { productId, salesRepId: Number(userID), price, status: true }];
+      return [
+        ...prev,
+        { productId, salesRepId: Number(userID), price, status: true },
+      ];
     });
   };
 
@@ -360,7 +368,7 @@ export default function SalesRepInventoryStockPage() {
     const num = Number(value);
     const price = Number.isFinite(num) && num >= 0 ? num : 0;
     setSelectedProducts((prev) =>
-      prev.map((p) => (p.productId === productId ? { ...p, price } : p))
+      prev.map((p) => (p.productId === productId ? { ...p, price } : p)),
     );
   };
 
@@ -389,7 +397,7 @@ export default function SalesRepInventoryStockPage() {
       const res = await PostAPI(
         "api/v1/admin/sales-rep-product-price",
         payload,
-        "sales-rep-product-price"
+        "sales-rep-product-price",
       );
       if (res?.data?.status === "success") {
         success_toaster("Products added to your inventory.");
@@ -409,8 +417,8 @@ export default function SalesRepInventoryStockPage() {
   const modalProductsArray = Array.isArray(modalProductsData?.data?.data)
     ? modalProductsData.data.data
     : Array.isArray(modalProductsData?.data)
-    ? modalProductsData.data
-    : [];
+      ? modalProductsData.data
+      : [];
   const modalProductList = modalProductsArray.filter((p) => {
     const name = (p?.name ?? "").toLowerCase();
     const code = (p?.productCode ?? "").toLowerCase();
@@ -421,7 +429,7 @@ export default function SalesRepInventoryStockPage() {
   });
 
   const selectableInModal = modalProductList.filter(
-    (p) => !existingProductIds.includes(p?.id)
+    (p) => !existingProductIds.includes(p?.id),
   );
   const selectableIds = new Set(selectableInModal.map((p) => p?.id));
   const allSelectableSelected =
@@ -448,7 +456,7 @@ export default function SalesRepInventoryStockPage() {
       });
     } else {
       setSelectedProducts((prev) =>
-        prev.filter((p) => !selectableIds.has(p.productId))
+        prev.filter((p) => !selectableIds.has(p.productId)),
       );
     }
   };
@@ -475,9 +483,7 @@ export default function SalesRepInventoryStockPage() {
         </div>
 
         <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative">
-          {isSalesRep && (
-            <li onClick={openAddProductModal}>Import Product</li>
-          )}
+          {isSalesRep && <li onClick={openAddProductModal}>Import Product</li>}
         </ul>
       </div>
 
@@ -585,7 +591,9 @@ export default function SalesRepInventoryStockPage() {
                         onChange={(e) => handleSelectAll(e.target.checked)}
                         className="rounded"
                       />
-                      <span className="text-labelColor text-sm">Select all</span>
+                      <span className="text-labelColor text-sm">
+                        Select all
+                      </span>
                     </div>
                   )}
                   {modalProductList.map((prod) => {
@@ -612,13 +620,15 @@ export default function SalesRepInventoryStockPage() {
                           )}
                         </div>
                         <div className="flex-1 min-w-0 flex gap-3">
-                          <img
+                          <Image
                             src={
                               prod?.image && prod.image.trim() !== ""
                                 ? BASE_URL + prod.image
                                 : "/images/logocoffee.png"
                             }
                             alt={prod?.name || "product"}
+                            width={56}
+                            height={56}
                             className="w-14 h-14 object-contain rounded border border-gray-200 flex-shrink-0"
                             onError={(e) => {
                               // Show default brand logo if image fails to load (even if path exists but is incorrect)
@@ -626,17 +636,24 @@ export default function SalesRepInventoryStockPage() {
                                 e.target.src = "/images/logocoffee.png";
                               }
                             }}
+                            unoptimized
                           />
                           <div className="min-w-0 flex-1 space-y-0.5 text-sm">
-                            <p className="font-semibold text-black truncate" title={prod?.name}>
+                            <p
+                              className="font-semibold text-black truncate"
+                              title={prod?.name}
+                            >
                               {prod?.name ?? ""}
                             </p>
                             <p className="text-labelColor">
-                              <span className="font-medium">ID:</span> {prod?.id ?? "—"}
+                              <span className="font-medium">ID:</span>{" "}
+                              {prod?.id ?? "—"}
                               {" · "}
-                              <span className="font-medium">SKU:</span> {prod?.sku ?? "—"}
+                              <span className="font-medium">SKU:</span>{" "}
+                              {prod?.sku ?? "—"}
                               {" · "}
-                              <span className="font-medium">Code:</span> {prod?.productCode ?? "—"}
+                              <span className="font-medium">Code:</span>{" "}
+                              {prod?.productCode ?? "—"}
                             </p>
                             {prod?.desc && (
                               <p className="text-labelColor text-xs line-clamp-2">
@@ -644,9 +661,11 @@ export default function SalesRepInventoryStockPage() {
                               </p>
                             )}
                             <p className="text-labelColor">
-                              <span className="font-medium">Weight:</span> {prod?.weight ?? "—"} lbs
+                              <span className="font-medium">Weight:</span>{" "}
+                              {prod?.weight ?? "—"} lbs
                               {" · "}
-                              <span className="font-medium">Price:</span> ${prod?.price ?? "—"}
+                              <span className="font-medium">Price:</span> $
+                              {prod?.price ?? "—"}
                             </p>
                           </div>
                         </div>
@@ -664,7 +683,11 @@ export default function SalesRepInventoryStockPage() {
                                 type="number"
                                 min="0"
                                 step="0.01"
-                                value={selected ? getSelectedPrice(prod?.id) : (prod?.price ?? "")}
+                                value={
+                                  selected
+                                    ? getSelectedPrice(prod?.id)
+                                    : (prod?.price ?? "")
+                                }
                                 onChange={(e) =>
                                   updateSelectedPrice(prod?.id, e.target.value)
                                 }
@@ -720,7 +743,10 @@ export default function SalesRepInventoryStockPage() {
         >
           <form onSubmit={handleEditPriceSubmit} className="space-y-4">
             <p className="text-labelColor font-medium">
-              Product: <span className="text-black font-semibold">{editProductName}</span>
+              Product:{" "}
+              <span className="text-black font-semibold">
+                {editProductName}
+              </span>
             </p>
             <div className="flex flex-col gap-2">
               <label className="text-labelColor font-medium font-satoshi">
@@ -775,7 +801,9 @@ export default function SalesRepInventoryStockPage() {
           }
         >
           <p className="text-labelColor font-medium mb-4">
-            Are you sure you want to remove <strong className="text-black">{deleteProductName}</strong> from your inventory? This will remove your custom price for this product.
+            Are you sure you want to remove{" "}
+            <strong className="text-black">{deleteProductName}</strong> from
+            your inventory? This will remove your custom price for this product.
           </p>
           <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
             <button

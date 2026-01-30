@@ -10,15 +10,19 @@ import { BASE_URL, RECAPTCHA_SITE_KEY, RETURN_URL } from "@/utilities/URL";
 import api from "@/utilities/StatusErrorHandler";
 import { useFormik } from "formik";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Checkbox } from "primereact/checkbox";
 import { useEffect, useRef, useState } from "react";
 import SIGN_IN from "./sign-in.testids";
 import Script from "next/script";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 export default function SignIn() {
   const router = useRouter();
   const [loader, setLoader] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const [type, setType] = useState("admin"); // sales-rep, admin, supplier
   const initialValues = {
@@ -85,14 +89,14 @@ export default function SignIn() {
       initialValues,
       validationSchema: loginSchema,
       onSubmit: async (values, action) => {
+        setLoader(true);
         let captchaRes = await validateRecaptcha();
 
         if (!captchaRes) {
           error_toaster("Bot Detection");
+          setLoader(false);
           return;
         }
-
-        setLoader(true);
         try {
           let res = await loginAPI(
             type === "admin"
@@ -245,10 +249,13 @@ export default function SignIn() {
         {/* left side */}
         <div className=" flex flex-col justify-center items-center">
           <div className="w-40 sm:h-4/5 sm:w-full flex items-center justify-center">
-            <img
+            <Image
               src="/images/logowhite.png"
               alt="logo_image"
+              width={200}
+              height={144}
               className="object-contain w-full sm:h-36"
+              priority
             />
           </div>
 
@@ -297,15 +304,33 @@ export default function SignIn() {
                   <label className="text-white font-medium font-satoshi">
                     Password
                   </label>
-                  <input
-                    type="password"
-                    name="password"
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    placeholder="password"
-                    className="border border-inputBorder rounded-lg outline-none px-3 py-2"
-                    data-testid={SIGN_IN.passwordInput}
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      autoComplete="off"
+                      autoCorrect="off"
+                      autoCapitalize="off"
+                      spellCheck="false"
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      placeholder="password"
+                      className="border border-inputBorder rounded-lg outline-none px-3 py-2 pr-10 w-full"
+                      data-testid={SIGN_IN.passwordInput}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800 focus:outline-none"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? (
+                        <AiOutlineEyeInvisible size={20} />
+                      ) : (
+                        <AiOutlineEye size={20} />
+                      )}
+                    </button>
+                  </div>
                   <div className={errors.password && touched.password}>
                     {" "}
                     {errors.password && touched.password && (
@@ -370,10 +395,14 @@ export default function SignIn() {
               <div>
                 <button
                   type="submit"
-                  className="bg-theme text-white hover:bg-white hover:text-theme border border-theme outline-none duration-150 font-satoshi py-2 rounded-lg w-full font-medium"
+                  disabled={loader}
+                  className="bg-theme text-white hover:bg-white hover:text-theme border border-theme outline-none duration-150 font-satoshi py-2 rounded-lg w-full font-medium disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-theme disabled:hover:text-white flex items-center justify-center gap-2"
                   data-testid={SIGN_IN.submitBtn}
                 >
-                  Sign In
+                  {loader && (
+                    <AiOutlineLoading3Quarters className="animate-spin" size={18} />
+                  )}
+                  {loader ? "Signing In..." : "Sign In"}
                 </button>
               </div>
             </form>

@@ -7,6 +7,7 @@ import axios from "axios";
 import { BASE_URL } from "@/utilities/URL";
 import { Sidebar } from "primereact/sidebar";
 import { Button } from "primereact/button";
+import { Dialog } from "primereact/dialog";
 import { PostAPI } from "@/utilities/PostAPI";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import {
@@ -30,6 +31,8 @@ const DrawerBeans = ({
   setQuotationData,
   quotationData,
   type,
+  selectedPartnerId: propSelectedPartnerId,
+  onPartnerChange,
 }) => {
   if (typeof window !== "undefined") {
     var userID = localStorage.getItem("userID");
@@ -71,6 +74,8 @@ const DrawerBeans = ({
   const [isSelfOrder, setIsSelfOrder] = useState(false);
   const [partners, setPartners] = useState([]);
   const [srNameOptions, setSrNameOptions] = useState([]);
+  const [showPartnerChangeWarning, setShowPartnerChangeWarning] = useState(false);
+  const [pendingToggleChange, setPendingToggleChange] = useState(null);
 
   const [order, setOrder] = useState({
     note: "",
@@ -107,14 +112,36 @@ const DrawerBeans = ({
   }, 0);
 
   const getCustomerListEndpoint = (page, limit, search = "") => {
-    const base =
-      isEmployee && hasPermission("selected-customer_view")
-        ? `api/v1/admin/customer-management/customer-list/employee-id/${userID}`
-        : userType === "admin"
-        ? `api/v1/admin/customer-management/customer-list/all`
-        : userType === "salesRepresentative"
-        ? `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}`
-        : `api/v1/admin/customer-management/customer-list/all`;
+    let base = "";
+    
+    // For admin in createOrder mode - check if partner is selected from create order page
+    if (userType === "admin" && type === "createOrder") {
+      // If partner is selected from create order page, use partner's customers
+      if (propSelectedPartnerId) {
+        base = `api/v1/admin/customer-management/customer-list/sale-rep-id/${propSelectedPartnerId}`;
+      } 
+      // If no partner selected, use not-assigned customers
+      else {
+        base = `api/v1/admin/customer-management/customer-list/not-assigned`;
+      }
+    }
+    // For employees with selected-customer permission
+    else if (isEmployee && hasPermission("selected-customer_view")) {
+      base = `api/v1/admin/customer-management/customer-list/employee-id/${userID}`;
+    }
+    // For admin (default - all customers)
+    else if (userType === "admin") {
+      base = `api/v1/admin/customer-management/customer-list/all`;
+    }
+    // For sales representatives
+    else if (userType === "salesRepresentative") {
+      base = `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}`;
+    }
+    // Default fallback
+    else {
+      base = `api/v1/admin/customer-management/customer-list/all`;
+    }
+    
     const params = new URLSearchParams();
     params.set("page", page.toString());
     params.set("limit", limit.toString());
@@ -243,19 +270,20 @@ const DrawerBeans = ({
   // Load initial customers
   useEffect(() => {
     // For Send Quotation: fetch customers when drawer opens (unless direct partner toggle is on)
-    // For Create Order: only fetch when not direct partner and not self order
+    // For Create Order: fetch customers based on partner selection from create order page
     if (type !== "createOrder") {
       // Send Quotation - fetch customers unless direct partner mode is enabled
       if (!isDirectPartner && open) {
         fetchCustomers(1, false, customerSearchQuery);
       }
     } else {
-      // Create Order - only fetch when not direct partner and not self order
-      if (!isDirectPartner && !isSelfOrder && open) {
+      // Create Order - fetch customers based on propSelectedPartnerId
+      // URL will automatically switch based on propSelectedPartnerId in getCustomerListEndpoint
+      if (open && !isSelfOrder) {
         fetchCustomers(1, false, customerSearchQuery);
       }
     }
-  }, [isDirectPartner, isSelfOrder, type, open]);
+  }, [isDirectPartner, isSelfOrder, type, open, propSelectedPartnerId]);
 
   // Load more customers on scroll
   const handleMenuScrollToBottom = () => {
@@ -315,6 +343,12 @@ const DrawerBeans = ({
 
   // ✅ UPDATED: Switch gives boolean `checked`
   const handleDirectPartnerToggle = (checked) => {
+    // If admin is trying to toggle when partner is selected from create order page, show warning
+    if (propSelectedPartnerId && type === "createOrder" && userType === "admin") {
+      setPendingToggleChange(checked);
+      setShowPartnerChangeWarning(true);
+      return;
+    }
     setIsDirectPartner(checked);
 
     if (checked) {
@@ -335,6 +369,46 @@ const DrawerBeans = ({
       }));
       setEmail("");
     }
+  };
+
+  // Handle toggle change confirmation
+  const handleConfirmToggleChange = () => {
+    if (pendingToggleChange !== null) {
+      // Clear cart and reset
+      if (onPartnerChange) {
+        onPartnerChange();
+      }
+      setOpen(false);
+      // Reset drawer state
+      setIsDirectPartner(false);
+      setOrder({
+        note: "",
+        paymentMethod: "",
+        poNumber: "",
+        orderFrequency: "",
+        addressId: "",
+        userId: "",
+        salesRepId: "",
+        shippingCharges: "",
+        categoryDiscounts: [],
+      });
+      setEmail("");
+      setAddressOptions([]);
+      // Clear cart from localStorage
+      if (type === "createOrder") {
+        localStorage.setItem("createOrderData", JSON.stringify([]));
+      } else {
+        localStorage.setItem("quotationData", JSON.stringify([]));
+      }
+    }
+    setShowPartnerChangeWarning(false);
+    setPendingToggleChange(null);
+  };
+
+  // Handle toggle change cancellation
+  const handleCancelToggleChange = () => {
+    setShowPartnerChangeWarning(false);
+    setPendingToggleChange(null);
   };
 
   const selfOrderSwitch = (checked) => {
@@ -847,6 +921,43 @@ const DrawerBeans = ({
 
   return (
     <div className="card relative">
+      {/* Partner Toggle Warning Dialog */}
+      <Dialog
+        visible={showPartnerChangeWarning}
+        onHide={handleCancelToggleChange}
+        dismissableMask={false}
+        header="Change Partner Mode?"
+        className="font-nunito"
+        style={{ width: "90vw", maxWidth: "450px" }}
+        footer={
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={handleCancelToggleChange}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmToggleChange}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors"
+            >
+              OK
+            </button>
+          </div>
+        }
+      >
+        <div className="space-y-4 py-4">
+          <p className="text-gray-700">
+            Changing the partner mode will clear your cart and reset all fields. The drawer will close.
+          </p>
+          <p className="text-sm text-gray-500 font-medium">
+            Do you want to continue?
+          </p>
+        </div>
+      </Dialog>
+
       <Sidebar
         visible={open}
         position="right"

@@ -103,31 +103,31 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-themeLight py-5 flex items-center justify-center">
+    <div className="min-h-screen bg-themeLight py-4 sm:py-5 px-3 sm:px-4 flex items-center justify-center overflow-x-hidden">
       {/* main section start */}
-      <div className="border border-theme rounded-xl bg-themeDark w-11/12 sm:w-4/6 md:w-[70%] lg:w-3/5 xl:w-2/4 py-6 flex flex-col items-center gap-y-4">
-        <div className="w-60 md:w-72 lg:w-80">
+      <div className="border border-theme rounded-xl bg-themeDark w-full min-w-0 max-w-[calc(100vw-1.5rem)] sm:max-w-none sm:w-4/6 md:w-[70%] lg:w-3/5 xl:w-2/4 py-5 sm:py-6 flex flex-col items-center gap-y-3 sm:gap-y-4 px-3 sm:px-0">
+        <div className="w-36 sm:w-60 md:w-72 lg:w-80 shrink-0">
           <img
             src="/images/logocoffee.png"
             alt="logo"
             className="h-full w-full object-contain"
           />
         </div>
-        <div className="space-y-6 w-11/12 md:w-[70%] lg:w-3/5">
-          <p className="font-satoshi text-white font-black text-2xl lg:text-3xl text-center">
+        <div className="space-y-4 sm:space-y-6 w-full min-w-0 max-w-full sm:w-11/12 md:w-[70%] lg:w-3/5 px-1 sm:px-0">
+          <p className="font-satoshi text-white font-black text-xl sm:text-2xl lg:text-3xl text-center">
             Reset Password
           </p>
           {loader ? (
             <MiniLoader />
           ) : (
-            <div className="font-satoshi space-y-4">
+            <div className="font-satoshi space-y-3 sm:space-y-4">
               <form
                 onSubmit={handleSubmit}
-                className="space-y-6 flex flex-col justify-between"
+                className="space-y-4 sm:space-y-6 flex flex-col justify-between"
               >
-                <div className="space-y-4">
-                  <div className="flex flex-col gap-y-2 relative">
-                    <label className="text-white font-medium">
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex flex-col gap-y-1.5 sm:gap-y-2 relative">
+                    <label className="text-white font-medium text-sm sm:text-base">
                       New Password
                     </label>
                     <input
@@ -140,7 +140,7 @@ export default function ResetPassword() {
                         })
                       }
                       placeholder="Enter Password"
-                      className="border border-borderColor text-themeLight rounded-[4px] outline-none px-3 py-2.5"
+                      className="border border-borderColor text-themeLight rounded-[4px] outline-none px-3 py-2.5 text-sm sm:text-base min-h-[40px] w-full min-w-0 pr-10"
                     />
                     <div>
                       {" "}
@@ -160,17 +160,18 @@ export default function ResetPassword() {
                         })
                       }
                       type="button"
-                      className="text-black absolute right-4 top-11"
+                      className="text-black absolute right-3 top-[2.65rem] touch-manipulation p-1"
+                      aria-label={visibility?.pass ? "Hide password" : "Show password"}
                     >
                       {visibility?.pass ? (
-                        <AiOutlineEye size={24} color="#000000" />
+                        <AiOutlineEye size={20} className="sm:w-6 sm:h-6" color="#000000" />
                       ) : (
-                        <AiOutlineEyeInvisible size={24} color="#000000" />
+                        <AiOutlineEyeInvisible size={20} className="sm:w-6 sm:h-6" color="#000000" />
                       )}
                     </button>
                   </div>
-                  <div className="flex flex-col gap-y-2 relative">
-                    <label className="text-white font-medium">
+                  <div className="flex flex-col gap-y-1.5 sm:gap-y-2 relative">
+                    <label className="text-white font-medium text-sm sm:text-base">
                       Confirm Password
                     </label>
                     <input
@@ -183,13 +184,13 @@ export default function ResetPassword() {
                         })
                       }
                       placeholder="Enter Confirm Password"
-                      className="border border-borderColor text-themeLight rounded-[4px] outline-none px-3 py-2.5"
+                      className="border border-borderColor text-themeLight rounded-[4px] outline-none px-3 py-2.5 text-sm sm:text-base min-h-[40px] w-full min-w-0 pr-10"
                     />
                     <div>
                       {" "}
                       {passwords?.confirmPassword.length > 0 &&
                         passwords?.confirmPassword.length < 6 && (
-                          <div className="text-red-600 space-y-1 pb-1">
+                          <div className="text-red-600 space-y-1 pb-1 text-xs sm:text-sm">
                             <hr className="border-none h-0.5 bg-white bg-opacity-20" />
                             <p>Confirm Password must be atleast 6 characters</p>
                           </div>
@@ -203,12 +204,13 @@ export default function ResetPassword() {
                         })
                       }
                       type="button"
-                      className="text-black absolute right-4 top-11"
+                      className="text-black absolute right-3 top-[2.65rem] touch-manipulation p-1"
+                      aria-label={visibility?.confirmPass ? "Hide password" : "Show password"}
                     >
                       {visibility?.confirmPass ? (
-                        <AiOutlineEye size={24} color="#000000" />
+                        <AiOutlineEye size={20} className="sm:w-6 sm:h-6" color="#000000" />
                       ) : (
-                        <AiOutlineEyeInvisible size={24} color="#000000" />
+                        <AiOutlineEyeInvisible size={20} className="sm:w-6 sm:h-6" color="#000000" />
                       )}
                     </button>
                   </div>
@@ -216,7 +218,7 @@ export default function ResetPassword() {
                 <div>
                   <button
                     type="submit"
-                    className="font-medium rounded-xl bg-theme text-white w-full py-3"
+                    className="font-medium rounded-xl bg-theme text-white w-full py-2.5 sm:py-3 text-sm sm:text-base min-h-[44px] touch-manipulation"
                   >
                     Done
                   </button>
@@ -234,7 +236,8 @@ export default function ResetPassword() {
           "1496px": "35vw",
           "1024px": "40vw",
           "768px": "80vw",
-          "200px": "40vw",
+          "400px": "92vw",
+          "200px": "96vw",
         }}
         // onHide={() => setModal(false)}
         closeIcon

@@ -63,50 +63,50 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-themeLight py-5 flex items-center justify-center">
+    <div className="min-h-screen bg-themeLight py-4 sm:py-5 px-3 sm:px-4 flex items-center justify-center overflow-x-hidden">
       {/* main section start */}
-      <div className="border border-theme rounded-xl bg-themeDark w-11/12 sm:w-4/6 md:w-[70%] lg:w-3/5 xl:w-2/4 py-6 flex flex-col items-center gap-y-4">
-        <div className="w-60 md:w-72 lg:w-80">
+      <div className="border border-theme rounded-xl bg-themeDark w-full min-w-0 max-w-[calc(100vw-1.5rem)] sm:max-w-none sm:w-4/6 md:w-[70%] lg:w-3/5 xl:w-2/4 py-5 sm:py-6 flex flex-col items-center gap-y-3 sm:gap-y-4 px-3 sm:px-0">
+        <div className="w-36 sm:w-60 md:w-72 lg:w-80 shrink-0">
           <img
             src="/images/logocoffee.png"
             alt="logo"
             className="h-full w-full object-contain"
           />
         </div>
-        <div className="space-y-6 w-11/12 md:w-[70%] lg:w-3/5">
-          <p className="font-satoshi text-white font-black text-2xl lg:text-3xl text-center">
+        <div className="space-y-4 sm:space-y-6 w-full min-w-0 max-w-full sm:w-11/12 md:w-[70%] lg:w-3/5 px-1 sm:px-0">
+          <p className="font-satoshi text-white font-black text-xl sm:text-2xl lg:text-3xl text-center">
             Forgot Password
           </p>
-          <p className="font-normal text-center text-white/60 font-satoshi">
+          <p className="font-normal text-center text-white/60 font-satoshi text-sm sm:text-base">
             Add your email and we will send you a one time password (OTP)
           </p>
           {loader ? (
             <MiniLoader />
           ) : (
-            <div className="font-satoshi space-y-4">
+            <div className="font-satoshi space-y-3 sm:space-y-4">
               <form
                 onSubmit={handleSubmit}
-                className="space-y-6 flex flex-col justify-between"
+                className="space-y-4 sm:space-y-6 flex flex-col justify-between"
               >
-                <div className="space-y-4">
-                  <div className="flex flex-col gap-y-2">
-                    <label className="text-white font-medium">Email</label>
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex flex-col gap-y-1.5 sm:gap-y-2">
+                    <label className="text-white font-medium text-sm sm:text-base">Email</label>
                     <input
                       type="email"
                       name="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="Enter Email"
-                      className="border border-borderColor text-themeLight rounded-[4px] outline-none px-3 py-2.5"
+                      className="border border-borderColor text-themeLight rounded-[4px] outline-none px-3 py-2.5 text-sm sm:text-base min-h-[40px] w-full min-w-0"
                     />
                   </div>
-                  <div className="flex flex-col gap-y-2">
-                    <label className="text-white font-medium">
+                  <div className="flex flex-col gap-y-1.5 sm:gap-y-2">
+                    <label className="text-white font-medium text-sm sm:text-base">
                       Select User Type
                     </label>
                     <Select
                       placeholder="Select User Type"
-                      className="w-full"
+                      className="w-full min-w-0"
                       value={userType?.value ? userType : null}
                       styles={drawerSelectStyles}
                       options={options}
@@ -119,8 +119,7 @@ export default function ForgotPassword() {
                 <div>
                   <button
                     type="submit"
-                    //   onClick={handleSubmit}
-                    className="font-medium rounded-[4px] bg-theme text-white w-full py-3"
+                    className="font-medium rounded-[4px] bg-theme text-white w-full py-2.5 sm:py-3 text-sm sm:text-base min-h-[44px] touch-manipulation"
                   >
                     Continue
                   </button>

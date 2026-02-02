@@ -3,7 +3,7 @@
 import { Dialog } from "primereact/dialog";
 import Select from "react-select";
 import { selectStyles2 } from "@/utilities/SelectStyle";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { PostAPI } from "@/utilities/PostAPI";
 import { PatchAPI } from "@/utilities/PatchAPI";
 import { DeleteAPI } from "@/utilities/DeleteAPI";
@@ -19,7 +19,99 @@ import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
 import { FaEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
+import { LuSearch } from "react-icons/lu";
 import Image from "next/image";
+
+// Memoized Product Item Component to prevent unnecessary re-renders
+const ProductItem = memo(({ 
+  prod, 
+  selected, 
+  onToggle, 
+  onPriceChange, 
+  getPrice 
+}) => {
+  return (
+    <div
+      onClick={() => onToggle(prod?.id, prod?.price ?? 0, prod?.wholesalePrice ?? 0)}
+      className={`flex items-center gap-3 py-3 border-b border-gray-100 last:border-0 cursor-pointer rounded-lg px-3 transition-all ${
+        selected 
+          ? "bg-blue-50 border-blue-200 shadow-sm" 
+          : "hover:bg-gray-50"
+      }`}
+    >
+      {/* Product Image */}
+      <div className="flex-shrink-0">
+        <Image
+          src={
+            prod?.image && prod.image.trim() !== ""
+              ? BASE_URL + prod.image
+              : "/images/logocoffee.png"
+          }
+          alt={prod?.name || "product"}
+          width={64}
+          height={64}
+          className="object-cover rounded-md border border-gray-200"
+          onError={(e) => {
+            if (e.target.src !== "/images/logocoffee.png") {
+              e.target.src = "/images/logocoffee.png";
+            }
+          }}
+          unoptimized
+        />
+      </div>
+
+      {/* Product Info */}
+      <div className="flex-1 space-y-1">
+        <p className="font-semibold text-gray-800">
+          {prod?.name ?? ""}
+        </p>
+        <p className="text-xs text-gray-600">
+          <span className="font-medium">Wholesale Price:</span> ${prod?.wholesalePrice ? parseFloat(prod?.wholesalePrice).toFixed(2) : "0.00"}
+        </p>
+        <p className="text-xs text-gray-500">
+          <span className="font-medium">SKU:</span> {prod?.sku ?? "—"}
+          {" · "}
+          <span className="font-medium">Code:</span> {prod?.productCode ?? "—"}
+          {" · "}
+          <span className="font-medium">Weight:</span> {prod?.weight ?? "—"} lbs
+          {" · "}
+          <span className="font-medium">Selling Price:</span> ${prod?.price ?? "—"}
+        </p>
+      </div>
+      
+      {/* Price Input */}
+      <div className="flex-shrink-0 w-28">
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-labelColor font-medium">
+            Your price ($)
+          </label>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={selected ? getPrice(prod?.id) : (prod?.price ?? "")}
+            onChange={(e) => {
+              e.stopPropagation();
+              onPriceChange(prod?.id, e.target.value);
+            }}
+            onClick={(e) => e.stopPropagation()}
+            disabled={!selected}
+            className="w-full border border-borderColor rounded px-2 py-1.5 text-black disabled:bg-gray-100 disabled:cursor-not-allowed"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}, (prevProps, nextProps) => {
+  // Custom comparison function for memo
+  return (
+    prevProps.prod?.id === nextProps.prod?.id &&
+    prevProps.selected === nextProps.selected &&
+    prevProps.getPrice(prevProps.prod?.id) === nextProps.getPrice(nextProps.prod?.id)
+  );
+});
+
+ProductItem.displayName = 'ProductItem';
 
 export default function SalesRepInventoryStockPage() {
   const [userType, setUserType] = useState(null);
@@ -42,7 +134,6 @@ export default function SalesRepInventoryStockPage() {
   const [selectedProducts, setSelectedProducts] = useState([]); // [{ productId, price }]
   const [submitLoader, setSubmitLoader] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editEntryId, setEditEntryId] = useState(null);
   const [editProductId, setEditProductId] = useState(null);
   const [editProductName, setEditProductName] = useState("");
   const [editPrice, setEditPrice] = useState("");
@@ -67,17 +158,10 @@ export default function SalesRepInventoryStockPage() {
 
   const { data: category } = GetAPI("api/v1/admin/category");
 
-  const salesRepPriceUrl =
-    addProductModal && userID
-      ? `api/v1/admin/sales-rep-product-price?salesRepId=${userID}&status=true`
-      : "";
-  const { data: salesRepProductPriceData, reFetch: reFetchSalesRepPrices } =
-    GetAPI(salesRepPriceUrl, "sales-rep-product-price");
-
   const modalProductsUrl = addProductModal
     ? `api/v1/admin/products/sales-rep/import`
     : "";
-  const { data: modalProductsData } = GetAPI(modalProductsUrl, "product");
+  const { data: modalProductsData, isLoading: modalProductsLoading } = GetAPI(modalProductsUrl, "product");
 
   const catOptions = [{ value: "", label: "All" }];
   category?.data?.data?.map((item) => {
@@ -90,22 +174,6 @@ export default function SalesRepInventoryStockPage() {
       ? data?.data
       : [];
 
-  const salesRepPriceEntries =
-    salesRepProductPriceData?.data?.data ??
-    salesRepProductPriceData?.data ??
-    [];
-  const existingProductIds = Array.isArray(salesRepPriceEntries)
-    ? salesRepPriceEntries.map((e) => e?.productId).filter(Boolean)
-    : [];
-  const customPriceMap = {};
-  if (Array.isArray(salesRepPriceEntries)) {
-    salesRepPriceEntries.forEach((e) => {
-      if (e?.productId != null) {
-        customPriceMap[e.productId] = { pid: e.pid, price: e.price };
-      }
-    });
-  }
-
   const isSalesRep = userType === "salesRepresentative";
 
   const columns = isSalesRep
@@ -115,7 +183,8 @@ export default function SalesRepInventoryStockPage() {
         { field: "name", header: "Name" },
         // { field: "quantity", header: "Quantity" },
         { field: "weight", header: "Weight", sort: true },
-        { field: "price", header: "Price ($)", sort: true },
+        { field: "price", header: "Selling Price ($)", sort: true },
+        { field: "wholesalePrice", header: "Wholesale Price ($)" },
         { field: "productCode", header: "Product Code" },
         { field: "sku", header: "SKU" },
         { field: "action", header: "Action" },
@@ -196,44 +265,10 @@ export default function SalesRepInventoryStockPage() {
     });
   });
 
-  const fetchProductEntry = async (productId) => {
-    if (!userID || !productId) return null;
-    try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("token") || localStorage.getItem("accessToken")
-          : "";
-      const res = await fetch(
-        `${BASE_URL}api/v1/admin/sales-rep-product-price?productId=${productId}&salesRepId=${userID}&status=true`,
-        {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            feature: "sales-rep-product-price",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-        },
-      );
-      const json = await res.json();
-      if (json?.status === "success" && json?.data?.data?.length > 0) {
-        return json.data.data[0];
-      }
-      return null;
-    } catch (err) {
-      return null;
-    }
-  };
-
-  const handleEditClick = async (productId, productName, productPrice) => {
-    const entry =
-      customPriceMap[productId] || (await fetchProductEntry(productId));
-    setEditEntryId(entry?.pid ?? null);
+  const handleEditClick = (productId, productName, productPrice) => {
     setEditProductId(productId);
     setEditProductName(productName ?? "");
-    setEditPrice(
-      entry?.price != null ? String(entry.price) : String(productPrice ?? ""),
-    );
+    setEditPrice(String(productPrice ?? ""));
     setEditModalOpen(true);
   };
 
@@ -247,7 +282,6 @@ export default function SalesRepInventoryStockPage() {
 
   const closeEditModal = () => {
     setEditModalOpen(false);
-    setEditEntryId(null);
     setEditProductId(null);
     setEditProductName("");
     setEditPrice("");
@@ -262,43 +296,25 @@ export default function SalesRepInventoryStockPage() {
     }
     setEditLoader(true);
     try {
-      if (editEntryId) {
-        const pid = editEntryId; // pid from product detail (sales-rep-product-price entry)
-        const res = await PatchAPI(
-          "api/v1/admin/sales-rep-product-price",
-          [{ id: pid, price: priceNum }],
-          "sales-rep-product-price",
-        );
-        if (res?.data?.status === "success") {
-          success_toaster("Price updated successfully.");
-          closeEditModal();
-          reFetchSalesRepPrices?.();
-          reFetch?.();
-        } else {
-          throw new Error(res?.data?.message || "Failed to update price.");
-        }
+      const payload = [
+        {
+          productId: editProductId,
+          salesRepId: Number(userID),
+          price: priceNum,
+          status: true,
+        },
+      ];
+      const res = await PatchAPI(
+        "api/v1/admin/sales-rep-product-price",
+        payload,
+        "sales-rep-product-price",
+      );
+      if (res?.data?.status === "success") {
+        success_toaster("Price updated successfully.");
+        closeEditModal();
+        reFetch?.();
       } else {
-        const payload = [
-          {
-            productId: editProductId,
-            salesRepId: Number(userID),
-            price: priceNum,
-            status: true,
-          },
-        ];
-        const res = await PatchAPI(
-          "api/v1/admin/sales-rep-product-price",
-          payload,
-          "sales-rep-product-price",
-        );
-        if (res?.data?.status === "success") {
-          success_toaster("Product added to your inventory.");
-          closeEditModal();
-          reFetchSalesRepPrices?.();
-          reFetch?.();
-        } else {
-          throw new Error(res?.data?.message || "Failed to add product.");
-        }
+        throw new Error(res?.data?.message || "Failed to update price.");
       }
     } catch (err) {
       ErrorHandler(err);
@@ -327,7 +343,6 @@ export default function SalesRepInventoryStockPage() {
       if (res?.data?.status === "success") {
         success_toaster("Product removed from your inventory.");
         closeDeleteModal();
-        reFetchSalesRepPrices?.();
         reFetch?.();
       } else {
         throw new Error(res?.data?.message || "Failed to remove product.");
@@ -351,34 +366,38 @@ export default function SalesRepInventoryStockPage() {
     setModalSearch("");
   };
 
-  const toggleProductSelection = (productId, defaultPrice) => {
+  const toggleProductSelection = useCallback((productId, defaultPrice, defaultWholesalePrice) => {
     const numPrice = Number(defaultPrice);
     const price = Number.isFinite(numPrice) ? numPrice : 0;
+    const numWholesalePrice = Number(defaultWholesalePrice);
+    const wholesalePrice = Number.isFinite(numWholesalePrice) ? numWholesalePrice : 0;
     setSelectedProducts((prev) => {
       const exists = prev.some((p) => p.productId === productId);
       if (exists) return prev.filter((p) => p.productId !== productId);
       return [
         ...prev,
-        { productId, salesRepId: Number(userID), price, status: true },
+        { productId, salesRepId: Number(userID), price, wholesalePrice, status: true },
       ];
     });
-  };
+  }, [userID]);
 
-  const updateSelectedPrice = (productId, value) => {
+  const updateSelectedPrice = useCallback((productId, value) => {
     const num = Number(value);
     const price = Number.isFinite(num) && num >= 0 ? num : 0;
     setSelectedProducts((prev) =>
       prev.map((p) => (p.productId === productId ? { ...p, price } : p)),
     );
-  };
+  }, []);
 
-  const getSelectedPrice = (productId) => {
+  const getSelectedPrice = useCallback((productId) => {
     const found = selectedProducts.find((p) => p.productId === productId);
     return found != null ? found.price : "";
-  };
+  }, [selectedProducts]);
 
-  const isProductSelected = (productId) =>
-    selectedProducts.some((p) => p.productId === productId);
+  const isProductSelected = useCallback((productId) =>
+    selectedProducts.some((p) => p.productId === productId),
+    [selectedProducts]
+  );
 
   const handleAddProductSubmit = async (e) => {
     e.preventDefault();
@@ -390,6 +409,7 @@ export default function SalesRepInventoryStockPage() {
       productId: p.productId,
       salesRepId: Number(userID),
       price: Number(p.price),
+      wholesalePrice: Number(p.wholesalePrice || 0),
       status: true,
     }));
     setSubmitLoader(true);
@@ -402,7 +422,6 @@ export default function SalesRepInventoryStockPage() {
       if (res?.data?.status === "success") {
         success_toaster("Products added to your inventory.");
         closeAddProductModal();
-        reFetchSalesRepPrices?.();
         reFetch?.();
       } else {
         throw new Error(res?.data?.message || "Failed to add products.");
@@ -414,29 +433,43 @@ export default function SalesRepInventoryStockPage() {
     }
   };
 
-  const modalProductsArray = Array.isArray(modalProductsData?.data?.data)
-    ? modalProductsData.data.data
-    : Array.isArray(modalProductsData?.data)
-      ? modalProductsData.data
-      : [];
-  const modalProductList = modalProductsArray.filter((p) => {
-    const name = (p?.name ?? "").toLowerCase();
-    const code = (p?.productCode ?? "").toLowerCase();
-    const sku = (p?.sku ?? "").toLowerCase();
-    const q = modalSearch.trim().toLowerCase();
-    if (!q) return true;
-    return name.includes(q) || code.includes(q) || sku.includes(q);
-  });
-
-  const selectableInModal = modalProductList.filter(
-    (p) => !existingProductIds.includes(p?.id),
+  const modalProductsArray = useMemo(() => 
+    Array.isArray(modalProductsData?.data?.data)
+      ? modalProductsData.data.data
+      : Array.isArray(modalProductsData?.data)
+        ? modalProductsData.data
+        : [],
+    [modalProductsData]
   );
-  const selectableIds = new Set(selectableInModal.map((p) => p?.id));
-  const allSelectableSelected =
-    selectableInModal.length > 0 &&
-    selectableInModal.every((p) => isProductSelected(p?.id));
 
-  const handleSelectAll = (checked) => {
+  const modalProductList = useMemo(() => {
+    const q = modalSearch.trim().toLowerCase();
+    if (!q) return modalProductsArray;
+    
+    return modalProductsArray.filter((p) => {
+      const name = (p?.name ?? "").toLowerCase();
+      const code = (p?.productCode ?? "").toLowerCase();
+      const sku = (p?.sku ?? "").toLowerCase();
+      return name.includes(q) || code.includes(q) || sku.includes(q);
+    });
+  }, [modalProductsArray, modalSearch]);
+
+  const selectableInModal = modalProductList;
+  
+  const selectableIds = useMemo(() => 
+    new Set(selectableInModal.map((p) => p?.id)),
+    [selectableInModal]
+  );
+
+  const allSelectableSelected = useMemo(() =>
+    selectableInModal.length > 0 &&
+    selectableInModal.every((p) => 
+      selectedProducts.some((sp) => sp.productId === p?.id)
+    ),
+    [selectableInModal, selectedProducts]
+  );
+
+  const handleSelectAll = useCallback((checked) => {
     if (checked) {
       setSelectedProducts((prev) => {
         const existing = new Set(prev.map((x) => x.productId));
@@ -448,6 +481,7 @@ export default function SalesRepInventoryStockPage() {
               productId: p?.id,
               salesRepId: Number(userID),
               price: Number(p?.price) || 0,
+              wholesalePrice: Number(p?.wholesalePrice) || 0,
               status: true,
             });
           }
@@ -459,7 +493,7 @@ export default function SalesRepInventoryStockPage() {
         prev.filter((p) => !selectableIds.has(p.productId)),
       );
     }
-  };
+  }, [selectableInModal, selectableIds, userID]);
 
   const { toggle, setToggle } = useDataContext();
 
@@ -552,11 +586,17 @@ export default function SalesRepInventoryStockPage() {
         {/* Add Product Modal (sales rep only) */}
         <Dialog
           visible={addProductModal}
-          className="font-nunito w-[90%] lg:w-[50vw] max-h-[90vh]"
+          className="font-nunito"
+          style={{ width: "90vw", maxWidth: "800px" }}
+          contentStyle={{ 
+            padding: "1.5rem",
+            maxHeight: "70vh",
+            overflow: "visible"
+          }}
           dismissableMask={true}
           onHide={closeAddProductModal}
           header={
-            <div className="font-nunito font-bold lg:text-xl text-center">
+            <div className="font-nunito font-bold text-xl text-center">
               Add Product to Your Inventory
             </div>
           }
@@ -565,157 +605,99 @@ export default function SalesRepInventoryStockPage() {
             onSubmit={handleAddProductSubmit}
             className="space-y-4 flex flex-col"
           >
-            <div className="flex flex-col gap-2">
-              <label className="text-labelColor font-medium font-satoshi">
-                Search products
-              </label>
+            {/* Search */}
+            <div className="relative">
               <input
-                type="text"
+                type="search"
                 value={modalSearch}
                 onChange={(e) => setModalSearch(e.target.value)}
-                placeholder="Search by name, product code, SKU..."
-                className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                placeholder="Search products..."
+                className="w-full h-12 bg-themeGray rounded-lg ps-10 pe-5 outline-none placeholder:font-inter placeholder:font-medium focus:bg-gray-200"
               />
+              <LuSearch size={20} color="#111827" className="absolute top-3.5 left-3" />
             </div>
 
+            {/* Products List */}
             <div className="border border-borderColor rounded-md p-3 max-h-[50vh] overflow-y-auto space-y-2">
-              {modalProductList.length === 0 ? (
-                <p className="text-gray-500 text-sm">No products found.</p>
+              {modalProductsLoading ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <MiniLoader />
+                  <p className="text-gray-500 text-sm mt-4">Loading products...</p>
+                </div>
+              ) : modalProductList.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <svg 
+                    className="w-16 h-16 text-gray-300 mb-4" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={1.5} 
+                      d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" 
+                    />
+                  </svg>
+                  <p className="text-gray-600 font-medium mb-1">No products available</p>
+                  <p className="text-gray-400 text-sm text-center">
+                    There are no products to import at the moment.
+                  </p>
+                </div>
               ) : (
                 <>
+                  {/* Select All */}
                   {selectableInModal.length > 0 && (
-                    <div className="flex items-center gap-3 py-2 border-b border-gray-200 font-medium sticky -top-3 bg-white z-10">
+                    <div 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSelectAll(!allSelectableSelected);
+                      }}
+                      className="flex items-center gap-3 py-3 px-3 border-b border-gray-200 font-medium sticky -top-3 bg-white z-10 cursor-pointer hover:bg-gray-50 rounded-lg transition-all"
+                    >
                       <input
                         type="checkbox"
                         checked={allSelectableSelected}
-                        onChange={(e) => handleSelectAll(e.target.checked)}
-                        className="rounded"
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleSelectAll(e.target.checked);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="rounded cursor-pointer"
                       />
-                      <span className="text-labelColor text-sm">
-                        Select all
+                      <span className="text-gray-700 text-sm font-semibold">
+                        Select All ({selectableInModal.length})
                       </span>
                     </div>
                   )}
-                  {modalProductList.map((prod) => {
-                    const alreadyAdded = existingProductIds.includes(prod?.id);
-                    const selected = isProductSelected(prod?.id);
-                    const defaultPrice = prod?.price ?? 0;
-                    return (
-                      <div
-                        key={prod?.id}
-                        className="flex items-start gap-3 py-3 border-b border-gray-100 last:border-0"
-                      >
-                        <div className="flex-shrink-0 pt-0.5">
-                          {!alreadyAdded ? (
-                            <input
-                              type="checkbox"
-                              checked={selected}
-                              onChange={() =>
-                                toggleProductSelection(prod?.id, defaultPrice)
-                              }
-                              className="rounded"
-                            />
-                          ) : (
-                            <span className="w-5 block" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0 flex gap-3">
-                          <Image
-                            src={
-                              prod?.image && prod.image.trim() !== ""
-                                ? BASE_URL + prod.image
-                                : "/images/logocoffee.png"
-                            }
-                            alt={prod?.name || "product"}
-                            width={56}
-                            height={56}
-                            className="w-14 h-14 object-contain rounded border border-gray-200 flex-shrink-0"
-                            onError={(e) => {
-                              // Show default brand logo if image fails to load (even if path exists but is incorrect)
-                              if (e.target.src !== "/images/logocoffee.png") {
-                                e.target.src = "/images/logocoffee.png";
-                              }
-                            }}
-                            unoptimized
-                          />
-                          <div className="min-w-0 flex-1 space-y-0.5 text-sm">
-                            <p
-                              className="font-semibold text-black truncate"
-                              title={prod?.name}
-                            >
-                              {prod?.name ?? ""}
-                            </p>
-                            <p className="text-labelColor">
-                              <span className="font-medium">ID:</span>{" "}
-                              {prod?.id ?? "—"}
-                              {" · "}
-                              <span className="font-medium">SKU:</span>{" "}
-                              {prod?.sku ?? "—"}
-                              {" · "}
-                              <span className="font-medium">Code:</span>{" "}
-                              {prod?.productCode ?? "—"}
-                            </p>
-                            {prod?.desc && (
-                              <p className="text-labelColor text-xs line-clamp-2">
-                                {prod.desc}
-                              </p>
-                            )}
-                            <p className="text-labelColor">
-                              <span className="font-medium">Weight:</span>{" "}
-                              {prod?.weight ?? "—"} lbs
-                              {" · "}
-                              <span className="font-medium">Price:</span> $
-                              {prod?.price ?? "—"}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex-shrink-0 w-28">
-                          {alreadyAdded ? (
-                            <span className="text-sm text-green-600 font-medium">
-                              Already Added
-                            </span>
-                          ) : (
-                            <div className="flex flex-col gap-1">
-                              <label className="text-xs text-labelColor font-medium">
-                                Your price ($)
-                              </label>
-                              <input
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                value={
-                                  selected
-                                    ? getSelectedPrice(prod?.id)
-                                    : (prod?.price ?? "")
-                                }
-                                onChange={(e) =>
-                                  updateSelectedPrice(prod?.id, e.target.value)
-                                }
-                                disabled={!selected}
-                                className="w-full border border-borderColor rounded px-2 py-1.5 text-black disabled:bg-gray-100 disabled:cursor-not-allowed"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+                  
+                  {modalProductList.map((prod) => (
+                    <ProductItem
+                      key={prod?.id}
+                      prod={prod}
+                      selected={isProductSelected(prod?.id)}
+                      onToggle={toggleProductSelection}
+                      onPriceChange={updateSelectedPrice}
+                      getPrice={getSelectedPrice}
+                    />
+                  ))}
                 </>
               )}
             </div>
 
-            <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
+            {/* Footer Buttons */}
+            <div className="flex items-center justify-end gap-x-4 pt-4 border-t border-gray-200">
               <button
                 type="button"
                 onClick={closeAddProductModal}
-                className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow px-6"
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={submitLoader || selectedProducts.length === 0}
-                className="rounded-lg border border-theme text-white px-10 bg-theme disabled:opacity-50"
+                className="px-4 py-2 bg-theme text-white rounded-lg hover:bg-themeDark font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitLoader ? (
                   <span className="flex items-center gap-2">
@@ -741,51 +723,51 @@ export default function SalesRepInventoryStockPage() {
             </div>
           }
         >
-          <form onSubmit={handleEditPriceSubmit} className="space-y-4">
-            <p className="text-labelColor font-medium">
-              Product:{" "}
-              <span className="text-black font-semibold">
-                {editProductName}
-              </span>
-            </p>
-            <div className="flex flex-col gap-2">
-              <label className="text-labelColor font-medium font-satoshi">
-                Price ($)
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={editPrice}
-                onChange={(e) => setEditPrice(e.target.value)}
-                placeholder="Enter price"
-                className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
-                required
-              />
+          {editLoader ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <MiniLoader />
+              <p className="text-gray-500 text-sm mt-4">Updating price...</p>
             </div>
-            <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
-              <button
-                type="button"
-                onClick={closeEditModal}
-                className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow px-6"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={editLoader}
-                className="rounded-lg border border-theme text-white px-10 bg-theme disabled:opacity-50"
-              >
-                {editLoader ? (
-                  <span className="flex items-center gap-2">
-                    <MiniLoader /> Updating...
-                  </span>
-                ) : (
-                  "Update Price"
-                )}
-              </button>
-            </div>
-          </form>
+          ) : (
+            <form onSubmit={handleEditPriceSubmit} className="space-y-4">
+              <p className="text-labelColor font-medium">
+                Product:{" "}
+                <span className="text-black font-semibold">
+                  {editProductName}
+                </span>
+              </p>
+              <div className="flex flex-col gap-2">
+                <label className="text-labelColor font-medium font-satoshi">
+                  Price ($)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={editPrice}
+                  onChange={(e) => setEditPrice(e.target.value)}
+                  placeholder="Enter price"
+                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                  required
+                />
+              </div>
+              <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
+                <button
+                  type="button"
+                  onClick={closeEditModal}
+                  className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow px-6"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-lg border border-theme text-white px-10 bg-theme"
+                >
+                  Update Price
+                </button>
+              </div>
+            </form>
+          )}
         </Dialog>
 
         {/* Delete confirmation modal */}
@@ -800,34 +782,36 @@ export default function SalesRepInventoryStockPage() {
             </div>
           }
         >
-          <p className="text-labelColor font-medium mb-4">
-            Are you sure you want to remove{" "}
-            <strong className="text-black">{deleteProductName}</strong> from
-            your inventory? This will remove your custom price for this product.
-          </p>
-          <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
-            <button
-              type="button"
-              onClick={closeDeleteModal}
-              className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow px-6"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleDeleteConfirm}
-              disabled={deleteLoader}
-              className="rounded-lg border border-red-500 text-white px-10 bg-red-500 hover:bg-red-600 disabled:opacity-50"
-            >
-              {deleteLoader ? (
-                <span className="flex items-center gap-2">
-                  <MiniLoader /> Removing...
-                </span>
-              ) : (
-                "Remove"
-              )}
-            </button>
-          </div>
+          {deleteLoader ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <MiniLoader />
+              <p className="text-gray-500 text-sm mt-4">Removing product...</p>
+            </div>
+          ) : (
+            <>
+              <p className="text-labelColor font-medium mb-4">
+                Are you sure you want to remove{" "}
+                <strong className="text-black">{deleteProductName}</strong> from
+                your inventory? This will remove your custom price for this product.
+              </p>
+              <div className="flex items-center justify-end gap-x-4 [&>button]:font-nunito [&>button]:py-3 [&>button]:font-medium">
+                <button
+                  type="button"
+                  onClick={closeDeleteModal}
+                  className="hover:bg-theme hover:text-white duration-150 rounded-lg border border-theme text-theme shadow-buttonShadow px-6"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteConfirm}
+                  className="rounded-lg border border-red-500 text-white px-10 bg-red-500 hover:bg-red-600"
+                >
+                  Remove
+                </button>
+              </div>
+            </>
+          )}
         </Dialog>
       </div>
     </div>

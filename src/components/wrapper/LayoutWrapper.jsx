@@ -2,11 +2,29 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useLayoutEffect } from "react";
 import { ToastContainer } from "react-toastify";
 import Header from "@/components/ui/Header";
 import Leftbar from "@/components/ui/Leftbar";
 import ProtectedRoute from "@/utilities/ProtectedRoute";
-import { DataProvider } from "@/utilities/DataContext";
+import { DataProvider, useDataContext } from "@/utilities/DataContext";
+
+function ResetDrawerOnProtectedRoute() {
+  const pathname = usePathname();
+  const { setToggle } = useDataContext();
+  const isLayoutDisplay =
+    pathname.startsWith("/sign-in") ||
+    pathname.includes("/sales-representative/stripe-account-connected") ||
+    pathname.includes("/forgot") ||
+    pathname.includes("/verify") ||
+    pathname.includes("/reset");
+
+  useLayoutEffect(() => {
+    if (!isLayoutDisplay) setToggle(false);
+  }, [pathname, isLayoutDisplay, setToggle]);
+
+  return null;
+}
 
 export default function LayoutWrapper({ children }) {
   const pathname = usePathname();
@@ -20,6 +38,7 @@ export default function LayoutWrapper({ children }) {
 
   return (
     <DataProvider>
+      <ResetDrawerOnProtectedRoute />
       {!isLayoutDisplay && <Header />}
       {!isLayoutDisplay && <Leftbar />}
 

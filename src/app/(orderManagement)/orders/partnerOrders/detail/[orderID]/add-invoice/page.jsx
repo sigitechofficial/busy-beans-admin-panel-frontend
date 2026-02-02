@@ -5,6 +5,7 @@ import MiniLoader from "@/components/ui/MiniLoader";
 import { useDataContext } from "@/utilities/DataContext";
 import GetAPI from "@/utilities/GetAPI";
 import { PatchAPI } from "@/utilities/PatchAPI";
+import { PostAPI } from "@/utilities/PostAPI";
 import { selectStyles2 } from "@/utilities/SelectStyle";
 import { success_toaster, info_toaster } from "@/utilities/Toaster";
 import { useParams, useRouter } from "next/navigation";
@@ -43,6 +44,8 @@ export default function AddInvoice() {
   const { data: category } = GetAPI(`api/v1/admin/category`);
   const [modal, setModal] = useState(false);
   const [search, setSearch] = useState("");
+  const [modalProducts, setModalProducts] = useState(null);
+  const [modalProductsLoading, setModalProductsLoading] = useState(false);
   let categoryList = [{ value: "", label: "All" }];
 
   if (category) {
@@ -50,10 +53,44 @@ export default function AddInvoice() {
       categoryList.push({ value: cat?.id, label: cat?.name });
     });
   }
-  const url = filterId
-    ? `api/v1/admin/product?categoryId=${filterId}`
-    : `api/v1/admin/product`;
-  const { data: ProductList, reFetch: ProductRefetch } = GetAPI(url);
+
+  const salesRepId =
+    data?.data?.order?.salesRepId ??
+    data?.data?.order?.salesRep?.id ??
+    data?.data?.order?.user?.id ??
+    null;
+
+  // When modal opens, fetch products via POST sales-rep-products-for-order-creation
+  useEffect(() => {
+    if (!modal || !salesRepId) {
+      if (!modal) setModalProducts(null);
+      return;
+    }
+    let cancelled = false;
+    setModalProductsLoading(true);
+    PostAPI(
+      `api/v1/admin/sales-rep-products-for-order-creation/${salesRepId}`,
+      undefined
+    )
+      .then((res) => {
+        if (cancelled) return;
+        const list =
+          res?.data?.products ??
+          res?.data?.data?.products ??
+          (Array.isArray(res?.data?.data) ? res?.data?.data : []);
+        setModalProducts(Array.isArray(list) ? list : []);
+      })
+      .catch(() => {
+        if (!cancelled) setModalProducts([]);
+      })
+      .finally(() => {
+        if (!cancelled) setModalProductsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [modal, salesRepId]);
+
   const savedCards =
     paymentCardsRes?.data?.data?.cards ??
     paymentCardsRes?.data?.cards ??
@@ -105,12 +142,23 @@ export default function AddInvoice() {
     return due.toISOString().split("T")[0];
   };
 
-  const handleFilter = () => {
-    const filteredData = ProductList?.data?.data?.filter((item) =>
-      item?.name?.toLowerCase().includes(search.toLowerCase() || "")
-    );
-
-    return filteredData;
+  // Filter modal products by search and category (for Add Item modal)
+  const getFilteredModalProducts = () => {
+    if (!Array.isArray(modalProducts)) return [];
+    let list = modalProducts;
+    if (search?.trim()) {
+      const q = search.toLowerCase().trim();
+      list = list.filter(
+        (item) =>
+          item?.name?.toLowerCase().includes(q) ||
+          item?.sku?.toLowerCase().includes(q) ||
+          item?.productCode?.toLowerCase().includes(q)
+      );
+    }
+    if (filterId) {
+      list = list.filter((item) => String(item?.categoryId) === String(filterId));
+    }
+    return list;
   };
 
   // On API data load, set invoice fields and items
@@ -133,17 +181,23 @@ export default function AddInvoice() {
         // You can set invoiceDate, dueDate, terms, etc. from API if available
       }));
       setInitialShippingCharges(sc);
-      setItems(
-        (data?.data?.order?.items || [])
+      setItems((prev) => {
+        const fromApi = (data?.data?.order?.items || [])
           .filter((item) => item.type === "product")
-          .map((item) => ({
-            ...item,
-            checked: true,
-            qty: item.qty || 1,
-            weight: item?.singleUnitWeight,
-            unit: item?.wholesalePrice / item?.qty || item?.price / item?.qty,
-          }))
-      );
+          .map((item) => {
+            const qty = Number(item.qty) || 1;
+            const lineTotal = Number(item.price) || 0;
+            const unitPrice = qty > 0 ? lineTotal / qty : 0;
+            return {
+              ...item,
+              checked: true,
+              qty,
+              weight: item?.singleUnitWeight,
+              unit: unitPrice,
+            };
+          });
+        return prev.length === 0 ? fromApi : prev;
+      });
       const chargesFromItems = (data?.data?.order?.items || [])
         .filter((item) => item.type === "charges")
         .map((ch) => ({
@@ -192,17 +246,19 @@ export default function AddInvoice() {
   };
 
   const normalizeQty = (rawValue) => {
-    let clean = String(rawValue).replace(/\D/g, "");
+    const clean = String(rawValue).replace(/\D/g, "");
     if (clean === "") return "";
     if (clean === "0") return 1;
-    return parseInt(clean, 10);
+    const num = parseInt(clean, 10);
+    return Number.isNaN(num) ? "" : num;
   };
 
-  // Item qty handler
+  // Item qty handler – accept string while typing so input updates
   const handleItemQtyChange = (itemIdx, value) => {
+    const next = normalizeQty(value);
     setItems((prev) =>
       prev.map((item, idx) =>
-        idx === itemIdx ? { ...item, qty: normalizeQty(value) } : item
+        idx === itemIdx ? { ...item, qty: next } : item
       )
     );
   };
@@ -360,19 +416,19 @@ export default function AddInvoice() {
     ? Number(shippingChargeObj.charges)
     : 0;
 
+  // Unit price = price/qty from API (price is line total); total = unit * qty
+  const getItemUnitPrice = (item) =>
+    item.unit !== undefined && item.unit !== null
+      ? Number(item.unit)
+      : (Number(item.price) || 0) / (Number(item.qty) || 1);
+
   // Calculate total
   const total =
     items
       .filter((item) => item.checked)
       .reduce(
         (sum, item) =>
-          sum +
-          (item.qty || 1) *
-            (item.unit !== undefined
-              ? item.unit
-              : item.price !== undefined
-              ? item.price
-              : 0),
+          sum + (Number(item.qty) || 1) * getItemUnitPrice(item),
         0
       ) +
     extraRows
@@ -417,7 +473,7 @@ export default function AddInvoice() {
           product: item.product,
           productCode: item.productCode,
           qty: item.qty,
-          price: item.price,
+          price: String((Number(item.qty) || 1) * getItemUnitPrice(item)),
           discount: item.discount,
           wholesalePrice: item.wholesalePrice,
         })),
@@ -482,7 +538,7 @@ export default function AddInvoice() {
       setExtraRows([]);
       success_toaster("success");
       reFetch();
-      //   router.push(`/orders/detail/${orderID}`);
+      if (typeof window !== "undefined") window.history.back();
     } else {
       info_toaster("something went wrong");
       setLoading(false);
@@ -725,7 +781,7 @@ export default function AddInvoice() {
               </tr>
             </thead>
             <tbody>
-              {(data?.data?.order?.items || []).map((item, itemIdx) => (
+              {items.map((item, itemIdx) => (
                 <tr
                   key={item.id}
                   data-testid={ORDER_ADD_INVOICE.itemRow(item.id)}
@@ -747,10 +803,12 @@ export default function AddInvoice() {
                   </td>
                   <td className="py-2 px-2 text-center border border-gray-200">
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       min={1}
                       className="w-16 border border-gray-200 rounded px-1 py-1 text-center"
-                      value={item.qty ?? 1}
+                      value={item.qty === "" || item.qty == null ? "" : String(item.qty)}
                       onWheel={(e) => e.currentTarget.blur()}
                       onChange={(e) =>
                         handleItemQtyChange(itemIdx, e.target.value)
@@ -761,26 +819,14 @@ export default function AddInvoice() {
                   {(userType === "admin" ||
                     userType === "salesRepresentative") && (
                     <td className="py-2 px-2 text-right border border-gray-200">
-                      {/* $ */}
-                      {item.unit !== undefined
-                        ? item.unit
-                        : item.price !== undefined
-                        ? item.price
-                        : 0}
+                      ${getItemUnitPrice(item).toFixed(2)}
                     </td>
                   )}
                   {(userType === "admin" ||
                     userType === "salesRepresentative") && (
                     <td className="py-2 px-2 text-right border border-gray-200">
                       $
-                      {(
-                        (item.qty || 1) *
-                        (item.unit !== undefined
-                          ? item.unit
-                          : item.price !== undefined
-                          ? item.price
-                          : 0)
-                      ).toFixed(2)}
+                      {((Number(item.qty) || 1) * getItemUnitPrice(item)).toFixed(2)}
                     </td>
                   )}
                 </tr>
@@ -1185,8 +1231,10 @@ export default function AddInvoice() {
           </div>
         }
       >
-        {ProductList?.length === 0 ? (
+        {modalProductsLoading ? (
           <MiniLoader />
+        ) : !salesRepId ? (
+          <p className="text-gray-500 text-center py-6">Order data is loading.</p>
         ) : (
           <div className="flex flex-col">
             <div className="sticky top-0 space-y-2 bg-white pb-3 z-10">
@@ -1210,16 +1258,22 @@ export default function AddInvoice() {
                   options={categoryList}
                   className="w-full text-black"
                   styles={selectStyles2}
-                  // value={ }
-                  onChange={(e) => setFilterId(e?.value)}
+                  value={categoryList.find((c) => c.value === filterId) || null}
+                  onChange={(e) => setFilterId(e?.value ?? "")}
                   inputId={ORDER_ADD_INVOICE.modal.categorySelect}
                 />
               </div>
             </div>
 
             <div className="overflow-y-auto max-h-96">
-            {handleFilter()?.map((item, idx) => {
-              return (
+            {(() => {
+              const filtered = getFilteredModalProducts();
+              if (!filtered?.length) {
+                return (
+                  <p className="text-gray-500 text-center py-6">No products to show.</p>
+                );
+              }
+              return filtered.map((item, idx) => (
                 <div
                   key={item.id || idx}
                   onClick={() => handleAddExtra(item)}
@@ -1261,8 +1315,8 @@ export default function AddInvoice() {
                     )}
                   </div>
                 </div>
-              );
-            })}
+              ));
+            })()}
             </div>
           </div>
         )}

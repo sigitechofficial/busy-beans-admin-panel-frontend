@@ -1,6 +1,7 @@
 "use client";
 // import { Drawer, Portal, CloseButton } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { RiSubtractFill } from "react-icons/ri";
 import { BiPlus, BiTrash } from "react-icons/bi";
 import axios from "axios";
@@ -76,6 +77,7 @@ const DrawerBeans = ({
   const [srNameOptions, setSrNameOptions] = useState([]);
   const [showPartnerChangeWarning, setShowPartnerChangeWarning] = useState(false);
   const [pendingToggleChange, setPendingToggleChange] = useState(null);
+  const [fetchingPartnerPrices, setFetchingPartnerPrices] = useState(false);
 
   const [order, setOrder] = useState({
     note: "",
@@ -363,6 +365,7 @@ const DrawerBeans = ({
 
       fetchDirectPartnerData();
     } else {
+      setFetchingPartnerPrices(false);
       setOrder((prev) => ({
         ...prev,
         salesRepId: "",
@@ -381,6 +384,7 @@ const DrawerBeans = ({
       setOpen(false);
       // Reset drawer state
       setIsDirectPartner(false);
+      setFetchingPartnerPrices(false);
       setOrder({
         note: "",
         paymentMethod: "",
@@ -446,7 +450,7 @@ const DrawerBeans = ({
     }
   }, [partners]);
 
-  const handleSrNameSelect = (selectedOption) => {
+  const handleSrNameSelect = async (selectedOption) => {
     const selectedPartner = partners?.find(
       (p) => p?.id === selectedOption?.value
     );
@@ -477,6 +481,57 @@ const DrawerBeans = ({
     });
 
     setAddressOptions([...addressList]);
+
+    // Call API to get partner's product prices for selected products in cart
+    // When admin (with cart items) selects a partner in the drawer
+    if (selectedPartner?.id && cartItems?.length > 0 && userType === "admin") {
+      setFetchingPartnerPrices(true);
+      try {
+        const productIds = cartItems.map((item) => item.id);
+        const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
+        
+        const response = await axios.post(
+          `${BASE_URL}api/v1/admin/sales-rep-products-for-order-creation/${selectedPartner.id}`,
+          { productIds },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response?.data?.status === "success") {
+          // Update cart items with partner-specific wholesalePrice if returned
+          const partnerProducts = response?.data?.data?.products || [];
+          
+          if (partnerProducts.length > 0) {
+            const updatedCart = cartItems.map((item) => {
+              const partnerProduct = partnerProducts.find((p) => p.id === item.id);
+              if (partnerProduct && partnerProduct.wholesalePrice) {
+                return {
+                  ...item,
+                  wholesalePrice: partnerProduct.wholesalePrice,
+                };
+              }
+              return item;
+            });
+            
+            setQuotationData(updatedCart);
+            if (type === "createOrder") {
+              localStorage.setItem("createOrderData", JSON.stringify(updatedCart));
+            } else {
+              localStorage.setItem("quotationData", JSON.stringify(updatedCart));
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch partner product prices:", error);
+        // Don't show error to user, just continue with default prices
+      } finally {
+        setFetchingPartnerPrices(false);
+      }
+    }
   };
 
   const handleCounterClick = (index) => {
@@ -1336,24 +1391,38 @@ const DrawerBeans = ({
                 </div>
               )}
 
-              <p className="font-medium text-base">Order Details</p>
+              {/* Only show Order Details if customer or partner is selected */}
+              {(order?.userId || order?.salesRepId) && (
+                <>
+                  <p className="font-medium text-base">Order Details</p>
 
-              <div className="" data-testid={ORDERS_CREATE_DRAWER.itemsList}>
-                {cartItems?.length > 0 ? (
-                  <div>
-                    <div className="h-3/5 overflow-y-auto">
-                      {cartItems?.map((cartI, index) => (
-                        <div
-                          key={index}
-                          className="font-sf relative flex sm:flex-row items-start rounded-2xl h-full mb-3"
-                        >
-                          <div className="flex justify-center sm:min-w-[100px] min-w-[72px] sm:h-[72px] h-[72px] rounded-2xl">
-                            <img
-                              src={BASE_URL + cartI?.image}
-                              alt="cutlery"
-                              className="w-full h-full rounded-md object-cover"
-                            />
-                          </div>
+                  <div className="" data-testid={ORDERS_CREATE_DRAWER.itemsList}>
+                    {fetchingPartnerPrices ? (
+                      <div className="flex flex-col items-center justify-center py-12">
+                        <MiniLoader />
+                        <p className="text-white text-sm mt-3">Fetching partner prices...</p>
+                      </div>
+                    ) : cartItems?.length > 0 ? (
+                      <div>
+                        <div className="h-3/5 overflow-y-auto">
+                          {cartItems?.map((cartI, index) => (
+                            <div
+                              key={index}
+                              className="font-sf relative flex sm:flex-row items-start rounded-2xl h-full mb-3"
+                            >
+                              <div className="flex justify-center items-center sm:min-w-[100px] min-w-[72px] sm:h-[72px] h-[72px] rounded-lg bg-gray-100 p-2">
+                                <Image
+                                  src={cartI?.image ? `${BASE_URL}${cartI?.image}` : "/images/logocoffee.png"}
+                                  alt={cartI?.name || "product"}
+                                  width={100}
+                                  height={72}
+                                  className="w-full h-full rounded-md object-contain"
+                                  onError={(e) => {
+                                    e.target.src = "/images/logocoffee.png";
+                                  }}
+                                  unoptimized
+                                />
+                              </div>
                           <div className="px-5 w-full font-sf">
                             <h3 className="capitalize font-semibold text-base break-words">
                               {cartI?.name}
@@ -1485,12 +1554,14 @@ const DrawerBeans = ({
                       </div>
                     </div>
                   </div>
-                ) : (
-                  <p className="text-center text-red-500 ">
-                    No Item is Selected !
-                  </p>
-                )}
-              </div>
+                    ) : (
+                      <p className="text-center text-red-500 ">
+                        No Item is Selected !
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           )}
 

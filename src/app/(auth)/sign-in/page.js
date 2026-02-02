@@ -240,26 +240,26 @@ export default function SignIn() {
       },
     });
   return (
-    <div className="bg-signInBackgroundImage bg-cover min-h-screen flex items-center justify-center">
+    <div className="bg-signInBackgroundImage bg-cover min-h-screen flex items-center justify-center p-3 sm:p-4 overflow-x-hidden">
       <Script
         src={`https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_SITE_KEY}`}
         strategy="afterInteractive"
       />
-      <div className="grid sm:grid-cols-2 w-[80%] xl:w-3/5 backdrop-blur-md rounded-lg border border-theme [&>div]:px-6 sm:[&>div]:px-10 xl:[&>div]:px-14">
+      <div className="grid grid-cols-1 sm:grid-cols-2 w-full min-w-0 sm:w-[85%] md:w-[80%] xl:w-3/5 max-w-[calc(100vw-1.5rem)] sm:max-w-none backdrop-blur-md rounded-lg border border-theme [&>div]:px-4 sm:[&>div]:px-8 xl:[&>div]:px-14 [&>div]:min-w-0">
         {/* left side */}
-        <div className=" flex flex-col justify-center items-center">
-          <div className="w-40 sm:h-4/5 sm:w-full flex items-center justify-center">
+        <div className="flex flex-col justify-center items-center pt-6 sm:pt-0">
+          <div className="w-28 sm:h-4/5 sm:w-full sm:min-h-[180px] flex items-center justify-center shrink-0">
             <Image
               src="/images/logowhite.png"
               alt="logo_image"
               width={200}
               height={144}
-              className="object-contain w-full sm:h-36"
+              className="object-contain w-full max-w-[140px] sm:max-w-full sm:h-36 h-auto"
               priority
             />
           </div>
 
-          <p className="hidden sm:flex items-center justify-between font-switzer text-white text-sm font-normal gap-x-2">
+          <p className="hidden sm:flex items-center justify-between font-switzer text-white text-xs xl:text-sm font-normal gap-x-2 flex-wrap mt-2">
             <Link href="">Terms of Services</Link>
             <Link href="">Privacy Policy</Link>
             <Link href="">Help & Suppport</Link>
@@ -267,18 +267,18 @@ export default function SignIn() {
         </div>
 
         {/* Right side */}
-        <div className="flex flex-col py-10 xl:py-16 border-l-2 border-theme gap-y-5 sm:gap-y-10">
-          <h1 className="font-satoshi font-black text-white text-xl lg:text-3xl">
+        <div className="flex flex-col py-6 sm:py-10 xl:py-16 border-t-2 sm:border-t-0 sm:border-l-2 border-theme gap-y-4 sm:gap-y-6 xl:gap-y-10">
+          <h1 className="font-satoshi font-black text-white text-lg sm:text-xl lg:text-3xl leading-tight">
             Sign In to Busy Bean
           </h1>
 
           {loader ? (
             <MiniLoader />
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="flex flex-col gap-y-2">
-                <div className="flex flex-col gap-y-2">
-                  <label className="text-white font-medium font-satoshi">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+              <div className="flex flex-col gap-y-3 sm:gap-y-4">
+                <div className="flex flex-col gap-y-1.5 sm:gap-y-2">
+                  <label className="text-white font-medium font-satoshi text-sm sm:text-base">
                     Email
                   </label>
                   <input
@@ -288,20 +288,20 @@ export default function SignIn() {
                     onChange={handleChange}
                     onBlur={handleBlur}
                     placeholder="Email"
-                    className="border border-inputBorder rounded-lg outline-none px-3 py-2"
+                    className="border border-inputBorder rounded-lg outline-none px-3 py-2.5 text-sm sm:text-base min-h-[40px] w-full min-w-0"
                     data-testid={SIGN_IN.emailInput}
                   />
                   <div className={errors.email && touched.email}>
                     {errors.email && touched.email && (
-                      <div className=" text-red-600 space-y-1 pb-1">
+                      <div className="text-red-600 space-y-1 pb-1 text-xs sm:text-sm">
                         <hr className="border-none h-0.5 bg-white bg-opacity-20" />
                         <p>{errors.email}</p>
                       </div>
                     )}
                   </div>
                 </div>
-                <div className="flex flex-col gap-y-2">
-                  <label className="text-white font-medium font-satoshi">
+                <div className="flex flex-col gap-y-1.5 sm:gap-y-2">
+                  <label className="text-white font-medium font-satoshi text-sm sm:text-base">
                     Password
                   </label>
                   <div className="relative">
@@ -315,42 +315,42 @@ export default function SignIn() {
                       onChange={handleChange}
                       onBlur={handleBlur}
                       placeholder="password"
-                      className="border border-inputBorder rounded-lg outline-none px-3 py-2 pr-10 w-full"
+                      className="border border-inputBorder rounded-lg outline-none px-3 py-2.5 pr-10 w-full min-w-0 text-sm sm:text-base min-h-[40px]"
                       data-testid={SIGN_IN.passwordInput}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800 focus:outline-none"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800 focus:outline-none p-1 touch-manipulation"
                       aria-label={showPassword ? "Hide password" : "Show password"}
                     >
                       {showPassword ? (
-                        <AiOutlineEyeInvisible size={20} />
+                        <AiOutlineEyeInvisible size={18} className="sm:w-5 sm:h-5" />
                       ) : (
-                        <AiOutlineEye size={20} />
+                        <AiOutlineEye size={18} className="sm:w-5 sm:h-5" />
                       )}
                     </button>
                   </div>
                   <div className={errors.password && touched.password}>
                     {" "}
                     {errors.password && touched.password && (
-                      <div className="text-red-600 space-y-1 pb-1">
+                      <div className="text-red-600 space-y-1 pb-1 text-xs sm:text-sm">
                         <hr className="border-none h-0.5 bg-white bg-opacity-20" />
                         <p>{errors.password}</p>
                       </div>
                     )}
                   </div>
-                  <p className="text-white text-sm text-end font-normal">
+                  <p className="text-white text-xs sm:text-sm text-end font-normal">
                     <Link
                       href={"/forgot-password"}
                       data-testid={SIGN_IN.forgotPasswordLink}
+                      className="hover:underline"
                     >
-                      {" "}
                       Forgot Password?
                     </Link>
                   </p>
                 </div>
-                <div className="flex flex-col  gap-2 text-white font-inter font-normal">
+                <div className="flex flex-col gap-1.5 sm:gap-2 text-white font-inter font-normal text-sm sm:text-base">
                   <div className="flex align-items-center">
                     <Checkbox
                       inputId="admin"
@@ -360,7 +360,7 @@ export default function SignIn() {
                       onClick={() => setType("admin")}
                       data-testid={SIGN_IN.adminChk}
                     />
-                    <label htmlFor="admin" className="ml-2 font-inter">
+                    <label htmlFor="admin" className="ml-2 font-inter cursor-pointer">
                       Admin
                     </label>
                   </div>
@@ -373,7 +373,7 @@ export default function SignIn() {
                       onClick={() => setType("supplier")}
                       data-testid={SIGN_IN.supplierChk}
                     />
-                    <label htmlFor="supplier" className="ml-2 font-inter">
+                    <label htmlFor="supplier" className="ml-2 font-inter cursor-pointer">
                       Supplier
                     </label>
                   </div>
@@ -386,7 +386,7 @@ export default function SignIn() {
                       onClick={() => setType("sales-rep")}
                       data-testid={SIGN_IN.salesRepChk}
                     />
-                    <label htmlFor="sales-rep" className="ml-2 font-inter">
+                    <label htmlFor="sales-rep" className="ml-2 font-inter cursor-pointer">
                       Local Partner
                     </label>
                   </div>
@@ -396,11 +396,11 @@ export default function SignIn() {
                 <button
                   type="submit"
                   disabled={loader}
-                  className="bg-theme text-white hover:bg-white hover:text-theme border border-theme outline-none duration-150 font-satoshi py-2 rounded-lg w-full font-medium disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-theme disabled:hover:text-white flex items-center justify-center gap-2"
+                  className="bg-theme text-white hover:bg-white hover:text-theme border border-theme outline-none duration-150 font-satoshi py-2.5 sm:py-3 rounded-lg w-full font-medium disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-theme disabled:hover:text-white flex items-center justify-center gap-2 text-sm sm:text-base min-h-[44px] touch-manipulation"
                   data-testid={SIGN_IN.submitBtn}
                 >
                   {loader && (
-                    <AiOutlineLoading3Quarters className="animate-spin" size={18} />
+                    <AiOutlineLoading3Quarters className="animate-spin shrink-0" size={18} />
                   )}
                   {loader ? "Signing In..." : "Sign In"}
                 </button>

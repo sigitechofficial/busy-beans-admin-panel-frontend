@@ -366,12 +366,12 @@ export default function Dashboard2() {
   }
 
   return (
-    <div className="w-full">
-      <div className="space-y-8 pb-6">
-        {/* Welcome Header - Full width, no side margins */}
+    <div className="w-full min-w-0 overflow-x-hidden">
+      <div className="space-y-5 sm:space-y-8 pb-4 sm:pb-6">
+        {/* Welcome Header - below md (768px): button wraps below, left-aligned */}
         <div className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain">
           <div className="relative z-30 py-5 px-6 2xl:px-12">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col gap-3 items-start md:flex-row md:justify-between md:items-center">
               <div>
                 <h1 className="text-white text-xl lg:text-3xl font-inter font-semibold">
                   Welcome, {userName || "Administrator"}.
@@ -381,17 +381,17 @@ export default function Dashboard2() {
                 </p>
               </div>
 
-              {/* Filter Section - Only visible for admin */}
+              {/* Filter Section - Only visible for admin; below md: wraps below, left-aligned */}
               {userType === "admin" && (
                 <button
                   onClick={() => setFilterModalVisible(true)}
-                  className="flex items-center gap-2 px-4 py-2 h-[42px] rounded-md border border-white text-white font-workSans font-medium hover:bg-white/10 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 h-[42px] rounded-md border border-white text-white font-workSans font-medium hover:bg-white/10 transition-colors shrink-0"
                 >
                   <MdFilterAlt size={18} />
                   {!filters.userType
                     ? "All"
-                    : filters.userType === "admin" 
-                      ? "Admin" 
+                    : filters.userType === "admin"
+                      ? "Admin"
                       : `${getPartnerName(filters.salesRepIds?.[0])}`}
                 </button>
               )}
@@ -399,42 +399,42 @@ export default function Dashboard2() {
           </div>
         </div>
 
-        {/* Content section with side margins */}
-        <div className="px-6 2xl:px-12 space-y-8">
+        {/* Content section with side margins - responsive padding */}
+        <div className="px-3 sm:px-6 2xl:px-12 space-y-5 sm:space-y-8 max-w-full min-w-0">
           {/* Top Row Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {/* Month-to-Date Sales Card */}
-            <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                  <MdBarChart className="text-theme" size={24} />
-                  Month-to-Date Sales
+            <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border border-gray-200 min-w-0">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 min-w-0">
+                  <MdBarChart className="text-theme shrink-0" size={20} style={{ minWidth: 20 }} />
+                  <span className="truncate">Month-to-Date Sales</span>
                 </h3>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <div>
-                  <p className="text-3xl font-bold text-gray-900">
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 break-all">
                     {formatUSD(mtdSales.totalSales)}
                   </p>
-                  <p className="text-sm text-gray-600">Total Sales</p>
+                  <p className="text-xs sm:text-sm text-gray-600">Total Sales</p>
                 </div>
-                <div className="grid grid-cols-2 gap-4 pt-3 border-t">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-2 sm:pt-3 border-t">
                   <div>
-                    <p className="text-lg font-semibold text-gray-800">
+                    <p className="text-base sm:text-lg font-semibold text-gray-800">
                       {mtdSales.orders.toLocaleString()}
                     </p>
-                    <p className="text-sm text-gray-600">Orders</p>
+                    <p className="text-xs sm:text-sm text-gray-600">Orders</p>
                   </div>
                   <div>
-                    <p className="text-lg font-semibold text-gray-800">
+                    <p className="text-base sm:text-lg font-semibold text-gray-800 break-all">
                       {formatUSD(mtdSales.avgOrderValue)}
                     </p>
-                    <p className="text-sm text-gray-600">Avg Order Value</p>
+                    <p className="text-xs sm:text-sm text-gray-600">Avg Order Value</p>
                   </div>
                 </div>
-                <div className="pt-3 border-t">
+                <div className="pt-2 sm:pt-3 border-t">
                   <p
-                    className={`text-sm font-medium ${
+                    className={`text-xs sm:text-sm font-medium ${
                       parseFloat(mtdSales.comparison.replace(/[+%]/g, "")) >= 0
                         ? "text-green-600"
                         : "text-red-600"
@@ -447,7 +447,7 @@ export default function Dashboard2() {
                     {mtdSales.comparison}
                   </p>
                 </div>
-                <div className="pt-2">
+                <div className="pt-1.5 sm:pt-2">
                   <button
                     onClick={() => {
                       const basePath = userType === "salesRepresentative"
@@ -469,7 +469,7 @@ export default function Dashboard2() {
 
                       router.push(url);
                     }}
-                    className="text-sm text-theme hover:underline font-medium cursor-pointer"
+                    className="text-xs sm:text-sm text-theme hover:underline font-medium cursor-pointer"
                   >
                     View Report →
                   </button>
@@ -478,28 +478,28 @@ export default function Dashboard2() {
             </div>
 
             {/* MTD Sales by Customer Card */}
-            <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                  <MdPerson className="text-theme" size={24} />
-                  MTD Sales by Customer
+            <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border border-gray-200 min-w-0">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 min-w-0">
+                  <MdPerson className="text-theme shrink-0" size={20} style={{ minWidth: 20 }} />
+                  <span className="truncate">MTD Sales by Customer</span>
                 </h3>
               </div>
-              <div>
+              <div className="min-w-0">
                 {processedMtdCustomers.length > 0 ? (
                   processedMtdCustomers.map((customer, idx) => (
                     <div
                       key={idx}
                       onClick={() => handleCustomerClick(customer.id, false)}
-                      className={`flex items-center justify-between py-3 border-b last:border-b-0 hover:bg-gray-50 px-2 rounded transition-colors ${
+                      className={`flex items-center justify-between gap-2 py-2 sm:py-3 border-b last:border-b-0 hover:bg-gray-50 px-1 sm:px-2 rounded transition-colors min-w-0 ${
                         customer.id ? "cursor-pointer" : "cursor-default"
                       }`}
                     >
-                      <span className="text-gray-700 font-medium">
+                      <span className="text-gray-700 font-medium text-sm sm:text-base truncate min-w-0">
                         {customer.name}
                       </span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-900 font-semibold">
+                      <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+                        <span className="text-gray-900 font-semibold text-sm sm:text-base whitespace-nowrap">
                           {formatUSD(customer.sales)}
                         </span>
                         <span className="text-gray-400">→</span>
@@ -512,7 +512,7 @@ export default function Dashboard2() {
                   </p>
                 )}
               </div>
-              <div className="pt-4 border-t mt-4">
+              <div className="pt-3 sm:pt-4 border-t mt-3 sm:mt-4">
                 <button
                   onClick={() => {
                     const basePath = userType === "salesRepresentative"
@@ -534,7 +534,7 @@ export default function Dashboard2() {
 
                     router.push(url);
                   }}
-                  className="text-sm text-theme hover:underline font-medium cursor-pointer"
+                  className="text-xs sm:text-sm text-theme hover:underline font-medium cursor-pointer"
                 >
                   View Report →
                 </button>
@@ -543,38 +543,38 @@ export default function Dashboard2() {
           </div>
 
           {/* Middle Row Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {/* Last Month Sales Card */}
-            <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                  <MdCalendarToday className="text-theme" size={24} />
-                  Last Month Sales
+            <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border border-gray-200 min-w-0">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 min-w-0">
+                  <MdCalendarToday className="text-theme shrink-0" size={20} style={{ minWidth: 20 }} />
+                  <span className="truncate">Last Month Sales</span>
                 </h3>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <div>
-                  <p className="text-3xl font-bold text-gray-900">
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 break-all">
                     {formatUSD(lastMonthSales.totalSales)}
                   </p>
-                  <p className="text-sm text-gray-600">Total Sales</p>
+                  <p className="text-xs sm:text-sm text-gray-600">Total Sales</p>
                 </div>
-                <div className="grid grid-cols-2 gap-4 pt-3 border-t">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-2 sm:pt-3 border-t">
                   <div>
-                    <p className="text-lg font-semibold text-gray-800">
+                    <p className="text-base sm:text-lg font-semibold text-gray-800">
                       {lastMonthSales.orders.toLocaleString()}
                     </p>
-                    <p className="text-sm text-gray-600">Orders</p>
+                    <p className="text-xs sm:text-sm text-gray-600">Orders</p>
                   </div>
                   <div>
-                    <p className="text-lg font-semibold text-gray-800">
+                    <p className="text-base sm:text-lg font-semibold text-gray-800 break-all">
                       {formatUSD(lastMonthSales.avgOrderValue)}
                     </p>
-                    <p className="text-sm text-gray-600">Avg Order Value</p>
+                    <p className="text-xs sm:text-sm text-gray-600">Avg Order Value</p>
                   </div>
                 </div>
-                <div className="pt-3 border-t">
-                  <p className="text-sm text-gray-700 font-medium">
+                <div className="pt-2 sm:pt-3 border-t">
+                  <p className="text-xs sm:text-sm text-gray-700 font-medium">
                     {lastMonthSales.status}
                   </p>
                 </div>
@@ -600,7 +600,7 @@ export default function Dashboard2() {
 
                       router.push(url);
                     }}
-                    className="text-sm text-theme hover:underline font-medium cursor-pointer"
+                    className="text-xs sm:text-sm text-theme hover:underline font-medium cursor-pointer"
                   >
                     View Report →
                   </button>
@@ -609,14 +609,14 @@ export default function Dashboard2() {
             </div>
 
             {/* Last Month Sales by Customer Card */}
-            <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                  <MdGroups className="text-theme" size={24} />
-                  Last Month Sales by Customer
+            <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border border-gray-200 min-w-0">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 min-w-0">
+                  <MdGroups className="text-theme shrink-0" size={20} style={{ minWidth: 20 }} />
+                  <span className="truncate">Last Month Sales by Customer</span>
                 </h3>
               </div>
-              <div>
+              <div className="min-w-0">
                 {processedLastMonthCustomers.length > 0 ? (
                   processedLastMonthCustomers.map((customer, idx) => (
                     <div
@@ -624,15 +624,15 @@ export default function Dashboard2() {
                       onClick={() =>
                         customer.id && handleCustomerClick(customer.id, true)
                       }
-                      className={`flex items-center justify-between py-3 border-b last:border-b-0 hover:bg-gray-50 px-2 rounded transition-colors ${
+                      className={`flex items-center justify-between gap-2 py-2 sm:py-3 border-b last:border-b-0 hover:bg-gray-50 px-1 sm:px-2 rounded transition-colors min-w-0 ${
                         customer.id ? "cursor-pointer" : "cursor-default"
                       }`}
                     >
-                      <span className="text-gray-700 font-medium">
+                      <span className="text-gray-700 font-medium text-sm sm:text-base truncate min-w-0">
                         {customer.name}
                       </span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-900 font-semibold">
+                      <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+                        <span className="text-gray-900 font-semibold text-sm sm:text-base whitespace-nowrap">
                           {formatUSD(customer.sales)}
                         </span>
                         <span className="text-gray-400">→</span>
@@ -640,12 +640,12 @@ export default function Dashboard2() {
                     </div>
                   ))
                 ) : (
-                  <p className="text-gray-500 text-sm py-4">
+                  <p className="text-gray-500 text-xs sm:text-sm py-3 sm:py-4">
                     No customer data available
                   </p>
                 )}
               </div>
-              <div className="pt-4 border-t mt-4">
+              <div className="pt-3 sm:pt-4 border-t mt-3 sm:mt-4">
                 <button
                   onClick={() => {
                     const basePath = userType === "salesRepresentative"
@@ -667,7 +667,7 @@ export default function Dashboard2() {
 
                     router.push(url);
                   }}
-                  className="text-sm text-theme hover:underline font-medium cursor-pointer"
+                  className="text-xs sm:text-sm text-theme hover:underline font-medium cursor-pointer"
                 >
                   View Report →
                 </button>
@@ -677,16 +677,16 @@ export default function Dashboard2() {
 
           {/* Bottom Row Cards - Only show for admin */}
           {userType === "admin" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               {/* MTD Sales by Franchisee Card */}
-              <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                    <MdBusiness className="text-theme" size={24} />
-                    MTD Sales by Franchisee
+              <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border border-gray-200 min-w-0">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 min-w-0">
+                    <MdBusiness className="text-theme shrink-0" size={20} style={{ minWidth: 20 }} />
+                    <span className="truncate">MTD Sales by Franchisee</span>
                   </h3>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3 min-w-0">
                   {processedMtdFranchisees.length > 0 ? (
                     processedMtdFranchisees.map((franchisee, idx) => (
                       <div
@@ -699,28 +699,28 @@ export default function Dashboard2() {
                             mtdEnd,
                           )
                         }
-                        className={`flex items-center justify-between py-3 border-b last:border-b-0 hover:bg-gray-50 px-2 rounded transition-colors ${
+                        className={`flex items-center justify-between gap-2 py-2 sm:py-3 border-b last:border-b-0 hover:bg-gray-50 px-1 sm:px-2 rounded transition-colors min-w-0 ${
                           franchisee.id ? "cursor-pointer" : "cursor-default"
                         }`}
                       >
-                        <span className="text-gray-700 font-medium">
+                        <span className="text-gray-700 font-medium text-sm sm:text-base truncate min-w-0">
                           {franchisee.name}
                         </span>
-                        <span className="text-gray-900 font-semibold">
+                        <span className="text-gray-900 font-semibold text-sm sm:text-base shrink-0 whitespace-nowrap">
                           {formatUSD(franchisee.sales)}
                         </span>
                       </div>
                     ))
                   ) : (
-                    <p className="text-gray-500 text-sm py-4">
+                    <p className="text-gray-500 text-xs sm:text-sm py-3 sm:py-4">
                       No franchisee data available
                     </p>
                   )}
                 </div>
-                <div className="pt-4 border-t mt-4">
+                <div className="pt-3 sm:pt-4 border-t mt-3 sm:mt-4">
                   <button
                     onClick={() => handleViewAll("customers", mtdStart, mtdEnd)}
-                    className="text-sm text-theme hover:underline font-medium cursor-pointer"
+                    className="text-xs sm:text-sm text-theme hover:underline font-medium cursor-pointer"
                   >
                     View All →
                   </button>
@@ -728,19 +728,19 @@ export default function Dashboard2() {
               </div>
 
               {/* YTD Sales by Franchisee Card */}
-              <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                    <MdBarChart className="text-theme" size={24} />
-                    YTD Sales by Franchisee
+              <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border border-gray-200 min-w-0">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 min-w-0">
+                    <MdBarChart className="text-theme shrink-0" size={20} style={{ minWidth: 20 }} />
+                    <span className="truncate">YTD Sales by Franchisee</span>
                   </h3>
                 </div>
-                <div className="mb-3">
-                  <p className="text-sm text-gray-600 font-medium">
+                <div className="mb-2 sm:mb-3">
+                  <p className="text-xs sm:text-sm text-gray-600 font-medium">
                     Fiscal Year to Date →
                   </p>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3 min-w-0">
                   {processedYtdFranchisees.length > 0 ? (
                     processedYtdFranchisees.map((franchisee, idx) => (
                       <div
@@ -753,28 +753,28 @@ export default function Dashboard2() {
                             ytdEnd,
                           )
                         }
-                        className={`flex items-center justify-between py-3 border-b last:border-b-0 hover:bg-gray-50 px-2 rounded transition-colors ${
+                        className={`flex items-center justify-between gap-2 py-2 sm:py-3 border-b last:border-b-0 hover:bg-gray-50 px-1 sm:px-2 rounded transition-colors min-w-0 ${
                           franchisee.id ? "cursor-pointer" : "cursor-default"
                         }`}
                       >
-                        <span className="text-gray-700 font-medium">
+                        <span className="text-gray-700 font-medium text-sm sm:text-base truncate min-w-0">
                           {franchisee.name}
                         </span>
-                        <span className="text-gray-900 font-semibold">
+                        <span className="text-gray-900 font-semibold text-sm sm:text-base shrink-0 whitespace-nowrap">
                           {formatUSD(franchisee.sales)}
                         </span>
                       </div>
                     ))
                   ) : (
-                    <p className="text-gray-500 text-sm py-4">
+                    <p className="text-gray-500 text-xs sm:text-sm py-3 sm:py-4">
                       No franchisee data available
                     </p>
                   )}
                 </div>
-                <div className="pt-4 border-t mt-4">
+                <div className="pt-3 sm:pt-4 border-t mt-3 sm:mt-4">
                   <button
                     onClick={() => handleViewAll("customers", ytdStart, ytdEnd)}
-                    className="text-sm text-theme hover:underline font-medium cursor-pointer"
+                    className="text-xs sm:text-sm text-theme hover:underline font-medium cursor-pointer"
                   >
                     View All →
                   </button>
@@ -784,16 +784,16 @@ export default function Dashboard2() {
           )}
 
           {/* Additional Row Cards - Sales by Product */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {/* MTD Sales by Product Card */}
-            <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                  <MdBarChart className="text-theme" size={24} />
-                  MTD Sales by Product
+            <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border border-gray-200 min-w-0">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 min-w-0">
+                  <MdBarChart className="text-theme shrink-0" size={20} style={{ minWidth: 20 }} />
+                  <span className="truncate">MTD Sales by Product</span>
                 </h3>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3 min-w-0">
                 {processedMtdProducts.length > 0 ? (
                   processedMtdProducts.map((product, idx) => (
                     <div
@@ -801,31 +801,31 @@ export default function Dashboard2() {
                       onClick={() =>
                         handleProductClick(product.id, mtdStart, mtdEnd)
                       }
-                      className="flex items-center justify-between py-3 border-b last:border-b-0 hover:bg-gray-50 px-2 rounded transition-colors cursor-pointer"
+                      className="flex items-center justify-between gap-2 py-2 sm:py-3 border-b last:border-b-0 hover:bg-gray-50 px-1 sm:px-2 rounded transition-colors cursor-pointer min-w-0"
                     >
-                      <div>
-                        <p className="text-gray-700 font-medium">
+                      <div className="min-w-0">
+                        <p className="text-gray-700 font-medium text-sm sm:text-base truncate">
                           {product.name}
                         </p>
                         <p className="text-xs text-gray-500">
                           Qty: {product.quantity}
                         </p>
                       </div>
-                      <span className="text-gray-900 font-semibold">
+                      <span className="text-gray-900 font-semibold text-sm sm:text-base shrink-0 whitespace-nowrap">
                         {formatUSD(product.sales)}
                       </span>
                     </div>
                   ))
                 ) : (
-                  <p className="text-gray-500 text-sm py-4">
+                  <p className="text-gray-500 text-xs sm:text-sm py-3 sm:py-4">
                     No product data available
                   </p>
                 )}
               </div>
-              <div className="pt-4 border-t mt-4">
+              <div className="pt-3 sm:pt-4 border-t mt-3 sm:mt-4">
                 <button
                   onClick={() => handleViewAll("products", mtdStart, mtdEnd)}
-                  className="text-sm text-theme hover:underline font-medium cursor-pointer"
+                  className="text-xs sm:text-sm text-theme hover:underline font-medium cursor-pointer"
                 >
                   View All →
                 </button>
@@ -833,19 +833,19 @@ export default function Dashboard2() {
             </div>
 
             {/* YTD Sales by Product Card */}
-            <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                  <MdBarChart className="text-theme" size={24} />
-                  YTD Sales by Product
+            <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border border-gray-200 min-w-0">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 min-w-0">
+                  <MdBarChart className="text-theme shrink-0" size={20} style={{ minWidth: 20 }} />
+                  <span className="truncate">YTD Sales by Product</span>
                 </h3>
               </div>
-              <div className="mb-3">
-                <p className="text-sm text-gray-600 font-medium">
+              <div className="mb-2 sm:mb-3">
+                <p className="text-xs sm:text-sm text-gray-600 font-medium">
                   Fiscal Year to Date →
                 </p>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3 min-w-0">
                 {processedYtdProducts.length > 0 ? (
                   processedYtdProducts.map((product, idx) => (
                     <div
@@ -853,31 +853,31 @@ export default function Dashboard2() {
                       onClick={() =>
                         handleProductClick(product.id, ytdStart, ytdEnd)
                       }
-                      className="flex items-center justify-between py-3 border-b last:border-b-0 hover:bg-gray-50 px-2 rounded transition-colors cursor-pointer"
+                      className="flex items-center justify-between gap-2 py-2 sm:py-3 border-b last:border-b-0 hover:bg-gray-50 px-1 sm:px-2 rounded transition-colors cursor-pointer min-w-0"
                     >
-                      <div>
-                        <p className="text-gray-700 font-medium">
+                      <div className="min-w-0">
+                        <p className="text-gray-700 font-medium text-sm sm:text-base truncate">
                           {product.name}
                         </p>
                         <p className="text-xs text-gray-500">
                           Qty: {product.quantity}
                         </p>
                       </div>
-                      <span className="text-gray-900 font-semibold">
+                      <span className="text-gray-900 font-semibold text-sm sm:text-base shrink-0 whitespace-nowrap">
                         {formatUSD(product.sales)}
                       </span>
                     </div>
                   ))
                 ) : (
-                  <p className="text-gray-500 text-sm py-4">
+                  <p className="text-gray-500 text-xs sm:text-sm py-3 sm:py-4">
                     No product data available
                   </p>
                 )}
               </div>
-              <div className="pt-4 border-t mt-4">
+              <div className="pt-3 sm:pt-4 border-t mt-3 sm:mt-4">
                 <button
                   onClick={() => handleViewAll("products", ytdStart, ytdEnd)}
-                  className="text-sm text-theme hover:underline font-medium cursor-pointer"
+                  className="text-xs sm:text-sm text-theme hover:underline font-medium cursor-pointer"
                 >
                   View All →
                 </button>
@@ -887,40 +887,40 @@ export default function Dashboard2() {
 
           {/* Sales by Employee Row - Only show for admin */}
           {userType === "admin" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               {/* MTD Sales by Employee Card */}
-              <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                    <MdPerson className="text-theme" size={24} />
-                    MTD Sales by Employee
+              <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border border-gray-200 min-w-0">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 min-w-0">
+                    <MdPerson className="text-theme shrink-0" size={20} style={{ minWidth: 20 }} />
+                    <span className="truncate">MTD Sales by Employee</span>
                   </h3>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3 min-w-0">
                   {processedMtdEmployees.length > 0 ? (
                     processedMtdEmployees.map((employee, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between py-3 border-b last:border-b-0 hover:bg-gray-50 px-2 rounded transition-colors"
+                        className="flex items-center justify-between gap-2 py-2 sm:py-3 border-b last:border-b-0 hover:bg-gray-50 px-1 sm:px-2 rounded transition-colors min-w-0"
                       >
-                        <div>
-                          <p className="text-gray-700 font-medium">
+                        <div className="min-w-0">
+                          <p className="text-gray-700 font-medium text-sm sm:text-base truncate">
                             {employee.name}
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-gray-500 truncate">
                             {employee.email}
                           </p>
                           <p className="text-xs text-gray-400">
                             Orders: {employee.orders}
                           </p>
                         </div>
-                        <span className="text-gray-900 font-semibold">
+                        <span className="text-gray-900 font-semibold text-sm sm:text-base shrink-0 whitespace-nowrap">
                           {formatUSD(employee.sales)}
                         </span>
                       </div>
                     ))
                   ) : (
-                    <p className="text-gray-500 text-sm py-4">
+                    <p className="text-gray-500 text-xs sm:text-sm py-3 sm:py-4">
                       No employee data available
                     </p>
                   )}
@@ -928,43 +928,43 @@ export default function Dashboard2() {
               </div>
 
               {/* YTD Sales by Employee Card */}
-              <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                    <MdPerson className="text-theme" size={24} />
-                    YTD Sales by Employee
+              <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border border-gray-200 min-w-0">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 min-w-0">
+                    <MdPerson className="text-theme shrink-0" size={20} style={{ minWidth: 20 }} />
+                    <span className="truncate">YTD Sales by Employee</span>
                   </h3>
                 </div>
-                <div className="mb-3">
-                  <p className="text-sm text-gray-600 font-medium">
+                <div className="mb-2 sm:mb-3">
+                  <p className="text-xs sm:text-sm text-gray-600 font-medium">
                     Fiscal Year to Date →
                   </p>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3 min-w-0">
                   {processedYtdEmployees.length > 0 ? (
                     processedYtdEmployees.map((employee, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between py-3 border-b last:border-b-0 hover:bg-gray-50 px-2 rounded transition-colors"
+                        className="flex items-center justify-between gap-2 py-2 sm:py-3 border-b last:border-b-0 hover:bg-gray-50 px-1 sm:px-2 rounded transition-colors min-w-0"
                       >
-                        <div>
-                          <p className="text-gray-700 font-medium">
+                        <div className="min-w-0">
+                          <p className="text-gray-700 font-medium text-sm sm:text-base truncate">
                             {employee.name}
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-gray-500 truncate">
                             {employee.email}
                           </p>
                           <p className="text-xs text-gray-400">
                             Orders: {employee.orders}
                           </p>
                         </div>
-                        <span className="text-gray-900 font-semibold">
+                        <span className="text-gray-900 font-semibold text-sm sm:text-base shrink-0 whitespace-nowrap">
                           {formatUSD(employee.sales)}
                         </span>
                       </div>
                     ))
                   ) : (
-                    <p className="text-gray-500 text-sm py-4">
+                    <p className="text-gray-500 text-xs sm:text-sm py-3 sm:py-4">
                       No employee data available
                     </p>
                   )}

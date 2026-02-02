@@ -200,10 +200,10 @@ export default function VerifyEmail() {
   }, [timer]);
 
   return (
-    <div className="min-h-screen bg-themeLight py-5 flex items-center justify-center">
+    <div className="min-h-screen bg-themeLight py-4 sm:py-5 px-3 sm:px-4 flex items-center justify-center overflow-x-hidden">
       {/* main section start */}
-      <div className="border border-theme rounded-xl bg-themeDark w-11/12 sm:w-4/6 md:w-[70%] lg:w-3/5 xl:w-2/4 py-6 flex flex-col items-center gap-y-4">
-        <div className="w-60 md:w-72 lg:w-80">
+      <div className="border border-theme rounded-xl bg-themeDark w-full min-w-0 max-w-[calc(100vw-1.5rem)] sm:max-w-none sm:w-4/6 md:w-[70%] lg:w-3/5 xl:w-2/4 py-5 sm:py-6 flex flex-col items-center gap-y-3 sm:gap-y-4 px-3 sm:px-0">
+        <div className="w-36 sm:w-60 md:w-72 lg:w-80 shrink-0">
           <img
             src="/images/logocoffee.png"
             alt="logo"
@@ -213,22 +213,22 @@ export default function VerifyEmail() {
         {loader ? (
           <MiniLoader />
         ) : (
-          <div className="space-y-6 w-11/12 md:w-[70%] lg:w-3/5">
-            <p className="font-satoshi text-white font-black text-2xl lg:text-3xl text-center">
+          <div className="space-y-4 sm:space-y-6 w-full min-w-0 max-w-full sm:w-11/12 md:w-[70%] lg:w-3/5 px-1 sm:px-0">
+            <p className="font-satoshi text-white font-black text-xl sm:text-2xl lg:text-3xl text-center">
               Verify Your email
             </p>
-            <p className="font-normal text-center text-white/60 font-satoshi">
+            <p className="font-normal text-center text-white/60 font-satoshi text-sm sm:text-base break-words">
               Please enter the 4 digit code sent to {email}{" "}
-              <button className="text-white underline" onClick={handleEdit}>
+              <button className="text-white underline hover:no-underline" onClick={handleEdit}>
                 Edit
               </button>
             </p>
-            <div className="font-satoshi space-y-4">
+            <div className="font-satoshi space-y-3 sm:space-y-4">
               <form
                 onSubmit={handleSubmit}
-                className="space-y-6 flex flex-col justify-between"
+                className="space-y-4 sm:space-y-6 flex flex-col justify-between"
               >
-                <div className="flex justify-center items-center gap-x-2 sm:gap-x-4 md:gap-x-6 [&>input]:w-16 sm:[&>input]:w-20 [&>input]:h-[88px] [&>input]:rounded-lg [&>input]:border [&>input]:border-themePlaceholder [&>input]:border-opacity-60">
+                <div className="flex justify-center items-center gap-x-1.5 sm:gap-x-3 md:gap-x-6 [&>input]:w-12 [&>input]:h-14 sm:[&>input]:w-16 sm:[&>input]:h-[72px] md:[&>input]:w-20 md:[&>input]:h-[88px] [&>input]:rounded-lg [&>input]:border [&>input]:border-themePlaceholder [&>input]:border-opacity-60 [&>input]:text-4xl sm:[&>input]:text-5xl md:[&>input]:text-6xl [&>input]:text-center [&>input]:flex [&>input]:items-center [&>input]:justify-center [&>input]:min-w-0">
                   {Array.from({ length: 4 }).map((_, index) => (
                     <input
                       key={index}
@@ -237,33 +237,31 @@ export default function VerifyEmail() {
                       min="0"
                       onInput={(e) => handleInput(e, index)}
                       onKeyDown={(e) => {
-                        // Disallow "-", "e", and anything that is not a number
                         if (["e", "E", "+", "-"].includes(e.key)) {
                           e.preventDefault();
                         }
                         handleKeyDown(e, index);
                       }}
                       onPaste={(e) => {
-                        // Allow only digits to be pasted
                         const paste = e.clipboardData.getData("text");
                         if (!/^\d+$/.test(paste)) {
                           e.preventDefault();
                         }
                       }}
                       ref={(el) => (inputRefs.current[index] = el)}
-                      className="input-code text-6xl text-center flex items-center justify-center pe-1.5"
+                      className="input-code pe-0.5 sm:pe-1.5"
                     />
                   ))}
                 </div>
                 <div>
                   <div className="space-y-2 [&>p]:text-center flex justify-center flex-col items-center">
-                    <p className="text-white/60">
+                    <p className="text-white/60 text-sm sm:text-base">
                       00:{timer < 10 ? `0${timer}` : timer}
                     </p>
                     <button
                       disabled={timer === 0 ? false : true}
                       onClick={handleResendOtp}
-                      className="text-lg text-theme disabled:cursor-not-allowed underline"
+                      className="text-base sm:text-lg text-theme disabled:cursor-not-allowed underline touch-manipulation py-1"
                     >
                       Resend Code
                     </button>

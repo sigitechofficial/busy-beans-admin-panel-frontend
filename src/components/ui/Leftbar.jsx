@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import {
   MdDashboard,
   MdShoppingCart,
@@ -559,6 +559,10 @@ export default function Leftbar(props) {
 
   const { toggle, setToggle, setNewOrder, newOrder, orderData, setOrderData } =
     useDataContext();
+  const [pastFirstPaint, setPastFirstPaint] = useState(false);
+  useLayoutEffect(() => {
+    setPastFirstPaint(true);
+  }, []);
   useEffect(() => {
     if (
       typeof window !== "undefined" &&
@@ -574,13 +578,27 @@ export default function Leftbar(props) {
     return null;
   }
 
+  const mobileVisible = pastFirstPaint && toggle;
   return (
-    <section
-      data-testid={LEFTBAR.root}
-      className={`bg-white ${
-        toggle ? "hidden" : "block"
-      } md:block fixed w-full md:max-w-[240px] lg:max-w-[288px] h-full sm:pb-5 sm:pl-2 border-r-2 z-50`}
-    >
+    <>
+      {/* Backdrop - mobile only when drawer open */}
+      <div
+        className={`fixed inset-0 z-40 md:hidden transition-opacity duration-300 ease-out ${
+          mobileVisible
+            ? "opacity-100 pointer-events-auto bg-black/50"
+            : "opacity-0 pointer-events-none bg-transparent"
+        }`}
+        onClick={() => setToggle(false)}
+        aria-hidden="true"
+      />
+      <section
+        data-testid={LEFTBAR.root}
+        className={`bg-white fixed w-full md:max-w-[240px] lg:max-w-[288px] h-full sm:pb-5 sm:pl-2 border-r-2 z-50
+          transition-transform duration-300 ease-out
+          max-md:flex max-md:flex-col max-md:max-w-[min(280px,85vw)] max-md:min-h-[100dvh] max-md:pb-[env(safe-area-inset-bottom)] max-md:select-none max-md:touch-pan-y
+          ${mobileVisible ? "max-md:translate-x-0 max-md:shadow-xl" : "max-md:-translate-x-full max-md:pointer-events-none"}
+          md:translate-x-0 md:block`}
+      >
       <div
         className="flex items-center justify-center font-bold text-4xl 2xl:min-h-[70px] h-[70px] 2xl:h-[94px] border-b max-md:hidden"
         data-testid={LEFTBAR.logoContainer}
@@ -595,36 +613,32 @@ export default function Leftbar(props) {
         </Link>
       </div>
 
-      <div className="md:hidden flex justify-between items-center py-3 w-11/12 mx-auto">
-        <div>
-          {" "}
-          <Link
-            href="/"
-            className="flex items-center font-bold text-4xl min-h-[70px] max-h-[71px]"
-          >
-            {/* Busy Bean */}
-            {/* <img src="/images/logocoffee.png" alt="logo" className="max-w-16 max-h-[70px]" /> */}
-            <img
-              src="/images/logocoffee.png"
-              alt="logo"
-              className="max-w-48 max-h-[70px]"
-              data-testid={LEFTBAR.logoImage}
-            />
-          </Link>
-        </div>
-        <div
-          className="md:hidden"
-          onClick={() => {
-            // props?.setNavbarVis(!props?.navbarVis);
-            setToggle(!toggle);
-          }}
+      {/* Mobile: sticky header with logo + close */}
+      <div className="md:hidden flex-shrink-0 sticky top-0 z-10 bg-white border-b flex justify-between items-center py-3 px-4 min-h-[56px] pt-[max(0.75rem,env(safe-area-inset-top))]">
+        <Link
+          href="/"
+          className="flex items-center font-bold text-4xl min-h-[44px] min-w-[44px]"
+          onClick={() => setToggle(false)}
         >
-          <IoClose size="25px" />
-        </div>
+          <img
+            src="/images/logocoffee.png"
+            alt="Busy Beans"
+            className="max-w-[140px] max-h-[44px] object-contain"
+            data-testid={LEFTBAR.logoImage}
+          />
+        </Link>
+        <button
+          type="button"
+          className="md:hidden flex items-center justify-center min-h-[44px] min-w-[44px] -m-2 rounded-lg active:bg-gray-100 touch-manipulation"
+          onClick={() => setToggle(false)}
+          aria-label="Close menu"
+        >
+          <IoClose size={28} className="text-gray-700" />
+        </button>
       </div>
 
       {userType === "admin" ? (
-        <ul className="flex flex-col space-y-1 pt-2 overflow-auto h-[90%]">
+        <ul className="leftbar-nav-scroll flex flex-col space-y-2 md:space-y-1 pt-4 pb-6 overflow-y-auto overflow-x-hidden flex-1 min-h-0 overscroll-contain md:pt-2 md:pb-0 md:h-[90%]">
           {hasPermission("dashboard_view") && (
             <ListHead
               data-testid={LEFTBAR.dashboardSection}
@@ -1633,8 +1647,7 @@ export default function Leftbar(props) {
 
           <div className="mx-2 pb-7">
             <button
-              className="w-full font-inter font-medium text-lg sm:text-sm lg:text-base flex items-center gap-x-2 px-2 py-3 rounded-lg text-black hover:bg-black hover:text-white 
-          duration-200"
+              className="w-full font-inter font-medium text-lg sm:text-sm lg:text-base flex items-center gap-x-2 min-h-[44px] py-3 px-3 md:px-2 rounded-lg text-black hover:bg-black hover:text-white active:scale-[0.98] duration-200 touch-manipulation"
               onClick={logoutFunc}
             >
               <MdLogout size={26} />
@@ -1643,7 +1656,7 @@ export default function Leftbar(props) {
           </div>
         </ul>
       ) : userType === "supplier" ? (
-        <ul className="flex flex-col space-y-1 pt-2  overflow-auto h-[90%]">
+        <ul className="leftbar-nav-scroll flex flex-col space-y-2 md:space-y-1 pt-4 pb-6 overflow-y-auto overflow-x-hidden flex-1 min-h-0 overscroll-contain md:pt-2 md:pb-0 md:h-[90%]">
           <ListHead
             title="Dashboard"
             to="/"
@@ -1919,8 +1932,7 @@ export default function Leftbar(props) {
 
           <div className="mx-2 pb-7">
             <button
-              className="w-full font-inter font-medium text-lg sm:text-sm lg:text-base flex items-center gap-x-2 px-2 py-3 rounded-lg text-black hover:bg-black hover:text-white 
-        duration-200"
+              className="w-full font-inter font-medium text-lg sm:text-sm lg:text-base flex items-center gap-x-2 min-h-[44px] py-3 px-3 md:px-2 rounded-lg text-black hover:bg-black hover:text-white active:scale-[0.98] duration-200 touch-manipulation"
               onClick={logoutFunc}
             >
               <MdLogout size={26} />
@@ -1929,7 +1941,7 @@ export default function Leftbar(props) {
           </div>
         </ul>
       ) : userType === "salesRepresentative" ? (
-        <ul className="flex flex-col space-y-1 pt-2 overflow-auto h-[90%]">
+        <ul className="leftbar-nav-scroll flex flex-col space-y-2 md:space-y-1 pt-4 pb-6 overflow-y-auto overflow-x-hidden flex-1 min-h-0 overscroll-contain md:pt-2 md:pb-0 md:h-[90%]">
           {hasPermission("dashboard_view") && (
             <ListHead
               data-testid={LEFTBAR.dashboardSection}
@@ -2579,8 +2591,7 @@ export default function Leftbar(props) {
 
           <div className="mx-2 pb-7">
             <button
-              className="w-full font-inter font-medium text-lg sm:text-sm lg:text-base flex items-center gap-x-2 px-2 py-3 rounded-lg text-black hover:bg-black hover:text-white 
-          duration-200"
+              className="w-full font-inter font-medium text-lg sm:text-sm lg:text-base flex items-center gap-x-2 min-h-[44px] py-3 px-3 md:px-2 rounded-lg text-black hover:bg-black hover:text-white active:scale-[0.98] duration-200 touch-manipulation"
               onClick={logoutFunc}
               data-testid={LEFTBAR.userLogoutButton}
             >
@@ -2603,5 +2614,6 @@ export default function Leftbar(props) {
         </div>
       )}
     </section>
+    </>
   );
 }

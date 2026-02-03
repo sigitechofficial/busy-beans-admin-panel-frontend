@@ -386,6 +386,29 @@ export default function OrderDetail() {
 
   const handleSendInvoice = async () => {
     try {
+      const isPaidInvoice =
+        data?.data?.order?.paymentStatus === "done";
+
+      if (isPaidInvoice) {
+        const res = await PostAPI(
+          "api/v1/admin/order-management/email-helper",
+          {
+            orderId: orderID,
+            orderType: "customer",
+            emailType: "paid-invoice",
+          }
+        );
+        if (res?.data?.status === "success") {
+          success_toaster("Paid invoice email sent successfully");
+          reFetch();
+        } else {
+          throw new Error(
+            res?.data?.message || "An unexpected error occurred."
+          );
+        }
+        return;
+      }
+
       const res = await PostAPI(
         `api/v1/admin/order-management/send-invoice/${orderID}`,
         {
@@ -527,9 +550,9 @@ export default function OrderDetail() {
                 onClick={() => handleSendInvoice(data?.data?.order?.statusId)}
                 data-testid={ORDER_DETAIL.sendInvoiceBtn}
               >
-                {data?.data?.order?.invoiceDate
+                {data?.data?.order?.invoiceDate &&data?.data?.order?.paymentStatus === "pending"
                   ? "Invoice reminder"
-                  : "Send Invoice"}
+                  : data?.data?.order?.paymentStatus === "done" ? "Resend Paid Invoice": "Send Invoice"}
               </button>
             )}
           </li>
@@ -780,7 +803,7 @@ export default function OrderDetail() {
               }}
             /> */}
 
-              <div className="w-full bg-blue-50 flex justify-between bg-blue-50 rounded-md w-full px-4 lg:px-6 py-6 ">
+              <div className="w-full bg-blue-50 flex justify-between rounded-md px-4 lg:px-6 py-6 ">
                 <div
                   className="flex gap-x-2"
                   data-testid={ORDER_DETAIL.infoBanner}

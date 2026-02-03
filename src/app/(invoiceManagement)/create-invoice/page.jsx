@@ -10,7 +10,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 // import DrawerBeansGenerateInvoice from "@/components/ui/DrawerBeansGenerateInvoice";
 import MiniLoader from "@/components/ui/MiniLoader";
 import { PostAPI } from "@/utilities/PostAPI";
-import { selectStyles2, drawerSelectStyles } from "@/utilities/SelectStyle";
+import selectStyles, { selectStyles2, drawerSelectStyles } from "@/utilities/SelectStyle";
 import { success_toaster, info_toaster } from "@/utilities/Toaster";
 import { useRouter } from "next/navigation";
 import { Dialog } from "primereact/dialog";
@@ -69,6 +69,12 @@ export default function CreateInvoice() {
   const [isSelfOrder, setIsSelfOrder] = useState(false);
   const [partners, setPartners] = useState([]);
   const [srNameOptions, setSrNameOptions] = useState([]);
+  // View mode: "admin" = admin inventory | "localPartner" = partner's inventory + partner's customers (same as orders/create)
+  const [viewMode, setViewMode] = useState("admin");
+  const [selectedPartnerId, setSelectedPartnerId] = useState(null);
+  const [selectedPartnerName, setSelectedPartnerName] = useState(null);
+  const [partnerModalVisible, setPartnerModalVisible] = useState(false);
+  const [tempSelectedPartner, setTempSelectedPartner] = useState(null);
 
   // Pagination state for customers
   const [customerPage, setCustomerPage] = useState(1);
@@ -126,6 +132,8 @@ export default function CreateInvoice() {
   });
   const [modal, setModal] = useState(false);
   const [search, setSearch] = useState("");
+  const [modalProductList, setModalProductList] = useState(null);
+  const [modalProductsLoading, setModalProductsLoading] = useState(false);
 
   // Use current state values directly (no formData needed)
 
@@ -134,6 +142,19 @@ export default function CreateInvoice() {
     "charges"
   );
   const { data: category } = GetAPI(`api/v1/admin/category`);
+  const { data: salesRepData } = GetAPI("api/v1/admin/sales-rep");
+
+  // Partner options for Local Partner selection modal (same as orders/create)
+  const partnerOptions = [];
+  if (salesRepData?.data?.data) {
+    salesRepData.data.data.forEach((partner) => {
+      partnerOptions.push({
+        value: partner?.id,
+        label: `${partner?.srName} (${partner?.territoryName})`,
+        srName: partner?.srName,
+      });
+    });
+  }
   
   let categoryList = [{ value: "", label: "All" }];
   if (category) {
@@ -145,6 +166,87 @@ export default function CreateInvoice() {
     ? `api/v1/admin/product?categoryId=${filterId}`
     : `api/v1/admin/product`;
   const { data: ProductList, reFetch: ProductRefetch } = GetAPI(url);
+
+  // Add Item modal products: API expects sales rep id in the path.
+  // - Partner view + self order → POST .../sales-rep-products-for-order-creation/{salesRepId}
+  // - Direct partner order (admin) → same POST (order.userId = selected partner)
+  // - Local Partner view (no self order) → GET api/v1/admin/products/sales-rep?...
+  const salesRepIdForProducts = partnersOrder
+    ? (isSelfOrder ? (order?.salesRepId || userID) : order?.userId)
+    : viewMode === "localPartner"
+      ? selectedPartnerId
+      : userType === "salesRepresentative"
+        ? (order?.salesRepId || userID)
+        : null;
+  const isLocalPartnerCase =
+    (viewMode === "localPartner" && selectedPartnerId) ||
+    (userType === "salesRepresentative" && !isSelfOrder);
+  useEffect(() => {
+    if (!modal) {
+      setModalProductList(null);
+      return;
+    }
+    if (!salesRepIdForProducts) {
+      return;
+    }
+    let cancelled = false;
+    setModalProductsLoading(true);
+
+    if (isLocalPartnerCase) {
+      // Local partner view: GET api/v1/admin/products/sales-rep (partner's inventory - admin selected partner or logged-in partner's own)
+      const params = new URLSearchParams();
+      params.set("page", "1");
+      params.set("limit", "100");
+      params.set("salesRepId", salesRepIdForProducts.toString());
+      if (filterId) params.set("categoryId", filterId);
+      const getUrl = `api/v1/admin/products/sales-rep?${params.toString()}`;
+      const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+      axios
+        .get(`${BASE_URL}${getUrl}`, {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        })
+        .then((res) => {
+          if (cancelled) return;
+          const raw = res?.data?.data ?? res?.data ?? [];
+          const list = Array.isArray(raw) ? raw : raw?.data ?? [];
+          setModalProductList(list);
+        })
+        .catch(() => {
+          if (!cancelled) setModalProductList([]);
+        })
+        .finally(() => {
+          if (!cancelled) setModalProductsLoading(false);
+        });
+    } else {
+      // Partner view + self order, or direct partner order: POST sales-rep-products-for-order-creation/{salesRepId}
+      PostAPI(
+        `api/v1/admin/sales-rep-products-for-order-creation/${salesRepIdForProducts}`,
+        undefined
+      )
+        .then((res) => {
+          if (cancelled) return;
+          const list =
+            res?.data?.products ??
+            res?.data?.data?.products ??
+            (Array.isArray(res?.data?.data) ? res?.data?.data : []) ??
+            (Array.isArray(res?.data) ? res?.data : []);
+          setModalProductList(Array.isArray(list) ? list : []);
+        })
+        .catch(() => {
+          if (!cancelled) setModalProductList([]);
+        })
+        .finally(() => {
+          if (!cancelled) setModalProductsLoading(false);
+        });
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [modal, salesRepIdForProducts, isLocalPartnerCase, selectedPartnerId, filterId, userType, userID, isSelfOrder, partnersOrder, order?.salesRepId]);
 
   const getToday = () => {
     const today = new Date();
@@ -181,12 +283,23 @@ export default function CreateInvoice() {
     }));
   }, [order?.poNumber, order?.note, order?.shippingCharges]);
 
-  // Items state - initialize from cartItems
+  // Items state - initialize from cartItems; clear when cart is empty (e.g. after toggle)
+  // Use stable dependency (string key) to avoid infinite loop: cartItems array reference changes every render when empty
   const [items, setItems] = useState([]);
+  const cartItemsKey =
+    typeof window === "undefined"
+      ? ""
+      : (() => {
+          const stored = JSON.parse(localStorage.getItem("createOrderData")) || [];
+          return stored.length + "_" + stored.map((i) => i?.id ?? i?.productId ?? "").join(",");
+        })();
   useEffect(() => {
-    if (cartItems && cartItems.length > 0) {
+    const stored = typeof window !== "undefined" ? (JSON.parse(localStorage.getItem("createOrderData")) || []) : [];
+    if (!stored.length) {
+      setItems([]);
+    } else {
       setItems(
-        cartItems.map((item) => ({
+        stored.map((item) => ({
           ...item,
           checked: true,
           qty: item.qty || 1,
@@ -198,7 +311,7 @@ export default function CreateInvoice() {
         }))
       );
     }
-  }, [cartItems]);
+  }, [cartItemsKey]);
 
   // Extra rows state (for added delivery/extra charges)
   const [extraRows, setExtraRows] = useState([]);
@@ -249,6 +362,12 @@ export default function CreateInvoice() {
   };
 
   // Add delivery/extra charges row
+  // Admin creating invoice for partner, or partner view + self order: use wholesale price as unit
+  const unitPriceForNewItem = (prod) =>
+    (userType === "admin" && partnersOrder) || (userType === "salesRepresentative" && isSelfOrder)
+      ? Number(prod?.wholesalePrice ?? prod?.wholesale ?? 0) || Number(prod?.price ?? 0)
+      : Number(prod?.price ?? 0);
+
   const handleAddExtra = (prod) => {
     const itemIdx = items.findIndex((item) => item.productId == prod?.id);
     if (itemIdx !== -1) {
@@ -268,18 +387,20 @@ export default function CreateInvoice() {
           idx === existingIdx ? { ...item, qty: +item.qty + 1 } : item
         );
       }
+      const unit = unitPriceForNewItem(prod);
       return [
         ...prev,
         {
           id: `extra-${Date.now()}`,
           productId: prod?.id,
-          code: "",
+          code: prod?.productCode || prod?.code || "",
           name: prod?.name,
           qty: prod?.qty || 1,
-          unit: prod?.price,
+          unit,
           checked: true,
           weight: prod?.weight,
-          productCode: prod?.productCode,
+          productCode: prod?.productCode || prod?.code || "",
+          wholesalePrice: prod?.wholesalePrice ?? prod?.wholesale ?? unit,
         },
       ];
     });
@@ -413,16 +534,24 @@ export default function CreateInvoice() {
 
   // ========== DRAWER FUNCTIONALITY FUNCTIONS ==========
   
-  // Get customer list endpoint
+  // Get customer list endpoint (mirror orders/create + DrawerBeans: not-assigned for admin, partner's customers for local partner)
   const getCustomerListEndpoint = (page, limit, search = "") => {
-    const base =
-      isEmployee && hasPermission("selected-customer_view")
-        ? `api/v1/admin/customer-management/customer-list/employee-id/${userID}`
-        : userType === "admin"
-        ? `api/v1/admin/customer-management/customer-list/all`
-        : userType === "salesRepresentative"
-        ? `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}`
-        : `api/v1/admin/customer-management/customer-list/all`;
+    let base = "";
+    if (userType === "admin") {
+      if (viewMode === "localPartner" && selectedPartnerId) {
+        base = `api/v1/admin/customer-management/customer-list/sale-rep-id/${selectedPartnerId}`;
+      } else if (!partnersOrder) {
+        base = `api/v1/admin/customer-management/customer-list/not-assigned`;
+      } else {
+        base = `api/v1/admin/customer-management/customer-list/all`;
+      }
+    } else if (isEmployee && hasPermission("selected-customer_view")) {
+      base = `api/v1/admin/customer-management/customer-list/employee-id/${userID}`;
+    } else if (userType === "salesRepresentative") {
+      base = `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}`;
+    } else {
+      base = `api/v1/admin/customer-management/customer-list/all`;
+    }
 
     const params = new URLSearchParams();
     params.set("page", page.toString());
@@ -617,6 +746,7 @@ export default function CreateInvoice() {
   // Handle self order toggle for sales representatives
   const handleSelfOrderToggle = (checked) => {
     setIsSelfOrder(checked);
+    resetSelectedItems();
 
     if (checked) {
       setOrder((prev) => ({
@@ -637,15 +767,36 @@ export default function CreateInvoice() {
       setAddressOptions([]);
       setPartners([]);
       setSrNameOptions([]);
-      // Clear selected customer ref when toggling self order off
       selectedCustomerRef.current = null;
       fetchCustomerData(1, false, customerSearchQuery);
     }
   };
 
-  // Handle partner order toggle (admin only)
+  // Reset all form fields when user type / customer vs partner / view changes
+  const resetSelectedItems = () => {
+    setItems([]);
+    setExtraRows([]);
+    setExtraCharges([]);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("createOrderData", JSON.stringify([]));
+    }
+    setInvoiceFields((prev) => ({
+      ...prev,
+      invoiceNumber: "",
+      poNumber: "",
+      invoiceDate: getToday(),
+      dueDate: getDueDate(),
+      terms: "30",
+      discountPercentage: 0,
+      note: "",
+      shippingCharges: "",
+    }));
+  };
+
+  // Handle partner order toggle (admin only) - invoice for partner (direct)
   const handlePartnerOrder = (e) => {
     setPartnersOrder(e);
+    resetSelectedItems();
     setOrder({
       note: "",
       paymentMethod: "",
@@ -659,7 +810,6 @@ export default function CreateInvoice() {
     setEmail("");
     setAddressOptions([]);
     setEmailOptions([]);
-    // Clear selected customer ref when toggling
     selectedCustomerRef.current = null;
     if (!e) {
       setCustomerPage(1);
@@ -672,13 +822,65 @@ export default function CreateInvoice() {
     }
   };
 
+  // Local Partner view (same as orders/create): partner's inventory + partner's customers
+  const handleLocalPartnerClick = () => {
+    if (selectedPartnerId) {
+      setViewMode("localPartner");
+    } else {
+      setPartnerModalVisible(true);
+    }
+  };
+
+  const handlePartnerSelect = (selectedOption) => {
+    setTempSelectedPartner(selectedOption);
+  };
+
+  const handleConfirmPartner = () => {
+    if (tempSelectedPartner) {
+      setSelectedPartnerId(tempSelectedPartner.value);
+      setSelectedPartnerName(tempSelectedPartner.srName ?? tempSelectedPartner.label);
+      setViewMode("localPartner");
+      setPartnerModalVisible(false);
+      setTempSelectedPartner(null);
+      resetSelectedItems();
+      setOrder({ note: "", paymentMethod: "", poNumber: "", addressId: "", userId: "", salesRepId: "", shippingCharges: "" });
+      setCompanyNameOptions([]);
+      setEmail("");
+      setAddressOptions([]);
+      setCustomerPage(1);
+      setAllCustomers([]);
+      setCustomerSearchQuery("");
+      selectedCustomerRef.current = null;
+    } else {
+      info_toaster("Please select a partner");
+    }
+  };
+
+  const handleClearPartner = () => {
+    setSelectedPartnerId(null);
+    setSelectedPartnerName(null);
+    setViewMode("admin");
+    setTempSelectedPartner(null);
+    resetSelectedItems();
+    setOrder({ note: "", paymentMethod: "", poNumber: "", addressId: "", userId: "", salesRepId: "", shippingCharges: "" });
+    setCompanyNameOptions([]);
+    setEmail("");
+    setAddressOptions([]);
+    setCustomerPage(1);
+    setAllCustomers([]);
+    setCustomerSearchQuery("");
+    selectedCustomerRef.current = null;
+  };
+
   // Fetch customers with pagination and search
   const fetchCustomerData = async (
     page,
     append = false,
     searchQuery = customerSearchQuery
   ) => {
-    if (customerLoading || partnersOrder) return;
+    if (customerLoading) return;
+    if (partnersOrder && viewMode === "admin") return;
+    if (viewMode === "localPartner" && !selectedPartnerId) return;
 
     setCustomerLoading(true);
     try {
@@ -895,20 +1097,24 @@ export default function CreateInvoice() {
 
   // Fetch data on mount and when toggles change
   useEffect(() => {
-    if (partnersOrder) {
+    if (partnersOrder && viewMode === "admin") {
       fetchDirectPartnerData();
       setCustomerPage(1);
       setCompanyNameOptions([]);
       setAllCustomers([]);
       setCustomerSearchQuery("");
-      // Clear selected customer ref when switching to partners
       selectedCustomerRef.current = null;
-    } else if (!isSelfOrder) {
-      // Clear selected customer ref when switching back to customers to avoid stale data
+    } else if (viewMode === "localPartner" && selectedPartnerId) {
+      setCustomerPage(1);
+      setAllCustomers([]);
+      setCustomerSearchQuery("");
+      selectedCustomerRef.current = null;
+      fetchCustomerData(1, false, "");
+    } else if (!isSelfOrder && !partnersOrder) {
       selectedCustomerRef.current = null;
       fetchCustomerData(1, false, customerSearchQuery);
     }
-  }, [partnersOrder, isSelfOrder]);
+  }, [partnersOrder, isSelfOrder, viewMode, selectedPartnerId]);
 
   // Fetch sales rep's own data when self order is toggled
   useEffect(() => {
@@ -1061,7 +1267,9 @@ export default function CreateInvoice() {
         dueDate: invoiceFields.dueDate || "",
         note: invoiceFields.note || order?.note || "",
         addressId: order?.addressId,
-        ...(partnersOrder || isSelfOrder
+        ...(viewMode === "localPartner"
+          ? { userId: order?.userId }
+          : partnersOrder || isSelfOrder
           ? { salesRepId: isSelfOrder ? order?.salesRepId : order?.userId }
           : { userId: order?.userId }),
         paymentMethod: order?.paymentMethod,
@@ -1075,12 +1283,16 @@ export default function CreateInvoice() {
     };
 
     try {
-      // Determine endpoint based on user type and order type
+      // Three cases (same as orders/create): admin customer, (partner + partner inventory) customer, partner order (direct)
       let endpoint;
       if (userType === "admin") {
-        endpoint = partnersOrder 
-          ? `api/v1/admin/partner-order/book-new-order` 
-          : `api/v1/admin/book-new-order`;
+        if (viewMode === "localPartner") {
+          endpoint = `api/v1/admin/book-new-order`;
+        } else if (partnersOrder) {
+          endpoint = `api/v1/admin/partner-order/book-new-order`;
+        } else {
+          endpoint = `api/v1/admin/book-new-order`;
+        }
       } else {
         endpoint = isSelfOrder
           ? `api/v1/admin/partner-order/book-new-order`
@@ -1096,9 +1308,9 @@ export default function CreateInvoice() {
         localStorage.removeItem("invoiceFormData");
         if (orderId) {
           router.push(
-            partnersOrder || isSelfOrder
-              ? `/direct-invoices/partner/${orderId}/add-invoice`
-              : `/direct-invoices/${orderId}/add-invoice`
+            viewMode === "localPartner" || (!partnersOrder && !isSelfOrder)
+              ? `/direct-invoices/${orderId}/add-invoice`
+              : `/direct-invoices/partner/${orderId}/add-invoice`
           );
         }
       } else {
@@ -1111,11 +1323,24 @@ export default function CreateInvoice() {
     }
   };
 
+  const useModalProductsForList =
+    (partnersOrder || isLocalPartnerCase || (userType === "salesRepresentative" && isSelfOrder)) &&
+    salesRepIdForProducts;
   const handleFilter = () => {
-    const filteredData = ProductList?.data?.data?.filter((item) =>
-      item?.name?.toLowerCase().includes(search.toLowerCase() || "")
+    const sourceList = useModalProductsForList
+      ? (modalProductList || [])
+      : (ProductList?.data?.data || []);
+    let list = sourceList.filter((item) =>
+      (item?.name || "")
+        .toLowerCase()
+        .includes((search || "").toLowerCase())
     );
-    return filteredData;
+    if (filterId) {
+      list = list.filter(
+        (item) => String(item?.categoryId) === String(filterId)
+      );
+    }
+    return list;
   };
 
   useEffect(() => {
@@ -1140,14 +1365,147 @@ export default function CreateInvoice() {
       </div>
 
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
-        {/* ========== TOP SECTION: USER TYPE TOGGLES ========== */}
+        {/* ========== VIEW PRODUCTS (Admin only - same as orders/create) ========== */}
+        {userType === "admin" && (
+          <div className="bg-white rounded-lg border border-borderColor shadow-tableShadow p-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-6">
+                <span className="text-sm font-semibold text-gray-700">View Products:</span>
+                <div className="flex items-center gap-1 border border-gray-200 rounded-lg overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setViewMode("admin");
+                      handleClearPartner();
+                    }}
+                    className={`px-6 py-2.5 text-sm font-medium transition-all duration-200 ${
+                      viewMode === "admin"
+                        ? "bg-theme text-white"
+                        : "bg-white text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    Admin
+                  </button>
+                  <div className="w-px h-6 bg-gray-200" />
+                  <button
+                    type="button"
+                    onClick={handleLocalPartnerClick}
+                    className={`px-6 py-2.5 text-sm font-medium transition-all duration-200 relative ${
+                      viewMode === "localPartner"
+                        ? "bg-theme text-white"
+                        : "bg-white text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    {selectedPartnerName || "Local Partner"}
+                    {selectedPartnerId && (
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleClearPartner();
+                        }}
+                        onKeyDown={(e) => e.key === "Enter" && handleClearPartner()}
+                        className="ml-2 text-xs opacity-75 hover:opacity-100"
+                        title="Clear selection"
+                      >
+                        ×
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========== CONTEXT BANNERS (same as orders/create) ========== */}
+        {userType === "admin" && viewMode === "admin" && (
+          <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
+            <p className="text-sm font-medium text-amber-800">
+              You are viewing <strong>Admin inventory</strong>.
+            </p>
+            <p className="text-sm text-amber-700 mt-1">
+              The invoice will be created for admin <strong>Customers</strong> or <strong>Partners</strong>. Select company below, add items, then Generate Invoice.
+            </p>
+          </div>
+        )}
+        {userType === "admin" && viewMode === "localPartner" && selectedPartnerId && (
+          <div className="p-4 rounded-lg bg-emerald-50 border border-emerald-200">
+            <p className="text-sm font-medium text-emerald-800">
+              You are viewing <strong>{selectedPartnerName}&apos;s inventory</strong> (Local Partner).
+            </p>
+            <p className="text-sm text-emerald-700 mt-1">
+              The invoice will be created for this <strong>partner&apos;s customer</strong>. Select company below, add items, then Generate Invoice.
+            </p>
+          </div>
+        )}
+
+        {/* ========== PARTNER SELECTION MODAL (same as orders/create) ========== */}
+        {userType === "admin" && (
+          <Dialog
+            visible={partnerModalVisible}
+            onHide={() => {
+              setPartnerModalVisible(false);
+              setTempSelectedPartner(null);
+            }}
+            dismissableMask
+            header="Select Local Partner"
+            className="font-nunito"
+            style={{ width: "90vw", maxWidth: "500px" }}
+            contentStyle={{ padding: "1.5rem", maxHeight: "70vh", overflow: "visible" }}
+            footer={
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPartnerModalVisible(false);
+                    setTempSelectedPartner(null);
+                  }}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmPartner}
+                  className="px-4 py-2 bg-theme text-white rounded-lg hover:bg-themeDark font-medium transition-colors"
+                >
+                  Confirm
+                </button>
+              </div>
+            }
+          >
+            <div className="space-y-4" style={{ minHeight: "150px" }}>
+              <p className="text-sm text-gray-600 mb-4">
+                Please select a local partner to view their products and customers:
+              </p>
+              <div style={{ position: "relative", zIndex: 9999 }}>
+                <Select
+                  onChange={handlePartnerSelect}
+                  placeholder="Select a partner..."
+                  options={partnerOptions}
+                  value={tempSelectedPartner}
+                  styles={{
+                    ...selectStyles,
+                    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                    menu: (base) => ({ ...base, zIndex: 9999, maxHeight: "300px", overflowY: "auto" }),
+                  }}
+                  menuPortalTarget={typeof document !== "undefined" ? document.body : null}
+                />
+              </div>
+            </div>
+          </Dialog>
+        )}
+
+        {/* ========== INVOICE DETAILS CARD ========== */}
         <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold text-theme-black-2">Invoice Details</h2>
           </div>
           
-          {/* Toggle for Partners (Admin only) */}
-          {userType === "admin" && (
+          {/* Toggle for Partners (Admin only) - hide when Local Partner view */}
+          {userType === "admin" && viewMode === "admin" && (
             <div className="flex items-center gap-x-2 justify-end mb-4">
               <label className="text-gray-700 font-medium">
                 {partnersOrder ? "Partners" : "Customers"}
@@ -1823,10 +2181,11 @@ export default function CreateInvoice() {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Modal - same UI as orders/detail/[orderID]/add-invoice */}
       <Dialog
         visible={modal}
-        style={{ width: "40vw" }}
+        style={{ width: "50vw", maxWidth: "700px" }}
+        breakpoints={{ "1024px": "70vw", "768px": "85vw", "640px": "95vw" }}
         className="font-nunito"
         dismissableMask={true}
         onHide={() => setModal(false)}
@@ -1836,11 +2195,92 @@ export default function CreateInvoice() {
           </div>
         }
       >
-        {ProductList?.length === 0 ? (
+        {useModalProductsForList ? (
+          modalProductsLoading ? (
+            <MiniLoader />
+          ) : (
+            <div className="flex flex-col">
+              <div className="sticky top-0 space-y-2 bg-white pb-3 z-10">
+                <div className="w-full h-14 rounded-md border relative">
+                  <div className="absolute top-1/2 -translate-y-1/2 left-2">
+                    <IoIosSearch size={25} color="gray" />
+                  </div>
+                  <input
+                    className="w-full h-full outline-none bg-transparent pl-10 pr-4"
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search Product..."
+                  />
+                </div>
+                <div className="w-full">
+                  <Select
+                    placeholder="Select Category"
+                    options={categoryList}
+                    className="w-full text-black"
+                    styles={selectStyles2}
+                    value={categoryList.find((c) => c.value === filterId)}
+                    onChange={(e) => setFilterId(e?.value ?? "")}
+                  />
+                </div>
+              </div>
+              {handleFilter()?.length === 0 ? (
+                <p className="text-gray-500 py-4 text-center">
+                  No products available
+                </p>
+              ) : (
+                <div className="overflow-y-auto max-h-96">
+                  {handleFilter()?.map((item, idx) => (
+                    <div
+                      key={item.id || idx}
+                      onClick={() => handleAddExtra(item)}
+                      className="text-sm cursor-pointer border-b flex items-center justify-between hover:bg-gray-100 px-3 py-3 hover:shadow-sm transition-all group"
+                    >
+                      <div className="flex-1 space-y-1">
+                        <p className="font-semibold text-gray-800 group-hover:text-theme">
+                          {item?.name}
+                        </p>
+                        <div className="flex items-center gap-3 text-xs text-gray-500">
+                          {item?.sku && (
+                            <span className="bg-gray-100 px-2 py-0.5 rounded">
+                              SKU: {item?.sku}
+                            </span>
+                          )}
+                          {(item?.productCode || item?.code) && (
+                            <span className="bg-gray-100 px-2 py-0.5 rounded">
+                              Code: {item?.productCode || item?.code}
+                            </span>
+                          )}
+                          {item?.weight != null && (
+                            <span className="text-gray-400">
+                              {typeof item.weight === "number" ? item.weight.toFixed(2) : item.weight} {item?.unit || "lbs"}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-1 ml-4">
+                        {(item?.price != null || item?.price === 0) && (
+                          <span className="font-bold text-lg text-theme">
+                            ${parseFloat(item?.price ?? 0).toFixed(2)}
+                          </span>
+                        )}
+                        {(item?.wholesalePrice ?? item?.wholesale) != null && (
+                          <span className="text-xs text-gray-500">
+                            Wholesale: ${parseFloat(item?.wholesalePrice ?? item?.wholesale ?? 0).toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        ) : ProductList?.length === 0 ? (
           <MiniLoader />
         ) : (
           <div className="flex flex-col">
-            <div className="sticky top-0 space-y-2 bg-white pb-2">
+            <div className="sticky top-0 space-y-2 bg-white pb-3 z-10">
               <div className="w-full h-14 rounded-md border relative">
                 <div className="absolute top-1/2 -translate-y-1/2 left-2">
                   <IoIosSearch size={25} color="gray" />
@@ -1863,17 +2303,50 @@ export default function CreateInvoice() {
               </div>
             </div>
 
-            {handleFilter()?.map((item, idx) => {
-              return (
+            <div className="overflow-y-auto max-h-96">
+              {handleFilter()?.map((item, idx) => (
                 <div
                   key={item.id || idx}
                   onClick={() => handleAddExtra(item)}
-                  className="text-sm text-start text-gray-500 cursor-pointer h-12 border-b flex items-center hover:bg-gray-100 px-2 hover:text-black hover:font-semibold"
+                  className="text-sm cursor-pointer border-b flex items-center justify-between hover:bg-gray-100 px-3 py-3 hover:shadow-sm transition-all group"
                 >
-                  <p>{item?.name}</p>
+                  <div className="flex-1 space-y-1">
+                    <p className="font-semibold text-gray-800 group-hover:text-theme">
+                      {item?.name}
+                    </p>
+                    <div className="flex items-center gap-3 text-xs text-gray-500">
+                      {item?.sku && (
+                        <span className="bg-gray-100 px-2 py-0.5 rounded">
+                          SKU: {item?.sku}
+                        </span>
+                      )}
+                      {(item?.productCode || item?.code) && (
+                        <span className="bg-gray-100 px-2 py-0.5 rounded">
+                          Code: {item?.productCode || item?.code}
+                        </span>
+                      )}
+                      {item?.weight != null && (
+                        <span className="text-gray-400">
+                          {typeof item.weight === "number" ? item.weight.toFixed(2) : item.weight} {item?.unit || "lbs"}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-1 ml-4">
+                    {(item?.price != null || item?.price === 0) && (
+                      <span className="font-bold text-lg text-theme">
+                        ${parseFloat(item?.price ?? 0).toFixed(2)}
+                      </span>
+                    )}
+                    {(item?.wholesalePrice ?? item?.wholesale) != null && (
+                      <span className="text-xs text-gray-500">
+                        Wholesale: ${parseFloat(item?.wholesalePrice ?? item?.wholesale ?? 0).toFixed(2)}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
         )}
       </Dialog>

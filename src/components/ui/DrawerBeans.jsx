@@ -433,7 +433,8 @@ const DrawerBeans = ({
 
   useEffect(() => {
     if (partners && isSelfOrder) {
-      let list = partners?.[0]?.addresses?.map((add) => ({
+      const addresses = partners?.[0]?.addresses ?? [];
+      let list = addresses.map((add) => ({
         value: add?.id,
         label: [
           add?.companyaddress,
@@ -447,8 +448,14 @@ const DrawerBeans = ({
       }));
 
       setAddressOptions(list);
+      if (addresses.length > 0) {
+        setOrder((prev) => ({
+          ...prev,
+          addressId: prev.addressId || addresses[0]?.id,
+        }));
+      }
     }
-  }, [partners]);
+  }, [partners, isSelfOrder]);
 
   const handleSrNameSelect = async (selectedOption) => {
     const selectedPartner = partners?.find(
@@ -617,7 +624,7 @@ const DrawerBeans = ({
         info_toaster("Email cannot be empty");
       } else if (isDirectPartner && !order?.salesRepId) {
         info_toaster("Please select a partner");
-      } else if (!isDirectPartner && !order?.addressId) {
+      } else if (!isDirectPartner && !isSelfOrder && !order?.addressId) {
         info_toaster("Address cannot be empty");
       } else if (!order?.paymentMethod) {
         info_toaster("select payment method");
@@ -1392,7 +1399,7 @@ const DrawerBeans = ({
               )}
 
               {/* Only show Order Details if customer or partner is selected */}
-              {(order?.userId || order?.salesRepId) && (
+              {(order?.userId || order?.salesRepId || isSelfOrder) && (
                 <>
                   <p className="font-medium text-base">Order Details</p>
 

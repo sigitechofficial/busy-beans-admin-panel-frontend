@@ -5,10 +5,10 @@ import MiniLoader from "@/components/ui/MiniLoader";
 import { useDataContext } from "@/utilities/DataContext";
 import GetAPI from "@/utilities/GetAPI";
 import { PatchAPI } from "@/utilities/PatchAPI";
+import { PostAPI } from "@/utilities/PostAPI";
 import { selectStyles2 } from "@/utilities/SelectStyle";
 import { success_toaster, info_toaster } from "@/utilities/Toaster";
 import { useParams, useRouter } from "next/navigation";
-import { stringify } from "postcss";
 import { Dialog } from "primereact/dialog";
 import React, { useEffect, useState } from "react";
 import { CiMenuBurger } from "react-icons/ci";
@@ -43,6 +43,8 @@ export default function AddInvoice() {
   const { data: category } = GetAPI(`api/v1/admin/category`);
   const [modal, setModal] = useState(false);
   const [search, setSearch] = useState("");
+  const [modalProductList, setModalProductList] = useState(null);
+  const [modalProductsLoading, setModalProductsLoading] = useState(false);
   let categoryList = [{ value: "", label: "All" }];
 
   if (category) {
@@ -50,10 +52,45 @@ export default function AddInvoice() {
       categoryList.push({ value: cat?.id, label: cat?.name });
     });
   }
-  const url = filterId
-    ? `api/v1/admin/product?categoryId=${filterId}`
-    : `api/v1/admin/product`;
-  const { data: ProductList, reFetch: ProductRefetch } = GetAPI(url);
+
+  // Partner direct invoice: modal products from POST api/v1/admin/sales-rep-products-for-order-creation/{salesRepId}
+  const salesRepId =
+    data?.data?.order?.salesRepId ??
+    data?.data?.order?.salesRep?.id ??
+    data?.data?.order?.user?.id ??
+    null;
+
+  useEffect(() => {
+    if (!modal || !salesRepId) {
+      if (!modal) setModalProductList(null);
+      return;
+    }
+    let cancelled = false;
+    setModalProductsLoading(true);
+    PostAPI(
+      `api/v1/admin/sales-rep-products-for-order-creation/${salesRepId}`,
+      undefined
+    )
+      .then((res) => {
+        if (cancelled) return;
+        const list =
+          res?.data?.products ??
+          res?.data?.data?.products ??
+          (Array.isArray(res?.data?.data) ? res?.data?.data : []);
+        setModalProductList(Array.isArray(list) ? list : []);
+      })
+      .catch(() => {
+        if (!cancelled) setModalProductList([]);
+      })
+      .finally(() => {
+        if (!cancelled) setModalProductsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [modal, salesRepId]);
+
+  const productsArray = modalProductList ?? [];
   const savedCards =
     paymentCardsRes?.data?.data?.cards ??
     paymentCardsRes?.data?.cards ??
@@ -106,11 +143,20 @@ export default function AddInvoice() {
   };
 
   const handleFilter = () => {
-    const filteredData = ProductList?.data?.data?.filter((item) =>
-      item?.name?.toLowerCase().includes(search.toLowerCase() || "")
-    );
-
-    return filteredData;
+    let list = productsArray ?? [];
+    if (search?.trim()) {
+      const q = search.toLowerCase().trim();
+      list = list.filter(
+        (item) =>
+          item?.name?.toLowerCase().includes(q) ||
+          item?.sku?.toLowerCase().includes(q) ||
+          (item?.productCode || item?.code)?.toLowerCase().includes(q)
+      );
+    }
+    if (filterId) {
+      list = list.filter((item) => String(item?.categoryId ?? item?.category?.id ?? "") === String(filterId));
+    }
+    return list;
   };
 
   // On API data load, set invoice fields and items
@@ -136,13 +182,18 @@ export default function AddInvoice() {
       setItems(
         (data?.data?.order?.items || [])
           .filter((item) => item.type === "product")
-          .map((item) => ({
-            ...item,
-            checked: true,
-            qty: item.qty || 1,
-            weight: item?.singleUnitWeight,
-            unit: item?.wholesalePrice / item?.qty || item?.price / item?.qty,
-          }))
+          .map((item) => {
+            const qty = Number(item.qty) || 1;
+            const lineTotal = Number(item?.price) || 0;
+            const unitPrice = qty > 0 ? lineTotal / qty : 0;
+            return {
+              ...item,
+              checked: true,
+              qty,
+              weight: item?.singleUnitWeight,
+              unit: unitPrice,
+            };
+          })
       );
       const chargesFromItems = (data?.data?.order?.items || [])
         .filter((item) => item.type === "charges")
@@ -360,19 +411,18 @@ export default function AddInvoice() {
     ? Number(shippingChargeObj.charges)
     : 0;
 
-  // Calculate total
+  // Calculate total (unit price = price/qty from API line total)
   const total =
     items
       .filter((item) => item.checked)
       .reduce(
-        (sum, item) =>
-          sum +
-          (item.qty || 1) *
-          (item.unit !== undefined
-            ? item.unit
-            : item.price !== undefined
-              ? item.price
-              : 0),
+        (sum, item) => {
+          const unit =
+            item.unit !== undefined
+              ? item.unit
+              : (Number(item.price) || 0) / (item.qty || 1);
+          return sum + (item.qty || 1) * unit;
+        },
         0
       ) +
     extraRows
@@ -410,17 +460,23 @@ export default function AddInvoice() {
     const itemsForApi = [
       ...items
         .filter((item) => item.checked)
-        .map((item) => ({
-          //   id: item.id,
-          orderId: item.orderId,
-          productId: item.productId,
-          product: item.product,
-          productCode: item.productCode,
-          qty: item.qty,
-          price: item.price,
-          discount: item.discount,
-          wholesalePrice: item.wholesalePrice,
-        })),
+        .map((item) => {
+          const unit =
+            item.unit !== undefined
+              ? item.unit
+              : (Number(item.price) || 0) / (item.qty || 1);
+          const lineTotal = (item.qty || 1) * unit;
+          return {
+            orderId: item.orderId,
+            productId: item.productId,
+            product: item.product,
+            productCode: item.productCode,
+            qty: item.qty,
+            price: lineTotal,
+            discount: item.discount,
+            wholesalePrice: item.wholesalePrice,
+          };
+        }),
       ...extraRows
         .filter((item) => item.checked)
         .map((item) => ({
@@ -725,66 +781,60 @@ export default function AddInvoice() {
               </tr>
             </thead>
             <tbody>
-              {(data?.data?.order?.items || []).map((item, itemIdx) => (
-                <tr
-                  key={item.id}
-                  data-testid={ORDER_ADD_INVOICE.itemRow(item.id)}
-                >
-                  <td className="py-2 px-2 border border-gray-200 text-center">
-                    <input
-                      type="checkbox"
-                      checked={item.checked}
-                      onChange={(e) =>
-                        handleItemCheck(itemIdx, e.target.checked)
-                      }
-                    />
-                  </td>
-                  <td className="py-2 px-2 border border-gray-200">
-                    {item.productCode || item.code}
-                  </td>
-                  <td className="py-2 px-2 font-semibold border border-gray-200">
-                    {item.product || item.productName || item.name}
-                  </td>
-                  <td className="py-2 px-2 text-center border border-gray-200">
-                    <input
-                      type="number"
-                      min={1}
-                      className="w-16 border border-gray-200 rounded px-1 py-1 text-center"
-                      value={item.qty ?? 1}
-                      onWheel={(e) => e.currentTarget.blur()}
-                      onChange={(e) =>
-                        handleItemQtyChange(itemIdx, e.target.value)
-                      }
-                      data-testid={ORDER_ADD_INVOICE.itemQtyInput(item.id)}
-                    />
-                  </td>
-                  {(userType === "admin" ||
-                    userType === "salesRepresentative") && (
+              {items.map((item, itemIdx) => {
+                const unitPrice =
+                  item.unit !== undefined
+                    ? item.unit
+                    : (Number(item.price) || 0) / (item.qty || 1);
+                const lineTotal = (item.qty || 1) * unitPrice;
+                return (
+                  <tr
+                    key={item.id}
+                    data-testid={ORDER_ADD_INVOICE.itemRow(item.id)}
+                  >
+                    <td className="py-2 px-2 border border-gray-200 text-center">
+                      <input
+                        type="checkbox"
+                        checked={item.checked}
+                        onChange={(e) =>
+                          handleItemCheck(itemIdx, e.target.checked)
+                        }
+                      />
+                    </td>
+                    <td className="py-2 px-2 border border-gray-200">
+                      {item.productCode || item.code}
+                    </td>
+                    <td className="py-2 px-2 font-semibold border border-gray-200">
+                      {item.product || item.productName || item.name}
+                    </td>
+                    <td className="py-2 px-2 text-center border border-gray-200">
+                      <input
+                        type="number"
+                        min={1}
+                        className="w-16 border border-gray-200 rounded px-1 py-1 text-center"
+                        value={item.qty ?? 1}
+                        onWheel={(e) => e.currentTarget.blur()}
+                        onChange={(e) =>
+                          handleItemQtyChange(itemIdx, e.target.value)
+                        }
+                        data-testid={ORDER_ADD_INVOICE.itemQtyInput(item.id)}
+                      />
+                    </td>
+                    {(userType === "admin" ||
+                      userType === "salesRepresentative") && (
                       <td className="py-2 px-2 text-right border border-gray-200">
-                        {/* $ */}
-                        {item.unit !== undefined
-                          ? item.unit
-                          : item.price !== undefined
-                            ? item.price
-                            : 0}
+                        {Number(unitPrice).toFixed(2)}
                       </td>
                     )}
-                  {(userType === "admin" ||
-                    userType === "salesRepresentative") && (
+                    {(userType === "admin" ||
+                      userType === "salesRepresentative") && (
                       <td className="py-2 px-2 text-right border border-gray-200">
-                        $
-                        {(
-                          (item.qty || 1) *
-                          (item.unit !== undefined
-                            ? item.unit
-                            : item.price !== undefined
-                              ? item.price
-                              : 0)
-                        ).toFixed(2)}
+                        ${Number(lineTotal).toFixed(2)}
                       </td>
                     )}
-                </tr>
-              ))}
+                  </tr>
+                );
+              })}
               {extraRows.map((item, idx) => (
                 <tr
                   key={item.id}
@@ -1170,12 +1220,12 @@ export default function AddInvoice() {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Modal - same UI as create-invoice Add Items modal */}
       <Dialog
         visible={modal}
         data-testid={ORDER_ADD_INVOICE.modal.root}
-        style={{ width: "40vw" }}
-        // breakpoints={{ "1496px": "40vw", "1024px": "70vw", "641px": "80vw" }}
+        style={{ width: "50vw", maxWidth: "700px" }}
+        breakpoints={{ "1024px": "70vw", "768px": "85vw", "640px": "95vw" }}
         className="font-nunito"
         dismissableMask={true}
         onHide={() => setModal(false)}
@@ -1185,14 +1235,13 @@ export default function AddInvoice() {
           </div>
         }
       >
-        {ProductList?.length === 0 ? (
+        {modalProductsLoading ? (
           <MiniLoader />
+        ) : !salesRepId ? (
+          <p className="text-gray-500 py-4 text-center">Order data is loading.</p>
         ) : (
-          <div
-            // onSubmit={handleStock}
-            className="flex flex-col"
-          >
-            <div className="sticky top-0 space-y-2 bg-white pb-2">
+          <div className="flex flex-col">
+            <div className="sticky top-0 space-y-2 bg-white pb-3 z-10">
               <div className="w-full h-14 rounded-md border relative">
                 <div className="absolute top-1/2 -translate-y-1/2 left-2">
                   <IoIosSearch size={25} color="gray" />
@@ -1200,8 +1249,7 @@ export default function AddInvoice() {
                 <input
                   className="w-full h-full outline-none bg-transparent pl-10 pr-4"
                   type="text"
-                  name=""
-                  id=""
+                  value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search Product..."
                   data-testid={ORDER_ADD_INVOICE.modal.searchInput}
@@ -1213,25 +1261,63 @@ export default function AddInvoice() {
                   options={categoryList}
                   className="w-full text-black"
                   styles={selectStyles2}
-                  // value={ }
-                  onChange={(e) => setFilterId(e?.value)}
+                  value={categoryList.find((c) => c.value === filterId)}
+                  onChange={(e) => setFilterId(e?.value ?? "")}
                   inputId={ORDER_ADD_INVOICE.modal.categorySelect}
                 />
               </div>
             </div>
-
-            {handleFilter()?.map((item, idx) => {
-              return (
-                <div
-                  key={item.id || idx}
-                  onClick={() => handleAddExtra(item)}
-                  className="text-sm text-start text-gray-500 cursor-pointer h-12 border-b flex items-center hover:bg-gray-100 px-2 hover:text-black hover:font-semibold"
-                  data-testid={ORDER_ADD_INVOICE.modal.productRow(item.id)}
-                >
-                  <p>{item?.name}</p>
-                </div>
-              );
-            })}
+            {handleFilter()?.length === 0 ? (
+              <p className="text-gray-500 py-4 text-center">
+                No products available
+              </p>
+            ) : (
+              <div className="overflow-y-auto max-h-96">
+                {handleFilter()?.map((item, idx) => (
+                  <div
+                    key={item.id || idx}
+                    onClick={() => handleAddExtra(item)}
+                    className="text-sm cursor-pointer border-b flex items-center justify-between hover:bg-gray-100 px-3 py-3 hover:shadow-sm transition-all group"
+                    data-testid={ORDER_ADD_INVOICE.modal.productRow(item.id)}
+                  >
+                    <div className="flex-1 space-y-1">
+                      <p className="font-semibold text-gray-800 group-hover:text-theme">
+                        {item?.name}
+                      </p>
+                      <div className="flex items-center gap-3 text-xs text-gray-500">
+                        {item?.sku && (
+                          <span className="bg-gray-100 px-2 py-0.5 rounded">
+                            SKU: {item?.sku}
+                          </span>
+                        )}
+                        {(item?.productCode || item?.code) && (
+                          <span className="bg-gray-100 px-2 py-0.5 rounded">
+                            Code: {item?.productCode || item?.code}
+                          </span>
+                        )}
+                        {item?.weight != null && (
+                          <span className="text-gray-400">
+                            {typeof item.weight === "number" ? item.weight.toFixed(2) : item.weight} {item?.unit || "lbs"}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 ml-4">
+                      {(item?.price != null || item?.price === 0) && (
+                        <span className="font-bold text-lg text-theme">
+                          ${parseFloat(item?.price ?? 0).toFixed(2)}
+                        </span>
+                      )}
+                      {(item?.wholesalePrice ?? item?.wholesale) != null && (
+                        <span className="text-xs text-gray-500">
+                          Wholesale: ${parseFloat(item?.wholesalePrice ?? item?.wholesale ?? 0).toFixed(2)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </Dialog>

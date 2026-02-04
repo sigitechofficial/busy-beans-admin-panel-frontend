@@ -988,36 +988,37 @@ const DrawerBeans = ({
         visible={showPartnerChangeWarning}
         onHide={handleCancelToggleChange}
         dismissableMask={false}
-        header="Change Partner Mode?"
-        className="font-nunito"
-        style={{ width: "90vw", maxWidth: "450px" }}
+        header={
+          <div className="text-center w-full pr-8">
+            <h3 className="text-lg font-semibold text-gray-800">Change Partner Mode?</h3>
+            <p className="text-sm text-gray-500 mt-1">This will affect your current order</p>
+          </div>
+        }
+        className="font-nunito rounded-2xl overflow-hidden shadow-xl"
+        style={{ width: "90vw", maxWidth: "420px" }}
+        contentStyle={{ padding: "1.5rem 1.5rem 1.25rem" }}
         footer={
-          <div className="flex justify-end gap-3">
+          <div className="flex justify-end gap-3 pt-2 pb-1 px-1">
             <button
               type="button"
               onClick={handleCancelToggleChange}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+              className="px-5 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={handleConfirmToggleChange}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors"
+              className="px-5 py-2.5 text-sm font-medium text-white bg-theme rounded-lg hover:opacity-90 transition-colors"
             >
-              OK
+              Continue
             </button>
           </div>
         }
       >
-        <div className="space-y-4 py-4">
-          <p className="text-gray-700">
-            Changing the partner mode will clear your cart and reset all fields. The drawer will close.
-          </p>
-          <p className="text-sm text-gray-500 font-medium">
-            Do you want to continue?
-          </p>
-        </div>
+        <p className="text-gray-700 leading-relaxed">
+          Changing the partner mode will clear your cart and reset all fields. The drawer will close. Do you want to continue?
+        </p>
       </Dialog>
 
       <Sidebar

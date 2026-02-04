@@ -552,7 +552,7 @@ export default function OrderDetail() {
               >
                 {data?.data?.order?.invoiceDate &&data?.data?.order?.paymentStatus === "pending"
                   ? "Invoice reminder"
-                  : data?.data?.order?.paymentStatus === "done" ? "Resend Paid Invoice": "Send Invoice"}
+                  : data?.data?.order?.paymentStatus === "done" ? "Send Receipt": "Send Invoice"}
               </button>
             )}
           </li>

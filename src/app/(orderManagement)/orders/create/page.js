@@ -10,7 +10,7 @@ import { PostAPI } from "@/utilities/PostAPI";
 import DrawerBeans from "@/components/ui/DrawerBeans";
 import Select from "react-select";
 import selectStyles, { selectStyles2 } from "@/utilities/SelectStyle";
-import { info_toaster, success_toaster } from "@/utilities/Toaster";
+import { error_toaster, info_toaster, success_toaster } from "@/utilities/Toaster";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import { BASE_URL } from "@/utilities/URL";
 import axios from "axios";
@@ -212,6 +212,17 @@ export default function CreateOrder() {
       return;
     }
 
+    // Validate: wholesale price must be <= selling price for each product
+    for (const [productId, prices] of changedProducts) {
+      const product = partnerInventoryProducts.find(p => p.id === Number(productId));
+      const sellingPrice = prices.price !== undefined ? Number(prices.price) : Number(product?.customPrice || product?.price || 0);
+      const wholesalePrice = prices.wholesalePrice !== undefined ? Number(prices.wholesalePrice) : Number(product?.wholesalePrice || 0);
+      if (wholesalePrice > sellingPrice) {
+        error_toaster("Wholesale price must be less than or equal to selling price.");
+        return;
+      }
+    }
+
     setSubmitPriceLoader(true);
     try {
       const payload = changedProducts.map(([productId, prices]) => {
@@ -297,6 +308,13 @@ export default function CreateOrder() {
         status: true,
       };
     });
+
+    // Validate: wholesale price must be <= selling price for each product
+    const invalidProduct = productsToAdd.find((p) => p.wholesalePrice > p.price);
+    if (invalidProduct) {
+      error_toaster("Wholesale price must be less than or equal to selling price.");
+      return;
+    }
 
     setSubmitAddProductLoader(true);
     try {

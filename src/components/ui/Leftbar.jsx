@@ -653,7 +653,8 @@ export default function Leftbar(props) {
               Icon={MdShoppingCart}
               active={
                 pathname.includes("/orders/create") ||
-                pathname.includes("/orders/emails")
+                pathname.includes("/orders/emails") ||
+                pathname.includes("/orders/email-logs")
               }
               Angle={
                 FaAngleRight
@@ -682,6 +683,7 @@ export default function Leftbar(props) {
                   )}
 
                   <ListItems title="Emails" to="/orders/emails" />
+                  <ListItems title="Email Logs" to="/orders/email-logs" />
                 </div>
               </>
             )}

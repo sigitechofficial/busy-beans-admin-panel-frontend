@@ -7,7 +7,7 @@ import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { PostAPI } from "@/utilities/PostAPI";
 import { PatchAPI } from "@/utilities/PatchAPI";
 import { DeleteAPI } from "@/utilities/DeleteAPI";
-import { info_toaster, success_toaster } from "@/utilities/Toaster";
+import { error_toaster, info_toaster, success_toaster } from "@/utilities/Toaster";
 import GetAPI from "@/utilities/GetAPI";
 import ManagementTab from "@/components/ui/ManagementTab";
 import MyDataTable from "@/components/ui/MyDataTable";
@@ -294,6 +294,13 @@ export default function SalesRepInventoryStockPage() {
       info_toaster("Please enter a valid price.");
       return;
     }
+    // Selling price must be >= wholesale price
+    const product = productsArray.find((p) => p.id === editProductId);
+    const wholesalePrice = Number(product?.wholesalePrice ?? 0);
+    if (priceNum < wholesalePrice) {
+      error_toaster("Selling price must be greater than or equal to wholesale price.");
+      return;
+    }
     setEditLoader(true);
     try {
       const payload = [
@@ -412,6 +419,12 @@ export default function SalesRepInventoryStockPage() {
       wholesalePrice: Number(p.wholesalePrice || 0),
       status: true,
     }));
+    // Wholesale price must be <= selling price for each product
+    const invalidProduct = payload.find((p) => p.wholesalePrice > p.price);
+    if (invalidProduct) {
+      error_toaster("Selling price must be greater than or equal to wholesale price.");
+      return;
+    }
     setSubmitLoader(true);
     try {
       const res = await PostAPI(

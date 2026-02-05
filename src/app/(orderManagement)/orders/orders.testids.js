@@ -186,6 +186,8 @@ const ORDER_DETAIL = {
   paymentStatusReadonly: "payment-status-readonly",
   paymentStatusSelect: "payment-status-select",
 
+  emailLogsSection: "email-logs-section",
+
   summaryCard: {
     wrapper: "summary-wrapper",
     orderedOnRow: "summary-ordered-on",

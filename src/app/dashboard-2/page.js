@@ -13,8 +13,14 @@ import {
 import { MdFilterAlt } from "react-icons/md";
 import { formatUSD } from "@/utilities/constants";
 import dayjs from "dayjs";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import UserTypeFilterModal from "@/components/ui/UserTypeFilterModal";
+import { PostAPI } from "@/utilities/PostAPI";
+import ErrorHandler from "@/utilities/ErrorHandler";
+import { BASE_URL, STRIPE_PUBLIC_KEY } from "@/utilities/URL";
+import { success_toaster, error_toaster } from "@/utilities/Toaster";
+import { loadStripe } from "@stripe/stripe-js";
+import api from "@/utilities/StatusErrorHandler";
 
 export default function Dashboard2() {
   const router = useRouter();
@@ -23,12 +29,26 @@ export default function Dashboard2() {
     salesRepIds: null,
   });
   const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const [showBankRetry, setShowBankRetry] = useState(false);
+  const [linking, setLinking] = useState(false);
+  const [bankConnected, setBankConnected] = useState(null);
+  const partnerChecksDoneRef = useRef(false);
 
-  let userType, userName, userID;
+  let userType,
+    userName,
+    userID,
+    connectAccountId,
+    isAccountConnected,
+    isEmployee,
+    url;
   if (typeof window !== "undefined") {
     userType = localStorage.getItem("userType");
     userName = localStorage.getItem("userName");
     userID = localStorage.getItem("userID");
+    connectAccountId = localStorage.getItem("connectAccountId");
+    isAccountConnected = localStorage.getItem("isAccountConnected");
+    isEmployee = localStorage.getItem("isEmployee") === "true";
+    url = window.location.href;
   }
 
   // Calculate date ranges for API query parameters
@@ -76,11 +96,274 @@ export default function Dashboard2() {
   // Fetch sales dashboard data from the appropriate API endpoint
   const { data: salesData, isLoading: salesLoading } = GetAPI(
     dashboardEndpoint,
-    `dashboard-sales-${userType || "admin"}`,
+    `dashboard-sales-${userType || "admin"}`
   );
 
   // Fetch sales reps list to get partner names
   const { data: salesRepData } = GetAPI("api/v1/admin/sales-rep");
+
+  // Partner profile (for bank account status) – only when partner
+  const partnerProfileUrl =
+    userType === "salesRepresentative" && userID
+      ? `api/v1/admin/sales-rep/${userID}`
+      : "";
+  const { data: partnerProfile } = GetAPI(
+    partnerProfileUrl,
+    partnerProfileUrl ? `partner-profile-${userID}` : "partner-profile-skip"
+  );
+  const isBankConnected =
+    bankConnected !== null
+      ? bankConnected
+      : !!partnerProfile?.data?.defaultBankAccount;
+
+  // Partner-only: Stripe account status + bank check on first load
+  useEffect(() => {
+    if (userType !== "salesRepresentative" || isEmployee || !userID) return;
+    if (partnerChecksDoneRef.current) return;
+    partnerChecksDoneRef.current = true;
+
+    const stripeAccountStatus = async () => {
+      try {
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("token") ||
+              localStorage.getItem("accessToken")
+            : "";
+        const res = await api.get(
+          BASE_URL + `api/v1/admin/stripe-connect-account-retrieve/${userID}`,
+          {
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+          }
+        );
+        if (res?.data?.status === "success") {
+          localStorage.setItem("isAccountConnected", "true");
+        } else {
+          throw new Error(res?.data?.message || "Failed to retrieve account.");
+        }
+      } catch (error) {
+        try {
+          const path = url.split("/");
+          const fallback = await PostAPI(
+            `api/v1/admin/stripe-connect-account-url/${userID}`,
+            { returnUrl: "https://" + path[2].trim() }
+          );
+          if (
+            fallback?.data?.status === "success" &&
+            fallback?.data?.data?.data?.connectAccount
+          ) {
+            const link = document.createElement("a");
+            link.href = fallback?.data?.data?.data?.connectAccount;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.click();
+          }
+        } catch (fallbackErr) {
+          ErrorHandler(fallbackErr);
+        }
+      }
+    };
+
+    const checkBankStatus = async () => {
+      try {
+        const res = await api.get(
+          BASE_URL + `api/v1/admin/sales-rep/${userID}`,
+          {
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            },
+          }
+        );
+        setBankConnected(!!res?.data?.data?.defaultBankAccount);
+      } catch {
+        setBankConnected(false);
+      }
+    };
+
+    stripeAccountStatus();
+    checkBankStatus();
+  }, [userType, userID, isEmployee, url]);
+
+  const handleConnectAccount = async () => {
+    if (typeof window === "undefined") return;
+    const path = url.split("/");
+    if (isAccountConnected === "false" && connectAccountId !== "null") {
+      try {
+        const res = await PostAPI(
+          `api/v1/admin/stripe-connect-account-url/${userID}`,
+          { returnUrl: "https://" + path[2].trim() }
+        );
+        if (res?.data?.status === "success") {
+          success_toaster(res?.data?.data?.message);
+          if (res?.data?.data?.data?.connectAccount) {
+            const link = document.createElement("a");
+            link.href = res?.data?.data?.data?.connectAccount;
+            link.target = "_self";
+            link.click();
+          }
+        } else {
+          throw new Error(
+            res?.data?.message || "An unexpected error occurred."
+          );
+        }
+      } catch (error) {
+        ErrorHandler(error);
+      }
+    } else if (
+      (connectAccountId === "null" || !connectAccountId) &&
+      isAccountConnected === "false"
+    ) {
+      try {
+        const res = await PostAPI(
+          `api/v1/admin/create-stripe-connect-account/${userID}`,
+          { returnUrl: "https://" + path[2].trim() }
+        );
+        if (res?.data?.status === "success") {
+          success_toaster(res?.data?.data?.message);
+          localStorage.setItem(
+            "connectAccountId",
+            res?.data?.data?.data?.accountId
+          );
+          if (res?.data?.data?.data?.accountLink?.url) {
+            const link = document.createElement("a");
+            link.href = res?.data?.data?.data?.accountLink?.url;
+            link.target = "_self";
+            link.click();
+          }
+        } else {
+          throw new Error(
+            res?.data?.message || "An unexpected error occurred."
+          );
+        }
+      } catch (error) {
+        ErrorHandler(error);
+      }
+    } else if (
+      (connectAccountId !== "null" || connectAccountId) &&
+      isAccountConnected === "true"
+    ) {
+      try {
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("token") ||
+              localStorage.getItem("accessToken")
+            : "";
+        const res = await api.get(
+          BASE_URL + `api/v1/admin/stripe-connect-account-dashboard/${userID}`,
+          {
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+          }
+        );
+        if (res?.data?.status === "success") {
+          success_toaster(res?.data?.data?.message);
+          if (res?.data?.data?.data?.connectAccount) {
+            const link = document.createElement("a");
+            link.href = res?.data?.data?.data?.connectAccount;
+            link.target = "_blank";
+            link.click();
+          }
+        } else {
+          throw new Error(
+            res?.data?.message || "An unexpected error occurred."
+          );
+        }
+      } catch (error) {
+        ErrorHandler(error);
+      }
+    }
+  };
+
+  const handleFinancialConnection = async () => {
+    if (linking) return;
+    setLinking(true);
+    try {
+      const res = await api.post(
+        BASE_URL + `api/v1/admin/create-bank-setup-intent/sales-rep/${userID}`
+      );
+      const clientSecret = res?.data?.data?.clientSecret;
+
+      if (!clientSecret) {
+        success_toaster("Your bank account is already connected");
+        setBankConnected(true);
+        return;
+      }
+
+      const stripe = await loadStripe(STRIPE_PUBLIC_KEY);
+      if (!stripe) {
+        error_toaster("Stripe failed to load");
+        return;
+      }
+
+      const result = await stripe.collectBankAccountForSetup({
+        clientSecret,
+        params: {
+          payment_method_type: "us_bank_account",
+          payment_method_data: {
+            billing_details: {
+              name: `${userName}`,
+            },
+          },
+        },
+      });
+
+      if (result.setupIntent.status === "requires_confirmation") {
+        const confirmedIntent = await stripe.confirmSetup({
+          clientSecret,
+          confirmParams: {
+            return_url: window.location.href,
+          },
+          redirect: "if_required",
+        });
+        if (confirmedIntent.error) {
+          throw new Error(confirmedIntent.error.message);
+        }
+        if (confirmedIntent.setupIntent.status !== "succeeded") {
+          throw new Error("SetupIntent not confirmed successfully.");
+        }
+      }
+
+      if (
+        !result ||
+        result?.error ||
+        !result?.setupIntent?.id ||
+        !result?.setupIntent?.payment_method
+      ) {
+        error_toaster("User cancelled or did not complete linking.");
+        setShowBankRetry(true);
+        return;
+      }
+
+      const attachRes = await PostAPI(
+        `api/v1/admin/attach-bank-account-setup/sales-rep/${userID}`,
+        {
+          setupIntentId: result?.setupIntent?.id,
+          paymentMethodId: result?.setupIntent?.payment_method,
+        }
+      );
+
+      if (attachRes?.data?.status === "success") {
+        setShowBankRetry(false);
+        setBankConnected(true);
+        success_toaster("Bank account linked successfully!");
+        window.location.reload();
+      } else {
+        error_toaster("Failed to attach bank account. Please try again.");
+      }
+    } catch (err) {
+      ErrorHandler(err);
+    } finally {
+      setLinking(false);
+    }
+  };
 
   // Extract data from API response
   const salesResponse = salesData?.data || {};
@@ -90,11 +373,13 @@ export default function Dashboard2() {
     totalSales: parseFloat(salesResponse?.monthToDateSales?.totalSales || 0),
     orders: salesResponse?.monthToDateSales?.orders || 0,
     avgOrderValue: parseFloat(
-      salesResponse?.monthToDateSales?.avgOrderValue || 0,
+      salesResponse?.monthToDateSales?.avgOrderValue || 0
     ),
     comparison:
       salesResponse?.monthToDateSales?.vsLastMonthPercent !== undefined
-        ? `${salesResponse.monthToDateSales.vsLastMonthPercent >= 0 ? "+" : ""}${salesResponse.monthToDateSales.vsLastMonthPercent}%`
+        ? `${
+            salesResponse.monthToDateSales.vsLastMonthPercent >= 0 ? "+" : ""
+          }${salesResponse.monthToDateSales.vsLastMonthPercent}%`
         : "+0%",
   };
 
@@ -115,7 +400,7 @@ export default function Dashboard2() {
     totalSales: parseFloat(salesResponse?.lastMonthSales?.totalSales || 0),
     orders: salesResponse?.lastMonthSales?.orders || 0,
     avgOrderValue: parseFloat(
-      salesResponse?.lastMonthSales?.avgOrderValue || 0,
+      salesResponse?.lastMonthSales?.avgOrderValue || 0
     ),
     status:
       salesResponse?.lastMonthSales?.monthClosed || "Month Closed: Completed",
@@ -236,9 +521,10 @@ export default function Dashboard2() {
       // Both MTD and Last Month navigate to the same page, but with different date ranges
       const startDate = isLastMonth ? lastMonthStart : mtdStart;
       const endDate = isLastMonth ? lastMonthEnd : mtdEnd;
-      const basePath = userType === "salesRepresentative" 
-        ? "/sales-representative/sales-by-customer-details"
-        : "/reports/sales-by-customer-details";
+      const basePath =
+        userType === "salesRepresentative"
+          ? "/sales-representative/sales-by-customer-details"
+          : "/reports/sales-by-customer-details";
       let url = `${basePath}?customerId=${customerId}&startDate=${startDate}&endDate=${endDate}`;
 
       // Add userType and salesRepIds filters if applied (for admin)
@@ -261,7 +547,7 @@ export default function Dashboard2() {
     franchiseeId,
     salesRepId,
     startDate,
-    endDate,
+    endDate
   ) => {
     // Navigate to sales-by-customer-summary with sales rep filter
     const repId = salesRepId || franchiseeId;
@@ -286,9 +572,10 @@ export default function Dashboard2() {
 
   const handleProductClick = (productId, startDate, endDate) => {
     if (productId) {
-      const basePath = userType === "salesRepresentative"
-        ? "/sales-representative/product-wise-sales-summary"
-        : "/reports/product-wise-sales-summary";
+      const basePath =
+        userType === "salesRepresentative"
+          ? "/sales-representative/product-wise-sales-summary"
+          : "/reports/product-wise-sales-summary";
       let url = `${basePath}?startDate=${startDate}&endDate=${endDate}&productId=${productId}`;
 
       // Add userType and salesRepIds filters if applied
@@ -311,14 +598,16 @@ export default function Dashboard2() {
     let url = "";
 
     if (reportType === "customers") {
-      const basePath = userType === "salesRepresentative"
-        ? "/sales-representative/sales-by-customer-summary"
-        : "/reports/sales-by-customer-summary";
+      const basePath =
+        userType === "salesRepresentative"
+          ? "/sales-representative/sales-by-customer-summary"
+          : "/reports/sales-by-customer-summary";
       url = `${basePath}?startDate=${startDate}&endDate=${endDate}`;
     } else if (reportType === "products") {
-      const basePath = userType === "salesRepresentative"
-        ? "/sales-representative/product-wise-sales-summary"
-        : "/reports/product-wise-sales-summary";
+      const basePath =
+        userType === "salesRepresentative"
+          ? "/sales-representative/product-wise-sales-summary"
+          : "/reports/product-wise-sales-summary";
       url = `${basePath}?startDate=${startDate}&endDate=${endDate}`;
     }
 
@@ -355,8 +644,8 @@ export default function Dashboard2() {
   // Get partner name by ID
   const getPartnerName = (partnerId) => {
     if (!salesRepData?.data?.data || !partnerId) return partnerId;
-    const partner = salesRepData.data.data.find(rep => rep.id === partnerId);
-    return partner ? (partner.srName || partner.name) : partnerId;
+    const partner = salesRepData.data.data.find((rep) => rep.id === partnerId);
+    return partner ? partner.srName || partner.name : partnerId;
   };
 
   const isLoading = salesLoading;
@@ -365,9 +654,64 @@ export default function Dashboard2() {
     return <Loader />;
   }
 
+  const isPartner = userType === "salesRepresentative" && !isEmployee;
+  const showStripeBanner =
+    isPartner &&
+    (isAccountConnected === "false" || connectAccountId === "null");
+  const showBankBanner = isPartner && isBankConnected === false;
+
   return (
     <div className="w-full min-w-0 overflow-x-hidden">
       <div className="space-y-5 sm:space-y-8 pb-4 sm:pb-6">
+        <div className="-mb-8">
+          {/* Partner: Stripe account not connected */}
+          {showStripeBanner && (
+            <div className="bg-red-500 z-10 text-center text-white py-2 px-4 flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+              <span>Your Stripe account is not connected.</span>
+              <button
+                onClick={handleConnectAccount}
+                className="px-2 py-1 rounded-lg font-inter font-medium bg-theme text-white hover:opacity-90"
+              >
+                {connectAccountId !== "null" &&
+                connectAccountId &&
+                isAccountConnected === "true"
+                  ? "Stripe Dashboard"
+                  : connectAccountId === "null" || !connectAccountId
+                  ? "Connect Account"
+                  : "Complete Account Registration"}
+              </button>
+            </div>
+          )}
+          {/* Partner: Bank account not connected */}
+          {showBankBanner && (
+            <div className="bg-amber-600 z-10 text-center text-white py-2 px-4 flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+              <span>Your bank account is not linked for payouts.</span>
+              <button
+                onClick={handleFinancialConnection}
+                disabled={linking}
+                className="px-2 py-1 rounded-lg font-inter font-medium bg-white text-amber-700 hover:opacity-90 disabled:opacity-50"
+              >
+                {linking ? "Linking…" : "Link Bank Account"}
+              </button>
+            </div>
+          )}
+
+          {/* Bank retry modal (partner closed popup without completing) */}
+          {isPartner && showBankRetry && (
+            <div className="bg-amber-100 border border-amber-400 text-amber-800 py-2 px-4 rounded flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+              <span>Bank linking was not completed.</span>
+              <button
+                onClick={() => {
+                  setShowBankRetry(false);
+                  handleFinancialConnection();
+                }}
+                className="px-2 py-1 rounded-lg font-inter font-medium bg-amber-600 text-white hover:opacity-90"
+              >
+                Try again
+              </button>
+            </div>
+          )}
+        </div>
         {/* Welcome Header - below md (768px): button wraps below, left-aligned */}
         <div className="bg-homeGradient w-full h-44 relative before:absolute before:bg-texture before:w-full before:h-44 before:bg-contain">
           <div className="relative z-30 py-5 px-6 2xl:px-12">
@@ -391,8 +735,8 @@ export default function Dashboard2() {
                   {!filters.userType
                     ? "All"
                     : filters.userType === "admin"
-                      ? "Admin"
-                      : `${getPartnerName(filters.salesRepIds?.[0])}`}
+                    ? "Admin"
+                    : `${getPartnerName(filters.salesRepIds?.[0])}`}
                 </button>
               )}
             </div>
@@ -407,7 +751,11 @@ export default function Dashboard2() {
             <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border border-gray-200 min-w-0">
               <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 min-w-0">
-                  <MdBarChart className="text-theme shrink-0" size={20} style={{ minWidth: 20 }} />
+                  <MdBarChart
+                    className="text-theme shrink-0"
+                    size={20}
+                    style={{ minWidth: 20 }}
+                  />
                   <span className="truncate">Month-to-Date Sales</span>
                 </h3>
               </div>
@@ -416,7 +764,9 @@ export default function Dashboard2() {
                   <p className="text-2xl sm:text-3xl font-bold text-gray-900 break-all">
                     {formatUSD(mtdSales.totalSales)}
                   </p>
-                  <p className="text-xs sm:text-sm text-gray-600">Total Sales</p>
+                  <p className="text-xs sm:text-sm text-gray-600">
+                    Total Sales
+                  </p>
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-2 sm:pt-3 border-t">
                   <div>
@@ -429,7 +779,9 @@ export default function Dashboard2() {
                     <p className="text-base sm:text-lg font-semibold text-gray-800 break-all">
                       {formatUSD(mtdSales.avgOrderValue)}
                     </p>
-                    <p className="text-xs sm:text-sm text-gray-600">Avg Order Value</p>
+                    <p className="text-xs sm:text-sm text-gray-600">
+                      Avg Order Value
+                    </p>
                   </div>
                 </div>
                 <div className="pt-2 sm:pt-3 border-t">
@@ -450,9 +802,10 @@ export default function Dashboard2() {
                 <div className="pt-1.5 sm:pt-2">
                   <button
                     onClick={() => {
-                      const basePath = userType === "salesRepresentative"
-                        ? "/sales-representative/sales-by-customer-summary"
-                        : "/reports/sales-by-customer-summary";
+                      const basePath =
+                        userType === "salesRepresentative"
+                          ? "/sales-representative/sales-by-customer-summary"
+                          : "/reports/sales-by-customer-summary";
                       let url = `${basePath}?startDate=${mtdStart}&endDate=${mtdEnd}`;
 
                       // Add userType and salesRepIds filters if applied (for admin)
@@ -464,7 +817,9 @@ export default function Dashboard2() {
                         Array.isArray(filters.salesRepIds) &&
                         filters.salesRepIds.length > 0
                       ) {
-                        url += `&salesRepIds=${JSON.stringify(filters.salesRepIds)}`;
+                        url += `&salesRepIds=${JSON.stringify(
+                          filters.salesRepIds
+                        )}`;
                       }
 
                       router.push(url);
@@ -481,7 +836,11 @@ export default function Dashboard2() {
             <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border border-gray-200 min-w-0">
               <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 min-w-0">
-                  <MdPerson className="text-theme shrink-0" size={20} style={{ minWidth: 20 }} />
+                  <MdPerson
+                    className="text-theme shrink-0"
+                    size={20}
+                    style={{ minWidth: 20 }}
+                  />
                   <span className="truncate">MTD Sales by Customer</span>
                 </h3>
               </div>
@@ -515,9 +874,10 @@ export default function Dashboard2() {
               <div className="pt-3 sm:pt-4 border-t mt-3 sm:mt-4">
                 <button
                   onClick={() => {
-                    const basePath = userType === "salesRepresentative"
-                      ? "/sales-representative/sales-by-customer-summary"
-                      : "/reports/sales-by-customer-summary";
+                    const basePath =
+                      userType === "salesRepresentative"
+                        ? "/sales-representative/sales-by-customer-summary"
+                        : "/reports/sales-by-customer-summary";
                     let url = `${basePath}?startDate=${mtdStart}&endDate=${mtdEnd}`;
 
                     // Add userType and salesRepIds filters if applied (for admin)
@@ -529,7 +889,9 @@ export default function Dashboard2() {
                       Array.isArray(filters.salesRepIds) &&
                       filters.salesRepIds.length > 0
                     ) {
-                      url += `&salesRepIds=${JSON.stringify(filters.salesRepIds)}`;
+                      url += `&salesRepIds=${JSON.stringify(
+                        filters.salesRepIds
+                      )}`;
                     }
 
                     router.push(url);
@@ -548,7 +910,11 @@ export default function Dashboard2() {
             <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border border-gray-200 min-w-0">
               <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 min-w-0">
-                  <MdCalendarToday className="text-theme shrink-0" size={20} style={{ minWidth: 20 }} />
+                  <MdCalendarToday
+                    className="text-theme shrink-0"
+                    size={20}
+                    style={{ minWidth: 20 }}
+                  />
                   <span className="truncate">Last Month Sales</span>
                 </h3>
               </div>
@@ -557,7 +923,9 @@ export default function Dashboard2() {
                   <p className="text-2xl sm:text-3xl font-bold text-gray-900 break-all">
                     {formatUSD(lastMonthSales.totalSales)}
                   </p>
-                  <p className="text-xs sm:text-sm text-gray-600">Total Sales</p>
+                  <p className="text-xs sm:text-sm text-gray-600">
+                    Total Sales
+                  </p>
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-2 sm:pt-3 border-t">
                   <div>
@@ -570,7 +938,9 @@ export default function Dashboard2() {
                     <p className="text-base sm:text-lg font-semibold text-gray-800 break-all">
                       {formatUSD(lastMonthSales.avgOrderValue)}
                     </p>
-                    <p className="text-xs sm:text-sm text-gray-600">Avg Order Value</p>
+                    <p className="text-xs sm:text-sm text-gray-600">
+                      Avg Order Value
+                    </p>
                   </div>
                 </div>
                 <div className="pt-2 sm:pt-3 border-t">
@@ -581,9 +951,10 @@ export default function Dashboard2() {
                 <div className="pt-2">
                   <button
                     onClick={() => {
-                      const basePath = userType === "salesRepresentative"
-                        ? "/sales-representative/sales-by-customer-summary"
-                        : "/reports/sales-by-customer-summary";
+                      const basePath =
+                        userType === "salesRepresentative"
+                          ? "/sales-representative/sales-by-customer-summary"
+                          : "/reports/sales-by-customer-summary";
                       let url = `${basePath}?startDate=${lastMonthStart}&endDate=${lastMonthEnd}`;
 
                       // Add userType and salesRepIds filters if applied (for admin)
@@ -595,7 +966,9 @@ export default function Dashboard2() {
                         Array.isArray(filters.salesRepIds) &&
                         filters.salesRepIds.length > 0
                       ) {
-                        url += `&salesRepIds=${JSON.stringify(filters.salesRepIds)}`;
+                        url += `&salesRepIds=${JSON.stringify(
+                          filters.salesRepIds
+                        )}`;
                       }
 
                       router.push(url);
@@ -612,7 +985,11 @@ export default function Dashboard2() {
             <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border border-gray-200 min-w-0">
               <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 min-w-0">
-                  <MdGroups className="text-theme shrink-0" size={20} style={{ minWidth: 20 }} />
+                  <MdGroups
+                    className="text-theme shrink-0"
+                    size={20}
+                    style={{ minWidth: 20 }}
+                  />
                   <span className="truncate">Last Month Sales by Customer</span>
                 </h3>
               </div>
@@ -648,9 +1025,10 @@ export default function Dashboard2() {
               <div className="pt-3 sm:pt-4 border-t mt-3 sm:mt-4">
                 <button
                   onClick={() => {
-                    const basePath = userType === "salesRepresentative"
-                      ? "/sales-representative/sales-by-customer-summary"
-                      : "/reports/sales-by-customer-summary";
+                    const basePath =
+                      userType === "salesRepresentative"
+                        ? "/sales-representative/sales-by-customer-summary"
+                        : "/reports/sales-by-customer-summary";
                     let url = `${basePath}?startDate=${lastMonthStart}&endDate=${lastMonthEnd}`;
 
                     // Add userType and salesRepIds filters if applied (for admin)
@@ -662,7 +1040,9 @@ export default function Dashboard2() {
                       Array.isArray(filters.salesRepIds) &&
                       filters.salesRepIds.length > 0
                     ) {
-                      url += `&salesRepIds=${JSON.stringify(filters.salesRepIds)}`;
+                      url += `&salesRepIds=${JSON.stringify(
+                        filters.salesRepIds
+                      )}`;
                     }
 
                     router.push(url);
@@ -682,7 +1062,11 @@ export default function Dashboard2() {
               <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border border-gray-200 min-w-0">
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
                   <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 min-w-0">
-                    <MdBusiness className="text-theme shrink-0" size={20} style={{ minWidth: 20 }} />
+                    <MdBusiness
+                      className="text-theme shrink-0"
+                      size={20}
+                      style={{ minWidth: 20 }}
+                    />
                     <span className="truncate">MTD Sales by Franchisee</span>
                   </h3>
                 </div>
@@ -696,7 +1080,7 @@ export default function Dashboard2() {
                             franchisee.id,
                             franchisee.salesRepId,
                             mtdStart,
-                            mtdEnd,
+                            mtdEnd
                           )
                         }
                         className={`flex items-center justify-between gap-2 py-2 sm:py-3 border-b last:border-b-0 hover:bg-gray-50 px-1 sm:px-2 rounded transition-colors min-w-0 ${
@@ -731,7 +1115,11 @@ export default function Dashboard2() {
               <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border border-gray-200 min-w-0">
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
                   <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 min-w-0">
-                    <MdBarChart className="text-theme shrink-0" size={20} style={{ minWidth: 20 }} />
+                    <MdBarChart
+                      className="text-theme shrink-0"
+                      size={20}
+                      style={{ minWidth: 20 }}
+                    />
                     <span className="truncate">YTD Sales by Franchisee</span>
                   </h3>
                 </div>
@@ -750,7 +1138,7 @@ export default function Dashboard2() {
                             franchisee.id,
                             franchisee.salesRepId,
                             ytdStart,
-                            ytdEnd,
+                            ytdEnd
                           )
                         }
                         className={`flex items-center justify-between gap-2 py-2 sm:py-3 border-b last:border-b-0 hover:bg-gray-50 px-1 sm:px-2 rounded transition-colors min-w-0 ${
@@ -789,7 +1177,11 @@ export default function Dashboard2() {
             <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border border-gray-200 min-w-0">
               <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 min-w-0">
-                  <MdBarChart className="text-theme shrink-0" size={20} style={{ minWidth: 20 }} />
+                  <MdBarChart
+                    className="text-theme shrink-0"
+                    size={20}
+                    style={{ minWidth: 20 }}
+                  />
                   <span className="truncate">MTD Sales by Product</span>
                 </h3>
               </div>
@@ -836,7 +1228,11 @@ export default function Dashboard2() {
             <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border border-gray-200 min-w-0">
               <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 min-w-0">
-                  <MdBarChart className="text-theme shrink-0" size={20} style={{ minWidth: 20 }} />
+                  <MdBarChart
+                    className="text-theme shrink-0"
+                    size={20}
+                    style={{ minWidth: 20 }}
+                  />
                   <span className="truncate">YTD Sales by Product</span>
                 </h3>
               </div>
@@ -892,7 +1288,11 @@ export default function Dashboard2() {
               <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border border-gray-200 min-w-0">
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
                   <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 min-w-0">
-                    <MdPerson className="text-theme shrink-0" size={20} style={{ minWidth: 20 }} />
+                    <MdPerson
+                      className="text-theme shrink-0"
+                      size={20}
+                      style={{ minWidth: 20 }}
+                    />
                     <span className="truncate">MTD Sales by Employee</span>
                   </h3>
                 </div>
@@ -931,7 +1331,11 @@ export default function Dashboard2() {
               <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border border-gray-200 min-w-0">
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
                   <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 min-w-0">
-                    <MdPerson className="text-theme shrink-0" size={20} style={{ minWidth: 20 }} />
+                    <MdPerson
+                      className="text-theme shrink-0"
+                      size={20}
+                      style={{ minWidth: 20 }}
+                    />
                     <span className="truncate">YTD Sales by Employee</span>
                   </h3>
                 </div>

@@ -142,7 +142,7 @@ export default function EmailLogsPage() {
       setRetryEmailLogId(null);
       setRetryCooldownEndsAt((prev) => ({
         ...prev,
-        [entry.id]: Date.now() + 30000,
+        [entry.id]: Date.now() + 12000,
       }));
     }
   };

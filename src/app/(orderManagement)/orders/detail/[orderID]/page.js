@@ -55,6 +55,9 @@ export default function OrderDetail() {
   const [retryEmailLogId, setRetryEmailLogId] = useState(null);
   const [retryCooldownEndsAt, setRetryCooldownEndsAt] = useState({});
   const [, setCooldownTick] = useState(0);
+  const [sectionRefreshCooldownEndsAt, setSectionRefreshCooldownEndsAt] =
+    useState(null);
+  const sectionRefreshCooldownEndsAtRef = useRef(null);
   const [modal, setModal] = useState({
     type: "", // addCheque , editCheque
     status: false,
@@ -149,6 +152,7 @@ export default function OrderDetail() {
       if (res?.data?.status === "success") {
         success_toaster("Order Dispatched successfully");
         reFetch();
+        startSectionRefreshTimer();
         setLoader("");
       } else {
         setLoader("");
@@ -193,6 +197,7 @@ export default function OrderDetail() {
       if (res?.data?.status === "success") {
         success_toaster("Supplier assign successfully");
         reFetch();
+        startSectionRefreshTimer();
       } else {
         throw new Error(res?.data?.message || "An unexpected error occurred.");
       }
@@ -422,6 +427,7 @@ export default function OrderDetail() {
         if (res?.data?.status === "success") {
           success_toaster("Paid invoice email sent successfully");
           reFetch();
+          startSectionRefreshTimer();
         } else {
           throw new Error(
             res?.data?.message || "An unexpected error occurred."
@@ -452,6 +458,7 @@ export default function OrderDetail() {
       if (res?.data?.status === "success") {
         success_toaster("Invoice Send Successfully");
         reFetch();
+        startSectionRefreshTimer();
       } else {
         throw new Error(res?.data?.message || "An unexpected error occurred.");
       }
@@ -471,6 +478,9 @@ export default function OrderDetail() {
       if (res?.data?.status === "success") {
         success_toaster("Status Updated successfully");
         reFetch();
+        if (status?.value === "done") {
+          startSectionRefreshTimer();
+        }
       } else {
         throw new Error(res?.data?.message || "An unexpected error occurred.");
       }
@@ -516,7 +526,7 @@ export default function OrderDetail() {
       setRetryEmailLogId(null);
       setRetryCooldownEndsAt((prev) => ({
         ...prev,
-        [log.id]: Date.now() + 30000,
+        [log.id]: Date.now() + 12000,
       }));
     }
   };
@@ -526,8 +536,17 @@ export default function OrderDetail() {
   useEffect(() => {
     cooldownEndsAtRef.current = retryCooldownEndsAt;
   }, [retryCooldownEndsAt]);
+  useEffect(() => {
+    sectionRefreshCooldownEndsAtRef.current = sectionRefreshCooldownEndsAt;
+  }, [sectionRefreshCooldownEndsAt]);
 
-  // Tick every second; refetch email logs only when the LAST active timer ends (all cooldowns cleared)
+  const startSectionRefreshTimer = () => {
+    const end = Date.now() + 12000;
+    setSectionRefreshCooldownEndsAt(end);
+    sectionRefreshCooldownEndsAtRef.current = end;
+  };
+
+  // Tick every second; refetch email logs when the LAST retry timer ends OR when section refresh cooldown ends
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
@@ -540,6 +559,12 @@ export default function OrderDetail() {
       const lastTimerEnded = hadActive && Object.keys(next).length === 0;
       setRetryCooldownEndsAt(Object.keys(next).length ? next : {});
       if (lastTimerEnded) {
+        reFetchEmailLogs();
+      }
+      const sectionEnd = sectionRefreshCooldownEndsAtRef.current;
+      if (sectionEnd != null && now >= sectionEnd) {
+        sectionRefreshCooldownEndsAtRef.current = null;
+        setSectionRefreshCooldownEndsAt(null);
         reFetchEmailLogs();
       }
       setCooldownTick((t) => t + 1);
@@ -999,12 +1024,25 @@ export default function OrderDetail() {
                       className="w-full flex items-center justify-between gap-2 text-left font-semibold text-gray-800 mb-1 hover:opacity-80 transition-opacity"
                       aria-expanded={emailLogsExpanded}
                     >
-                      <span className="flex items-center gap-2">
+                      <span className="flex items-center gap-2 flex-wrap">
                         <CgNotes size={18} />
                         Emails/Invoices sent for this order
                         <span className="text-gray-500 font-normal text-sm">
                           ({emailLogs.length})
                         </span>
+                        {sectionRefreshCooldownEndsAt != null && (
+                          <span className="text-theme font-medium text-sm">
+                            (Refreshing in{" "}
+                            {Math.max(
+                              0,
+                              Math.ceil(
+                                (sectionRefreshCooldownEndsAt - Date.now()) /
+                                  1000
+                              )
+                            )}
+                            s…)
+                          </span>
+                        )}
                       </span>
                       <RiArrowDownSLine
                         size={22}
@@ -1615,6 +1653,7 @@ export default function OrderDetail() {
                   orderData={data?.data?.order}
                   modal={modal}
                   setModal={setModal}
+                  onSectionRefreshTrigger={startSectionRefreshTimer}
                 />
               </div>
             </div>

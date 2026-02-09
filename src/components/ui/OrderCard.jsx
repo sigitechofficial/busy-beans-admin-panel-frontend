@@ -63,6 +63,7 @@ export default function OrderCard(props) {
       if (res?.data?.status === "success") {
         success_toaster("Status Updated successfully");
         props?.reFetch();
+        props?.onSectionRefreshTrigger?.();
       } else {
         throw new Error(res?.data?.message || "An unexpected error occurred.");
       }
@@ -91,6 +92,7 @@ export default function OrderCard(props) {
           if (res?.data?.status === "success") {
             success_toaster("Supplier assign successfully");
             props?.reFetch();
+            props?.onSectionRefreshTrigger?.();
             props?.setModal({ type: "", status: false });
             setLoader("");
           } else {

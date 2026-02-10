@@ -672,10 +672,13 @@ export default function CreateOrder() {
           }
           className="font-nunito"
           style={{ width: "90vw", maxWidth: "800px" }}
-          contentStyle={{ 
+          contentStyle={{
             padding: "1.5rem",
-            maxHeight: "70vh",
-            overflow: "visible"
+            maxHeight: "85vh",
+            minHeight: 0,
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           {submitPriceLoader ? (
@@ -684,9 +687,9 @@ export default function CreateOrder() {
               <p className="text-gray-500 text-sm mt-4">Updating prices...</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="flex flex-col min-h-0 flex-1 gap-4">
               {/* Search */}
-              <div className="relative">
+              <div className="flex-shrink-0 relative">
                 <input
                   type="search"
                   value={priceModalSearch}
@@ -698,7 +701,7 @@ export default function CreateOrder() {
               </div>
 
               {/* Products List */}
-              <div className="border border-borderColor rounded-md p-3 max-h-[50vh] overflow-y-auto space-y-2">
+              <div className="border border-borderColor rounded-md p-3 flex-1 min-h-0 overflow-y-auto space-y-2">
                 {partnerInventoryLoading ? (
                   <div className="flex flex-col items-center justify-center py-12">
                     <MiniLoader />
@@ -770,6 +773,9 @@ export default function CreateOrder() {
                               <span className="font-medium">Code:</span> {prod?.productCode ?? "—"}
                               {" · "}
                               <span className="font-medium">Weight:</span> {prod?.weight ?? "—"} lbs
+                              {(prod?.grind && prod?.grind !== "null") && (
+                                <> · <span className="font-medium">Grind:</span> {prod?.grind}</>
+                              )}
                             </p>
                           </div>
                           
@@ -814,7 +820,7 @@ export default function CreateOrder() {
               </div>
 
               {/* Footer Buttons */}
-              <div className="flex items-center justify-end gap-x-4 pt-4 border-t border-gray-200">
+              <div className="flex-shrink-0 flex items-center justify-end gap-x-4 pt-4 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => {
@@ -856,10 +862,13 @@ export default function CreateOrder() {
           }
           className="font-nunito"
           style={{ width: "90vw", maxWidth: "800px" }}
-          contentStyle={{ 
+          contentStyle={{
             padding: "1.5rem",
-            maxHeight: "70vh",
-            overflow: "visible"
+            maxHeight: "85vh",
+            minHeight: 0,
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           {submitAddProductLoader ? (
@@ -868,21 +877,21 @@ export default function CreateOrder() {
               <p className="text-gray-500 text-sm mt-4">Adding products...</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="flex flex-col min-h-0 flex-1 gap-4">
               {/* Search */}
-            <div className="relative">
-              <input
-                type="search"
-                value={addProductSearch}
-                onChange={(e) => setAddProductSearch(e.target.value)}
-                placeholder="Search products..."
-                className="w-full h-12 bg-themeGray rounded-lg ps-10 pe-5 outline-none placeholder:font-inter placeholder:font-medium focus:bg-gray-200"
-              />
-              <LuSearch size={20} color="#111827" className="absolute top-3.5 left-3" />
-            </div>
+              <div className="flex-shrink-0 relative">
+                <input
+                  type="search"
+                  value={addProductSearch}
+                  onChange={(e) => setAddProductSearch(e.target.value)}
+                  placeholder="Search products..."
+                  className="w-full h-12 bg-themeGray rounded-lg ps-10 pe-5 outline-none placeholder:font-inter placeholder:font-medium focus:bg-gray-200"
+                />
+                <LuSearch size={20} color="#111827" className="absolute top-3.5 left-3" />
+              </div>
 
-            {/* Products List */}
-            <div className="border border-borderColor rounded-md p-3 max-h-[50vh] overflow-y-auto space-y-2">
+              {/* Products List */}
+              <div className="border border-borderColor rounded-md p-3 flex-1 min-h-0 overflow-y-auto space-y-2">
               {addProductLoading ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <MiniLoader />
@@ -979,6 +988,9 @@ export default function CreateOrder() {
                           <span className="font-medium">Code:</span> {prod?.productCode ?? "—"}
                           {" · "}
                           <span className="font-medium">Weight:</span> {prod?.weight ?? "—"} lbs
+                          {(prod?.grind && prod?.grind !== "null") && (
+                            <> · <span className="font-medium">Grind:</span> {prod?.grind}</>
+                          )}
                         </p>
                       </div>
                       
@@ -1034,7 +1046,7 @@ export default function CreateOrder() {
             </div>
 
               {/* Footer Buttons */}
-              <div className="flex items-center justify-end gap-x-4 pt-4 border-t border-gray-200">
+              <div className="flex-shrink-0 flex items-center justify-end gap-x-4 pt-4 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => {
@@ -1054,6 +1066,11 @@ export default function CreateOrder() {
                   className="px-4 py-2 bg-theme text-white rounded-lg hover:bg-themeDark font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Add Products
+                  {selectedAddProducts.length > 0 && (
+                    <span className="ml-1.5 opacity-90">
+                      ({selectedAddProducts.length})
+                    </span>
+                  )}
                 </button>
               </div>
             </div>

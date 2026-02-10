@@ -74,6 +74,9 @@ const ProductItem = memo(({
           <span className="font-medium">Code:</span> {prod?.productCode ?? "—"}
           {" · "}
           <span className="font-medium">Weight:</span> {prod?.weight ?? "—"} lbs
+          {(prod?.grind && prod?.grind !== "null") && (
+            <> · <span className="font-medium">Grind:</span> {prod?.grind}</>
+          )}
           {" · "}
           <span className="font-medium">Selling Price:</span> ${prod?.price ?? "—"}
         </p>
@@ -601,10 +604,13 @@ export default function SalesRepInventoryStockPage() {
           visible={addProductModal}
           className="font-nunito"
           style={{ width: "90vw", maxWidth: "800px" }}
-          contentStyle={{ 
+          contentStyle={{
             padding: "1.5rem",
-            maxHeight: "70vh",
-            overflow: "visible"
+            maxHeight: "85vh",
+            minHeight: 0,
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
           }}
           dismissableMask={true}
           onHide={closeAddProductModal}
@@ -616,10 +622,10 @@ export default function SalesRepInventoryStockPage() {
         >
           <form
             onSubmit={handleAddProductSubmit}
-            className="space-y-4 flex flex-col"
+            className="flex flex-col min-h-0 flex-1 gap-4"
           >
             {/* Search */}
-            <div className="relative">
+            <div className="flex-shrink-0 relative">
               <input
                 type="search"
                 value={modalSearch}
@@ -631,7 +637,7 @@ export default function SalesRepInventoryStockPage() {
             </div>
 
             {/* Products List */}
-            <div className="border border-borderColor rounded-md p-3 max-h-[50vh] overflow-y-auto space-y-2">
+            <div className="border border-borderColor rounded-md p-3 flex-1 min-h-0 overflow-y-auto space-y-2">
               {modalProductsLoading ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <MiniLoader />
@@ -699,7 +705,7 @@ export default function SalesRepInventoryStockPage() {
             </div>
 
             {/* Footer Buttons */}
-            <div className="flex items-center justify-end gap-x-4 pt-4 border-t border-gray-200">
+            <div className="flex-shrink-0 flex items-center justify-end gap-x-4 pt-4 border-t border-gray-200">
               <button
                 type="button"
                 onClick={closeAddProductModal}
@@ -717,7 +723,14 @@ export default function SalesRepInventoryStockPage() {
                     <MiniLoader /> Adding...
                   </span>
                 ) : (
-                  "Add Product"
+                  <>
+                    Add Product
+                    {selectedProducts.length > 0 && (
+                      <span className="ml-1.5 opacity-90">
+                        ({selectedProducts.length})
+                      </span>
+                    )}
+                  </>
                 )}
               </button>
             </div>

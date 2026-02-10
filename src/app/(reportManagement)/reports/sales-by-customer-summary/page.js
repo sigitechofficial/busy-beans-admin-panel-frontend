@@ -37,87 +37,71 @@ function SalesByCustomerSummaryReport() {
   const [expandedRows, setExpandedRows] = useState(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const [filters, setFilters] = useState({
-    userType: null,
-    salesRepIds: null,
-  });
 
-  // Initialize dateRange with All Time default (January 1, 2025 to today)
-  const getInitialDateRange = () => {
+  // Initialize dateRange and filters from URL so first API request uses correct params (avoids wrong "all clients" fetch then refetch)
+  const [dateRange, setDateRange] = useState(() => {
+    const start = searchParams.get("startDate");
+    const end = searchParams.get("endDate");
     const today = dayjs();
     return {
-      startDate: "2025-01-01",
-      endDate: today.format("YYYY-MM-DD"),
+      startDate: start || "2025-01-01",
+      endDate: end || today.format("YYYY-MM-DD"),
     };
-  };
+  });
 
-  const [dateRange, setDateRange] = useState(getInitialDateRange());
-
-  // Get date range and sales rep ID from URL query parameters on mount
-  useEffect(() => {
-    const startDate = searchParams.get("startDate");
-    const endDate = searchParams.get("endDate");
+  const [filters, setFilters] = useState(() => {
     const salesRepId = searchParams.get("salesRepId");
     const userTypeParam = searchParams.get("userType");
     const salesRepIdsParam = searchParams.get("salesRepIds");
-
-    // Auto-fill date range if provided in URL
-    if (startDate && endDate) {
-      setDateRange({
-        startDate: startDate,
-        endDate: endDate,
-      });
-
-      // Also set the selected option based on the date range
-      const today = dayjs();
-      const mtdStart = today.startOf("month").format("YYYY-MM-DD");
-      const mtdEnd = today.format("YYYY-MM-DD");
-      const lastMonthStart = today
-        .subtract(1, "month")
-        .startOf("month")
-        .format("YYYY-MM-DD");
-      const lastMonthEnd = today
-        .subtract(1, "month")
-        .endOf("month")
-        .format("YYYY-MM-DD");
-
-      if (startDate === mtdStart && endDate === mtdEnd) {
-        setSelectedOption({ value: "monthToDate", label: "Month to date" });
-      } else if (startDate === lastMonthStart && endDate === lastMonthEnd) {
-        setSelectedOption({ value: "lastMonth", label: "Last Month" });
-      } else {
-        setSelectedOption({ value: "custom", label: "Custom" });
-        setDisplayCustomFilters(true);
-        setCustomDates({ startDate, endDate });
+    if (userTypeParam === "salesRep" && salesRepIdsParam) {
+      try {
+        const parsedIds = JSON.parse(salesRepIdsParam);
+        return {
+          userType: "salesRep",
+          salesRepIds: Array.isArray(parsedIds) ? parsedIds : [parsedIds],
+        };
+      } catch (e) {
+        return { userType: null, salesRepIds: null };
       }
     }
-
-    // Parse userType and salesRepIds from URL (passed from dashboard)
-    if (userTypeParam) {
-      let newFilters = { userType: userTypeParam, salesRepIds: null };
-      
-      if (userTypeParam === "salesRep" && salesRepIdsParam) {
-        try {
-          const parsedIds = JSON.parse(salesRepIdsParam);
-          newFilters.salesRepIds = Array.isArray(parsedIds) ? parsedIds : [parsedIds];
-        } catch (e) {
-          newFilters.salesRepIds = null;
-        }
-      }
-      
-      setFilters(newFilters);
-    } 
-    // Auto-set sales rep filter if salesRepId is provided in URL (legacy single salesRepId parameter)
-    else if (salesRepId) {
-      // Handle both single ID and comma-separated IDs - convert to numbers
+    if (salesRepId) {
       const salesRepIds = salesRepId.includes(",")
         ? salesRepId.split(",").map((id) => Number(id.trim()))
         : [Number(salesRepId)];
+      return { userType: "salesRep", salesRepIds };
+    }
+    if (userTypeParam) {
+      return { userType: userTypeParam, salesRepIds: null };
+    }
+    return { userType: null, salesRepIds: null };
+  });
 
-      setFilters({
-        userType: "salesRep",
-        salesRepIds: salesRepIds,
-      });
+  // Sync selected option and custom dates UI from URL (runs once on mount when URL has params)
+  useEffect(() => {
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
+    if (!startDate || !endDate) return;
+
+    const today = dayjs();
+    const mtdStart = today.startOf("month").format("YYYY-MM-DD");
+    const mtdEnd = today.format("YYYY-MM-DD");
+    const lastMonthStart = today
+      .subtract(1, "month")
+      .startOf("month")
+      .format("YYYY-MM-DD");
+    const lastMonthEnd = today
+      .subtract(1, "month")
+      .endOf("month")
+      .format("YYYY-MM-DD");
+
+    if (startDate === mtdStart && endDate === mtdEnd) {
+      setSelectedOption({ value: "monthToDate", label: "Month to date" });
+    } else if (startDate === lastMonthStart && endDate === lastMonthEnd) {
+      setSelectedOption({ value: "lastMonth", label: "Last Month" });
+    } else {
+      setSelectedOption({ value: "custom", label: "Custom" });
+      setDisplayCustomFilters(true);
+      setCustomDates({ startDate, endDate });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

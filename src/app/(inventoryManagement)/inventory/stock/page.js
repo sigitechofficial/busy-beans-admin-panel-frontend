@@ -1265,8 +1265,11 @@ export default function Stock() {
           style={{ width: "90vw", maxWidth: "800px" }}
           contentStyle={{
             padding: "1.5rem",
-            maxHeight: "70vh",
-            overflow: "visible",
+            maxHeight: "85vh",
+            minHeight: 0,
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           {submitPriceLoader ? (
@@ -1275,22 +1278,24 @@ export default function Stock() {
               <p className="text-gray-500 text-sm mt-4">Updating prices...</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              <div className="relative">
-                <input
-                  type="search"
-                  value={priceModalSearch}
-                  onChange={(e) => setPriceModalSearch(e.target.value)}
-                  placeholder="Search products..."
-                  className="w-full h-12 bg-themeGray rounded-lg ps-10 pe-5 outline-none placeholder:font-inter placeholder:font-medium focus:bg-gray-200"
-                />
-                <LuSearch
-                  size={20}
-                  color="#111827"
-                  className="absolute top-3.5 left-3"
-                />
+            <div className="flex flex-col min-h-0 flex-1 gap-4">
+              <div className="flex-shrink-0">
+                <div className="relative">
+                  <input
+                    type="search"
+                    value={priceModalSearch}
+                    onChange={(e) => setPriceModalSearch(e.target.value)}
+                    placeholder="Search products..."
+                    className="w-full h-12 bg-themeGray rounded-lg ps-10 pe-5 outline-none placeholder:font-inter placeholder:font-medium focus:bg-gray-200"
+                  />
+                  <LuSearch
+                    size={20}
+                    color="#111827"
+                    className="absolute top-3.5 left-3"
+                  />
+                </div>
               </div>
-              <div className="border border-borderColor rounded-md p-3 max-h-[50vh] overflow-y-auto space-y-2">
+              <div className="border border-borderColor rounded-md p-3 flex-1 min-h-0 overflow-y-auto space-y-2">
                 {partnerInventoryLoading ? (
                   <div className="flex flex-col items-center justify-center py-12">
                     <MiniLoader />
@@ -1350,6 +1355,9 @@ export default function Stock() {
                             SKU: {prod?.sku ?? "—"} · Code:{" "}
                             {prod?.productCode ?? "—"} · Weight:{" "}
                             {prod?.weight ?? "—"} lbs
+                            {(prod?.grind && prod?.grind !== "null") && (
+                              <> · Grind: {prod?.grind}</>
+                            )}
                           </p>
                         </div>
                         <div className="flex gap-3">
@@ -1399,7 +1407,7 @@ export default function Stock() {
                   })
                 )}
               </div>
-              <div className="flex justify-end gap-x-4 pt-4 border-t border-gray-200">
+              <div className="flex-shrink-0 flex justify-end gap-x-4 pt-4 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => {
@@ -1443,8 +1451,11 @@ export default function Stock() {
           style={{ width: "90vw", maxWidth: "800px" }}
           contentStyle={{
             padding: "1.5rem",
-            maxHeight: "70vh",
-            overflow: "visible",
+            maxHeight: "85vh",
+            minHeight: 0,
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           {submitAddProductLoader ? (
@@ -1453,22 +1464,24 @@ export default function Stock() {
               <p className="text-gray-500 text-sm mt-4">Adding products...</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              <div className="relative">
-                <input
-                  type="search"
-                  value={addProductSearch}
-                  onChange={(e) => setAddProductSearch(e.target.value)}
-                  placeholder="Search products..."
-                  className="w-full h-12 bg-themeGray rounded-lg ps-10 pe-5 outline-none placeholder:font-inter placeholder:font-medium focus:bg-gray-200"
-                />
-                <LuSearch
-                  size={20}
-                  color="#111827"
-                  className="absolute top-3.5 left-3"
-                />
+            <div className="flex flex-col min-h-0 flex-1 gap-4">
+              <div className="flex-shrink-0 space-y-4">
+                <div className="relative">
+                  <input
+                    type="search"
+                    value={addProductSearch}
+                    onChange={(e) => setAddProductSearch(e.target.value)}
+                    placeholder="Search products..."
+                    className="w-full h-12 bg-themeGray rounded-lg ps-10 pe-5 outline-none placeholder:font-inter placeholder:font-medium focus:bg-gray-200"
+                  />
+                  <LuSearch
+                    size={20}
+                    color="#111827"
+                    className="absolute top-3.5 left-3"
+                  />
+                </div>
               </div>
-              <div className="border border-borderColor rounded-md p-3 max-h-[50vh] overflow-y-auto space-y-2">
+              <div className="border border-borderColor rounded-md p-3 flex-1 min-h-0 overflow-y-auto space-y-2">
                 {addProductLoading ? (
                   <div className="flex flex-col items-center justify-center py-12">
                     <MiniLoader />
@@ -1555,6 +1568,9 @@ export default function Stock() {
                               SKU: {prod?.sku ?? "—"} · Code:{" "}
                               {prod?.productCode ?? "—"} · Weight:{" "}
                               {prod?.weight ?? "—"} lbs
+                              {(prod?.grind && prod?.grind !== "null") && (
+                                <> · Grind: {prod?.grind}</>
+                              )}
                             </p>
                           </div>
                           <div
@@ -1620,7 +1636,7 @@ export default function Stock() {
                   </>
                 )}
               </div>
-              <div className="flex justify-end gap-x-4 pt-4 border-t border-gray-200">
+              <div className="flex-shrink-0 flex justify-end gap-x-4 pt-4 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => {
@@ -1640,6 +1656,11 @@ export default function Stock() {
                   className="px-4 py-2 bg-theme text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Add Products
+                  {selectedAddProducts.length > 0 && (
+                    <span className="ml-1.5 opacity-90">
+                      ({selectedAddProducts.length})
+                    </span>
+                  )}
                 </button>
               </div>
             </div>

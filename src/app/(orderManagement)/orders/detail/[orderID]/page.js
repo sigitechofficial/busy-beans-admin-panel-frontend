@@ -952,8 +952,7 @@ export default function OrderDetail() {
 
                           {((userType === "admin" ||
                             userType === "salesRepresentative") &&
-                            data?.data?.order?.paymentMethod === "card") ||
-                          data?.data?.order?.statusId === 6 ? (
+                            data?.data?.order?.paymentStatus === "done") ? (
                             <div
                               className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none"
                               data-testid={ORDER_DETAIL.paymentStatusReadonly}

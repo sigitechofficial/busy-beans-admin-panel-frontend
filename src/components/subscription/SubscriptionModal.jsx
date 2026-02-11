@@ -854,6 +854,9 @@ export default function SubscriptionModal({ visible, onHide, machine }) {
                 })()}
               </button>
             </div>
+            <p className="text-xs text-gray-500 mt-3 text-center">
+              Select a card above to pay with it, or click the button to add a new card. The amount shown is your subscription total.
+            </p>
           </div>
         );
 

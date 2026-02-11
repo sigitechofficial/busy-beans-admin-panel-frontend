@@ -1,7 +1,9 @@
+import { useState, useMemo } from "react";
 import GetAPI from "@/utilities/GetAPI";
 import { BASE_URL } from "@/utilities/URL";
 import { RiSubtractFill } from "react-icons/ri";
 import { BiPlus } from "react-icons/bi";
+import { LuSearch } from "react-icons/lu";
 
 export default function ProductSelection({
   selectedProducts = [],
@@ -10,6 +12,8 @@ export default function ProductSelection({
   onPriceChange,
   selectedPartnerId = null,
 }) {
+  const [searchTerm, setSearchTerm] = useState("");
+
   // Admin customer → admin products; partner customer → that partner's inventory
   const productUrl =
     selectedPartnerId != null && selectedPartnerId !== ""
@@ -24,6 +28,17 @@ export default function ProductSelection({
       : Array.isArray(data?.data)
         ? data.data
         : [];
+
+  const filteredProducts = useMemo(() => {
+    if (!searchTerm.trim()) return products;
+    const q = searchTerm.trim().toLowerCase();
+    return products.filter(
+      (p) =>
+        (p.name || "").toLowerCase().includes(q) ||
+        String(p.sku || "").toLowerCase().includes(q) ||
+        (p.desc || "").toLowerCase().includes(q)
+    );
+  }, [products, searchTerm]);
 
   if (isLoading) return <div className="p-4 text-center text-gray-500">Loading products...</div>;
   if (!products.length) return <div className="p-4 text-center text-gray-500">No products available.</div>;
@@ -56,8 +71,19 @@ export default function ProductSelection({
       : product?.price;
 
   return (
-    <div className="grid grid-cols-1 gap-4 max-h-[500px] overflow-y-auto pr-2">
-      {products.map((product) => {
+    <div className="space-y-3">
+      <div className="relative flex-shrink-0">
+        <LuSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+        <input
+          type="text"
+          placeholder="Search products by name, SKU..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-theme/30 focus:border-theme"
+        />
+      </div>
+      <div className="grid grid-cols-1 gap-4 max-h-[500px] overflow-y-auto pr-2">
+      {filteredProducts.map((product) => {
         const isSelected = selectedProducts.some((p) => p.id === product.id);
         const selectedProduct = getSelectedProduct(product.id);
         const quantity = selectedProduct?.quantity || 1;
@@ -106,10 +132,15 @@ export default function ProductSelection({
                   </div>
 
                   <div
-                    className={`w-6 h-6 rounded border flex items-center justify-center flex-shrink-0 ${
+                    role="checkbox"
+                    aria-checked={isSelected}
+                    className={`w-6 h-6 rounded border flex items-center justify-center flex-shrink-0 cursor-pointer ${
                       isSelected ? "bg-theme border-theme" : "border-gray-300"
                     }`}
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggle(product);
+                    }}
                   >
                     {isSelected && (
                       <svg
@@ -198,6 +229,10 @@ export default function ProductSelection({
           </div>
         );
       })}
+      </div>
+      {filteredProducts.length === 0 && searchTerm.trim() && (
+        <p className="text-center text-gray-500 py-4 text-sm">No products match &quot;{searchTerm}&quot;</p>
+      )}
     </div>
   );
 }

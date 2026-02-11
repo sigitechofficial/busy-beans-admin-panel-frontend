@@ -56,10 +56,15 @@ export default function AddonSelection({ addons = [], selectedAddons = [], onTog
                   </div>
 
                   <div
-                    className={`w-6 h-6 rounded border flex items-center justify-center flex-shrink-0 ${
+                    role="checkbox"
+                    aria-checked={isSelected}
+                    className={`w-6 h-6 rounded border flex items-center justify-center flex-shrink-0 cursor-pointer ${
                       isSelected ? "bg-theme border-theme" : "border-gray-300"
                     }`}
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggle(addon);
+                    }}
                   >
                     {isSelected && (
                       <svg

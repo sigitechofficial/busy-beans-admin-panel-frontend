@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaPlus, FaTrash } from "react-icons/fa";
 
 export default function ExtraItemsStep({ 
@@ -9,7 +9,13 @@ export default function ExtraItemsStep({
   onRemoveExtraItem,
   onUpdateExtraItem 
 }) {
+  const PRESETS = [7, 14, 30, 60, 90, 180, 365];
+  const [daysInput, setDaysInput] = useState(String(subscriptionDays));
   const [showAddForm, setShowAddForm] = useState(false);
+
+  useEffect(() => {
+    setDaysInput(String(subscriptionDays));
+  }, [subscriptionDays]);
   const [newItem, setNewItem] = useState({
     name: "",
     price: "",
@@ -38,20 +44,46 @@ export default function ExtraItemsStep({
       {/* Subscription Days */}
       <div className="space-y-2">
         <label className="font-semibold text-gray-700">Subscription Days</label>
-        <select
-          value={subscriptionDays}
-          onChange={(e) => onDaysChange(parseInt(e.target.value))}
-          className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-theme focus:border-theme"
-        >
-          <option value={7}>7 days</option>
-          <option value={14}>14 days</option>
-          <option value={30}>30 days</option>
-          <option value={60}>60 days</option>
-          <option value={90}>90 days</option>
-          <option value={180}>180 days</option>
-          <option value={365}>365 days</option>
-        </select>
-        <p className="text-xs text-gray-500">Default: 30 days</p>
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            min={1}
+            max={9999}
+            value={daysInput}
+            onChange={(e) => {
+              const raw = e.target.value;
+              setDaysInput(raw);
+              const n = parseInt(raw, 10);
+              if (!Number.isNaN(n) && n >= 1) onDaysChange(Math.min(9999, n));
+            }}
+            onBlur={() => {
+              const n = parseInt(daysInput, 10);
+              if (Number.isNaN(n) || n < 1) {
+                setDaysInput("30");
+                onDaysChange(30);
+              }
+            }}
+            className="w-28 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-theme focus:border-theme text-sm"
+          />
+          <span className="text-sm text-gray-600">days</span>
+        </div>
+        <p className="text-xs text-gray-500 mb-1.5">Quick select:</p>
+        <div className="flex flex-wrap gap-2">
+          {PRESETS.map((days) => (
+            <button
+              key={days}
+              type="button"
+              onClick={() => onDaysChange(days)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                subscriptionDays === days
+                  ? "bg-theme text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              {days} days
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Extra Items Section */}

@@ -35,6 +35,7 @@ export default function SubscriptionModal({ visible, onHide, machine }) {
   const [loading, setLoading] = useState(false);
   const [selectedMethodId, setSelectedMethodId] = useState(null);
   const [stripeCustomerId, setStripeCustomerId] = useState(null);
+  const [selectedPartnerId, setSelectedPartnerId] = useState(null);
 
   useEffect(() => {
     if (visible) {
@@ -46,6 +47,7 @@ export default function SubscriptionModal({ visible, onHide, machine }) {
       setSubscriptionDays(30);
       setExtraItems([]);
       setStripeCustomerId(null);
+      setSelectedPartnerId(null);
     }
   }, [visible]);
 
@@ -280,9 +282,14 @@ export default function SubscriptionModal({ visible, onHide, machine }) {
             <UserSelection
               selectedUser={selectedUser}
               onSelect={(opt) => {
-                setSelectedUser({ ...opt });
+                setSelectedUser(opt ? { ...opt } : null);
               }}
               onAddNewUser={handleAddNewUser}
+              selectedPartnerId={selectedPartnerId}
+              onPartnerChange={(partnerId) => {
+                setSelectedPartnerId(partnerId ?? null);
+                setSelectedUser(null);
+              }}
             />
             <div className="flex justify-end gap-3 mt-8">
               <button
@@ -315,6 +322,7 @@ export default function SubscriptionModal({ visible, onHide, machine }) {
               onToggle={handleProductToggle}
               onQuantityChange={handleProductQuantityChange}
               onPriceChange={handleProductPriceChange}
+              selectedPartnerId={selectedPartnerId}
             />
 
             <div className="flex justify-between items-center pt-4 border-t mt-4">

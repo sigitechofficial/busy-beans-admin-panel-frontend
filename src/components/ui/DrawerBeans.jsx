@@ -889,7 +889,12 @@ const DrawerBeans = ({
     });
     setAddressOptions([...addressList]);
 
-    fetchChargesForCustomer(selectedEmail?.id, totalWeight);
+    // Orders for direct partner's customers: no shipping charges
+    if (type === "createOrder" && propSelectedPartnerId && !isSelfOrder) {
+      setOrder((prev) => ({ ...prev, shippingCharges: 0 }));
+    } else {
+      fetchChargesForCustomer(selectedEmail?.id, totalWeight);
+    }
   };
 
   // useEffect(() => {
@@ -918,14 +923,22 @@ const DrawerBeans = ({
   //   }
   // }, [open, quotationData]);
 
+  // Orders for direct partner's customers: no shipping. Direct partner self orders: apply shipping.
+  const isOrderForPartnerCustomer =
+    type === "createOrder" && propSelectedPartnerId && !isSelfOrder;
+
   useEffect(() => {
-    if (open && isSelfOrder ? userID : order.userId) {
+    if (!open) return;
+    if (isOrderForPartnerCustomer) {
+      setOrder((prev) => ({ ...prev, shippingCharges: 0 }));
+      return;
+    }
+    if (isSelfOrder ? userID : order.userId) {
       fetchChargesForCustomer(isSelfOrder ? userID : order.userId, totalWeight);
     } else if (!isSelfOrder && email) {
-      // fetchChargesForCustomer(order.userId, totalWeight);
       handleEmail(email);
     }
-  }, [open, isSelfOrder ? userID : order.userId, totalWeight, email]);
+  }, [open, isOrderForPartnerCustomer, isSelfOrder ? userID : order.userId, totalWeight, email]);
 
   const calculateDiscounts = () => {
     let subtotal = 0;

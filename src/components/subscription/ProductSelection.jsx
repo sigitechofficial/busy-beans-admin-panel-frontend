@@ -1,13 +1,29 @@
-import { useState, useEffect } from "react";
 import GetAPI from "@/utilities/GetAPI";
 import { BASE_URL } from "@/utilities/URL";
 import { RiSubtractFill } from "react-icons/ri";
 import { BiPlus } from "react-icons/bi";
 
-export default function ProductSelection({ selectedProducts = [], onToggle, onQuantityChange, onPriceChange }) {
-  const { data, isLoading } = GetAPI("api/v1/admin/product");
-  // Response structure: { status: "success", data: { data: [...] } }
-  const products = data?.data?.data || [];
+export default function ProductSelection({
+  selectedProducts = [],
+  onToggle,
+  onQuantityChange,
+  onPriceChange,
+  selectedPartnerId = null,
+}) {
+  // Admin customer → admin products; partner customer → that partner's inventory
+  const productUrl =
+    selectedPartnerId != null && selectedPartnerId !== ""
+      ? `api/v1/admin/products/sales-rep?salesRepId=${selectedPartnerId}&page=1&limit=500`
+      : "api/v1/admin/product?status=1";
+
+  const { data, isLoading } = GetAPI(productUrl);
+
+  const products =
+    data?.data?.data != null
+      ? (Array.isArray(data.data.data) ? data.data.data : [])
+      : Array.isArray(data?.data)
+        ? data.data
+        : [];
 
   if (isLoading) return <div className="p-4 text-center text-gray-500">Loading products...</div>;
   if (!products.length) return <div className="p-4 text-center text-gray-500">No products available.</div>;
@@ -34,13 +50,21 @@ export default function ProductSelection({ selectedProducts = [], onToggle, onQu
     return selectedProducts.find(p => p.id === productId);
   };
 
+  const displayPrice = (product) =>
+    selectedPartnerId != null && (product?.customPrice != null || product?.customPrice === 0)
+      ? product.customPrice
+      : product?.price;
+
   return (
     <div className="grid grid-cols-1 gap-4 max-h-[500px] overflow-y-auto pr-2">
       {products.map((product) => {
         const isSelected = selectedProducts.some((p) => p.id === product.id);
         const selectedProduct = getSelectedProduct(product.id);
         const quantity = selectedProduct?.quantity || 1;
-        const customPrice = selectedProduct?.customPrice !== undefined ? selectedProduct.customPrice : product.price;
+        const customPrice =
+          selectedProduct?.customPrice !== undefined
+            ? selectedProduct.customPrice
+            : displayPrice(product);
 
         return (
           <div
@@ -163,7 +187,9 @@ export default function ProductSelection({ selectedProducts = [], onToggle, onQu
 
                 {!isSelected && (
                   <div className="flex items-center gap-2 mt-2">
-                    <span className="text-sm font-bold text-theme">${product.price}</span>
+                    <span className="text-sm font-bold text-theme">
+                      ${displayPrice(product) ?? "—"}
+                    </span>
                     {product.unit && <span className="text-xs text-gray-400">/ {product.unit}</span>}
                   </div>
                 )}

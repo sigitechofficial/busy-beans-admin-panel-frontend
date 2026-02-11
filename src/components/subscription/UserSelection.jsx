@@ -4,21 +4,41 @@ import axios from "axios";
 import { BASE_URL } from "@/utilities/URL";
 import { useRouter } from "next/navigation";
 import { FaPlus } from "react-icons/fa";
+import GetAPI from "@/utilities/GetAPI";
 
-export default function UserSelection({ onSelect, selectedUser, onAddNewUser }) {
+export default function UserSelection({
+  onSelect,
+  selectedUser,
+  onAddNewUser,
+  selectedPartnerId,
+  onPartnerChange,
+}) {
   const router = useRouter();
-  
+
+  // Partner options: Admin (null) + list of partners
+  const { data: salesRepData } = GetAPI("api/v1/admin/sales-rep");
+  const partnerOptions = [
+    { value: null, label: "Admin customers" },
+    ...(salesRepData?.data?.data || []).map((p) => ({
+      value: p?.id,
+      label: `${p?.srName || p?.name || "Partner"} (${p?.territoryName || ""})`.trim(),
+    })),
+  ];
+
   // Pagination state for customers
   const [options, setOptions] = useState([]);
   const [customerPage, setCustomerPage] = useState(1);
   const [customerLimit] = useState(30);
   const [customerHasMore, setCustomerHasMore] = useState(true);
   const [customerLoading, setCustomerLoading] = useState(false);
-  const [allCustomers, setAllCustomers] = useState([]); // Store all fetched customers
-  const [customerSearchQuery, setCustomerSearchQuery] = useState(""); // Search query for customers
+  const [allCustomers, setAllCustomers] = useState([]);
+  const [customerSearchQuery, setCustomerSearchQuery] = useState("");
 
-  const getCustomerListEndpoint = (page, limit, search = "") => {
-    const base = "api/v1/admin/customer-management/customer-list/all";
+  const getCustomerListEndpoint = (page, limit, search = "", partnerId = selectedPartnerId) => {
+    const base =
+      partnerId != null && partnerId !== ""
+        ? `api/v1/admin/customer-management/customer-list/sale-rep-id/${partnerId}`
+        : "api/v1/admin/customer-management/customer-list/not-assigned";
     const params = new URLSearchParams();
     params.set("page", page.toString());
     params.set("limit", limit.toString());
@@ -105,10 +125,13 @@ export default function UserSelection({ onSelect, selectedUser, onAddNewUser }) 
     };
   }, []);
 
-  // Load initial customers
+  // Load initial customers and refetch when partner changes
   useEffect(() => {
+    setOptions([]);
+    setAllCustomers([]);
+    setCustomerPage(1);
     fetchCustomers(1, false, customerSearchQuery);
-  }, []);
+  }, [selectedPartnerId]);
 
   // Load more customers on scroll
   const handleMenuScrollToBottom = () => {
@@ -185,40 +208,89 @@ export default function UserSelection({ onSelect, selectedUser, onAddNewUser }) 
     }
   };
 
+  const currentPartnerOption =
+    selectedPartnerId != null
+      ? partnerOptions.find((o) => o.value === selectedPartnerId)
+      : partnerOptions[0];
+
+  const selectStyles = {
+    control: (base) => ({
+      ...base,
+      minHeight: "44px",
+      borderRadius: "8px",
+      borderColor: "#e5e7eb",
+    }),
+    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <label className="font-bold text-lg">Select User</label>
-        <button
-          onClick={handleAddNewUser}
-          className="flex items-center gap-2 px-4 py-2 bg-theme text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium"
-        >
-          <FaPlus size={14} />
-          Add New User
-        </button>
+    <div className="space-y-6">
+      {/* Customer source */}
+      <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-4">
+        <label className="text-sm font-semibold text-gray-700 block mb-1">
+          Show customers for
+        </label>
+        <p className="text-xs text-gray-500 mb-3">
+          Admin customers or pick a partner to see their customers
+        </p>
+        <Select
+          options={partnerOptions}
+          value={currentPartnerOption || partnerOptions[0]}
+          onChange={(opt) => {
+            const newId = opt?.value ?? null;
+            onPartnerChange?.(newId);
+            onSelect(null);
+          }}
+          classNamePrefix="select"
+          menuPortalTarget={typeof document !== "undefined" ? document.body : null}
+          styles={selectStyles}
+        />
       </div>
-      <Select
-        isLoading={customerLoading}
-        options={options}
-        value={selectedUser ? { label: `${selectedUser.name || selectedUser.label} (${selectedUser.email})`, value: selectedUser.value || selectedUser.id } : null}
-        onChange={(opt) => onSelect(opt)} // Pass full user object
-        placeholder="Search for a user..."
-        className="basic-multi-select"
-        classNamePrefix="select"
-        menuPortalTarget={typeof document !== "undefined" ? document.body : null}
-        styles={{
-          menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-          control: (base) => ({ ...base, minHeight: '45px' })
-        }}
-        onInputChange={handleCustomerSearchChange}
-        onMenuScrollToBottom={handleMenuScrollToBottom}
-        menuListProps={{
-          onScroll: handleMenuScroll,
-        }}
-        isSearchable={true}
-        filterOption={() => true} // Disable client-side filtering, use server-side search
-        loadingMessage={() => "Loading customers..."}
-      />
+
+      {/* Customer selection */}
+      <div className="rounded-lg border border-gray-200 bg-white p-4">
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div>
+            <label className="text-sm font-semibold text-gray-700 block">
+              Select customer
+            </label>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Search by name or email
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleAddNewUser}
+            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-theme border border-theme rounded-lg hover:bg-theme/5 transition-colors shrink-0"
+          >
+            <FaPlus size={12} />
+            Add New User
+          </button>
+        </div>
+        <Select
+          isLoading={customerLoading}
+          options={options}
+          value={
+            selectedUser
+              ? {
+                  label: `${selectedUser.name || selectedUser.label} (${selectedUser.email})`,
+                  value: selectedUser.value || selectedUser.id,
+                }
+              : null
+          }
+          onChange={(opt) => onSelect(opt)}
+          placeholder="Search for a user..."
+          classNamePrefix="select"
+          menuPortalTarget={typeof document !== "undefined" ? document.body : null}
+          styles={selectStyles}
+          onInputChange={handleCustomerSearchChange}
+          onMenuScrollToBottom={handleMenuScrollToBottom}
+          menuListProps={{ onScroll: handleMenuScroll }}
+          isSearchable
+          filterOption={() => true}
+          loadingMessage={() => "Loading customers..."}
+        />
+      </div>
     </div>
   );
 }

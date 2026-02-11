@@ -511,8 +511,20 @@ export default function CreateInvoice() {
     ? Number(shippingChargeObj.charges)
     : 0;
 
+  // Direct partner customer: invoice to a customer of a local partner → no shipping charges
+  const isInvoiceForPartnerCustomer =
+    viewMode === "localPartner" &&
+    selectedPartnerId &&
+    order?.userId &&
+    !isSelfOrder;
+
   // Update shipping charges when total weight changes (auto calculate mode)
   useEffect(() => {
+    if (isInvoiceForPartnerCustomer) {
+      setInvoiceFields((prev) => ({ ...prev, shippingCharges: "0" }));
+      setOrder((prev) => ({ ...prev, shippingCharges: 0 }));
+      return;
+    }
     if (!manual.show && calculatedTotalWeight > 0 && shippingChargesData?.data?.data) {
       const shippingChargeObj = shippingChargesData.data.data.find(
         (sc) => calculatedTotalWeight >= sc.weightFrom && calculatedTotalWeight <= sc.weightTo
@@ -530,7 +542,12 @@ export default function CreateInvoice() {
         }));
       }
     }
-  }, [calculatedTotalWeight, manual.show, shippingChargesData]);
+  }, [
+    isInvoiceForPartnerCustomer,
+    calculatedTotalWeight,
+    manual.show,
+    shippingChargesData,
+  ]);
 
   // ========== DRAWER FUNCTIONALITY FUNCTIONS ==========
   

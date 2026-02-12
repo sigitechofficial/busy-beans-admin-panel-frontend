@@ -6,7 +6,7 @@ const ErrorHandler = (error) => {
   } else {
     console.error("Error Details:", error.message || error);
   }
-  error_toaster(error.message || "An error occurred while creating the order.");
+  error_toaster(error.message);
 };
 
 export default ErrorHandler;

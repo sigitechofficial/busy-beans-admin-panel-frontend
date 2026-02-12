@@ -489,6 +489,26 @@ const DrawerBeans = ({
 
     setAddressOptions([...addressList]);
 
+    // Fetch shipping charges when partner is selected (partner self-order): hit API and set shipping field
+    if (
+      type === "createOrder" &&
+      selectedPartner?.id &&
+      userType === "admin" &&
+      (isDirectPartner || isSelfOrder)
+    ) {
+      const cart =
+        typeof window !== "undefined"
+          ? JSON.parse(localStorage.getItem("createOrderData") || "[]")
+          : [];
+      const weight = cart.reduce(
+        (a, b) => Number(a) + Number(b?.weight || 0) * Number(b?.qty || 0),
+        0
+      );
+      if (weight > 0) {
+        fetchChargesForCustomer(selectedPartner.id, weight);
+      }
+    }
+
     // Call API to get partner's product prices for selected products in cart
     // When admin (with cart items) selects a partner in the drawer
     if (selectedPartner?.id && cartItems?.length > 0 && userType === "admin") {
@@ -821,7 +841,8 @@ const DrawerBeans = ({
     }));
   };
 
-  const fetchChargesForCustomer = async (customerId, weight) => {
+  // Shipping API: POST api/v1/admin/shipping-charges-on-weight/customer/{customerId} with { weight }. Returns shipping + discounts (categoryDiscounts). For direct partner's customer we still call to get discounts but force shipping to 0.
+  const fetchChargesForCustomer = async (customerId, weight, forceShippingZero = false) => {
     if (!customerId || !weight) return;
 
     try {
@@ -833,9 +854,9 @@ const DrawerBeans = ({
       if (res?.data?.status === "success") {
         const payload = res?.data?.data || {};
 
-        const shipping = parseFloat(
-          payload?.shippingCharges ?? payload?.charges ?? 0
-        );
+        const shipping = forceShippingZero
+          ? 0
+          : parseFloat(payload?.shippingCharges ?? payload?.charges ?? 0);
         const rawDiscountPct = payload?.discountPercentage;
         const discountPct =
           rawDiscountPct == null ? "" : parseFloat(rawDiscountPct);
@@ -844,7 +865,6 @@ const DrawerBeans = ({
         setOrder((prev) => ({
           ...prev,
           shippingCharges: shipping,
-          // discountPercentage: discountPct,
           categoryDiscounts,
         }));
       } else {
@@ -889,12 +909,16 @@ const DrawerBeans = ({
     });
     setAddressOptions([...addressList]);
 
-    // Orders for direct partner's customers: no shipping charges
-    if (type === "createOrder" && propSelectedPartnerId && !isSelfOrder) {
-      setOrder((prev) => ({ ...prev, shippingCharges: 0 }));
-    } else {
-      fetchChargesForCustomer(selectedEmail?.id, totalWeight);
-    }
+    // Direct partner's customer: still hit API for discounts, but force shipping to 0. Others: fetch normally.
+    const isPartnerCustomer =
+      type === "createOrder" &&
+      (propSelectedPartnerId || isDirectPartner) &&
+      !isSelfOrder;
+    fetchChargesForCustomer(
+      selectedEmail?.id,
+      totalWeight,
+      isPartnerCustomer
+    );
   };
 
   // useEffect(() => {
@@ -923,22 +947,47 @@ const DrawerBeans = ({
   //   }
   // }, [open, quotationData]);
 
-  // Orders for direct partner's customers: no shipping. Direct partner self orders: apply shipping.
+  // Only one case has NO shipping: direct partner's customer (order for a customer of the partner). All other cases: fetch shipping.
   const isOrderForPartnerCustomer =
-    type === "createOrder" && propSelectedPartnerId && !isSelfOrder;
+    type === "createOrder" &&
+    (propSelectedPartnerId || isDirectPartner) &&
+    !!order?.userId &&
+    !isSelfOrder;
+
+  const customerIdForShipping = (() => {
+    if (isOrderForPartnerCustomer) return null;
+    if (type === "createOrder" && (isDirectPartner || isSelfOrder)) {
+      return order?.salesRepId || propSelectedPartnerId || null;
+    }
+    if (isSelfOrder) return userID || null;
+    return order?.userId || null;
+  })();
 
   useEffect(() => {
     if (!open) return;
+    if (isOrderForPartnerCustomer && order?.userId && totalWeight > 0) {
+      fetchChargesForCustomer(order.userId, totalWeight, true);
+      return;
+    }
     if (isOrderForPartnerCustomer) {
       setOrder((prev) => ({ ...prev, shippingCharges: 0 }));
       return;
     }
-    if (isSelfOrder ? userID : order.userId) {
-      fetchChargesForCustomer(isSelfOrder ? userID : order.userId, totalWeight);
-    } else if (!isSelfOrder && email) {
+    if (customerIdForShipping && totalWeight > 0) {
+      fetchChargesForCustomer(customerIdForShipping, totalWeight);
+    } else if (customerIdForShipping && totalWeight === 0) {
+      setOrder((prev) => ({ ...prev, shippingCharges: 0 }));
+    } else if (!isSelfOrder && email && !order?.userId) {
       handleEmail(email);
     }
-  }, [open, isOrderForPartnerCustomer, isSelfOrder ? userID : order.userId, totalWeight, email]);
+  }, [
+    open,
+    isOrderForPartnerCustomer,
+    customerIdForShipping,
+    totalWeight,
+    email,
+    order?.userId,
+  ]);
 
   const calculateDiscounts = () => {
     let subtotal = 0;

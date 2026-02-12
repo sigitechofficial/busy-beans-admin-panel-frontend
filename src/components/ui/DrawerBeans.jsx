@@ -418,8 +418,8 @@ const DrawerBeans = ({
   const selfOrderSwitch = (checked) => {
     setIsSelfOrder(checked);
     if (checked) {
-      if (email !== "") {
-        fetchChargesForCustomer(userID, totalWeight);
+      if (email !== "" && totalWeight > 0) {
+        fetchChargesForCustomer(userID, totalWeight, false, true);
       }
       let selfemail = localStorage.getItem("email");
       setEmail(selfemail);
@@ -505,7 +505,7 @@ const DrawerBeans = ({
         0
       );
       if (weight > 0) {
-        fetchChargesForCustomer(selectedPartner.id, weight);
+        fetchChargesForCustomer(selectedPartner.id, weight, false, true);
       }
     }
 
@@ -841,14 +841,16 @@ const DrawerBeans = ({
     }));
   };
 
-  // Shipping API: POST api/v1/admin/shipping-charges-on-weight/customer/{customerId} with { weight }. Returns shipping + discounts (categoryDiscounts). For direct partner's customer we still call to get discounts but force shipping to 0.
-  const fetchChargesForCustomer = async (customerId, weight, forceShippingZero = false) => {
+  // Shipping API: POST api/v1/admin/shipping-charges-on-weight/customer/{customerId} with { weight, userType? }. Returns shipping + discounts. For partner order pass userType: "local-partner".
+  const fetchChargesForCustomer = async (customerId, weight, forceShippingZero = false, isPartnerOrder = false) => {
     if (!customerId || !weight) return;
+
+    const body = { weight, ...(isPartnerOrder ? { userType: "local-partner" } : {}) };
 
     try {
       const res = await PostAPI(
         `api/v1/admin/shipping-charges-on-weight/customer/${customerId}`,
-        { weight }
+        body
       );
 
       if (res?.data?.status === "success") {
@@ -974,7 +976,14 @@ const DrawerBeans = ({
       return;
     }
     if (customerIdForShipping && totalWeight > 0) {
-      fetchChargesForCustomer(customerIdForShipping, totalWeight);
+      const isPartnerOrder =
+        type === "createOrder" && (isDirectPartner || isSelfOrder);
+      fetchChargesForCustomer(
+        customerIdForShipping,
+        totalWeight,
+        false,
+        isPartnerOrder
+      );
     } else if (customerIdForShipping && totalWeight === 0) {
       setOrder((prev) => ({ ...prev, shippingCharges: 0 }));
     } else if (!isSelfOrder && email && !order?.userId) {
@@ -1480,7 +1489,7 @@ const DrawerBeans = ({
                               key={index}
                               className="font-sf relative flex sm:flex-row items-start rounded-2xl h-full mb-3"
                             >
-                              <div className="flex justify-center items-center sm:min-w-[100px] min-w-[72px] sm:h-[72px] h-[72px] rounded-lg bg-gray-100 p-2">
+                              <div className="flex justify-center items-center sm:w-[260px] w-[200px] sm:h-[72px] h-[72px] rounded-lg bg-gray-100 p-2">
                                 <Image
                                   src={cartI?.image ? `${BASE_URL}${cartI?.image}` : "/images/logocoffee.png"}
                                   alt={cartI?.name || "product"}

@@ -911,15 +911,20 @@ const DrawerBeans = ({
     });
     setAddressOptions([...addressList]);
 
-    // Direct partner's customer: still hit API for discounts, but force shipping to 0. Others: fetch normally.
+    // Partner's customer: hit API for discounts. Only direct partner's customer gets shipping 0; dropship shows API value.
     const isPartnerCustomer =
       type === "createOrder" &&
       (propSelectedPartnerId || isDirectPartner) &&
       !isSelfOrder;
+    const isDirectOnly =
+      isPartnerCustomer &&
+      partners?.length > 0 &&
+      (partners.some((p) => String(p?.id) === String(order?.salesRepId)) ||
+        partners.some((p) => String(p?.id) === String(propSelectedPartnerId)));
     fetchChargesForCustomer(
       selectedEmail?.id,
       totalWeight,
-      isPartnerCustomer
+      isDirectOnly
     );
   };
 
@@ -949,17 +954,25 @@ const DrawerBeans = ({
   //   }
   // }, [open, quotationData]);
 
-  // Only one case has NO shipping: direct partner's customer (order for a customer of the partner). All other cases: fetch shipping.
+  // Partner's customer order: order for a customer of the selected partner (not the partner themselves).
   const isOrderForPartnerCustomer =
     type === "createOrder" &&
     (propSelectedPartnerId || isDirectPartner) &&
     !!order?.userId &&
     !isSelfOrder;
 
+  // Only DIRECT partner's customer gets shipping 0. Dropship partner's customer: show API shipping. Drawer "partners" list is direct-only.
+  const isDirectPartnerCustomer =
+    isOrderForPartnerCustomer &&
+    partners?.length > 0 &&
+    (partners.some((p) => String(p?.id) === String(order?.salesRepId)) ||
+      partners.some((p) => String(p?.id) === String(propSelectedPartnerId)));
+
   const customerIdForShipping = (() => {
     if (isOrderForPartnerCustomer) return null;
     if (type === "createOrder" && (isDirectPartner || isSelfOrder)) {
-      return order?.salesRepId || propSelectedPartnerId || null;
+      // Partner logged in + self order: use userID when salesRepId not yet set (e.g. dropship partner on create-order page)
+      return order?.salesRepId || propSelectedPartnerId || (userType === "salesRepresentative" && isSelfOrder ? userID : null);
     }
     if (isSelfOrder) return userID || null;
     return order?.userId || null;
@@ -968,10 +981,10 @@ const DrawerBeans = ({
   useEffect(() => {
     if (!open) return;
     if (isOrderForPartnerCustomer && order?.userId && totalWeight > 0) {
-      fetchChargesForCustomer(order.userId, totalWeight, true);
+      fetchChargesForCustomer(order.userId, totalWeight, isDirectPartnerCustomer);
       return;
     }
-    if (isOrderForPartnerCustomer) {
+    if (isOrderForPartnerCustomer && isDirectPartnerCustomer) {
       setOrder((prev) => ({ ...prev, shippingCharges: 0 }));
       return;
     }
@@ -992,10 +1005,14 @@ const DrawerBeans = ({
   }, [
     open,
     isOrderForPartnerCustomer,
+    isDirectPartnerCustomer,
     customerIdForShipping,
     totalWeight,
     email,
     order?.userId,
+    order?.salesRepId,
+    propSelectedPartnerId,
+    partners,
   ]);
 
   const calculateDiscounts = () => {

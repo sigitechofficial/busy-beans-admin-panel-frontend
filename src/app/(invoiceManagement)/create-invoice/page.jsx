@@ -26,10 +26,11 @@ import { MdInsertComment, MdOutlineConfirmationNumber } from "react-icons/md";
 
 export default function CreateInvoice() {
   const router = useRouter();
-  let userID, userType;
+  let userID, userType, partnerType;
   if (typeof window !== "undefined") {
     userID = localStorage.getItem("userID");
     userType = localStorage.getItem("userType");
+    partnerType = localStorage.getItem("partnerType");
   }
 
   const { data, isLoading } = GetAPI(
@@ -511,16 +512,42 @@ export default function CreateInvoice() {
     ? Number(shippingChargeObj.charges)
     : 0;
 
-  // Direct partner customer: invoice to a customer of a local partner → no shipping charges
+  // Partner customer direct invoice: invoice to a customer of a local partner. We fetch shipping from API and display it (same as other invoices).
   const isInvoiceForPartnerCustomer =
     viewMode === "localPartner" &&
     selectedPartnerId &&
     order?.userId &&
     !isSelfOrder;
 
-  // Update shipping charges when total weight changes (auto calculate mode)
+  // Partner logged in creating invoice for their customer (not self order). Direct partner → shipping 0; Dropship → shipping from API.
+  const isPartnerLoggedInCustomerOrder =
+    userType === "salesRepresentative" && !isSelfOrder && !!order?.userId;
+  const isDirectPartnerLoggedIn = partnerType === "direct-partner";
+
+  // Update shipping charges when total weight changes (auto calculate mode). Partner customer: hit API and use returned shipping.
   useEffect(() => {
-    if (isInvoiceForPartnerCustomer) {
+    // Partner logged in + Customer Order + Direct Partner → shipping 0.00
+    if (isPartnerLoggedInCustomerOrder && isDirectPartnerLoggedIn) {
+      setInvoiceFields((prev) => ({ ...prev, shippingCharges: "0.00" }));
+      setOrder((prev) => ({ ...prev, shippingCharges: 0 }));
+      return;
+    }
+    // Partner logged in + Customer Order + Dropship Partner → fetch shipping from API
+    if (isPartnerLoggedInCustomerOrder && !isDirectPartnerLoggedIn && order?.userId && calculatedTotalWeight > 0) {
+      fetchChargesForCustomer(order.userId, calculatedTotalWeight);
+      return;
+    }
+    if (isPartnerLoggedInCustomerOrder && !isDirectPartnerLoggedIn && (!order?.userId || calculatedTotalWeight === 0)) {
+      setInvoiceFields((prev) => ({ ...prev, shippingCharges: "" }));
+      setOrder((prev) => ({ ...prev, shippingCharges: "" }));
+      return;
+    }
+    // Admin: local partner view, invoice for partner's customer
+    if (isInvoiceForPartnerCustomer && order?.userId && calculatedTotalWeight > 0) {
+      fetchChargesForCustomer(order.userId, calculatedTotalWeight);
+      return;
+    }
+    if (isInvoiceForPartnerCustomer && (!order?.userId || calculatedTotalWeight === 0)) {
       setInvoiceFields((prev) => ({ ...prev, shippingCharges: "0" }));
       setOrder((prev) => ({ ...prev, shippingCharges: 0 }));
       return;
@@ -544,9 +571,12 @@ export default function CreateInvoice() {
     }
   }, [
     isInvoiceForPartnerCustomer,
+    isPartnerLoggedInCustomerOrder,
+    isDirectPartnerLoggedIn,
     calculatedTotalWeight,
     manual.show,
     shippingChargesData,
+    order?.userId,
   ]);
 
   // ========== DRAWER FUNCTIONALITY FUNCTIONS ==========
@@ -2101,24 +2131,30 @@ export default function CreateInvoice() {
                     colSpan={4}
                     className="border border-gray-200 w-max py-2 px-2 "
                   >
-                    <button
-                      className="border px-2 py-2"
-                      onClick={() =>
-                        setManual({ ...manual, show: !manual.show })
-                      }
-                    >
-                      {manual.show ? "Manual Calculate" : "Auto Calculate"}
-                    </button>
+                    {!(isPartnerLoggedInCustomerOrder && isDirectPartnerLoggedIn) && (
+                      <button
+                        className="border px-2 py-2"
+                        onClick={() =>
+                          setManual({ ...manual, show: !manual.show })
+                        }
+                      >
+                        {manual.show ? "Manual Calculate" : "Auto Calculate"}
+                      </button>
+                    )}
                   </td>
                   <td className="py-2 px-2 text-right font-bold border border-gray-200">
                     Shipping Charges
                   </td>
                   <td className="py-2 px-2 text-right font-bold border border-gray-200">
-                    {!manual?.show ? (
+                    {isPartnerLoggedInCustomerOrder && isDirectPartnerLoggedIn ? (
+                      "0.00"
+                    ) : !manual?.show ? (
                       <input
-                        className="w-20 border border-gray-200 rounded px-1 py-1 text-right"
-                        value={invoiceFields?.shippingCharges ? parseFloat(invoiceFields.shippingCharges).toFixed(2) : ""}
+                        className="w-20 border border-gray-200 rounded px-1 py-1 text-right disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        value={invoiceFields?.shippingCharges ?? ""}
                         type="text"
+                        inputMode="decimal"
+                        disabled={isPartnerLoggedInCustomerOrder && isDirectPartnerLoggedIn}
                         onChange={(e) => {
                           const value = e.target.value;
                           if (value === "" || /^\d*\.?\d*$/.test(value)) {
@@ -2129,11 +2165,16 @@ export default function CreateInvoice() {
                           }
                         }}
                         onBlur={(e) => {
-                          const value = e.target.value;
-                          if (value && !isNaN(value)) {
+                          const value = e.target.value.trim();
+                          if (value === "") {
+                            setInvoiceFields((prev) => ({ ...prev, shippingCharges: "" }));
+                            return;
+                          }
+                          const num = parseFloat(value);
+                          if (!Number.isNaN(num) && num >= 0) {
                             setInvoiceFields((prev) => ({
                               ...prev,
-                              shippingCharges: parseFloat(value).toFixed(2),
+                              shippingCharges: num.toFixed(2),
                             }));
                           }
                         }}

@@ -21,14 +21,26 @@ export default function AllInvoices() {
   const router = useRouter();
   const [type, setType] = useState("all");
   const [invoiceSource, setInvoiceSource] = useState("customer");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(100);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Determine API URL based on invoice source
-  const apiUrl =
+  // Build API URL with pagination and search (same pattern as /orders)
+  const baseUrl =
     invoiceSource === "customer"
       ? userType === "admin"
-        ? `api/v1/admin/orders?statusId[ne]=6&type=all`
-        :  `api/v1/admin/orders?salesRepId=${userID}&statusId[ne]=6&type=all`
-      :  `api/v1/admin/partner-order/orders-list?statusId[ne]=6&type=all`;
+        ? "api/v1/admin/orders?statusId[ne]=6&type=all&invoiceDate[ne]=null"
+        : `api/v1/admin/orders?salesRepId=${userID}&statusId[ne]=6&type=all&invoiceDate[ne]=null`
+      : "api/v1/admin/partner-order/orders-list?statusId[ne]=6&type=all&invoiceDate[ne]=null";
+
+  const [urlBase, existingQuery] = baseUrl.split("?");
+  const params = new URLSearchParams(existingQuery || "");
+  params.set("page", page.toString());
+  params.set("limit", limit.toString());
+  if (searchQuery.trim()) {
+    params.set("search", searchQuery.trim());
+  }
+  const apiUrl = `${urlBase}?${params.toString()}`;
 
   const { data, isLoading } = GetAPI(apiUrl, "orders");
 
@@ -38,7 +50,7 @@ export default function AllInvoices() {
       field: "companyName",
       header: invoiceSource === "partner" ? "Local Partner" : "Company Name",
     },
-    { field: "type", header: "Type" },
+    { field: "type", header: "Type",sort: true },
     { field: "orderDate", header: "Order Date", sort: true },
     { field: "deliveredOn", header: "Deliver On" },
     { field: "totalBill", header: "Total", sort: true },
@@ -48,7 +60,12 @@ export default function AllInvoices() {
   ];
 
   const datas = [];
-  const resultedOrders = data?.data?.data?.filter((detail, i) => {
+  const ordersArray = Array.isArray(data?.data?.data)
+    ? data?.data?.data
+    : Array.isArray(data?.data)
+      ? data?.data
+      : [];
+  const resultedOrders = ordersArray.filter((detail, i) => {
     return (
       (type === "paid"
         ? detail?.paymentStatus === "done"
@@ -81,7 +98,7 @@ export default function AllInvoices() {
         paymentStatus: detail?.paymentStatus === "done" ? "Paid" : "Unpaid",
         createdBy: detail?.createdBy,
         orderDate: dayjs(detail?.on).format("MM/DD/YYYY"),
-        deliveredOn: dayjs(detail?.deliveredOn).format("MM/DD/YYYY"),
+        deliveredOn: detail?.deliveredOn ? dayjs(detail?.deliveredOn).format("MM/DD/YYYY") : "-",
         action: (
           <button
             className="border border-theme rounded-md p-2 text-theme hover:bg-theme hover:text-white transition-colors"
@@ -127,7 +144,10 @@ export default function AllInvoices() {
         {/* Toggle for Invoice Source */}
         <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
           <button
-            onClick={() => setInvoiceSource("customer")}
+            onClick={() => {
+              setInvoiceSource("customer");
+              setPage(1);
+            }}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
               invoiceSource === "customer"
                 ? "bg-white text-gray-900 shadow-sm"
@@ -138,7 +158,10 @@ export default function AllInvoices() {
           </button>
           {["admin", "salesRepresentative"].includes(userType) && (
             <button
-              onClick={() => setInvoiceSource("partner")}
+              onClick={() => {
+                setInvoiceSource("partner");
+                setPage(1);
+              }}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 invoiceSource === "partner"
                   ? "bg-white text-gray-900 shadow-sm"
@@ -153,7 +176,10 @@ export default function AllInvoices() {
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
         <div>
           <button
-            onClick={() => setType("all")}
+            onClick={() => {
+              setType("all");
+              setPage(1);
+            }}
             className={`${
               type === "all" ? "bg-black text-white" : "bg-white text-black"
             } font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
@@ -162,7 +188,10 @@ export default function AllInvoices() {
             All Invoices
           </button>
           <button
-            onClick={() => setType("paid")}
+            onClick={() => {
+              setType("paid");
+              setPage(1);
+            }}
             className={`${
               type === "paid" ? "bg-black text-white" : "bg-white text-black"
             }  font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
@@ -171,7 +200,10 @@ export default function AllInvoices() {
             Paid Invoices
           </button>
           <button
-            onClick={() => setType("unpaid")}
+            onClick={() => {
+              setType("unpaid");
+              setPage(1);
+            }}
             className={`${
               type === "unpaid" ? "bg-black text-white" : "bg-white text-black"
             }  font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
@@ -182,15 +214,50 @@ export default function AllInvoices() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-          <ManagementTab title="Total Invoices" desc={resultedOrders?.length} />
+          <ManagementTab
+            title="Total Invoices"
+            desc={
+              data?.pagination?.totalItems ??
+              data?.data?.pagination?.totalItems ??
+              resultedOrders?.length ??
+              0
+            }
+          />
         </div>
 
         <div>
           <MyDataTable
             columns={columns}
             data={datas}
-            placeholder={"Search ..."}
+            placeholder={"Search by Id, invoice number, company name..."}
             pagination={true}
+            serverPagination={{
+              page:
+                data?.pagination?.page ??
+                data?.data?.pagination?.page ??
+                page,
+              limit:
+                data?.pagination?.limit ??
+                data?.data?.pagination?.limit ??
+                limit,
+              totalRecords:
+                data?.pagination?.totalItems ??
+                data?.data?.pagination?.totalItems ??
+                0,
+              totalPages:
+                data?.pagination?.totalPages ??
+                data?.data?.pagination?.totalPages,
+              onPageChange: (newPage) => setPage(newPage),
+              onLimitChange: (newLimit) => {
+                setLimit(newLimit);
+                setPage(1);
+              },
+            }}
+            searchValue={searchQuery}
+            onSearchChange={(searchValue) => {
+              setSearchQuery(searchValue);
+              setPage(1);
+            }}
             onRowClick={(e) => {
               if (invoiceSource === "partner") {
                 // Partner invoices: check if direct-invoice or regular order

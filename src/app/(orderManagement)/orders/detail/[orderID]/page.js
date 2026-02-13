@@ -33,7 +33,7 @@ import { useUserType } from "@/utilities/useUserType";
 export default function OrderDetail() {
   const { isAllowed: canViewEmailLogs } = useUserType(
     ["admin", "salesRepresentative"],
-    { redirectIfNotAllowed: false }
+    { redirectIfNotAllowed: false },
   );
   if (typeof window !== "undefined") {
     var userType = localStorage.getItem("userType");
@@ -99,13 +99,12 @@ export default function OrderDetail() {
 
   const { data, reFetch, isLoading } = GetAPI(
     `api/v1/admin/order-details/${orderID}`,
-    "orders"
+    "orders",
   );
 
-  const emailLogApiUrl =
-    orderID
-      ? `api/v1/admin/order-management/email-log?orderId=${orderID}`
-      : "";
+  const emailLogApiUrl = orderID
+    ? `api/v1/admin/order-management/email-log?orderId=${orderID}`
+    : "";
   const {
     data: emailLogData,
     reFetch: reFetchEmailLogs,
@@ -251,7 +250,7 @@ export default function OrderDetail() {
         } else {
           setLoader("");
           throw new Error(
-            res?.data?.message || "An unexpected error occurred."
+            res?.data?.message || "An unexpected error occurred.",
           );
         }
       } catch (error) {
@@ -285,7 +284,7 @@ export default function OrderDetail() {
         } else {
           setLoader("");
           throw new Error(
-            res?.data?.message || "An unexpected error occurred."
+            res?.data?.message || "An unexpected error occurred.",
           );
         }
       } catch (error) {
@@ -297,7 +296,7 @@ export default function OrderDetail() {
       try {
         const res = await DeleteAPI(
           `api/v1/admin/order-management/delete-order/${orderID}`,
-          "orders"
+          "orders",
         );
 
         if (res?.data?.status === "success") {
@@ -308,7 +307,7 @@ export default function OrderDetail() {
         } else {
           setLoader("");
           throw new Error(
-            res?.data?.message || "An unexpected error occurred."
+            res?.data?.message || "An unexpected error occurred.",
           );
         }
       } catch (error) {
@@ -337,7 +336,7 @@ export default function OrderDetail() {
         } else {
           setLoader("");
           throw new Error(
-            res?.data?.message || "An unexpected error occurred."
+            res?.data?.message || "An unexpected error occurred.",
           );
         }
       } catch (error) {
@@ -360,7 +359,7 @@ export default function OrderDetail() {
         {
           // "x-qbo-access": accessTokenQbo,
           // "x-qbo-realmid": realmId,
-        }
+        },
       );
 
       if (res?.data?.status === "success") {
@@ -412,8 +411,7 @@ export default function OrderDetail() {
 
   const handleSendInvoice = async () => {
     try {
-      const isPaidInvoice =
-        data?.data?.order?.paymentStatus === "done";
+      const isPaidInvoice = data?.data?.order?.paymentStatus === "done";
 
       if (isPaidInvoice) {
         const res = await PostAPI(
@@ -422,7 +420,7 @@ export default function OrderDetail() {
             orderId: orderID,
             orderType: "customer",
             emailType: "paid-invoice",
-          }
+          },
         );
         if (res?.data?.status === "success") {
           success_toaster("Paid invoice email sent successfully");
@@ -430,7 +428,7 @@ export default function OrderDetail() {
           startSectionRefreshTimer();
         } else {
           throw new Error(
-            res?.data?.message || "An unexpected error occurred."
+            res?.data?.message || "An unexpected error occurred.",
           );
         }
         return;
@@ -453,7 +451,7 @@ export default function OrderDetail() {
             "https://main.d28wfx1ny3of09.amplifyapp.com/invoice-payment-success",
           cancelUrl:
             "https://main.d28wfx1ny3of09.amplifyapp.com/invoice-payment-failure",
-        }
+        },
       );
       if (res?.data?.status === "success") {
         success_toaster("Invoice Send Successfully");
@@ -504,21 +502,16 @@ export default function OrderDetail() {
       log.orderType === "local-partner" ? "local-partner" : "customer";
     setRetryEmailLogId(log.id);
     try {
-      const res = await PostAPI(
-        "api/v1/admin/order-management/email-helper",
-        {
-          orderId: String(log.orderId),
-          orderType: orderTypeApi,
-          emailType: apiEmailType,
-        }
-      );
+      const res = await PostAPI("api/v1/admin/order-management/email-helper", {
+        orderId: String(log.orderId),
+        orderType: orderTypeApi,
+        emailType: apiEmailType,
+      });
       if (res?.data?.status === "success" || res?.data?.status === true) {
         success_toaster("Email sent successfully");
         // Email-log API is only hit when the 30s timer ends (in the interval)
       } else {
-        throw new Error(
-          res?.data?.message || "Failed to send email."
-        );
+        throw new Error(res?.data?.message || "Failed to send email.");
       }
     } catch (error) {
       ErrorHandler(error);
@@ -581,7 +574,7 @@ export default function OrderDetail() {
     if (!id) return "#";
     if (userType === "salesRepresentative" && connectAccountId) {
       return `https://dashboard.stripe.com/payments/${id}?connected_account=${encodeURIComponent(
-        connectAccountId
+        connectAccountId,
       )}`;
     }
     return `https://dashboard.stripe.com/payments/${id}`;
@@ -637,14 +630,14 @@ export default function OrderDetail() {
             data?.data?.order?.statusId == 5
               ? "Shipped"
               : data?.data?.order?.statusId == 1
-              ? "Order Placed"
-              : data?.data?.order?.statusId == 2
-              ? "Dispatched"
-              : data?.data?.order?.statusId == 3
-              ? "Acknowledged"
-              : data?.data?.order?.statusId == 6
-              ? "Cancelled"
-              : "fulfilled"}
+                ? "Order Placed"
+                : data?.data?.order?.statusId == 2
+                  ? "Dispatched"
+                  : data?.data?.order?.statusId == 3
+                    ? "Acknowledged"
+                    : data?.data?.order?.statusId == 6
+                      ? "Cancelled"
+                      : "fulfilled"}
           </p>
         </div>
 
@@ -664,9 +657,12 @@ export default function OrderDetail() {
                 onClick={() => handleSendInvoice(data?.data?.order?.statusId)}
                 data-testid={ORDER_DETAIL.sendInvoiceBtn}
               >
-                {data?.data?.order?.invoiceDate &&data?.data?.order?.paymentStatus === "pending"
+                {data?.data?.order?.invoiceDate &&
+                data?.data?.order?.paymentStatus === "pending"
                   ? "Invoice reminder"
-                  : data?.data?.order?.paymentStatus === "done" ? "Send Receipt": "Send Invoice"}
+                  : data?.data?.order?.paymentStatus === "done"
+                    ? "Send Receipt"
+                    : "Send Invoice"}
               </button>
             )}
           </li>
@@ -805,10 +801,10 @@ export default function OrderDetail() {
                   {data?.data?.order?.statusId === 1
                     ? "Dispatch to Supplier"
                     : data?.data?.order?.statusId === 2
-                    ? "Acknowledge Supplier"
-                    : data?.data?.order?.statusId === 3
-                    ? "Ship Order"
-                    : "Dispatch Order"}
+                      ? "Acknowledge Supplier"
+                      : data?.data?.order?.statusId === 3
+                        ? "Ship Order"
+                        : "Dispatch Order"}
                 </button>
               )}
 
@@ -871,8 +867,8 @@ export default function OrderDetail() {
                   data?.data?.order?.statusId === 5
                     ? "Shipped orders cannot be deleted"
                     : data?.data?.order?.paymentStatus === "done"
-                    ? "Paid orders cannot be deleted"
-                    : ""
+                      ? "Paid orders cannot be deleted"
+                      : ""
                 }
                 data-testid={ORDER_DETAIL.deleteOrderBtn}
               >
@@ -932,14 +928,14 @@ export default function OrderDetail() {
                       data?.data?.order?.statusId == 5
                         ? "Shipped"
                         : data?.data?.order?.statusId == 1
-                        ? "New"
-                        : data?.data?.order?.statusId == 2
-                        ? "Dispatched to Supplier"
-                        : data?.data?.order?.statusId == 3
-                        ? "Acknowledged by Supplier"
-                        : data?.data?.order?.statusId == 6
-                        ? "Cancelled"
-                        : "fulfilled"}
+                          ? "New"
+                          : data?.data?.order?.statusId == 2
+                            ? "Dispatched to Supplier"
+                            : data?.data?.order?.statusId == 3
+                              ? "Acknowledged by Supplier"
+                              : data?.data?.order?.statusId == 6
+                                ? "Cancelled"
+                                : "fulfilled"}
                     </p>
                     <p>Optional actions:</p>
 
@@ -950,9 +946,9 @@ export default function OrderDetail() {
                         <div className="flex">
                           {/* <span className="text-black/60 w-2/4">Payment Status:</span> */}
 
-                          {((userType === "admin" ||
-                            userType === "salesRepresentative") &&
-                            data?.data?.order?.paymentStatus === "done") ? (
+                          {userType === "none" ? (
+                            // && data?.data?.order?.paymentStatus === "done"
+
                             <div
                               className="bg-themeYellowLight text-black rounded-lg py-2 px-4 font-medium outline-none"
                               data-testid={ORDER_DETAIL.paymentStatusReadonly}
@@ -993,7 +989,7 @@ export default function OrderDetail() {
                     Invoice Sent:{" "}
                     {data?.data?.order?.invoiceDate
                       ? dayjs(data?.data?.order?.invoiceDate).format(
-                          "MM/DD/YYYY"
+                          "MM/DD/YYYY",
                         )
                       : "Not Sent"}
                   </p>
@@ -1002,7 +998,7 @@ export default function OrderDetail() {
                       <p className="font-semibold">
                         Invoice Reminder:{" "}
                         {dayjs(data?.data?.order?.invoiceReminder).format(
-                          "MM/DD/YYYY"
+                          "MM/DD/YYYY",
                         )}
                       </p>
                     )}
@@ -1011,153 +1007,155 @@ export default function OrderDetail() {
 
               {/* Emails/Invoices sent for this order (admin & sales rep only) */}
               {canViewEmailLogs && (
-                  <div
-                    className="w-full py-4 px-4 2xl:px-8 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm"
-                    data-testid={ORDER_DETAIL.emailLogsSection}
+                <div
+                  className="w-full py-4 px-4 2xl:px-8 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm"
+                  data-testid={ORDER_DETAIL.emailLogsSection}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setEmailLogsExpanded((prev) => !prev)}
+                    className="w-full flex items-center justify-between gap-2 text-left font-semibold text-gray-800 mb-1 hover:opacity-80 transition-opacity"
+                    aria-expanded={emailLogsExpanded}
                   >
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setEmailLogsExpanded((prev) => !prev)
-                      }
-                      className="w-full flex items-center justify-between gap-2 text-left font-semibold text-gray-800 mb-1 hover:opacity-80 transition-opacity"
-                      aria-expanded={emailLogsExpanded}
-                    >
-                      <span className="flex items-center gap-2 flex-wrap">
-                        <CgNotes size={18} />
-                        Emails/Invoices sent for this order
-                        <span className="text-gray-500 font-normal text-sm">
-                          ({emailLogs.length})
-                        </span>
-                        {sectionRefreshCooldownEndsAt != null && (
-                          <span className="text-theme font-medium text-sm">
-                            (Refreshing in{" "}
-                            {Math.max(
-                              0,
-                              Math.ceil(
-                                (sectionRefreshCooldownEndsAt - Date.now()) /
-                                  1000
-                              )
-                            )}
-                            s…)
-                          </span>
-                        )}
+                    <span className="flex items-center gap-2 flex-wrap">
+                      <CgNotes size={18} />
+                      Emails/Invoices sent for this order
+                      <span className="text-gray-500 font-normal text-sm">
+                        ({emailLogs.length})
                       </span>
-                      <RiArrowDownSLine
-                        size={22}
-                        className={`shrink-0 transition-transform duration-200 ${
-                          emailLogsExpanded ? "rotate-180" : ""
-                        }`}
-                      />
-                    </button>
-                    {emailLogsExpanded && (
-                      <div className="space-y-3 mt-4">
-                        {emailLogLoading ? (
-                          <div className="flex flex-col items-center justify-center gap-3 py-6">
-                            <MiniLoader />
-                            <p className="text-gray-500 text-sm">
-                              Loading email logs…
-                            </p>
-                          </div>
-                        ) : emailLogs.length === 0 ? (
-                          <p className="text-gray-500 text-sm py-2">
-                            No emails sent for this order.
+                      {sectionRefreshCooldownEndsAt != null && (
+                        <span className="text-theme font-medium text-sm">
+                          (Refreshing in{" "}
+                          {Math.max(
+                            0,
+                            Math.ceil(
+                              (sectionRefreshCooldownEndsAt - Date.now()) /
+                                1000,
+                            ),
+                          )}
+                          s…)
+                        </span>
+                      )}
+                    </span>
+                    <RiArrowDownSLine
+                      size={22}
+                      className={`shrink-0 transition-transform duration-200 ${
+                        emailLogsExpanded ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                  {emailLogsExpanded && (
+                    <div className="space-y-3 mt-4">
+                      {emailLogLoading ? (
+                        <div className="flex flex-col items-center justify-center gap-3 py-6">
+                          <MiniLoader />
+                          <p className="text-gray-500 text-sm">
+                            Loading email logs…
                           </p>
-                        ) : (
+                        </div>
+                      ) : emailLogs.length === 0 ? (
+                        <p className="text-gray-500 text-sm py-2">
+                          No emails sent for this order.
+                        </p>
+                      ) : (
                         emailLogs.map((log) => {
-                        let meta = {};
-                        try {
-                          meta =
-                            typeof log.metadata === "string"
-                              ? JSON.parse(log.metadata)
-                              : {};
-                        } catch {
-                          meta = {};
-                        }
-                        const typeLabel =
-                          {
-                            invoice_sent: "Invoice sent",
-                            invoice_reminder: "Payment reminder",
-                            paid_receipt: "Paid receipt (customer)",
-                            paid_receipt_admin:
-                              "Paid receipt (admin/partner)",
-                            supplier_new_order: "Supplier new order",
-                          }[log.emailType] || log.emailType || "—";
-                        const isFailed = log.emailSent === "Failed";
-                        const isRetrying = retryEmailLogId === log.id;
-                        const cooldownEnd = retryCooldownEndsAt[log.id];
-                        const remainingSeconds = cooldownEnd
-                          ? Math.max(
-                              0,
-                              Math.ceil((cooldownEnd - Date.now()) / 1000)
-                            )
-                          : 0;
-                        const retryDisabled = isRetrying || remainingSeconds > 0;
-                        return (
-                          <div
-                            key={log.id}
-                            className="border border-gray-200 rounded-lg p-3 text-sm space-y-1.5 bg-gray-50/50"
-                          >
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                                <span className="font-medium text-gray-700">
-                                  {formatDateTimeISO(log.sentAt, "datetime")}
-                                </span>
-                                <span className="px-2 py-0.5 rounded bg-theme/10 text-theme font-medium">
-                                  {typeLabel}
-                                </span>
-                                <span
-                                  className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold uppercase tracking-wide border ${
-                                    isFailed
-                                      ? "bg-red-50 text-red-700 border-red-200"
-                                      : "bg-green-50 text-green-700 border-green-200"
-                                  }`}
-                                >
-                                  {log.emailSent === "Failed"
-                                    ? "Failed"
-                                    : log.emailSent || "Sent"}
-                                </span>
+                          let meta = {};
+                          try {
+                            meta =
+                              typeof log.metadata === "string"
+                                ? JSON.parse(log.metadata)
+                                : {};
+                          } catch {
+                            meta = {};
+                          }
+                          const typeLabel =
+                            {
+                              invoice_sent: "Invoice sent",
+                              invoice_reminder: "Payment reminder",
+                              paid_receipt: "Paid receipt (customer)",
+                              paid_receipt_admin:
+                                "Paid receipt (admin/partner)",
+                              supplier_new_order: "Supplier new order",
+                            }[log.emailType] ||
+                            log.emailType ||
+                            "—";
+                          const isFailed = log.emailSent === "Failed";
+                          const isRetrying = retryEmailLogId === log.id;
+                          const cooldownEnd = retryCooldownEndsAt[log.id];
+                          const remainingSeconds = cooldownEnd
+                            ? Math.max(
+                                0,
+                                Math.ceil((cooldownEnd - Date.now()) / 1000),
+                              )
+                            : 0;
+                          const retryDisabled =
+                            isRetrying || remainingSeconds > 0;
+                          return (
+                            <div
+                              key={log.id}
+                              className="border border-gray-200 rounded-lg p-3 text-sm space-y-1.5 bg-gray-50/50"
+                            >
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                  <span className="font-medium text-gray-700">
+                                    {formatDateTimeISO(log.sentAt, "datetime")}
+                                  </span>
+                                  <span className="px-2 py-0.5 rounded bg-theme/10 text-theme font-medium">
+                                    {typeLabel}
+                                  </span>
+                                  <span
+                                    className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold uppercase tracking-wide border ${
+                                      isFailed
+                                        ? "bg-red-50 text-red-700 border-red-200"
+                                        : "bg-green-50 text-green-700 border-green-200"
+                                    }`}
+                                  >
+                                    {log.emailSent === "Failed"
+                                      ? "Failed"
+                                      : log.emailSent || "Sent"}
+                                  </span>
+                                </div>
+                                {isFailed && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRetryEmail(log)}
+                                    disabled={retryDisabled}
+                                    className="shrink-0 px-4 py-2 rounded-lg border-2 border-theme text-theme text-sm font-semibold hover:bg-theme hover:text-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                                  >
+                                    {isRetrying
+                                      ? "Sending…"
+                                      : remainingSeconds > 0
+                                        ? `Retry (${remainingSeconds}s)`
+                                        : "Retry"}
+                                  </button>
+                                )}
                               </div>
-                              {isFailed && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleRetryEmail(log)}
-                                  disabled={retryDisabled}
-                                  className="shrink-0 px-4 py-2 rounded-lg border-2 border-theme text-theme text-sm font-semibold hover:bg-theme hover:text-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                                >
-                                  {isRetrying
-                                    ? "Sending…"
-                                    : remainingSeconds > 0
-                                    ? `Retry (${remainingSeconds}s)`
-                                    : "Retry"}
-                                </button>
+                              {log.recipients && (
+                                <p className="text-gray-600">
+                                  <span className="font-medium">To:</span>{" "}
+                                  {log.recipients}
+                                </p>
+                              )}
+                              {meta.subject && (
+                                <p className="text-gray-600 truncate max-w-full">
+                                  <span className="font-medium">Subject:</span>{" "}
+                                  {meta.subject}
+                                </p>
+                              )}
+                              {isFailed && log.errorMessage && (
+                                <p className="text-red-600 text-xs">
+                                  <span className="font-medium">Error:</span>{" "}
+                                  {log.errorMessage}
+                                </p>
                               )}
                             </div>
-                            {log.recipients && (
-                              <p className="text-gray-600">
-                                <span className="font-medium">To:</span>{" "}
-                                {log.recipients}
-                              </p>
-                            )}
-                            {meta.subject && (
-                              <p className="text-gray-600 truncate max-w-full">
-                                <span className="font-medium">Subject:</span>{" "}
-                                {meta.subject}
-                              </p>
-                            )}
-                            {isFailed && log.errorMessage && (
-                              <p className="text-red-600 text-xs">
-                                <span className="font-medium">Error:</span>{" "}
-                                {log.errorMessage}
-                              </p>
-                            )}
-                          </div>
-                        );
-                      }) )}
-                      </div>
-                    )}
-                  </div>
-                )}
+                          );
+                        })
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div
                 className="w-full grid xl:grid-cols-2 gap-10 xl:gap-20 py-4 px-4 2xl:px-8 space-y-4 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm"
@@ -1283,7 +1281,7 @@ export default function OrderDetail() {
                           const intentUrl = stripeUrlForUser(
                             intentId,
                             userType,
-                            connectAccountId
+                            connectAccountId,
                           );
 
                           return (
@@ -1300,7 +1298,7 @@ export default function OrderDetail() {
                                     window.open(
                                       intentUrl,
                                       "_blank",
-                                      "noopener,noreferrer"
+                                      "noopener,noreferrer",
                                     )
                                   }
                                 >
@@ -1327,7 +1325,7 @@ export default function OrderDetail() {
                           const sessionUrl = stripeUrlForUser(
                             sessionId,
                             userType,
-                            connectAccountId
+                            connectAccountId,
                           );
 
                           return (
@@ -1346,7 +1344,7 @@ export default function OrderDetail() {
                                     window.open(
                                       sessionUrl,
                                       "_blank",
-                                      "noopener,noreferrer"
+                                      "noopener,noreferrer",
                                     )
                                   }
                                 >
@@ -1404,7 +1402,7 @@ export default function OrderDetail() {
                       <p>
                         {data?.data?.order?.invoiceDate
                           ? dayjs(data?.data?.order?.invoiceDate).format(
-                              "MM/DD/YYYY"
+                              "MM/DD/YYYY",
                             )
                           : ""}
                       </p>
@@ -1419,7 +1417,7 @@ export default function OrderDetail() {
                       <p>
                         {data?.data?.order?.invoicePaidDate
                           ? dayjs(data?.data?.order?.invoicePaidDate).format(
-                              "MM/DD/YYYY"
+                              "MM/DD/YYYY",
                             )
                           : ""}
                       </p>
@@ -1431,7 +1429,7 @@ export default function OrderDetail() {
                       <p>
                         {data?.data?.order?.pulloutDate
                           ? dayjs(data?.data?.order?.pulloutDate).format(
-                              "MM/DD/YYYY"
+                              "MM/DD/YYYY",
                             )
                           : ""}
                       </p>
@@ -1588,7 +1586,7 @@ export default function OrderDetail() {
                       <p>
                         {data?.data?.order?.invoiceDate
                           ? dayjs(data?.data?.order?.invoiceDate).format(
-                              "MM/DD/YYYY"
+                              "MM/DD/YYYY",
                             )
                           : ""}
                       </p>
@@ -1605,7 +1603,7 @@ export default function OrderDetail() {
                         {" "}
                         {data?.data?.order?.orderHistories
                           ? dayjs(
-                              data?.data?.order?.orderHistories?.[4]?.on
+                              data?.data?.order?.orderHistories?.[4]?.on,
                             ).format("MM/DD/YYYY")
                           : ""}
                       </p>
@@ -1683,10 +1681,10 @@ export default function OrderDetail() {
               {modal?.type === "cancelOrder"
                 ? "Cancel Order"
                 : modal?.type === "addCheque"
-                ? "Add Bank Check"
-                : modal?.type === "editCheque"
-                ? "Edit Bank Check"
-                : "Delete Order"}
+                  ? "Add Bank Check"
+                  : modal?.type === "editCheque"
+                    ? "Edit Bank Check"
+                    : "Delete Order"}
             </div>
           }
           data-testid={ORDER_DETAIL.dialog.root}
@@ -1868,10 +1866,10 @@ export default function OrderDetail() {
                     {modal?.type === "cancelOrder"
                       ? "Cancel Order"
                       : modal?.type === "addCheque"
-                      ? "Add Bank Check"
-                      : modal?.type === "editCheque"
-                      ? "Update Bank Check"
-                      : "Delete Order"}
+                        ? "Add Bank Check"
+                        : modal?.type === "editCheque"
+                          ? "Update Bank Check"
+                          : "Delete Order"}
                   </button>
                 </div>
               </div>

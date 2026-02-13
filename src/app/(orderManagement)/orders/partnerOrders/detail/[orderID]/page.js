@@ -16,7 +16,7 @@ import { selectStyles2 } from "@/utilities/SelectStyle";
 import { error_toaster, success_toaster } from "@/utilities/Toaster";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { Dialog } from "primereact/dialog";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Select from "react-select";
 import { CgNotes } from "react-icons/cg";
 import { LuClipboardList } from "react-icons/lu";
@@ -28,8 +28,14 @@ import { hasPermission } from "@/utilities/Permission";
 import { ORDER_DETAIL } from "../../../orders.testids";
 import { FiCopy } from "react-icons/fi";
 import { BASE_URL } from "@/utilities/URL";
+import { formatDateTimeISO } from "@/utilities/constants";
+import { useUserType } from "@/utilities/useUserType";
 
 export default function OrderDetail() {
+  const { isAllowed: canViewEmailLogs } = useUserType(
+    ["admin", "salesRepresentative"],
+    { redirectIfNotAllowed: false },
+  );
   if (typeof window !== "undefined") {
     var userType = localStorage.getItem("userType");
     var partnerType = localStorage.getItem("partnerType");
@@ -41,6 +47,13 @@ export default function OrderDetail() {
   const router = useRouter();
   const [chequeId, setChequeId] = useState("");
   const [copiedId, setCopiedId] = useState(null);
+  const [emailLogsExpanded, setEmailLogsExpanded] = useState(false);
+  const [retryEmailLogId, setRetryEmailLogId] = useState(null);
+  const [retryCooldownEndsAt, setRetryCooldownEndsAt] = useState({});
+  const [, setCooldownTick] = useState(0);
+  const [sectionRefreshCooldownEndsAt, setSectionRefreshCooldownEndsAt] =
+    useState(null);
+  const sectionRefreshCooldownEndsAtRef = useRef(null);
   const [modal, setModal] = useState({
     type: "", // addCheque , editCheque
     status: false,
@@ -85,6 +98,17 @@ export default function OrderDetail() {
     "orders"
   );
 
+  const emailLogApiUrl = orderID
+    ? `api/v1/admin/order-management/email-log?partnerOrderId=${orderID}`
+    : "";
+  const {
+    data: emailLogData,
+    reFetch: reFetchEmailLogs,
+    isLoading: emailLogLoading,
+  } = GetAPI(emailLogApiUrl);
+
+  const emailLogs = emailLogData?.data?.emailLogs ?? [];
+
   const handleSupplierAcknowledgement = async () => {
     setLoader("acknowledgeSupplier");
     try {
@@ -121,6 +145,7 @@ export default function OrderDetail() {
       if (res?.data?.status === "success") {
         success_toaster("Order Dispatched successfully");
         reFetch();
+        startSectionRefreshTimer();
         setLoader("");
       } else {
         setLoader("");
@@ -161,6 +186,7 @@ export default function OrderDetail() {
       if (res?.data?.status === "success") {
         success_toaster("Supplier assign successfully");
         reFetch();
+        startSectionRefreshTimer();
       } else {
         throw new Error(res?.data?.message || "An unexpected error occurred.");
       }
@@ -368,6 +394,7 @@ export default function OrderDetail() {
       if (res?.data?.status === "success") {
         success_toaster("Invoice Send Successfully");
         reFetch();
+        startSectionRefreshTimer();
       } else {
         throw new Error(res?.data?.message || "An unexpected error occurred.");
       }
@@ -387,6 +414,9 @@ export default function OrderDetail() {
       if (res?.data?.status === "success") {
         success_toaster("Status Updated successfully");
         reFetch();
+        if (status?.value === "done") {
+          startSectionRefreshTimer();
+        }
       } else {
         throw new Error(res?.data?.message || "An unexpected error occurred.");
       }
@@ -394,6 +424,78 @@ export default function OrderDetail() {
       ErrorHandler(error);
     }
   };
+
+  const logEmailTypeToApi = {
+    invoice_sent: "invoice-sent",
+    invoice_reminder: "invoice-reminder",
+    paid_receipt: "paid-invoice",
+    paid_receipt_admin: "paid-invoice",
+    supplier_new_order: "order-ship-supplier",
+  };
+
+  const handleRetryEmail = async (log) => {
+    const apiEmailType = logEmailTypeToApi[log.emailType] || log.emailType;
+    setRetryEmailLogId(log.id);
+    try {
+      const res = await PostAPI("api/v1/admin/order-management/email-helper", {
+        partnerOrderId: String(orderID),
+        orderType: "local-partner",
+        emailType: apiEmailType,
+      });
+      if (res?.data?.status === "success" || res?.data?.status === true) {
+        success_toaster("Email sent successfully");
+      } else {
+        throw new Error(res?.data?.message || "Failed to send email.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
+    } finally {
+      setRetryEmailLogId(null);
+      setRetryCooldownEndsAt((prev) => ({
+        ...prev,
+        [log.id]: Date.now() + 12000,
+      }));
+    }
+  };
+
+  const cooldownEndsAtRef = useRef(retryCooldownEndsAt);
+  useEffect(() => {
+    cooldownEndsAtRef.current = retryCooldownEndsAt;
+  }, [retryCooldownEndsAt]);
+  useEffect(() => {
+    sectionRefreshCooldownEndsAtRef.current = sectionRefreshCooldownEndsAt;
+  }, [sectionRefreshCooldownEndsAt]);
+
+  const startSectionRefreshTimer = () => {
+    const end = Date.now() + 12000;
+    setSectionRefreshCooldownEndsAt(end);
+    sectionRefreshCooldownEndsAtRef.current = end;
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const prev = cooldownEndsAtRef.current;
+      const next = {};
+      Object.entries(prev).forEach(([id, end]) => {
+        if (end > now) next[id] = end;
+      });
+      const hadActive = Object.keys(prev).length > 0;
+      const lastTimerEnded = hadActive && Object.keys(next).length === 0;
+      setRetryCooldownEndsAt(Object.keys(next).length ? next : {});
+      if (lastTimerEnded) {
+        reFetchEmailLogs();
+      }
+      const sectionEnd = sectionRefreshCooldownEndsAtRef.current;
+      if (sectionEnd != null && now >= sectionEnd) {
+        sectionRefreshCooldownEndsAtRef.current = null;
+        setSectionRefreshCooldownEndsAt(null);
+        reFetchEmailLogs();
+      }
+      setCooldownTick((t) => t + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [reFetchEmailLogs]);
 
   const shortId = (val) =>
     val && val.length > 12
@@ -722,6 +824,158 @@ export default function OrderDetail() {
                     )}
                 </div>
               </div>
+
+              {/* Emails/Invoices sent for this order (admin & sales rep only) */}
+              {canViewEmailLogs && (
+                <div
+                  className="w-full py-4 px-4 2xl:px-8 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm"
+                  data-testid={ORDER_DETAIL.emailLogsSection}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setEmailLogsExpanded((prev) => !prev)}
+                    className="w-full flex items-center justify-between gap-2 text-left font-semibold text-gray-800 mb-1 hover:opacity-80 transition-opacity"
+                    aria-expanded={emailLogsExpanded}
+                  >
+                    <span className="flex items-center gap-2 flex-wrap">
+                      <CgNotes size={18} />
+                      Emails/Invoices sent for this order
+                      <span className="text-gray-500 font-normal text-sm">
+                        ({emailLogs.length})
+                      </span>
+                      {sectionRefreshCooldownEndsAt != null && (
+                        <span className="text-theme font-medium text-sm">
+                          (Refreshing in{" "}
+                          {Math.max(
+                            0,
+                            Math.ceil(
+                              (sectionRefreshCooldownEndsAt - Date.now()) /
+                                1000,
+                            ),
+                          )}
+                          s…)
+                        </span>
+                      )}
+                    </span>
+                    <RiArrowDownSLine
+                      size={22}
+                      className={`shrink-0 transition-transform duration-200 ${
+                        emailLogsExpanded ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                  {emailLogsExpanded && (
+                    <div className="space-y-3 mt-4">
+                      {emailLogLoading ? (
+                        <div className="flex flex-col items-center justify-center gap-3 py-6">
+                          <MiniLoader />
+                          <p className="text-gray-500 text-sm">
+                            Loading email logs…
+                          </p>
+                        </div>
+                      ) : emailLogs.length === 0 ? (
+                        <p className="text-gray-500 text-sm py-2">
+                          No emails sent for this order.
+                        </p>
+                      ) : (
+                        emailLogs.map((log) => {
+                          let meta = {};
+                          try {
+                            meta =
+                              typeof log.metadata === "string"
+                                ? JSON.parse(log.metadata)
+                                : {};
+                          } catch {
+                            meta = {};
+                          }
+                          const typeLabel =
+                            {
+                              invoice_sent: "Invoice sent",
+                              invoice_reminder: "Payment reminder",
+                              paid_receipt: "Paid receipt (customer)",
+                              paid_receipt_admin:
+                                "Paid receipt (admin/partner)",
+                              supplier_new_order: "Supplier new order",
+                            }[log.emailType] ||
+                            log.emailType ||
+                            "—";
+                          const isFailed = log.emailSent === "Failed";
+                          const isRetrying = retryEmailLogId === log.id;
+                          const cooldownEnd = retryCooldownEndsAt[log.id];
+                          const remainingSeconds = cooldownEnd
+                            ? Math.max(
+                                0,
+                                Math.ceil((cooldownEnd - Date.now()) / 1000),
+                              )
+                            : 0;
+                          const retryDisabled =
+                            isRetrying || remainingSeconds > 0;
+                          return (
+                            <div
+                              key={log.id}
+                              className="border border-gray-200 rounded-lg p-3 text-sm space-y-1.5 bg-gray-50/50"
+                            >
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                  <span className="font-medium text-gray-700">
+                                    {formatDateTimeISO(log.sentAt, "datetime")}
+                                  </span>
+                                  <span className="px-2 py-0.5 rounded bg-theme/10 text-theme font-medium">
+                                    {typeLabel}
+                                  </span>
+                                  <span
+                                    className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold uppercase tracking-wide border ${
+                                      isFailed
+                                        ? "bg-red-50 text-red-700 border-red-200"
+                                        : "bg-green-50 text-green-700 border-green-200"
+                                    }`}
+                                  >
+                                    {log.emailSent === "Failed"
+                                      ? "Failed"
+                                      : log.emailSent || "Sent"}
+                                  </span>
+                                </div>
+                                {isFailed && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRetryEmail(log)}
+                                    disabled={retryDisabled}
+                                    className="shrink-0 px-4 py-2 rounded-lg border-2 border-theme text-theme text-sm font-semibold hover:bg-theme hover:text-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                                  >
+                                    {isRetrying
+                                      ? "Sending…"
+                                      : remainingSeconds > 0
+                                        ? `Retry (${remainingSeconds}s)`
+                                        : "Retry"}
+                                  </button>
+                                )}
+                              </div>
+                              {log.recipients && (
+                                <p className="text-gray-600">
+                                  <span className="font-medium">To:</span>{" "}
+                                  {log.recipients}
+                                </p>
+                              )}
+                              {meta.subject && (
+                                <p className="text-gray-600 truncate max-w-full">
+                                  <span className="font-medium">Subject:</span>{" "}
+                                  {meta.subject}
+                                </p>
+                              )}
+                              {isFailed && log.errorMessage && (
+                                <p className="text-red-600 text-xs">
+                                  <span className="font-medium">Error:</span>{" "}
+                                  {log.errorMessage}
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div
                 className="w-full grid xl:grid-cols-2 gap-10 xl:gap-20 py-4 px-4 2xl:px-8 space-y-4 font-inter border border-borderColor bg-white shadow-tableShadow rounded-sm"

@@ -175,10 +175,7 @@ export default function OrderDetail() {
     } else if (statusId === 2) {
       handleSupplierAcknowledgement();
     } else if (statusId === 3) {
-      setModal({
-        type: "dispatchOrder",
-        status: true,
-      });
+      handleOrderDelivered();
     } else if (statusId === 4) {
       handleOrderDelivered();
     }
@@ -1682,7 +1679,7 @@ export default function OrderDetail() {
                 ? "Cancel Order"
                 : modal?.type === "addCheque"
                   ? "Add Bank Check"
-                  : modal?.type === "editCheque"
+                    : modal?.type === "editCheque"
                     ? "Edit Bank Check"
                     : "Delete Order"}
             </div>

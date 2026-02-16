@@ -127,27 +127,38 @@ export default function SalesRepresentativeInventory() {
           />
         </div>
         <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-            {handleFilter()?.map((item, i) => (
-              <StockCard
-                key={i}
-                id={item?.id}
-                productCode={item?.productCode}
-                sku={item?.sku}
-                grind={item?.grind}
-                itemName={item?.name}
-                quantity={item?.quantity}
-                price={item?.price}
-                wholesalePrice={item?.wholesalePrice}
-                weight={item?.weight}
-                unit={item?.unit}
-                imageURL={item?.image}
-                qty={handleQty(item?.id)}
-                handlePlus={handlePlus}
-                handleMinus={handleMinus}
-              />
-            ))}
-          </div>
+          {!handleFilter()?.length ? (
+            <div className="flex flex-col items-center justify-center py-16 px-4 bg-gray-50 rounded-lg border border-gray-200 text-center">
+              <p className="text-gray-600 font-medium text-lg mb-1">
+                No products in your inventory yet.
+              </p>
+              <p className="text-gray-500 text-sm">
+                Add products from Inventory → Stock to create quotations.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+              {handleFilter()?.map((item, i) => (
+                <StockCard
+                  key={i}
+                  id={item?.id}
+                  productCode={item?.productCode}
+                  sku={item?.sku}
+                  grind={item?.grind}
+                  itemName={item?.name}
+                  quantity={item?.quantity}
+                  price={item?.price}
+                  wholesalePrice={item?.wholesalePrice}
+                  weight={item?.weight}
+                  unit={item?.unit}
+                  imageURL={item?.image}
+                  qty={handleQty(item?.id)}
+                  handlePlus={handlePlus}
+                  handleMinus={handleMinus}
+                />
+              ))}
+            </div>
+          )}
           <div className="fixed bottom-4 right-3">
             {(hasPermission("quotation_create") || hasPermission("quotation_update")) &&
             <button

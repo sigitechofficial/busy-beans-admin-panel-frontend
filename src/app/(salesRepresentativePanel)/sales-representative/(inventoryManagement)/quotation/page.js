@@ -28,8 +28,8 @@ export default function SalesRepresentativeInventory() {
     });
   }
   const url = filterId
-    ? `api/v1/admin/product?categoryId=${filterId}`
-    : `api/v1/admin/product`;
+    ? `api/v1/admin/products/sales-rep?categoryId=${filterId}`
+    : `api/v1/admin/products/sales-rep`;
 
   const { data, reFetch, isLoading } = GetAPI(url);
 

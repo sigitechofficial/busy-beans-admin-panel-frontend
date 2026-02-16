@@ -32,7 +32,7 @@ export default function StripeAccountConnected() {
 
         <div className="space-y-6 w-11/12 xl:w-3/5">
           <p className="font-satoshi text-themeGreen font-black text-2xl lg:text-3xl text-center">
-            Stripe Account Connected Successfully
+            Stripe Customer Connected Successfully
           </p>
 
           <div>

@@ -51,7 +51,7 @@ export default function AllInvoices() {
       header: invoiceSource === "partner" ? "Local Partner" : "Company Name",
     },
     { field: "type", header: "Type",sort: true },
-    { field: "orderDate", header: "Order Date", sort: true },
+    { field: "orderDate", header: "Invoice date", sort: true },
     { field: "deliveredOn", header: "Deliver On" },
     { field: "totalBill", header: "Total", sort: true },
     { field: "paymentStatus", header: "Invoice", sort: true },

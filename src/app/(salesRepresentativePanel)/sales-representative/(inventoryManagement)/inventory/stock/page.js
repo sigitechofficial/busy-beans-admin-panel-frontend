@@ -718,11 +718,7 @@ export default function SalesRepInventoryStockPage() {
                 disabled={submitLoader || selectedProducts.length === 0}
                 className="px-4 py-2 bg-theme text-white rounded-lg hover:bg-themeDark font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {submitLoader ? (
-                  <span className="flex items-center gap-2">
-                    <MiniLoader /> Adding...
-                  </span>
-                ) : (
+                { (
                   <>
                     Add Product
                     {selectedProducts.length > 0 && (

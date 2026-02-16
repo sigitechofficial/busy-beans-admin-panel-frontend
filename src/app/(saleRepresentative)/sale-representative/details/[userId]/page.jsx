@@ -311,7 +311,7 @@ export default function SalesRepDetails() {
               </div>
               <div className="flex items-center h-12 border-b [&>span]:w-44">
                 <span className="text-gray-500 font-medium">
-                  Stripe Account Connected
+                  Stripe Customer Connected
                 </span>
                 <div className="font-semibold">
                   {data?.data?.stripeCustomerId ? "Yes" : "No"}

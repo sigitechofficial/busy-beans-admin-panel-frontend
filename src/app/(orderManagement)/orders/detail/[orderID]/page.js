@@ -175,7 +175,10 @@ export default function OrderDetail() {
     } else if (statusId === 2) {
       handleSupplierAcknowledgement();
     } else if (statusId === 3) {
-      handleOrderDelivered();
+      setModal({
+        type: "dispatchOrder",
+        status: true,
+      });
     } else if (statusId === 4) {
       handleOrderDelivered();
     }

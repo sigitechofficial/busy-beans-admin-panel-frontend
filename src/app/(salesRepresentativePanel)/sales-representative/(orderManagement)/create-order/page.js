@@ -12,6 +12,7 @@ import { BASE_URL } from "@/utilities/URL";
 import axios from "axios";
 import { CiMenuBurger } from "react-icons/ci";
 import { useDataContext } from "@/utilities/DataContext";
+import Link from "next/link";
 
 export default function CreateOrder() {
   if (typeof window !== "undefined") {
@@ -227,27 +228,44 @@ export default function CreateOrder() {
         </button>
       </div> */}
         <div className="space-y-4 relative">
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-            {data?.data?.data?.map((item, i) => (
-              <StockCard
-                key={i}
-                id={item?.id}
-                itemName={item?.name}
-                grind={item?.grind}
-                productCode={item?.productCode}
-                sku={item?.sku}
-                // stock={item?.quantity}
-                weight={item?.weight}
-                unit={item?.unit}
-                imageURL={item?.image}
-                qty={handleQty(item?.id)}
-                wholesalePrice={item?.wholesalePrice}
-                price={item?.price}
-                handlePlus={handlePlus}
-                handleMinus={handleMinus}
-              />
-            ))}
-          </div>
+          {!data?.data?.data?.length ? (
+            <div className="flex flex-col items-center justify-center py-16 px-4 bg-gray-50 rounded-lg border border-gray-200 text-center">
+              <p className="text-gray-600 font-medium text-lg mb-1">
+                No products in your inventory yet.
+              </p>
+              <p className="text-gray-500 text-sm mb-3">
+                Add products from Inventory Management to create orders.
+              </p>
+              <Link
+                href="/sales-representative/inventory/stock"
+                className="text-theme font-medium hover:underline"
+              >
+                Go to Inventory → Stock
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+              {data?.data?.data?.map((item, i) => (
+                <StockCard
+                  key={i}
+                  id={item?.id}
+                  itemName={item?.name}
+                  grind={item?.grind}
+                  productCode={item?.productCode}
+                  sku={item?.sku}
+                  // stock={item?.quantity}
+                  weight={item?.weight}
+                  unit={item?.unit}
+                  imageURL={item?.image}
+                  qty={handleQty(item?.id)}
+                  wholesalePrice={item?.wholesalePrice}
+                  price={item?.price}
+                  handlePlus={handlePlus}
+                  handleMinus={handleMinus}
+                />
+              ))}
+            </div>
+          )}
           <div className="fixed right-10 bottom-10">
             <button
               onClick={() =>

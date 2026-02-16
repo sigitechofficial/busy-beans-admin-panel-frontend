@@ -8,6 +8,7 @@ import Select from "react-select";
 import selectStyles, { selectStyles2 } from "@/utilities/SelectStyle";
 import { hasPermission } from "@/utilities/Permission";
 import { success_toaster } from "@/utilities/Toaster";
+import Link from "next/link";
 
 export default function SalesRepresentativeInventory() {
   if (typeof window !== "undefined") {
@@ -132,9 +133,18 @@ export default function SalesRepresentativeInventory() {
               <p className="text-gray-600 font-medium text-lg mb-1">
                 No products in your inventory yet.
               </p>
-              <p className="text-gray-500 text-sm">
-                Add products from Inventory → Stock to create quotations.
+              <p className="text-gray-500 text-sm mb-3">
+                Add products from Inventory Management to create quotations.
               </p>
+              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+                <Link
+                  href="/sales-representative/inventory/stock"
+                  className="text-theme font-medium hover:underline"
+                >
+                  Go to Inventory → Stock
+                </Link>
+            
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">

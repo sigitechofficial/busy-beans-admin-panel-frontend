@@ -8,6 +8,7 @@ import GetAPI from "@/utilities/GetAPI";
 import { useState } from "react";
 import { CiMenuBurger } from "react-icons/ci";
 import { ImCross } from "react-icons/im";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import Select from "react-select";
 import { drawerSelectStyles } from "@/utilities/SelectStyle";
 import { error_toaster, success_toaster } from "@/utilities/Toaster";
@@ -28,6 +29,8 @@ export default function UnpaidPartnerBalance() {
     label: "All Time",
   });
   const [selectedRows, setSelectedRows] = useState([]);
+  const [syncInvoiceLoading, setSyncInvoiceLoading] = useState(false);
+  const [syncPaymentLoading, setSyncPaymentLoading] = useState(false);
   const { toggle, setToggle } = useDataContext();
 
   // ---------------------------------------------------------------------
@@ -41,8 +44,9 @@ export default function UnpaidPartnerBalance() {
   };
 
   const { data, isLoading, reFetch } = GetAPI(
-    `api/v1/admin/quickbooks-customer-order-management${customerURLs[partnerType] ?? ""
-    }`
+    `api/v1/admin/quickbooks-customer-order-management${
+      customerURLs[partnerType] ?? ""
+    }`,
   );
 
   const rawData = data?.data?.data || [];
@@ -121,35 +125,49 @@ export default function UnpaidPartnerBalance() {
     overdue: r?.overdueInvoice ? "Yes" : null,
   }));
 
-
   const handleSyncInvoice = async () => {
-    let response = await PostAPI("qbo/order-invoice/create-multiple", { orderType: "customer", orderIds: selectedRows?.map((r) => r?.orderId) })
-    console.log(response)
-    if (response?.data?.status === "success") {
-      // success_toaster(response?.data?.message)
-      reFetch()
-    } else {
-      error_toaster(response?.data?.message)
+    setSyncInvoiceLoading(true);
+    try {
+      let response = await PostAPI("qbo/order-invoice/create-multiple", {
+        orderType: "customer",
+        orderIds: selectedRows?.map((r) => r?.orderId),
+      });
+      console.log(response);
+      if (response?.data?.status === "success") {
+        // success_toaster(response?.data?.message)
+        setSelectedRows([]);
+        reFetch();
+      } else {
+        error_toaster(response?.data?.message);
+      }
+    } finally {
+      setSyncInvoiceLoading(false);
     }
-  }
-
+  };
 
   const handleSyncPayment = async () => {
-    let response = await PostAPI("qbo/order-payment/sync-multiple", { orderType: "customer", orderIds: selectedRows?.map((r) => r?.orderId) })
-
-    console.log(response)
-    if (response?.data?.status === "success") {
-      // success_toaster(response?.data?.message)
-      reFetch()
-    } else {
-      error_toaster(response?.data?.message)
+    setSyncPaymentLoading(true);
+    try {
+      let response = await PostAPI("qbo/order-payment/sync-multiple", {
+        orderType: "customer",
+        orderIds: selectedRows?.map((r) => r?.orderId),
+      });
+      console.log(response);
+      if (response?.data?.status === "success") {
+        // success_toaster(response?.data?.message)
+        setSelectedRows([]);
+        reFetch();
+      } else {
+        error_toaster(response?.data?.message);
+      }
+    } finally {
+      setSyncPaymentLoading(false);
     }
-  }
+  };
 
   // ---------------------------------------------------------------------
   // RENDER UI
   // ---------------------------------------------------------------------
-
 
   return isLoading ? (
     <Loader />
@@ -188,35 +206,46 @@ export default function UnpaidPartnerBalance() {
                 <div
                   key={tab.id}
                   onClick={() => {
-                    setSelectedRows([])
-                    setPartnerType(tab.id)
+                    setSelectedRows([]);
+                    setPartnerType(tab.id);
                   }}
-                  className={`py-3 px-4 cursor-pointer font-semibold text-sm text-center border ${partnerType === tab.id
-                    ? "bg-black text-white"
-                    : "text-black"
-                    }`}
+                  className={`py-3 px-4 cursor-pointer font-semibold text-sm text-center border ${
+                    partnerType === tab.id
+                      ? "bg-black text-white"
+                      : "text-black"
+                  }`}
                 >
                   {tab.label}
                 </div>
               ))}
             </div>
-
-
           </div>
 
-          {partnerType === 2 && <button
-            onClick={handleSyncInvoice}
-            className="bg-theme text-white px-4 py-2 rounded-lg border border-theme hover:bg-white hover:text-theme transition-colors duration-200 font-medium"
-          >
-            Sync Invoice
-          </button>}
+          {partnerType === 2 && (
+            <button
+              onClick={handleSyncInvoice}
+              disabled={syncInvoiceLoading}
+              className="inline-flex items-center justify-center gap-2 bg-theme text-white px-4 py-2 rounded-lg border border-theme hover:bg-white hover:text-theme transition-colors duration-200 font-medium disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-theme disabled:hover:text-white"
+            >
+              Sync Invoice
+              {syncInvoiceLoading && (
+                <AiOutlineLoading3Quarters className="w-4 h-4 animate-spin flex-shrink-0" />
+              )}
+            </button>
+          )}
 
-          {partnerType === 4 && <button
-            onClick={handleSyncPayment}
-            className="bg-theme text-white px-4 py-2 rounded-lg border border-theme hover:bg-white hover:text-theme transition-colors duration-200 font-medium"
-          >
-            Sync Payment
-          </button>}
+          {partnerType === 4 && (
+            <button
+              onClick={handleSyncPayment}
+              disabled={syncPaymentLoading}
+              className="inline-flex items-center justify-center gap-2 bg-theme text-white px-4 py-2 rounded-lg border border-theme hover:bg-white hover:text-theme transition-colors duration-200 font-medium disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-theme disabled:hover:text-white"
+            >
+              Sync Payment
+              {syncPaymentLoading && (
+                <AiOutlineLoading3Quarters className="w-4 h-4 animate-spin flex-shrink-0" />
+              )}
+            </button>
+          )}
 
           {/* DATE FILTERS */}
           {/* <div className="min-w-40">

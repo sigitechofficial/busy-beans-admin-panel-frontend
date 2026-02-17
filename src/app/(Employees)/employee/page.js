@@ -3,12 +3,13 @@ import ManagementTab from "@/components/ui/ManagementTab";
 import MyDataTable from "@/components/ui/MyDataTable";
 import { Dialog } from "primereact/dialog";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { PostAPI } from "@/utilities/PostAPI";
 import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import { BASE_URL } from "@/utilities/URL";
 import GetAPI from "@/utilities/GetAPI";
 import { MdDelete } from "react-icons/md";
-import { FaEdit } from "react-icons/fa";
+import { FaEdit, FaEye } from "react-icons/fa";
 import Switch from "react-switch";
 import { PatchAPI } from "@/utilities/PatchAPI";
 import { DeleteAPI } from "@/utilities/DeleteAPI";
@@ -24,6 +25,7 @@ import { hasPermission } from "@/utilities/Permission";
 import { EMPLOYEES } from "./employee.testids"
 
 export default function Employee() {
+  const router = useRouter();
   const { data, reFetch, isLoading } = GetAPI("api/v1/admin/employees", "employees");
   if (typeof window !== "undefined") {
     var userType = localStorage.getItem("userType");
@@ -293,6 +295,7 @@ export default function Employee() {
   const datas = [];
   data?.data?.data?.map((cat, i) => {
     return datas.push({
+      id: cat?.id,
       // sl: i + 1,
       name: cat?.name,
       email: cat?.email,
@@ -357,6 +360,18 @@ export default function Employee() {
       ),
       action: (
         <div className="flex gap-x-2" data-testid={EMPLOYEES.row(cat?.id)}>
+          {hasPermission("employees_view") && (
+            <button
+              className="border border-gray-400 rounded-md p-2 text-gray-600 hover:text-theme hover:border-theme"
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/employee/${cat?.id}`);
+              }}
+              title="View details"
+            >
+              <FaEye size={24} />
+            </button>
+          )}
           {hasPermission("employees_update") && (
             <button
               className="border border-theme rounded-md p-2 text-theme"
@@ -442,6 +457,7 @@ export default function Employee() {
           placeholder={"Search ..."}
           pagination={true}
           search={true}
+          onRowClick={(e) => e?.data?.id && router.push(`/employee/${e.data.id}`)}
           data-testid={EMPLOYEES.tableWrapper}
           rowTestId={(row) => `data-testid-${EMPLOYEES.row(row.id)}`}
         />

@@ -10,6 +10,7 @@ import { success_toaster, error_toaster } from "@/utilities/Toaster";
 import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
 import { PostAPI } from "@/utilities/PostAPI";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 export default function CustomersByEmployee() {
   const router = useRouter();
@@ -63,10 +64,10 @@ export default function CustomersByEmployee() {
     type === "qbo-registered"
       ? "/qbo-registered"
       : type === "qbo-not-registered"
-      ? "/qbo-not-registered"
-      : " "
+        ? "/qbo-not-registered"
+        : " "
   }`;
-  
+
   // Build URL with proper query parameters
   const params = new URLSearchParams();
   params.set("page", page.toString());
@@ -89,12 +90,12 @@ export default function CustomersByEmployee() {
 
   const datas = [];
   // Handle both possible API response structures: { data: [...], pagination: {...} } or { data: { data: [...], pagination: {...} } }
-  const customersArray = Array.isArray(data?.data?.data) 
-    ? data?.data?.data 
-    : Array.isArray(data?.data) 
-    ? data?.data 
-    : [];
-    
+  const customersArray = Array.isArray(data?.data?.data)
+    ? data?.data?.data
+    : Array.isArray(data?.data)
+      ? data?.data
+      : [];
+
   customersArray.map((customer, i) => {
     datas.push({
       id: customer?.id,
@@ -141,7 +142,7 @@ export default function CustomersByEmployee() {
         {
           // "x-qbo-access": accessTokenQbo,
           // "x-qbo-realmid": realmId,
-        }
+        },
       );
 
       if (res?.data?.status === "success") {
@@ -211,19 +212,26 @@ export default function CustomersByEmployee() {
             <button
               onClick={handleImportCustomers}
               disabled={loading || selectedRows.length === 0}
-              className={`${
-                loading || selectedRows.length === 0
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-theme text-white"
-              } px-6 py-3 rounded-lg font-inter font-medium`}
+              className="inline-flex items-center justify-center gap-2 bg-theme text-white px-4 py-2 rounded-lg border border-theme hover:bg-white hover:text-theme transition-colors duration-200 font-medium disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-theme disabled:hover:text-white"
             >
-              {loading ? "Importing..." : "Export Customers"}
+              Export Customers
+              {loading && (
+                <AiOutlineLoading3Quarters className="w-4 h-4 animate-spin flex-shrink-0" />
+              )}
             </button>
           )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-          <ManagementTab title="Total Customers" desc={data?.pagination?.totalItems || data?.data?.pagination?.totalItems || datas?.length || 0} />
+          <ManagementTab
+            title="Total Customers"
+            desc={
+              data?.pagination?.totalItems ||
+              data?.data?.pagination?.totalItems ||
+              datas?.length ||
+              0
+            }
+          />
         </div>
 
         {/* MyDataTable */}
@@ -233,10 +241,17 @@ export default function CustomersByEmployee() {
           placeholder={"Search by Name, Main Contact, Employee..."}
           pagination={true}
           serverPagination={{
-            page: data?.pagination?.page || data?.data?.pagination?.page || page,
-            limit: data?.pagination?.limit || data?.data?.pagination?.limit || limit,
-            totalRecords: data?.pagination?.totalItems || data?.data?.pagination?.totalItems || 0,
-            totalPages: data?.pagination?.totalPages || data?.data?.pagination?.totalPages,
+            page:
+              data?.pagination?.page || data?.data?.pagination?.page || page,
+            limit:
+              data?.pagination?.limit || data?.data?.pagination?.limit || limit,
+            totalRecords:
+              data?.pagination?.totalItems ||
+              data?.data?.pagination?.totalItems ||
+              0,
+            totalPages:
+              data?.pagination?.totalPages ||
+              data?.data?.pagination?.totalPages,
             onPageChange: (newPage) => setPage(newPage),
             onLimitChange: (newLimit) => {
               setLimit(newLimit);

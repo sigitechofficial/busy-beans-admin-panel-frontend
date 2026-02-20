@@ -731,7 +731,7 @@ export default function OrderDetail() {
           <div className="grid grid-cols-1 gap-6 lg:gap-8 xl:gap-x-12">
             {/* Left side */}
             <div className="space-y-6">
-              <div className="w-full bg-blue-50 flex justify-between bg-blue-50 rounded-md w-full px-4 lg:px-6 py-6 ">
+              <div className="w-full bg-blue-50 flex justify-between rounded-md px-4 lg:px-6 py-6 ">
                 <div
                   className="flex gap-x-2"
                   data-testid={ORDER_DETAIL.infoBanner}

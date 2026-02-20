@@ -237,7 +237,7 @@ export default function Countries() {
                   </button>
                   <button
                     type="submit"
-                    className="rounded-lg border border-theme text-white px-10 bg-theme hover:bg-white hover:text-theme duration-150 px-5 sm:px-10"
+                    className="rounded-lg border border-theme text-white bg-theme hover:bg-white hover:text-theme duration-150 px-5 sm:px-10"
                     data-testid={COUNTRIES.countryModalSubmitBtn}
                   >
                     {modal === "add"

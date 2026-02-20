@@ -3,12 +3,18 @@ import ManagementTab from "@/components/ui/ManagementTab";
 import MyDataTable from "@/components/ui/MyDataTable";
 import GetAPI from "@/utilities/GetAPI";
 import Loader from "@/components/ui/Loader";
+import MiniLoader from "@/components/ui/MiniLoader";
 import { FaEye } from "react-icons/fa";
+import { MdDelete } from "react-icons/md";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import dayjs from "dayjs";
 import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
+import { Dialog } from "primereact/dialog";
+import { PostAPI } from "@/utilities/PostAPI";
+import ErrorHandler from "@/utilities/ErrorHandler";
+import { error_toaster } from "@/utilities/Toaster";
 
 export default function AllInvoices() {
   if (typeof window !== "undefined") {
@@ -42,7 +48,35 @@ export default function AllInvoices() {
   }
   const apiUrl = `${urlBase}?${params.toString()}`;
 
-  const { data, isLoading } = GetAPI(apiUrl, "orders");
+  const { data, isLoading, reFetch } = GetAPI(apiUrl, "orders");
+
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [deleteLoader, setDeleteLoader] = useState(false);
+
+  const orderTypeForDelete = invoiceSource === "partner" ? "local-partner" : "customer";
+
+  const handleDeleteInvoice = async () => {
+    if (deleteTargetId == null) return;
+    setDeleteLoader(true);
+    try {
+      const res = await PostAPI("api/v1/admin/order-management/delete-invoice", {
+        orderType: orderTypeForDelete,
+        id: deleteTargetId,
+      });
+      if (res?.data?.status === "success") {
+        setDeleteModalOpen(false);
+        setDeleteTargetId(null);
+        reFetch();
+      } else {
+        throw new Error(res?.data?.message || "Failed to delete invoice");
+      }
+    } catch (err) {
+      ErrorHandler(err);
+    } finally {
+      setDeleteLoader(false);
+    }
+  };
 
   const columns = [
     { field: "id", header: "#", sort: true },
@@ -100,26 +134,39 @@ export default function AllInvoices() {
         orderDate: dayjs(detail?.on).format("MM/DD/YYYY"),
         deliveredOn: detail?.deliveredOn ? dayjs(detail?.deliveredOn).format("MM/DD/YYYY") : "-",
         action: (
-          <button
-            className="border border-theme rounded-md p-2 text-theme hover:bg-theme hover:text-white transition-colors"
-            onClick={() => {
-              if (invoiceSource === "partner") {
-                // Partner invoices: check if direct-invoice or regular order
-                if (detail?.type === "direct-invoice") {
-                  router.push(`/all-invoices/partner/${detail?.id}`);
+          <div className="flex items-center gap-2">
+            <button
+              className="border border-theme rounded-md p-2 text-theme hover:bg-theme hover:text-white transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (invoiceSource === "partner") {
+                  if (detail?.type === "direct-invoice") {
+                    router.push(`/all-invoices/partner/${detail?.id}`);
+                  } else {
+                    router.push(`/orders/partnerOrders/detail/${detail?.id}`);
+                  }
+                } else if (detail?.type === "direct-invoice") {
+                  router.push(`/direct-invoices/${detail?.id}`);
                 } else {
-                  router.push(`/orders/partnerOrders/detail/${detail?.id}`);
+                  router.push(`/orders/detail/${detail?.id}`);
                 }
-              } else if (detail?.type === "direct-invoice") {
-                router.push(`/direct-invoices/${detail?.id}`);
-              } else {
-                router.push(`/orders/detail/${detail?.id}`);
-              }
-            }}
-            title="View Details"
-          >
-            <FaEye size={18} />
-          </button>
+              }}
+              title="View Details"
+            >
+              <FaEye size={18} />
+            </button>
+            <button
+              className="border border-red-400 rounded-md p-2 text-red-500 hover:bg-red-50 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                setDeleteTargetId(detail?.id);
+                setDeleteModalOpen(true);
+              }}
+              title="Delete Invoice"
+            >
+              <MdDelete size={18} />
+            </button>
+          </div>
         ),
       })
     );
@@ -276,6 +323,49 @@ export default function AllInvoices() {
           />
         </div>
       </div>
+
+      <Dialog
+        visible={deleteModalOpen}
+        onHide={() => {
+          if (!deleteLoader) {
+            setDeleteModalOpen(false);
+            setDeleteTargetId(null);
+          }
+        }}
+        header="Delete Invoice"
+        className="font-nunito w-[90vw] max-w-md"
+        dismissableMask={!deleteLoader}
+        closable={!deleteLoader}
+      >
+        {deleteLoader ? (
+          <MiniLoader />
+        ) : (
+          <div className="space-y-4">
+            <p className="text-gray-600">
+              Are you sure you want to delete this invoice? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setDeleteModalOpen(false);
+                  setDeleteTargetId(null);
+                }}
+                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteInvoice}
+                className="px-4 py-2 rounded-lg bg-theme text-white hover:bg-theme/90"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        )}
+      </Dialog>
     </div>
   );
 }

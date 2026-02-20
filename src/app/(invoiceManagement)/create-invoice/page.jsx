@@ -33,6 +33,16 @@ export default function CreateInvoice() {
     partnerType = localStorage.getItem("partnerType");
   }
 
+  const [isAdminEmployee, setIsAdminEmployee] = useState(false);
+  const [isSalesRepEmployee, setIsSalesRepEmployee] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const userT = localStorage.getItem("userType");
+    const isEmp = localStorage.getItem("isEmployee") === "true";
+    setIsAdminEmployee(userT === "admin" && isEmp);
+    setIsSalesRepEmployee(userT === "salesRepresentative" && isEmp);
+  }, []);
+
   const { data, isLoading } = GetAPI(
     userType === "salesRepresentative"
       ? `api/v1/admin/orders?salesRepId=${userID}`
@@ -605,6 +615,10 @@ export default function CreateInvoice() {
     params.set("limit", limit.toString());
     if (search.trim()) {
       params.set("search", search.trim());
+    }
+    // Employee with customer_create: add cus=all; selected-customer_create only: no param (main entities untouched)
+    if (isEmployee && hasPermission("customer_create")) {
+      params.set("cus", "all");
     }
     if (base.includes("&orderCreation=yes")) {
       return `${base.split("&")[0]}?${params.toString()}&orderCreation=yes`;
@@ -1412,8 +1426,8 @@ export default function CreateInvoice() {
       </div>
 
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
-        {/* ========== VIEW PRODUCTS (Admin only - same as orders/create) ========== */}
-        {userType === "admin" && (
+        {/* ========== VIEW PRODUCTS (Admin only - hidden for admin employee) ========== */}
+        {userType === "admin" && !isAdminEmployee && (
           <div className="bg-white rounded-lg border border-borderColor shadow-tableShadow p-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-6">
@@ -1466,8 +1480,8 @@ export default function CreateInvoice() {
           </div>
         )}
 
-        {/* ========== CONTEXT BANNERS (same as orders/create) ========== */}
-        {userType === "admin" && viewMode === "admin" && (
+        {/* ========== CONTEXT BANNERS (hidden for admin employee) ========== */}
+        {userType === "admin" && !isAdminEmployee && viewMode === "admin" && (
           <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
             <p className="text-sm font-medium text-amber-800">
               You are viewing <strong>Admin inventory</strong>.
@@ -1477,7 +1491,7 @@ export default function CreateInvoice() {
             </p>
           </div>
         )}
-        {userType === "admin" && viewMode === "localPartner" && selectedPartnerId && (
+        {userType === "admin" && !isAdminEmployee && viewMode === "localPartner" && selectedPartnerId && (
           <div className="p-4 rounded-lg bg-emerald-50 border border-emerald-200">
             <p className="text-sm font-medium text-emerald-800">
               You are viewing <strong>{selectedPartnerName}&apos;s inventory</strong> (Local Partner).
@@ -1488,8 +1502,8 @@ export default function CreateInvoice() {
           </div>
         )}
 
-        {/* ========== PARTNER SELECTION MODAL (same as orders/create) ========== */}
-        {userType === "admin" && (
+        {/* ========== PARTNER SELECTION MODAL (hidden for admin employee) ========== */}
+        {userType === "admin" && !isAdminEmployee && (
           <Dialog
             visible={partnerModalVisible}
             onHide={() => {
@@ -1551,8 +1565,8 @@ export default function CreateInvoice() {
             <h2 className="text-2xl font-bold text-theme-black-2">Invoice Details</h2>
           </div>
           
-          {/* Toggle for Partners (Admin only) - hide when Local Partner view */}
-          {userType === "admin" && viewMode === "admin" && (
+          {/* Toggle for Partners (Admin only, hidden for admin employee) - hide when Local Partner view */}
+          {userType === "admin" && !isAdminEmployee && viewMode === "admin" && (
             <div className="flex items-center gap-x-2 justify-end mb-4">
               <label className="text-gray-700 font-medium">
                 {partnersOrder ? "Partners" : "Customers"}
@@ -1570,8 +1584,8 @@ export default function CreateInvoice() {
             </div>
           )}
 
-          {/* Self Order Toggle for Sales Representatives */}
-          {userType === "salesRepresentative" && (
+          {/* Self Order Toggle for Sales Representatives (hidden for sales rep employee) */}
+          {userType === "salesRepresentative" && !isSalesRepEmployee && (
             <div className="flex items-center gap-x-2 justify-end mb-4">
               <label className="text-gray-700 font-medium">Self Order</label>
               <Switch

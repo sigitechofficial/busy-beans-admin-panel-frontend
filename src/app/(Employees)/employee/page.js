@@ -22,14 +22,34 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { hasPermission } from "@/utilities/Permission";
+import Select from "react-select";
+import selectStyles from "@/utilities/SelectStyle";
 import { EMPLOYEES } from "./employee.testids"
 
 export default function Employee() {
   const router = useRouter();
-  const { data, reFetch, isLoading } = GetAPI("api/v1/admin/employees", "employees");
   if (typeof window !== "undefined") {
     var userType = localStorage.getItem("userType");
+    var isEmployee = localStorage.getItem("isEmployee") === "true";
   }
+  const isAdmin = userType === "admin" && !isEmployee;
+
+  const [selectedPartnerId, setSelectedPartnerId] = useState("");
+  const employeesUrl =
+    isAdmin && selectedPartnerId
+      ? `api/v1/admin/employees?salesRepId=${selectedPartnerId}`
+      : "api/v1/admin/employees";
+  const { data, reFetch, isLoading } = GetAPI(employeesUrl, "employees");
+  const { data: salesRepData } = GetAPI(isAdmin ? "api/v1/admin/sales-rep" : "", "sales-rep");
+
+  const partnerOptions = [
+    { value: "", label: "All (Admin employees)" },
+    ...(salesRepData?.data?.data?.map((p) => ({
+      value: String(p?.id),
+      label: p?.territoryName ? `${p?.srName} (${p.territoryName})` : p?.srName || "",
+    })) || []),
+  ];
+  const selectedPartnerOption = partnerOptions.find((o) => o.value === selectedPartnerId) || partnerOptions[0];
 
   const [modal, setModal] = useState("");
   const [formData, setFormData] = useState({
@@ -48,7 +68,7 @@ export default function Employee() {
   const [commissionEmployeeId, setCommissionEmployeeId] = useState("");
   const [commissionPercentage, setCommissionPercentage] = useState("");
   const [commissionLoader, setCommissionLoader] = useState(false);
-  const ADMIN_FEATURES = ["dashboard", "orders", "supplier", "invoice", "customer", "selected-customer", "local-partner", "product", "category", "employees", "country", "charges", "payment-pullout", "report","leads-dashboard", "quickbooks", "quickbooks-invoices"];
+  const ADMIN_FEATURES = ["dashboard", "orders", "supplier", "invoice", "customer", "selected-customer", "product", "category", "employees", "country", "charges", "payment-pullout", "report","leads-dashboard", "quickbooks", "quickbooks-invoices"];
   const SALES_REP_FEATURES = ["dashboard", "quotation", "customer", "selected-customer", "orders", "invoice", "payment-pullout", "employees", "account", "wallet", "report", "subscription","leads-dashboard", "quickbooks", "quickbooks-invoices"];
   const allFeatures = userType === "salesRepresentative" ? SALES_REP_FEATURES : ADMIN_FEATURES;
 
@@ -446,9 +466,27 @@ export default function Employee() {
         </ul>
       </div>
 
+
       <div className="space-y-8 pt-32 px-6 2xl:px-12 ">
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-          <ManagementTab title="Total Employees" desc={data?.data?.data?.length} />
+        <div className="flex sm:justify-between gap-4">
+          <div className="w-56">
+            <ManagementTab title="Total Employees" desc={data?.data?.data?.length} />
+          </div>
+
+
+          {/* Local Partner filter - admin only, same row as Total Employees */}
+          {isAdmin && (
+            <div className="flex items-center gap-2 shrink-0 min-w-[220px] max-w-[280px]">
+              <Select
+                options={partnerOptions}
+                value={selectedPartnerOption}
+                onChange={(opt) => setSelectedPartnerId(opt?.value ?? "")}
+                styles={selectStyles}
+                placeholder="Local Partner"
+                isClearable={false}
+              />
+            </div>
+          )}
         </div>
 
         <MyDataTable
@@ -465,12 +503,12 @@ export default function Employee() {
         {/* Modal */}
         <Dialog
           visible={modal === "add" || modal === "edit" || modal === "delete"}
-          className="font-nunito w-[80%] lg:w-[40vw]"
+          className="font-nunito employee-modal w-[92%] sm:max-w-[560px] rounded-xl shadow-xl [&_.p-dialog-header]:py-2 [&_.p-dialog-header]:px-4 [&_.p-dialog-content]:flex [&_.p-dialog-content]:flex-col [&_.p-dialog-content]:max-h-[85vh] [&_.p-dialog-content]:min-h-0 [&_.p-dialog-content]:overflow-hidden [&_.p-dialog-content]:p-0"
           data-testid={EMPLOYEES.modal}
           dismissableMask={true}
           onHide={handleModalClose}
           header={
-            <div className="font-nunito font-bold text-sm lg:text-2xl text-center" data-testid={EMPLOYEES.modalTitle}>
+            <div className="font-nunito font-semibold text-base text-gray-800" data-testid={EMPLOYEES.modalTitle}>
               {modal === "add"
                 ? "Add"
                 : modal === "edit"
@@ -482,267 +520,259 @@ export default function Employee() {
             </div>
           }
         >
-          <form onSubmit={handleSubmit} className="space-y-4 flex flex-col items-center">
+          <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
             {loader === "add" || loader === "edit" || loader === "delete" ? (
-              <MiniLoader />
+              <div className="py-12 flex justify-center">
+                <MiniLoader />
+              </div>
             ) : (
-              <div className="w-full space-y-4">
-                {modal === "delete" ? (
-                  <p className="text-labelColor font-nunito font-medium text-lg text-center">
-                    Are you sure you want to delete this Employee?
-                  </p>
-                ) : (
-                  <>
-                    {/* Name */}
-                    <div className="flex flex-col gap-y-2">
-                      <label className="text-labelColor font-medium font-satoshi">Name</label>
-                      <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        placeholder="Enter Employee name"
-                        className="border border-borderColor rounded-[4px] px-2.5 py-3"
-                        data-testid={EMPLOYEES.nameInput}
-                      />
-                    </div>
-
-                    {/* Email */}
-                    <div className="flex flex-col gap-y-2">
-                      <label className="text-labelColor font-medium font-satoshi">Email</label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        placeholder="Enter Email"
-                        className="border border-borderColor rounded-[4px] px-2.5 py-3"
-                        data-testid={EMPLOYEES.emailInput}
-                      />
-                    </div>
-
-                    {/* Password (Add mode) */}
-                    {modal === "add" && (
-                      <div className="flex flex-col gap-y-2 relative">
-                        <label className="text-labelColor font-medium font-satoshi">Password</label>
-                        <input
-                          type={visible ? "text" : "password"}
-                          name="password"
-                          value={formData.password}
-                          onChange={handleChange}
-                          placeholder="Enter Password"
-                          className="border border-borderColor rounded-[4px] ps-2.5 pe-12 py-3"
-                          data-testid={EMPLOYEES.passwordInput}
-                        />
-                        <button
-                          onClick={() => setVisible(!visible)}
-                          type="button"
-                          className="absolute right-4 top-11"
-                          data-testid={EMPLOYEES.passwordVisibilityToggle}
-                        >
-                          {visible ? (
-                            <AiOutlineEye size={24} color="#000000" />
-                          ) : (
-                            <AiOutlineEyeInvisible size={24} color="#64748b" />
-                          )}
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Update Password (Edit mode) */}
-                    {modal === "edit" && (
-                      <div className="space-y-2">
-                        {changePasswordStatus && (
-                          <div className="flex flex-col gap-y-2 relative">
-                            <label className="text-labelColor font-medium font-satoshi">
-                              Update Password
-                            </label>
+              <>
+                <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-5">
+                  {modal === "delete" ? (
+                    <p className="text-labelColor font-medium text-center py-4">
+                      Are you sure you want to delete this Employee?
+                    </p>
+                  ) : (
+                    <>
+                      {/* Basic Information */}
+                      <section className="space-y-4">
+                        <h3 className="text-sm font-semibold text-gray-800 border-b border-gray-200 pb-2">
+                          Basic Information
+                        </h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="flex flex-col gap-y-1.5">
+                            <label className="text-labelColor font-medium text-sm">Name</label>
                             <input
-                              type={visible ? "text" : "password"}
-                              name="password"
-                              autoComplete="off"
-                              value={formData.password}
-                              placeholder="Enter New Password"
-                              className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none ps-2.5 pe-12 py-3"
+                              type="text"
+                              name="name"
+                              value={formData.name}
                               onChange={handleChange}
-                              data-testid={EMPLOYEES.changePasswordCheckbox}
+                              placeholder="Enter Employee name"
+                              className="border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-theme/20 focus:border-theme outline-none"
+                              data-testid={EMPLOYEES.nameInput}
                             />
-                            <button
-                              onClick={() => setVisible(!visible)}
-                              type="button"
-                              className="text-labelColor absolute right-4 top-11"
-                              data-testid={EMPLOYEES.passwordVisibilityToggle}
-                            >
-                              {visible ? (
-                                <AiOutlineEye size={24} color="#000000" />
-                              ) : (
-                                <AiOutlineEyeInvisible size={24} color="#64748b" />
-                              )}
-                            </button>
+                          </div>
+                          <div className="flex flex-col gap-y-1.5">
+                            <label className="text-labelColor font-medium text-sm">Email</label>
+                            <input
+                              type="email"
+                              name="email"
+                              value={formData.email}
+                              onChange={handleChange}
+                              placeholder="Enter Email"
+                              className="border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-theme/20 focus:border-theme outline-none"
+                              data-testid={EMPLOYEES.emailInput}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Password (Add mode) */}
+                        {modal === "add" && (
+                          <div className="flex flex-col gap-y-1.5">
+                            <label className="text-labelColor font-medium text-sm">Password</label>
+                            <div className="relative">
+                              <input
+                                type={visible ? "text" : "password"}
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                placeholder="Enter Password"
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 pr-10 text-sm focus:ring-2 focus:ring-theme/20 focus:border-theme outline-none"
+                                data-testid={EMPLOYEES.passwordInput}
+                              />
+                              <button
+                                onClick={() => setVisible(!visible)}
+                                type="button"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 p-0.5"
+                                aria-label={visible ? "Hide password" : "Show password"}
+                                data-testid={EMPLOYEES.passwordVisibilityToggle}
+                              >
+                                {visible ? <AiOutlineEye size={20} /> : <AiOutlineEyeInvisible size={20} />}
+                              </button>
+                            </div>
                           </div>
                         )}
-                        <div className="flex items-center justify-end gap-x-2">
-                          <label className="text-black font-medium font-satoshi">
-                            Update Password
-                          </label>
-                          <input
-                            checked={changePasswordStatus}
-                            type="checkbox"
-                            name="passwordStatus"
-                            onChange={() =>
-                              setChangePasswordStatus(!changePasswordStatus)
-                            }
-                            className="size-4 border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none"
-                          />
-                        </div>
-                      </div>
-                    )}
 
-                    {/* Phone Number */}
-                    <div className="flex flex-col gap-y-2">
-                      <label className="text-labelColor font-medium font-satoshi">
-                        Phone Number
-                      </label>
-                      <div className="grid grid-cols-12 gap-3 items-start">
-                        {/* Country code */}
-                        <div className="col-span-5 sm:col-span-4 md:col-span-3">
-                          <PhoneInput
-                            country={"us"}
-                            value={formData.countryCode}
-                            onChange={(phone) =>
-                              setFormData({ ...formData, countryCode: phone })
-                            }
-                            containerStyle={{ width: "100%" }}
-                            inputStyle={{
-                              width: "100%",
-                              height: "45px",
-                              borderRadius: "4px",
-                              border: "1px solid #00000033",
-                              paddingLeft: "48px",
-                            }}
-                            buttonStyle={{
-                              height: "45px",
-                              border: "1px solid #00000033",
-                              borderRight: "none",
-                              borderTopLeftRadius: "4px",
-                              borderBottomLeftRadius: "4px",
-                            }}
-                            dropdownStyle={{
-                              zIndex: 50,
-                            }}
-                          />
-                        </div>
-                        {/* Local phone number */}
-                        <div className="col-span-7 sm:col-span-8 md:col-span-9">
-                          <input
-                            type="tel"
-                            name="phoneNumber"
-                            value={formData.phoneNumber}
-                            onChange={handleChange}
-                            placeholder="Enter Phone Number"
-                            className="w-full border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-2.5"
-                            data-testid={EMPLOYEES.phoneInput}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Features */}
-                    <div className="flex flex-col gap-y-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <input
-                          type="checkbox"
-                          checked={
-                            formData.features.length === allFeatures.length &&
-                            formData.features.every(f =>
-                              ["create", "view", "update", "delete"].every(action => f[action])
-                            )
-                          }
-                          onChange={(e) => {
-                            const checked = e.target.checked;
-                            const newFeatures = allFeatures.map(feature => ({
-                              feature,
-                              create: checked,
-                              view: checked,
-                              update: checked,
-                              delete: checked,
-                            }));
-                            setFormData({ ...formData, features: newFeatures });
-                          }}
-                          className="form-checkbox"
-                        />
-                        <label className="text-black font-medium font-satoshi">Select All</label>
-                      </div>
-                      <div className="grid grid-cols-6 gap-6 font-bold mb-2 items-center">
-                        <span className="col-span-2 text-left text-labelColor font-medium font-satoshi">
-                          Features
-                        </span>
-
-                        {["Create", "View", "Update", "Delete"].map((action) => (
-                          <span key={action} className="text-center w-20">
-                            {action}
-                          </span>
-                        ))}
-
-                      </div>
-
-                      {allFeatures.map((feature) => {
-                        const existingFeature =
-                          formData.features.find((f) => f.feature === feature) || {};
-                        return (
-                          <div
-                            key={feature}
-                            className="grid grid-cols-6 gap-6 items-center mb-2"
-                          >
-                            <span className="col-span-2 font-bold capitalize">
-                              {feature.replace("-", " ")}
-                            </span>
-                            {["create", "view", "update", "delete"].map((action) => (
-                              <div key={`${feature}-${action}`} className="flex justify-center">
+                        {/* Update Password (Edit mode) */}
+                        {modal === "edit" && (
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-3">
+                              <span className="text-labelColor font-medium text-sm">Update Password</span>
+                              <label className="flex items-center gap-2 cursor-pointer select-none">
                                 <input
+                                  checked={changePasswordStatus}
                                   type="checkbox"
-                                  checked={!!existingFeature[action]}
-                                  onChange={(e) => {
-                                    const checked = e.target.checked;
-                                    const newFeatures = [...formData.features];
-                                    const featureIndex = newFeatures.findIndex(
-                                      (f) => f.feature === feature
-                                    );
-
-                                    if (featureIndex !== -1) {
-                                      newFeatures[featureIndex] = {
-                                        ...newFeatures[featureIndex],
-                                        [action]: checked,
-                                      };
-                                    } else {
-                                      newFeatures.push({ feature, [action]: checked });
-                                    }
-
-                                    setFormData({ ...formData, features: newFeatures });
-                                  }}
-                                  className="form-checkbox"
-                                  data-testid={EMPLOYEES.featuresCheckbox}
+                                  name="passwordStatus"
+                                  onChange={() => setChangePasswordStatus(!changePasswordStatus)}
+                                  className="size-4 rounded border-gray-300 text-theme focus:ring-theme/20"
+                                  data-testid={EMPLOYEES.changePasswordCheckbox}
                                 />
+                                <span className="text-sm text-gray-600">Enable</span>
+                              </label>
+                            </div>
+                            {changePasswordStatus && (
+                              <div className="relative">
+                                <input
+                                  type={visible ? "text" : "password"}
+                                  name="password"
+                                  autoComplete="off"
+                                  value={formData.password}
+                                  placeholder="Enter New Password"
+                                  className="w-full border border-gray-300 rounded-lg px-3 py-2.5 pr-10 text-sm focus:ring-2 focus:ring-theme/20 focus:border-theme outline-none"
+                                  onChange={handleChange}
+                                  data-testid={EMPLOYEES.passwordInput}
+                                />
+                                <button
+                                  onClick={() => setVisible(!visible)}
+                                  type="button"
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 p-0.5"
+                                  aria-label={visible ? "Hide password" : "Show password"}
+                                  data-testid={EMPLOYEES.passwordVisibilityToggle}
+                                >
+                                  {visible ? <AiOutlineEye size={20} /> : <AiOutlineEyeInvisible size={20} />}
+                                </button>
                               </div>
-                            ))}
-                            <div></div>
+                            )}
                           </div>
-                        );
-                      })}
-                    </div>
-                  </>
-                )}
-                <div className="flex justify-end gap-3 mt-2">
+                        )}
+
+                        <div className="flex flex-col gap-y-1.5">
+                          <label className="text-labelColor font-medium text-sm">Phone Number</label>
+                          <div className="grid grid-cols-12 gap-2">
+                            <div className="col-span-4 sm:col-span-3">
+                              <PhoneInput
+                                country={"us"}
+                                value={formData.countryCode}
+                                onChange={(phone) => setFormData({ ...formData, countryCode: phone })}
+                                containerStyle={{ width: "100%" }}
+                                inputStyle={{
+                                  width: "100%",
+                                  height: "40px",
+                                  borderRadius: "8px",
+                                  border: "1px solid #d1d5db",
+                                  paddingLeft: "44px",
+                                }}
+                                buttonStyle={{
+                                  height: "40px",
+                                  border: "1px solid #d1d5db",
+                                  borderRight: "none",
+                                  borderRadius: "8px 0 0 8px",
+                                }}
+                                dropdownStyle={{ zIndex: 50 }}
+                              />
+                            </div>
+                            <div className="col-span-8 sm:col-span-9">
+                              <input
+                                type="tel"
+                                name="phoneNumber"
+                                value={formData.phoneNumber}
+                                onChange={handleChange}
+                                placeholder="Phone number"
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm h-[40px] focus:ring-2 focus:ring-theme/20 focus:border-theme outline-none"
+                                data-testid={EMPLOYEES.phoneInput}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </section>
+
+                      {/* Permissions */}
+                      <section className="space-y-2">
+                        <h3 className="text-sm font-semibold text-gray-800 border-b border-gray-200 pb-2">
+                          Permissions
+                        </h3>
+                        <p className="text-xs text-gray-500">Choose one of Customer or Selected customer only.</p>
+                        <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+                          <div className="grid grid-cols-6 gap-3 px-3 py-2.5 bg-gray-100 border-b border-gray-200 text-xs font-semibold text-gray-600">
+                            <span className="col-span-2">Feature</span>
+                            {["Create", "View", "Update", "Delete"].map((action) => (
+                              <span key={action} className="text-center">{action}</span>
+                            ))}
+                          </div>
+                          <div className="divide-y divide-gray-100">
+                            {allFeatures.map((feature, idx) => {
+                              const existingFeature = formData.features.find((f) => f.feature === feature) || {};
+                              return (
+                                <div
+                                  key={feature}
+                                  className={`grid grid-cols-6 gap-3 px-3 py-2 items-center text-sm ${idx % 2 === 1 ? "bg-gray-50" : "bg-white"}`}
+                                >
+                                  <span className="col-span-2 text-gray-800 capitalize">
+                                    {feature.replace(/-/g, " ")}
+                                  </span>
+                                  {["create", "view", "update", "delete"].map((action) => (
+                                    <div key={`${feature}-${action}`} className="flex justify-center">
+                                      <input
+                                        type="checkbox"
+                                        checked={!!existingFeature[action]}
+                                        onChange={(e) => {
+                                          const checked = e.target.checked;
+                                          let newFeatures = [...formData.features];
+                                          const featureIndex = newFeatures.findIndex((f) => f.feature === feature);
+                                          if (featureIndex !== -1) {
+                                            newFeatures[featureIndex] = { ...newFeatures[featureIndex], [action]: checked };
+                                          } else {
+                                            newFeatures.push({ feature, [action]: checked });
+                                          }
+                                          const otherFeature = feature === "customer" ? "selected-customer" : feature === "selected-customer" ? "customer" : null;
+                                          if (checked && otherFeature) {
+                                            newFeatures = newFeatures.map((f) =>
+                                              f.feature === otherFeature ? { feature: otherFeature, create: false, view: false, update: false, delete: false } : f
+                                            );
+                                          }
+                                          setFormData({ ...formData, features: newFeatures });
+                                        }}
+                                        className="size-4 rounded border-gray-300 text-theme focus:ring-theme/20"
+                                        data-testid={EMPLOYEES.featuresCheckbox}
+                                      />
+                                    </div>
+                                  ))}
+                                </div>
+                              );
+                            })}
+                          </div>
+                          <div className="px-3 py-2.5 bg-gray-100 border-t border-gray-200 flex items-center justify-end gap-2">
+                            <input
+                              type="checkbox"
+                              checked={(() => {
+                                if (formData.features.length !== allFeatures.length) return false;
+                                const allFull = (f) => f && ["create", "view", "update", "delete"].every((action) => f[action]);
+                                const customerEntry = formData.features.find((f) => f.feature === "customer");
+                                const selectedEntry = formData.features.find((f) => f.feature === "selected-customer");
+                                const rest = formData.features.filter((f) => f.feature !== "customer" && f.feature !== "selected-customer");
+                                const restAllFull = rest.length === allFeatures.length - 2 && rest.every(allFull);
+                                const oneOfCustomerSelected = allFull(customerEntry) !== allFull(selectedEntry) && (allFull(customerEntry) || allFull(selectedEntry));
+                                return restAllFull && oneOfCustomerSelected;
+                              })()}
+                              onChange={(e) => {
+                                const checked = e.target.checked;
+                                const newFeatures = allFeatures.map((feature) => {
+                                  if (feature === "selected-customer") return { feature, create: false, view: false, update: false, delete: false };
+                                  if (feature === "customer") return { feature, create: checked, view: checked, update: checked, delete: checked };
+                                  return { feature, create: checked, view: checked, update: checked, delete: checked };
+                                });
+                                setFormData({ ...formData, features: newFeatures });
+                              }}
+                              className="size-4 rounded border-gray-300 text-theme focus:ring-theme/20"
+                            />
+                            <span className="text-sm font-medium text-gray-600">Select All</span>
+                          </div>
+                        </div>
+                      </section>
+                    </>
+                  )}
+                </div>
+                <div className="flex-shrink-0 flex justify-end gap-2 px-4 py-3 border-t border-gray-200 bg-gray-50">
                   <button
                     type="button"
                     onClick={handleModalClose}
-                    className="px-4 py-2 border rounded hover:bg-gray-100"
+                    className="px-3 py-1.5 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-theme text-white rounded hover:bg-themeDark disabled:opacity-70"
+                    className="px-3 py-1.5 text-sm bg-theme text-white rounded-lg hover:opacity-90 disabled:opacity-60 transition-opacity"
                     data-testid={EMPLOYEES.modalSubmitBtn}
                   >
                     {modal === "add"
@@ -755,7 +785,7 @@ export default function Employee() {
                     Employee
                   </button>
                 </div>
-              </div>
+              </>
             )}
           </form>
         </Dialog>

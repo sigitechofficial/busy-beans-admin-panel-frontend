@@ -13,6 +13,7 @@ import Select from "react-select";
 import { drawerSelectStyles } from "@/utilities/SelectStyle";
 import { error_toaster, success_toaster } from "@/utilities/Toaster";
 import { PostAPI } from "@/utilities/PostAPI";
+import { formatDateTimeISO } from "@/utilities/constants";
 
 export default function UnpaidPartnerBalance() {
   // ---------------------------------------------------------------------
@@ -120,8 +121,8 @@ export default function UnpaidPartnerBalance() {
     subtotal: r?.subTotal,
     shipping: r?.shippingCharges,
     totalBill: r?.totalBill,
-    deliveredOn: r?.deliveredOn,
-    createdAt: r?.createdAt,
+    deliveredOn: formatDateTimeISO(r?.deliveredOn, "datetime"),
+    createdAt: formatDateTimeISO(r?.createdAt, "datetime"),
     overdue: r?.overdueInvoice ? "Yes" : null,
   }));
 

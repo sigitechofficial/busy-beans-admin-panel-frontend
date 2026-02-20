@@ -41,6 +41,7 @@ const DrawerBeans = ({
     var partnerType = localStorage.getItem("partnerType");
     var isEmployee = localStorage.getItem("isEmployee") === "true";
   }
+  const isAdminEmployee = userType === "admin" && isEmployee;
   const [companyNameOptions, setCompanyNameOptions] = useState([]);
   const [emailOptions, setEmailOptions] = useState([]);
 
@@ -149,6 +150,10 @@ const DrawerBeans = ({
     params.set("limit", limit.toString());
     if (search.trim()) {
       params.set("search", search.trim());
+    }
+    // Employee with customer_create: add cus=all; selected-customer_create only: no param (main entities untouched)
+    if (isEmployee && hasPermission("customer_create")) {
+      params.set("cus", "all");
     }
     return `${base}?${params.toString()}`;
   };
@@ -1139,8 +1144,8 @@ const DrawerBeans = ({
             <div className="relative space-y-6 font-sf pb-20 bg-theme text-white">
               {type === "createOrder" ? (
                 <div className="space-y-4">
-                  {/* Switch for Direct Partner */}
-                  {userType === "admin" && (
+                  {/* Switch for Direct Partner - hidden for admin employee */}
+                  {userType === "admin" && !isAdminEmployee && (
                     <div className="flex items-center gap-x-2 justify-end">
                       <label className="text-white font-medium">
                         Local Partners
@@ -1374,66 +1379,69 @@ const DrawerBeans = ({
                       />
                     </div> */}
 
-                  <div>
-                    <div className="w-full font-sf font-normal text-base text-theme-black-2 flex items-center gap-3 px-5 py-[5px] duration-300 border-2 border-white hover:border-goldenLight focus-within:border-goldenLight rounded-t">
-                      <MdInsertComment size={24} />
-                      <div className="relative w-full">
-                        <input
-                          type="text"
-                          id="courier-note"
-                          className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${
-                            order?.note ? "placeholder-transparent" : ""
-                          }`}
-                          value={order?.note}
-                          onChange={(e) =>
-                            setOrder({ ...order, note: e.target.value })
-                          }
-                          data-testid={ORDERS_CREATE_DRAWER.noteInput}
-                        />
-                        <label
-                          htmlFor="courier-note"
-                          className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${
-                            order?.note
-                              ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
-                              : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
-                          }`}
-                        >
-                          {order?.note
-                            ? "Note for the supplier (optional)"
-                            : "Add note for the supplier (optional)"}
-                        </label>
+                  {/* Optional note and PO number - hidden for admin employee */}
+                  {!isAdminEmployee && (
+                    <div>
+                      <div className="w-full font-sf font-normal text-base text-theme-black-2 flex items-center gap-3 px-5 py-[5px] duration-300 border-2 border-white hover:border-goldenLight focus-within:border-goldenLight rounded-t">
+                        <MdInsertComment size={24} />
+                        <div className="relative w-full">
+                          <input
+                            type="text"
+                            id="courier-note"
+                            className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${
+                              order?.note ? "placeholder-transparent" : ""
+                            }`}
+                            value={order?.note}
+                            onChange={(e) =>
+                              setOrder({ ...order, note: e.target.value })
+                            }
+                            data-testid={ORDERS_CREATE_DRAWER.noteInput}
+                          />
+                          <label
+                            htmlFor="courier-note"
+                            className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${
+                              order?.note
+                                ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
+                                : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
+                            }`}
+                          >
+                            {order?.note
+                              ? "Note for the supplier (optional)"
+                              : "Add note for the supplier (optional)"}
+                          </label>
+                        </div>
+                      </div>
+                      <div className="w-full font-sf font-normal text-base text-theme-black-2 flex items-center gap-3 px-5 py-[5px] duration-300 border-2 border-white hover:border-goldenLight focus-within:border-goldenLight rounded-b">
+                        <MdOutlineConfirmationNumber size={24} />
+                        <div className="relative w-full">
+                          <input
+                            type="text"
+                            id="poNumber"
+                            className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${
+                              order?.note ? "placeholder-transparent" : ""
+                            }`}
+                            value={order?.poNumber}
+                            onChange={(e) =>
+                              setOrder({ ...order, poNumber: e.target.value })
+                            }
+                            data-testid={ORDERS_CREATE_DRAWER.poNumberInput}
+                          />
+                          <label
+                            htmlFor="poNumber"
+                            className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${
+                              order?.poNumber
+                                ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
+                                : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
+                            }`}
+                          >
+                            {order?.poNumber
+                              ? "Purchase Order Number"
+                              : "Add Purchase Order Number (optional)"}
+                          </label>
+                        </div>
                       </div>
                     </div>
-                    <div className="w-full font-sf font-normal text-base text-theme-black-2 flex items-center gap-3 px-5 py-[5px] duration-300 border-2 border-white hover:border-goldenLight focus-within:border-goldenLight rounded-b">
-                      <MdOutlineConfirmationNumber size={24} />
-                      <div className="relative w-full">
-                        <input
-                          type="text"
-                          id="poNumber"
-                          className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${
-                            order?.note ? "placeholder-transparent" : ""
-                          }`}
-                          value={order?.poNumber}
-                          onChange={(e) =>
-                            setOrder({ ...order, poNumber: e.target.value })
-                          }
-                          data-testid={ORDERS_CREATE_DRAWER.poNumberInput}
-                        />
-                        <label
-                          htmlFor="poNumber"
-                          className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${
-                            order?.poNumber
-                              ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
-                              : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
-                          }`}
-                        >
-                          {order?.poNumber
-                            ? "Purchase Order Number"
-                            : "Add Purchase Order Number (optional)"}
-                        </label>
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </div>
               ) : (
                 <div className="flex flex-col gap-y-2">

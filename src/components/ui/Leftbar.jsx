@@ -655,7 +655,8 @@ export default function Leftbar(props) {
               active={
                 pathname.includes("/orders/create") ||
                 pathname.includes("/orders/emails") ||
-                pathname.includes("/orders/email-logs")
+                pathname.includes("/orders/email-logs") ||
+                pathname.includes("/orders/delete-invoice")
               }
               Angle={
                 FaAngleRight
@@ -685,6 +686,7 @@ export default function Leftbar(props) {
 
                   <ListItems title="Emails" to="/orders/emails" />
                   <ListItems title="Email Logs" to="/orders/email-logs" />
+                  <ListItems title="Delete Invoice" to="/orders/delete-invoice" />
                 </div>
               </>
             )}
@@ -2101,7 +2103,10 @@ export default function Leftbar(props) {
               title="Order Management"
               Icon={MdShoppingCart}
               data-testid={LEFTBAR.orderManagementSection}
-              active={pathname === "/sales-representative/create-order"}
+              active={
+                pathname === "/sales-representative/create-order" ||
+                pathname.includes("/orders/delete-invoice")
+              }
               status={
                 active?.orderManagement?.tab === "orderManagement" &&
                 active?.orderManagement?.status
@@ -2129,6 +2134,14 @@ export default function Leftbar(props) {
                       )}
                     />
                   )}
+                  <ListItems
+                    title="Delete Invoice"
+                    to="/orders/delete-invoice"
+                    data-testid={LEFTBAR.listItem(
+                      "orderManagement",
+                      "Delete Invoice"
+                    )}
+                  />
                 </div>
               </>
             )}

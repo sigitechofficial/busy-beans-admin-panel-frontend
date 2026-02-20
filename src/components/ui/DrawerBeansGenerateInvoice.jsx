@@ -104,6 +104,10 @@ const DrawerBeansGenerateInvoice = ({
     if (search.trim()) {
       params.set("search", search.trim());
     }
+    // Employee with customer_create: add cus=all; selected-customer_create only: no param (main entities untouched)
+    if (isEmployee && hasPermission("customer_create")) {
+      params.set("cus", "all");
+    }
     // Handle the salesRep endpoint which already has query params
     if (base.includes("&orderCreation=yes")) {
       return `${base.split("&")[0]}?${params.toString()}&orderCreation=yes`;

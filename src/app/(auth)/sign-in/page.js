@@ -90,13 +90,7 @@ export default function SignIn() {
       validationSchema: loginSchema,
       onSubmit: async (values, action) => {
         setLoader(true);
-        let captchaRes = await validateRecaptcha();
-
-        if (!captchaRes) {
-          error_toaster("Bot Detection");
-          setLoader(false);
-          return;
-        }
+   
         try {
           let res = await loginAPI(
             type === "admin"

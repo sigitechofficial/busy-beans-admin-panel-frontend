@@ -1,6 +1,6 @@
 import { error_toaster } from "./Toaster";
 
-const ENV = "staging"; // "local" | "staging" | "production"
+const ENV = "aws"; // "local" | "staging" | "production" | "aws"
 
 const CONFIG = {
   local: {
@@ -12,6 +12,13 @@ const CONFIG = {
 
   staging: {
     BASE_URL: "https://testingbb.trimworldwide.com/",
+    STRIPE_PUBLIC_KEY:
+      "pk_test_51RPXZNCxTuXimvwHkvKO6MrVTckQ45X3JC2AkCVyV9fxLCK442YPbG8yM2NOexEqnD3wNAXdKfrOyEH2dTSzYKpt00WTyK7kzl",
+    RETURN_URL: "https://stageadmin.busybeancoffee.com/",
+  },
+
+  aws: {
+    BASE_URL: "https://aws-amplify.d28m7twubc7u9n.amplifyapp.com/",
     STRIPE_PUBLIC_KEY:
       "pk_test_51RPXZNCxTuXimvwHkvKO6MrVTckQ45X3JC2AkCVyV9fxLCK442YPbG8yM2NOexEqnD3wNAXdKfrOyEH2dTSzYKpt00WTyK7kzl",
     RETURN_URL: "https://stageadmin.busybeancoffee.com/",
@@ -39,6 +46,4 @@ export const RETURN_URL = CURRENT?.RETURN_URL || "";
 
 export const GOOGLE_API_KEY = "AIzaSyD68_vw1gGE7LVVjJ5ZShy7qWwm9Rq0CBQ";
 export const RECAPTCHA_SITE_KEY = "6Lfy_PwrAAAAAHCJ7TQAw3g1K-LhLM5qFCtoJpbi";
-
 export const RECAPTCHA_SECRET_KEY = "6Lfy_PwrAAAAAJrwzEdV9ElaUlZNOTSRBkSPa9zZ";
-

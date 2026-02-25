@@ -1142,6 +1142,68 @@ export default function OrderDetail() {
                                   {meta.subject}
                                 </p>
                               )}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-600 pt-1">
+                                <p>
+                                  <span className="font-medium">
+                                    Recently viewed:
+                                  </span>{" "}
+                                  {log.lastOpenedAt
+                                    ? formatDateTimeISO(
+                                        log.lastOpenedAt,
+                                        "datetime",
+                                      )
+                                    : "—"}
+                                </p>
+                                <p>
+                                  <span className="font-medium">
+                                    First opened:
+                                  </span>{" "}
+                                  {log.firstOpenedAt
+                                    ? formatDateTimeISO(
+                                        log.firstOpenedAt,
+                                        "datetime",
+                                      )
+                                    : "—"}
+                                </p>
+                                <p>
+                                  <span className="font-medium">
+                                    Last opened:
+                                  </span>{" "}
+                                  {log.lastOpenedAt
+                                    ? formatDateTimeISO(
+                                        log.lastOpenedAt,
+                                        "datetime",
+                                      )
+                                    : "—"}
+                                </p>
+                                <p>
+                                  <span className="font-medium">Open count:</span>{" "}
+                                  {log.openCount ?? 0}
+                                </p>
+                                <p>
+                                  <span className="font-medium">
+                                    Click count:
+                                  </span>{" "}
+                                  {log.clickCount ?? 0}
+                                </p>
+                                <p>
+                                  <span className="font-medium">
+                                    Soft bounced at:
+                                  </span>{" "}
+                                  {log.softBouncedAt
+                                    ? formatDateTimeISO(
+                                        log.softBouncedAt,
+                                        "datetime",
+                                      )
+                                    : "—"}
+                                </p>
+                                <p className="sm:col-span-2">
+                                  <span className="font-medium">
+                                    Soft bounce reason:
+                                  </span>{" "}
+                                  {log.softBounceReason || "—"}
+                                </p>
+                              </div>
                               {isFailed && log.errorMessage && (
                                 <p className="text-red-600 text-xs">
                                   <span className="font-medium">Error:</span>{" "}

@@ -160,6 +160,8 @@ export default function AllInvoices() {
   const params = new URLSearchParams(existingQuery || "");
   params.set("page", page.toString());
   params.set("limit", limit.toString());
+  // Backend default: oldest unpaid invoices first
+  params.set("sort", "invoiceDate");
   if (searchQuery.trim()) {
     params.set("search", searchQuery.trim());
   }

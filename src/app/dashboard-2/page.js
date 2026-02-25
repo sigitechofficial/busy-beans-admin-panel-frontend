@@ -543,6 +543,12 @@ export default function Dashboard2() {
     }
   };
 
+  const handleEmployeeClick = (employeeId, startDate, endDate) => {
+    if (employeeId == null || employeeId === "") return;
+    const url = `/reports/sales-by-customer-summary?startDate=${startDate}&endDate=${endDate}&employeeId=${employeeId}`;
+    router.push(url);
+  };
+
   const handleFranchiseeClick = (
     franchiseeId,
     salesRepId,
@@ -1301,7 +1307,22 @@ export default function Dashboard2() {
                     processedMtdEmployees.map((employee, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between gap-2 py-2 sm:py-3 border-b last:border-b-0 hover:bg-gray-50 px-1 sm:px-2 rounded transition-colors min-w-0"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() =>
+                          handleEmployeeClick(employee.id, mtdStart, mtdEnd)
+                        }
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            handleEmployeeClick(
+                              employee.id,
+                              mtdStart,
+                              mtdEnd
+                            );
+                          }
+                        }}
+                        className="flex items-center justify-between gap-2 py-2 sm:py-3 border-b last:border-b-0 hover:bg-gray-50 px-1 sm:px-2 rounded transition-colors min-w-0 cursor-pointer"
                       >
                         <div className="min-w-0">
                           <p className="text-gray-700 font-medium text-sm sm:text-base truncate">
@@ -1349,7 +1370,22 @@ export default function Dashboard2() {
                     processedYtdEmployees.map((employee, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between gap-2 py-2 sm:py-3 border-b last:border-b-0 hover:bg-gray-50 px-1 sm:px-2 rounded transition-colors min-w-0"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() =>
+                          handleEmployeeClick(employee.id, ytdStart, ytdEnd)
+                        }
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            handleEmployeeClick(
+                              employee.id,
+                              ytdStart,
+                              ytdEnd
+                            );
+                          }
+                        }}
+                        className="flex items-center justify-between gap-2 py-2 sm:py-3 border-b last:border-b-0 hover:bg-gray-50 px-1 sm:px-2 rounded transition-colors min-w-0 cursor-pointer"
                       >
                         <div className="min-w-0">
                           <p className="text-gray-700 font-medium text-sm sm:text-base truncate">

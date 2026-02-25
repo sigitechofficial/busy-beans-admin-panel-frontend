@@ -609,6 +609,77 @@ function SalesByCustomerDetailsReport() {
     return <HiOutlineArrowDown size={18} />;
   };
 
+  const escapeCsvCell = (val) => {
+    const s = val == null ? "" : String(val);
+    if (/["\n,]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+    return s;
+  };
+
+  const handleDownloadCSV = () => {
+    const dateRangeLabel =
+      dateRange?.startDate && dateRange?.endDate
+        ? `${dayjs(dateRange.startDate).format("MMM DD, YYYY")} - ${dayjs(dateRange.endDate).format("MMM DD, YYYY")}`
+        : "";
+    const filterLabel = filters?.userType
+      ? filters.userType === "admin"
+        ? "Admin"
+        : "Local Partner"
+      : "None";
+
+    const lines = [];
+    lines.push(["Date Range", dateRangeLabel].map(escapeCsvCell).join(","));
+    lines.push(["Filter", filterLabel].map(escapeCsvCell).join(","));
+    lines.push([]); // blank row before data
+    const headers = [
+      "Transaction date",
+      "Transaction type",
+      "Num",
+      "Product/Service full name",
+      "Memo/Category",
+      "Quantity",
+      "Amount",
+    ];
+    lines.push(headers.map(escapeCsvCell).join(","));
+    rows.forEach((row) => {
+      lines.push(
+        [
+          escapeCsvCell(
+            row.transactionDate
+              ? dayjs(row.transactionDate).format("MM/DD/YYYY")
+              : "",
+          ),
+          escapeCsvCell(row.transactionType ?? ""),
+          escapeCsvCell(row.num ?? ""),
+          escapeCsvCell(row.productName ?? ""),
+          escapeCsvCell(row.memo ?? ""),
+          escapeCsvCell(row.quantity ?? ""),
+          escapeCsvCell(row.salesPrice ?? ""),
+        ].join(","),
+      );
+    });
+    if (rows.length > 0 && grandTotal) {
+      lines.push(
+        [
+          escapeCsvCell("TOTAL"),
+          "",
+          "",
+          "",
+          "",
+          escapeCsvCell((grandTotal.quantity ?? 0).toFixed(2)),
+          escapeCsvCell(formatUSD(grandTotal.amount ?? 0)),
+        ].join(","),
+      );
+    }
+    const csv = lines.join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `sales-by-customer-details-${dayjs().format("YYYY-MM-DD")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const navigateToDetailPage = async (orderNumber) => {
     const orderId = orderNumber.replace(/^INV0*/, "");
     try {
@@ -865,13 +936,13 @@ function SalesByCustomerDetailsReport() {
                     className="w-full h-[42px] pl-10 pr-4 rounded-md border border-gray-300 outline-none focus:border-theme focus:ring-1 focus:ring-theme font-workSans font-medium text-labelColor"
                   />
                 </div>
-                {/* <button
-                  onClick={() => setFilterModalVisible(true)}
-                  className="flex items-center gap-2 px-4 py-2 h-[42px] rounded-md border border-theme text-theme bg-white hover:bg-theme hover:text-white transition-colors font-workSans font-medium"
+                <button
+                  onClick={handleDownloadCSV}
+                  disabled={rows.length === 0}
+                  className="flex items-center gap-2 px-4 py-2 h-[42px] rounded-md border border-theme text-theme bg-white hover:bg-theme hover:text-white transition-colors font-workSans font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <MdFilterAlt size={18} />
-                  Filters
-                </button> */}
+                  Download CSV
+                </button>
               </div>
 
               {/* Table */}

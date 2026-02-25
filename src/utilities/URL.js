@@ -21,6 +21,13 @@ const CONFIG = {
     BASE_URL: "https://backend.busybeancoffee.com/",
     STRIPE_PUBLIC_KEY:
       "pk_test_51RPXZNCxTuXimvwHkvKO6MrVTckQ45X3JC2AkCVyV9fxLCK442YPbG8yM2NOexEqnD3wNAXdKfrOyEH2dTSzYKpt00WTyK7kzl",
+    RETURN_URL: "https://aws-amplify.d28m7twubc7u9n.amplifyapp.com/",
+  },
+
+  aws: {
+    BASE_URL: "https://backend.busybeancoffee.com/",
+    STRIPE_PUBLIC_KEY:
+      "pk_test_51RPXZNCxTuXimvwHkvKO6MrVTckQ45X3JC2AkCVyV9fxLCK442YPbG8yM2NOexEqnD3wNAXdKfrOyEH2dTSzYKpt00WTyK7kzl",
     RETURN_URL: "https://stageadmin.busybeancoffee.com/",
   },
 

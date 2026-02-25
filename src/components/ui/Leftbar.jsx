@@ -48,56 +48,16 @@ import { hasPermission } from "@/utilities/Permission";
 import { LEFTBAR } from "@/components/ui/leftbar.testid";
 
 export default function Leftbar(props) {
-  // Use state to avoid hydration mismatch (localStorage only available on client)
-  // Initialize with values from localStorage if available (for immediate render)
-  const [userType, setUserType] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("userType");
-    }
-    return null;
-  });
-  const [partnerType, setPartnerType] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("partnerType");
-    }
-    return null;
-  });
-  const [userID, setUserID] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("userID");
-    }
-    return null;
-  });
-  const [connectAccountId, setConnectAccountId] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("connectAccountId");
-    }
-    return null;
-  });
-  const [isAccountConnected, setIsAccountConnected] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("isAccountConnected");
-    }
-    return null;
-  });
-  const [isEmployee, setIsEmployee] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("isEmployee") === "true";
-    }
-    return false;
-  });
-  const [employeeStripeAccountState, setEmployeeStripeAccountState] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("employeeStripeAccountState");
-    }
-    return null;
-  });
-  const [employeeId, setEmployeeId] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("employeeId");
-    }
-    return null;
-  });
+  // Initialize to null/false so server and client first paint match (avoids hydration mismatch).
+  // Values are set from localStorage in useEffect after mount.
+  const [userType, setUserType] = useState(null);
+  const [partnerType, setPartnerType] = useState(null);
+  const [userID, setUserID] = useState(null);
+  const [connectAccountId, setConnectAccountId] = useState(null);
+  const [isAccountConnected, setIsAccountConnected] = useState(null);
+  const [isEmployee, setIsEmployee] = useState(false);
+  const [employeeStripeAccountState, setEmployeeStripeAccountState] = useState(null);
+  const [employeeId, setEmployeeId] = useState(null);
   const [forceUpdate, setForceUpdate] = useState(0); // Force re-render trigger
 
   useEffect(() => {

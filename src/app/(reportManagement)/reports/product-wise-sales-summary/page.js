@@ -519,6 +519,102 @@ function ProductWiseSalesSummaryReport() {
     return ((amount || 0) / totalAmount) * 100;
   };
 
+  const escapeCsvCell = (val) => {
+    const s = val == null ? "" : String(val);
+    if (/["\n,]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+    return s;
+  };
+
+  const handleDownloadCSV = () => {
+    const dateRangeLabel =
+      dateRange?.startDate && dateRange?.endDate
+        ? `${dayjs(dateRange.startDate).format("MMM DD, YYYY")} - ${dayjs(dateRange.endDate).format("MMM DD, YYYY")}`
+        : "";
+    const filterLabel = filters?.userType
+      ? filters.userType === "admin"
+        ? "Admin"
+        : "Local Partner"
+      : "None";
+
+    const lines = [];
+    lines.push(["Date Range", dateRangeLabel].map(escapeCsvCell).join(","));
+    lines.push(["Filter", filterLabel].map(escapeCsvCell).join(","));
+    lines.push([]); // blank row before data
+    const headers = [
+      "Product/Category Name",
+      "QUANTITY",
+      "AMOUNT",
+      "% OF SALES",
+      "AVG PRICE",
+      "COGS",
+      "GROSS MARGIN",
+      "GROSS MARGIN %",
+    ];
+    lines.push(headers.map(escapeCsvCell).join(","));
+    rows.forEach((row) => {
+      const name =
+        row.type === "category-header"
+          ? row.categoryName ?? ""
+          : row.type === "category-total"
+            ? row.categoryName ?? ""
+            : row.productName ?? "";
+      const qty = row.quantity ?? "";
+      const amt = row.amount ?? "";
+      const pct =
+        amt !== "" && Number(amt) >= 0
+          ? getPercentOfSales(Number(amt)).toFixed(2) + "%"
+          : "";
+      const avg = row.avgPrice != null ? formatUSD(row.avgPrice) : "";
+      const cogs = row.cogs != null ? formatUSD(row.cogs) : "";
+      const margin = row.grossMargin != null ? formatUSD(row.grossMargin) : "";
+      const marginPct =
+        row.grossMarginPercent != null
+          ? (row.grossMarginPercent || 0).toFixed(2) + "%"
+          : "";
+      lines.push(
+        [
+          escapeCsvCell(name),
+          escapeCsvCell(qty),
+          escapeCsvCell(amt),
+          escapeCsvCell(pct),
+          escapeCsvCell(avg),
+          escapeCsvCell(cogs),
+          escapeCsvCell(margin),
+          escapeCsvCell(marginPct),
+        ].join(",")
+      );
+    });
+    // Add TOTAL row to match the table footer
+    if (rows.length > 0 && grandTotal) {
+      const totalQty = grandTotal.quantity ?? 0;
+      const totalAmt = grandTotal.amount ?? 0;
+      const totalAvg =
+        totalQty > 0 ? formatUSD(totalAmt / totalQty) : formatUSD(0);
+      lines.push(
+        [
+          escapeCsvCell("TOTAL"),
+          escapeCsvCell(totalQty.toFixed(2)),
+          escapeCsvCell(formatUSD(totalAmt)),
+          escapeCsvCell("100.00%"),
+          escapeCsvCell(totalAvg),
+          escapeCsvCell(formatUSD(grandTotal.cogs ?? 0)),
+          escapeCsvCell(formatUSD(grandTotal.grossMargin ?? 0)),
+          escapeCsvCell(
+            ((grandTotal.grossMarginPercent ?? 0).toFixed(2)) + "%"
+          ),
+        ].join(",")
+      );
+    }
+    const csv = lines.join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `product-wise-sales-summary-${dayjs().format("YYYY-MM-DD")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return isLoading ? (
     <Loader />
   ) : (
@@ -668,15 +764,24 @@ function ProductWiseSalesSummaryReport() {
                 className="w-full h-[42px] pl-10 pr-4 rounded-md border border-gray-300 outline-none focus:border-theme focus:ring-1 focus:ring-theme font-workSans font-medium text-labelColor"
               />
             </div>
-            {userType === "admin" && (
+            <div className="flex items-center gap-2">
               <button
-                onClick={() => setFilterModalVisible(true)}
-                className="flex items-center gap-2 px-4 py-2 h-[42px] rounded-md border border-theme text-theme bg-white hover:bg-theme hover:text-white transition-colors font-workSans font-medium"
+                onClick={handleDownloadCSV}
+                disabled={rows.length === 0}
+                className="flex items-center gap-2 px-4 py-2 h-[42px] rounded-md border border-theme text-theme bg-white hover:bg-theme hover:text-white transition-colors font-workSans font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <MdFilterAlt size={18} />
-                Filters
+                Download CSV
               </button>
-            )}
+              {userType === "admin" && (
+                <button
+                  onClick={() => setFilterModalVisible(true)}
+                  className="flex items-center gap-2 px-4 py-2 h-[42px] rounded-md border border-theme text-theme bg-white hover:bg-theme hover:text-white transition-colors font-workSans font-medium"
+                >
+                  <MdFilterAlt size={18} />
+                  Filters
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Table */}

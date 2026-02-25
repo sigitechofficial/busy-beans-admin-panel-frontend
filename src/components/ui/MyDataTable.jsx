@@ -1,11 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { RiFileDownloadLine } from "react-icons/ri";
 import { LuSearch } from "react-icons/lu";
 import Select from "react-select";
 import selectStyles from "@/utilities/SelectStyle";
-import { Checkbox } from "primereact/checkbox";
 
 export default function MyDataTable({
   selectedRows,
@@ -18,8 +17,9 @@ export default function MyDataTable({
   onSearchChange, // Callback function to handle search changes for server-side search
   searchValue, // Controlled search value from parent (for server-side search)
   checkbox,
-  sortField,
-  sortOrder,
+  sortField: sortFieldProp,
+  sortOrder: sortOrderProp,
+  onSort: onSortProp,
   onRowClick,
   placeholder,
   hide,
@@ -41,6 +41,18 @@ export default function MyDataTable({
   const [globalFilter, setGlobalFilter] = useState(searchValue || "");
   const tableRef = useRef(null);
   const searchTimeoutRef = useRef(null);
+  const headerCheckboxRef = useRef(null);
+  const rowCheckboxRefsMap = useRef(new Map());
+  const selectedRef = useRef(selected);
+
+  // Keep ref in sync so checkbox handler always has latest selection (avoids stale closure + race with row click)
+  selectedRef.current = selected;
+
+  // Client-side sort: use internal state when parent doesn't pass onSort
+  const [internalSort, setInternalSort] = useState({ sortField: null, sortOrder: 1 });
+  const sortField = onSortProp ? sortFieldProp : internalSort.sortField;
+  const sortOrder = onSortProp ? sortOrderProp : internalSort.sortOrder;
+  const onSort = onSortProp || ((e) => setInternalSort({ sortField: e.sortField, sortOrder: e.sortOrder }));
 
   // Sync local state with prop when using server-side search (only when prop changes from outside)
   useEffect(() => {
@@ -81,8 +93,13 @@ export default function MyDataTable({
   };
 
   const onSelectionChange = (e) => {
-    updateSelected(e.value || []);
+    const next = e.value || [];
+    selectedRef.current = next;
+    updateSelected(next);
   };
+
+  // When checkbox column is used, only checkboxes control selection; row click must not overwrite
+  const handleSelectionChange = checkbox ? () => {} : onSelectionChange;
 
   // For server-side search, don't filter on client side - use data as is
   // For client-side search, filter the data
@@ -99,49 +116,163 @@ export default function MyDataTable({
         )
       );
 
-  const selectedIds = new Set(selected?.map((s) => s?.[dataKey]));
-  const isAllSelected =
-    filteredData.length > 0 &&
-    filteredData.every((item) => selectedIds.has(item?.[dataKey]));
-  const isSomeSelected =
-    filteredData.some((item) => selectedIds.has(item?.[dataKey]));
+  // Client-side sort: sort current table data by sortField/sortOrder (no backend call)
+  const sortedData = useMemo(() => {
+    if (!sortField || !filteredData?.length) return filteredData;
+    const order = sortOrder === -1 ? -1 : 1;
+    return [...filteredData].sort((a, b) => {
+      let va = a?.[sortField];
+      let vb = b?.[sortField];
+      // Strip $ and % for numbers (e.g. "$123.45" or "10%")
+      if (typeof va === "string" && /^[\d.,]+%?$/.test(va.replace(/[$,\s]/g, ""))) {
+        va = parseFloat(String(va).replace(/[$%,\s]/g, "")) || 0;
+      }
+      if (typeof vb === "string" && /^[\d.,]+%?$/.test(vb.replace(/[$,\s]/g, ""))) {
+        vb = parseFloat(String(vb).replace(/[$%,\s]/g, "")) || 0;
+      }
+      if (va == null && vb == null) return 0;
+      if (va == null) return order;
+      if (vb == null) return -order;
+      if (typeof va === "number" && typeof vb === "number") return order * (va - vb);
+      return order * String(va).localeCompare(String(vb), undefined, { numeric: true });
+    });
+  }, [filteredData, sortField, sortOrder]);
 
-  const headerCheckbox = (
-    <Checkbox
-      checked={isAllSelected}
-      indeterminate={!isAllSelected && isSomeSelected}
-      onChange={(e) => {
-        if (e.checked) {
-          updateSelected(filteredData);
-        } else {
-          updateSelected([]);
-        }
-      }}
-      className="accent-black cursor-pointer"
-    /> 
+  // Normalize ids to string so number vs string (e.g. 123 vs "123") match
+  const toId = (val) => (val == null ? "" : String(val));
+  const selectedIds = useMemo(
+    () => new Set((selected ?? []).map((s) => toId(s?.[dataKey])).filter(Boolean)),
+    [selected, dataKey]
+  );
+  const isAllSelected =
+    sortedData.length > 0 &&
+    sortedData.every((item) => selectedIds.has(toId(item?.[dataKey])));
+  const isSomeSelected =
+    sortedData.some((item) => selectedIds.has(toId(item?.[dataKey])));
+
+  // Native checkbox: visible checked state, no PrimeReact dependency
+  useEffect(() => {
+    if (headerCheckboxRef.current) {
+      headerCheckboxRef.current.indeterminate = !isAllSelected && isSomeSelected;
+    }
+  }, [isAllSelected, isSomeSelected]);
+
+  // Sync row checkbox checked state when selection changes (PrimeReact may not re-render body)
+  useEffect(() => {
+    if (!checkbox) return;
+    const ids = new Set((selected ?? []).map((s) => toId(s?.[dataKey])).filter(Boolean));
+    rowCheckboxRefsMap.current.forEach((el, id) => {
+      if (el && typeof el.checked !== "undefined") el.checked = ids.has(id);
+    });
+  }, [checkbox, selected, dataKey]);
+
+  const checkIcon = (
+    <svg className="check-icon w-3.5 h-3.5 text-white shrink-0 opacity-0 transition-opacity duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 13l4 4L19 7" />
+    </svg>
+  );
+  const minusIcon = (
+    <svg className="minus-icon w-3 h-3 text-white shrink-0 opacity-0 absolute transition-opacity duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      <path d="M5 12h14" />
+    </svg>
   );
 
-  const checkboxBody = (rowData) => {
-    const isChecked = selected?.some((row) => row?.[dataKey] === rowData?.[dataKey]);
-    return (
-      <Checkbox
-        checked={!!isChecked}
-        onChange={() => {
-          const copy = [...(selected || [])];
-          const idx = copy.findIndex((row) => row?.[dataKey] === rowData?.[dataKey]);
-          if (idx === -1) copy.push(rowData);
-          else copy.splice(idx, 1);
-          updateSelected(copy);
+  const headerCheckbox = (
+    <div className="relative inline-flex items-center justify-center">
+      <input
+        ref={headerCheckboxRef}
+        type="checkbox"
+        checked={!!isAllSelected}
+        onChange={(e) => {
+          e.stopPropagation();
+          e.nativeEvent?.stopImmediatePropagation?.();
+          if (e.target.checked) {
+            const next = [...sortedData];
+            selectedRef.current = next;
+            updateSelected(next);
+          } else {
+            selectedRef.current = [];
+            updateSelected([]);
+          }
         }}
-        className="custom-checkbox [&_.p-checkbox-box.p-highlight]:!bg-black [&_.p-checkbox-box.p-highlight]:!border-black cursor-pointer"
+        onClick={(e) => {
+          e.stopPropagation();
+          e.nativeEvent?.stopImmediatePropagation?.();
+        }}
+        className="peer absolute inset-0 w-5 h-5 cursor-pointer opacity-0 z-[1]"
+        aria-label="Select all rows"
       />
+      <span
+        className="pointer-events-none w-5 h-5 rounded-md border-2 border-gray-300 bg-white flex items-center justify-center
+          transition-colors duration-150 ease-out
+          peer-hover:border-gray-400 peer-focus:ring-2 peer-focus:ring-gray-400/40 peer-focus:ring-offset-1
+          peer-checked:bg-gray-800 peer-checked:border-gray-800 peer-checked:[&>.check-icon]:opacity-100
+          peer-indeterminate:bg-gray-600 peer-indeterminate:border-gray-600 peer-indeterminate:[&>.minus-icon]:opacity-100"
+        aria-hidden
+      >
+        {checkIcon}
+        {minusIcon}
+      </span>
+    </div>
+  );
+
+  const checkboxBody = (rowDataOrOptions) => {
+    // PrimeReact passes (rowData, options); normalize to row object
+    const rowData = rowDataOrOptions?.data ?? rowDataOrOptions;
+    const rowIdRaw = rowData?.[dataKey];
+    const rowIdStr = toId(rowIdRaw);
+    const isChecked = selectedIds.has(rowIdStr);
+    const handleChange = (e) => {
+      e.stopPropagation();
+      e.nativeEvent?.stopImmediatePropagation?.();
+      const current = selectedRef.current ?? [];
+      const copy = [...current];
+      const idx = copy.findIndex((row) => toId(row?.[dataKey]) === rowIdStr);
+      if (idx === -1) {
+        const toAdd = sortedData.find((r) => toId(r?.[dataKey]) === rowIdStr) ?? rowData;
+        copy.push(toAdd);
+      } else {
+        copy.splice(idx, 1);
+      }
+      selectedRef.current = copy;
+      updateSelected(copy);
+    };
+    const handleClick = (e) => {
+      e.stopPropagation();
+      e.nativeEvent?.stopImmediatePropagation?.();
+    };
+    const setRef = (el) => {
+      if (el) rowCheckboxRefsMap.current.set(rowIdStr, el);
+      else rowCheckboxRefsMap.current.delete(rowIdStr);
+    };
+    return (
+      <div key={`row-cb-${rowIdStr}`} onClick={handleClick} className="relative inline-flex items-center justify-center">
+        <input
+          ref={setRef}
+          type="checkbox"
+          defaultChecked={!!isChecked}
+          onChange={handleChange}
+          onClick={handleClick}
+          className="peer absolute inset-0 w-5 h-5 cursor-pointer opacity-0 z-[1]"
+          aria-label={`Select row ${rowIdStr || ""}`}
+        />
+        <span
+          className="pointer-events-none w-5 h-5 rounded-md border-2 border-gray-300 bg-white flex items-center justify-center
+            transition-colors duration-150 ease-out
+            peer-hover:border-gray-400 peer-focus:ring-2 peer-focus:ring-gray-400/40 peer-focus:ring-offset-1
+            peer-checked:bg-gray-800 peer-checked:border-gray-800 peer-checked:[&>svg]:opacity-100"
+          aria-hidden
+        >
+          {checkIcon}
+        </span>
+      </div>
     );
   };
 
   // ===== CSV Download (built-in) =====
   const handleDownloadCsv = () => {
     const rowsToExport =
-      selected && selected.length > 0 ? selected : filteredData;
+      selected && selected.length > 0 ? selected : sortedData;
 
     if (!rowsToExport?.length || !columns?.length) return;
 
@@ -342,18 +473,19 @@ export default function MyDataTable({
       {/* PrimeReact DataTable */}
       <div className="manageTable" ref={tableRef}>
         <DataTable
-          value={filteredData}
+          value={sortedData}
           paginator={pagination || !!serverPagination}
           lazy={!!serverPagination}
           selectionMode="multiple"
           selection={selected}
-          onSelectionChange={checkbox ? onSelectionChange : null}
+          onSelectionChange={handleSelectionChange}
           removableSort
           dataKey={dataKey}
           emptyMessage="No Data Found"
           onRowClick={onRowClick}
           sortField={sortField}
           sortOrder={sortOrder}
+          onSort={onSort}
           {...(serverPagination ? {
             first: (serverPagination.page - 1) * serverPagination.limit,
             rows: serverPagination.limit,

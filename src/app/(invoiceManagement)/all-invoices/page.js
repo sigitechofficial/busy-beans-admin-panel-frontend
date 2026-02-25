@@ -7,7 +7,7 @@ import MiniLoader from "@/components/ui/MiniLoader";
 import { FaEye } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
@@ -15,6 +15,8 @@ import { Dialog } from "primereact/dialog";
 import { PostAPI } from "@/utilities/PostAPI";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import { error_toaster } from "@/utilities/Toaster";
+import Select from "react-select";
+import selectStyles from "@/utilities/SelectStyle";
 
 export default function AllInvoices() {
   if (typeof window !== "undefined") {
@@ -31,7 +33,122 @@ export default function AllInvoices() {
   const [limit, setLimit] = useState(100);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Build API URL with pagination and search (same pattern as /orders)
+  // Date filter (same options as reports/sales-by-customer-summary)
+  const dateFilterOptions = [
+    { value: "allTime", label: "All Time" },
+    { value: "currentYear", label: "Current year" },
+    { value: "currentMonth", label: "Current Month" },
+    { value: "currentWeek", label: "Current Week" },
+    { value: "lastYear", label: "Last Year" },
+    { value: "last90Days", label: "Last 90 days" },
+    { value: "lastMonth", label: "Last Month" },
+    { value: "monthToDate", label: "Month to date" },
+    { value: "lastWeek", label: "Last Week" },
+    { value: "custom", label: "Custom" },
+  ];
+  const [selectedDateOption, setSelectedDateOption] = useState({ value: "allTime", label: "All Time" });
+  const [displayCustomDateFilters, setDisplayCustomDateFilters] = useState(false);
+  const [customDates, setCustomDates] = useState({ startDate: "", endDate: "" });
+  const [dateRange, setDateRange] = useState(() => {
+    const today = dayjs();
+    return {
+      startDate: "2025-01-01",
+      endDate: today.format("YYYY-MM-DD"),
+    };
+  });
+
+  const calculateDateRange = (filterValue) => {
+    const today = dayjs();
+    let startDate = "";
+    let endDate = "";
+    switch (filterValue) {
+      case "allTime":
+        startDate = "2025-01-01";
+        endDate = today.format("YYYY-MM-DD");
+        break;
+      case "currentYear":
+        startDate = today.startOf("year").format("YYYY-MM-DD");
+        endDate = today.endOf("year").format("YYYY-MM-DD");
+        break;
+      case "currentMonth":
+        startDate = today.startOf("month").format("YYYY-MM-DD");
+        endDate = today.endOf("month").format("YYYY-MM-DD");
+        break;
+      case "currentWeek":
+        startDate = today.startOf("week").format("YYYY-MM-DD");
+        endDate = today.endOf("week").format("YYYY-MM-DD");
+        break;
+      case "lastYear":
+        startDate = today.subtract(1, "year").startOf("year").format("YYYY-MM-DD");
+        endDate = today.subtract(1, "year").endOf("year").format("YYYY-MM-DD");
+        break;
+      case "last90Days":
+        startDate = today.subtract(90, "days").format("YYYY-MM-DD");
+        endDate = today.format("YYYY-MM-DD");
+        break;
+      case "lastMonth":
+        startDate = today.subtract(1, "month").startOf("month").format("YYYY-MM-DD");
+        endDate = today.subtract(1, "month").endOf("month").format("YYYY-MM-DD");
+        break;
+      case "monthToDate":
+        startDate = today.startOf("month").format("YYYY-MM-DD");
+        endDate = today.format("YYYY-MM-DD");
+        break;
+      case "lastWeek":
+        startDate = today.subtract(1, "week").startOf("week").format("YYYY-MM-DD");
+        endDate = today.subtract(1, "week").endOf("week").format("YYYY-MM-DD");
+        break;
+      case "custom":
+        break;
+      default:
+        startDate = "";
+        endDate = "";
+    }
+    return { startDate, endDate };
+  };
+
+  useEffect(() => {
+    if (selectedDateOption.value !== "custom" && !displayCustomDateFilters) {
+      const dates = calculateDateRange(selectedDateOption.value);
+      setDateRange(dates);
+    }
+  }, [selectedDateOption, displayCustomDateFilters]);
+
+  useEffect(() => {
+    if (displayCustomDateFilters && customDates.startDate && customDates.endDate) {
+      const start = dayjs(customDates.startDate);
+      const end = dayjs(customDates.endDate);
+      const today = dayjs();
+      if (start.isAfter(end)) {
+        error_toaster("Start date cannot be after end date.");
+        return;
+      }
+      if (start.isAfter(today) || end.isAfter(today)) {
+        error_toaster("Dates cannot be in the future.");
+        return;
+      }
+      if (start.isBefore(dayjs("2025-01-01"))) {
+        error_toaster("Start date cannot be before January 1, 2025.");
+        return;
+      }
+      setDateRange({ startDate: customDates.startDate, endDate: customDates.endDate });
+    }
+  }, [customDates.startDate, customDates.endDate, displayCustomDateFilters]);
+
+  const handleDateOptionChange = (val) => {
+    setSelectedDateOption(val || { value: "allTime", label: "All Time" });
+    if (val?.value === "custom") {
+      setDisplayCustomDateFilters(true);
+    } else {
+      setDisplayCustomDateFilters(false);
+      const dates = calculateDateRange(val?.value);
+      setDateRange(dates);
+      setCustomDates({ startDate: "", endDate: "" });
+    }
+    setPage(1);
+  };
+
+  // Build API URL with pagination, search and date range (gte/lte)
   const baseUrl =
     invoiceSource === "customer"
       ? userType === "admin"
@@ -45,6 +162,10 @@ export default function AllInvoices() {
   params.set("limit", limit.toString());
   if (searchQuery.trim()) {
     params.set("search", searchQuery.trim());
+  }
+  if (dateRange.startDate && dateRange.endDate) {
+    params.set("on[gte]", dateRange.startDate);
+    params.set("on[lte]", dateRange.endDate);
   }
   const apiUrl = `${urlBase}?${params.toString()}`;
 
@@ -258,6 +379,47 @@ export default function AllInvoices() {
           >
             Unpaid Invoices
           </button>
+        </div>
+
+        {/* Date filter - same options as reports/sales-by-customer-summary */}
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Date range:</label>
+            <div className="w-[200px]">
+              <Select
+                options={dateFilterOptions}
+                value={selectedDateOption}
+                onChange={handleDateOptionChange}
+                styles={selectStyles}
+                placeholder="Select"
+                isClearable={false}
+              />
+            </div>
+          </div>
+          {displayCustomDateFilters && (
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-2">
+                <label htmlFor="all-invoices-startDate" className="text-sm font-medium text-gray-700">Start</label>
+                <input
+                  type="date"
+                  id="all-invoices-startDate"
+                  value={customDates.startDate}
+                  onChange={(e) => setCustomDates((prev) => ({ ...prev, startDate: e.target.value }))}
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <label htmlFor="all-invoices-endDate" className="text-sm font-medium text-gray-700">End</label>
+                <input
+                  type="date"
+                  id="all-invoices-endDate"
+                  value={customDates.endDate}
+                  onChange={(e) => setCustomDates((prev) => ({ ...prev, endDate: e.target.value }))}
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">

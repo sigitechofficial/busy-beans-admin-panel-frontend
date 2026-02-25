@@ -409,7 +409,10 @@ export default function Employee() {
               //   setModal("edit");
               //   setCategoryID(cat?.id);
               // }}
-              onClick={() => handleEditClick(cat?.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEditClick(cat?.id);
+              }}
               data-testid={EMPLOYEES.rowEditBtn(cat?.id)}
             >
               <FaEdit size={24} />
@@ -417,7 +420,8 @@ export default function Employee() {
           {hasPermission("employees_delete") && (
             <button
               className="border border-red-400 rounded-md p-2 text-red-400"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setModal("delete");
                 setCategoryID(cat?.id);
               }}

@@ -24,20 +24,6 @@ function SalesByCustomerSummaryReport() {
   if (typeof window !== "undefined") {
     var userType = localStorage.getItem("userType");
   }
-  const [customDates, setCustomDates] = useState({
-    startDate: "",
-    endDate: "",
-  });
-  const [selectedOption, setSelectedOption] = useState({
-    value: "allTime",
-    label: "All Time",
-  });
-  const [displayCustomFilters, setDisplayCustomFilters] = useState(false);
-  const [sortOrder, setSortOrder] = useState(null); // null, 'asc', 'desc'
-  const [expandedRows, setExpandedRows] = useState(new Set());
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterModalVisible, setFilterModalVisible] = useState(false);
-
   // Initialize dateRange and filters from URL so first API request uses correct params (avoids wrong "all clients" fetch then refetch)
   const [dateRange, setDateRange] = useState(() => {
     const start = searchParams.get("startDate");
@@ -49,7 +35,81 @@ function SalesByCustomerSummaryReport() {
     };
   });
 
+  const [customDates, setCustomDates] = useState(() => {
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
+    if (!startDate || !endDate) return { startDate: "", endDate: "" };
+    const today = dayjs();
+    const mtdStart = today.startOf("month").format("YYYY-MM-DD");
+    const mtdEnd = today.format("YYYY-MM-DD");
+    const lastMonthStart = today
+      .subtract(1, "month")
+      .startOf("month")
+      .format("YYYY-MM-DD");
+    const lastMonthEnd = today
+      .subtract(1, "month")
+      .endOf("month")
+      .format("YYYY-MM-DD");
+    if (
+      (startDate === mtdStart && endDate === mtdEnd) ||
+      (startDate === lastMonthStart && endDate === lastMonthEnd)
+    ) {
+      return { startDate: "", endDate: "" };
+    }
+    return { startDate, endDate };
+  });
+  const [selectedOption, setSelectedOption] = useState(() => {
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
+    if (!startDate || !endDate)
+      return { value: "allTime", label: "All Time" };
+    const today = dayjs();
+    const mtdStart = today.startOf("month").format("YYYY-MM-DD");
+    const mtdEnd = today.format("YYYY-MM-DD");
+    const lastMonthStart = today
+      .subtract(1, "month")
+      .startOf("month")
+      .format("YYYY-MM-DD");
+    const lastMonthEnd = today
+      .subtract(1, "month")
+      .endOf("month")
+      .format("YYYY-MM-DD");
+    if (startDate === mtdStart && endDate === mtdEnd)
+      return { value: "monthToDate", label: "Month to date" };
+    if (startDate === lastMonthStart && endDate === lastMonthEnd)
+      return { value: "lastMonth", label: "Last Month" };
+    return { value: "custom", label: "Custom" };
+  });
+  const [displayCustomFilters, setDisplayCustomFilters] = useState(() => {
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
+    if (!startDate || !endDate) return false;
+    const today = dayjs();
+    const mtdStart = today.startOf("month").format("YYYY-MM-DD");
+    const mtdEnd = today.format("YYYY-MM-DD");
+    const lastMonthStart = today
+      .subtract(1, "month")
+      .startOf("month")
+      .format("YYYY-MM-DD");
+    const lastMonthEnd = today
+      .subtract(1, "month")
+      .endOf("month")
+      .format("YYYY-MM-DD");
+    if (
+      (startDate === mtdStart && endDate === mtdEnd) ||
+      (startDate === lastMonthStart && endDate === lastMonthEnd)
+    ) {
+      return false;
+    }
+    return true;
+  });
+  const [sortOrder, setSortOrder] = useState(null); // null, 'asc', 'desc'
+  const [expandedRows, setExpandedRows] = useState(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
+
   const [filters, setFilters] = useState(() => {
+    const employeeIdParam = searchParams.get("employeeId");
     const salesRepId = searchParams.get("salesRepId");
     const userTypeParam = searchParams.get("userType");
     const salesRepIdsParam = searchParams.get("salesRepIds");
@@ -64,6 +124,12 @@ function SalesByCustomerSummaryReport() {
         return { userType: null, salesRepIds: null };
       }
     }
+    if (employeeIdParam) {
+      const salesRepIds = employeeIdParam.includes(",")
+        ? employeeIdParam.split(",").map((id) => Number(id.trim()))
+        : [Number(employeeIdParam)];
+      return { userType: "salesRep", salesRepIds };
+    }
     if (salesRepId) {
       const salesRepIds = salesRepId.includes(",")
         ? salesRepId.split(",").map((id) => Number(id.trim()))
@@ -76,39 +142,16 @@ function SalesByCustomerSummaryReport() {
     return { userType: null, salesRepIds: null };
   });
 
-  // Sync selected option and custom dates UI from URL (runs once on mount when URL has params)
-  useEffect(() => {
-    const startDate = searchParams.get("startDate");
-    const endDate = searchParams.get("endDate");
-    if (!startDate || !endDate) return;
-
-    const today = dayjs();
-    const mtdStart = today.startOf("month").format("YYYY-MM-DD");
-    const mtdEnd = today.format("YYYY-MM-DD");
-    const lastMonthStart = today
-      .subtract(1, "month")
-      .startOf("month")
-      .format("YYYY-MM-DD");
-    const lastMonthEnd = today
-      .subtract(1, "month")
-      .endOf("month")
-      .format("YYYY-MM-DD");
-
-    if (startDate === mtdStart && endDate === mtdEnd) {
-      setSelectedOption({ value: "monthToDate", label: "Month to date" });
-    } else if (startDate === lastMonthStart && endDate === lastMonthEnd) {
-      setSelectedOption({ value: "lastMonth", label: "Last Month" });
-    } else {
-      setSelectedOption({ value: "custom", label: "Custom" });
-      setDisplayCustomFilters(true);
-      setCustomDates({ startDate, endDate });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   // Build API URL with filters
   const buildApiUrl = () => {
     let url = `api/v1/admin/admin-reports/customer-sales-report?startDate=${dateRange?.startDate}&endDate=${dateRange?.endDate}`;
+
+    // When page was opened with employeeId in URL (e.g. from dashboard MTD/YTD employee click), send employeeId only
+    const employeeIdFromUrl = searchParams.get("employeeId");
+    if (employeeIdFromUrl) {
+      url += `&employeeId=${employeeIdFromUrl}`;
+      return url;
+    }
 
     if (filters.userType === "admin") {
       url += "&userType=admin";
@@ -208,13 +251,19 @@ function SalesByCustomerSummaryReport() {
   };
 
   useEffect(() => {
+    // When page was opened with date params in URL, do not overwrite dateRange (avoids extra API hit with wrong dates)
+    if (searchParams.get("startDate") && searchParams.get("endDate")) return;
     if (selectedOption.value !== "custom" && !displayCustomFilters) {
       const dates = calculateDateRange(selectedOption.value);
       setDateRange(dates);
     }
-  }, [selectedOption, displayCustomFilters]);
+  }, [selectedOption, displayCustomFilters, searchParams]);
 
   useEffect(() => {
+    // When page was opened with date params, skip so we don't overwrite dateRange on mount (avoids extra API hit)
+    const urlStart = searchParams.get("startDate");
+    const urlEnd = searchParams.get("endDate");
+    if (urlStart && urlEnd && customDates.startDate === urlStart && customDates.endDate === urlEnd) return;
     if (displayCustomFilters && customDates.startDate && customDates.endDate) {
       const start = dayjs(customDates.startDate);
       const end = dayjs(customDates.endDate);
@@ -237,7 +286,7 @@ function SalesByCustomerSummaryReport() {
         endDate: customDates.endDate,
       });
     }
-  }, [customDates.startDate, customDates.endDate, displayCustomFilters]);
+  }, [customDates.startDate, customDates.endDate, displayCustomFilters, searchParams]);
 
   const handleChange = (val) => {
     if (val?.value === "custom") {
@@ -368,6 +417,55 @@ function SalesByCustomerSummaryReport() {
   const { rows, total } = processData();
   const { toggle, setToggle } = useDataContext();
 
+  const escapeCsvCell = (val) => {
+    const s = val == null ? "" : String(val);
+    if (/["\n,]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+    return s;
+  };
+
+  const handleDownloadCSV = () => {
+    const dateRangeLabel =
+      dateRange?.startDate && dateRange?.endDate
+        ? `${dayjs(dateRange.startDate).format("MMM DD, YYYY")} - ${dayjs(dateRange.endDate).format("MMM DD, YYYY")}`
+        : "";
+    const filterLabel = filters?.userType
+      ? filters.userType === "admin"
+        ? "Admin"
+        : searchParams.get("employeeId")
+          ? "Employee"
+          : "Local Partner"
+      : "None";
+
+    const lines = [];
+    lines.push(["Date Range", dateRangeLabel].map(escapeCsvCell).join(","));
+    lines.push(["Filter", filterLabel].map(escapeCsvCell).join(","));
+    lines.push([]); // blank row before data
+    const headers = ["Company Name", "Total"];
+    lines.push(headers.map(escapeCsvCell).join(","));
+    rows.forEach((row) => {
+      lines.push(
+        [escapeCsvCell(row.customer), escapeCsvCell(row.total ?? "")].join(",")
+      );
+    });
+    // Add TOTAL row to match the table footer
+    if (rows.length > 0) {
+      lines.push(
+        [
+          escapeCsvCell("TOTAL"),
+          escapeCsvCell(formatUSD(total ?? 0)),
+        ].join(",")
+      );
+    }
+    const csv = lines.join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `sales-by-customer-summary-${dayjs().format("YYYY-MM-DD")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   // Format date range for display
   const formattedDateRange =
     dateRange.startDate && dateRange.endDate
@@ -496,7 +594,11 @@ function SalesByCustomerSummaryReport() {
               Filter:
             </span>
             <span className="text-sm font-inter font-semibold text-gray-900">
-              {filters.userType === "admin" ? "Admin" : "Local Partner"}
+              {filters.userType === "admin"
+                ? "Admin"
+                : searchParams.get("employeeId")
+                  ? "Employee"
+                  : "Local Partner"}
               {filters.userType === "salesRep" &&
                 filters.salesRepIds === null && <> - All</>}
               {filters.userType === "salesRep" &&
@@ -541,15 +643,24 @@ function SalesByCustomerSummaryReport() {
                 className="w-full h-[42px] pl-10 pr-4 rounded-md border border-gray-300 outline-none focus:border-theme focus:ring-1 focus:ring-theme font-workSans font-medium text-labelColor"
               />
             </div>
-            {userType === "admin" && (
+            <div className="flex items-center gap-2">
               <button
-                onClick={() => setFilterModalVisible(true)}
-                className="flex items-center gap-2 px-4 py-2 h-[42px] rounded-md border border-theme text-theme bg-white hover:bg-theme hover:text-white transition-colors font-workSans font-medium"
+                onClick={handleDownloadCSV}
+                disabled={rows.length === 0}
+                className="flex items-center gap-2 px-4 py-2 h-[42px] rounded-md border border-theme text-theme bg-white hover:bg-theme hover:text-white transition-colors font-workSans font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <MdFilterAlt size={18} />
-                Filters
+                Download CSV
               </button>
-            )}
+              {userType === "admin" && (
+                <button
+                  onClick={() => setFilterModalVisible(true)}
+                  className="flex items-center gap-2 px-4 py-2 h-[42px] rounded-md border border-theme text-theme bg-white hover:bg-theme hover:text-white transition-colors font-workSans font-medium"
+                >
+                  <MdFilterAlt size={18} />
+                  Filters
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Table */}

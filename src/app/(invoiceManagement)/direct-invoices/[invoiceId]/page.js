@@ -717,7 +717,7 @@ export default function OrderDetail() {
               }}
             /> */}
 
-              <div className="w-full bg-blue-50 flex justify-between bg-blue-50 rounded-md w-full px-4 lg:px-6 py-6 ">
+              <div className="w-full bg-blue-50 flex justify-between rounded-md px-4 lg:px-6 py-6 ">
                 <div
                   className="flex gap-x-2"
                   data-testid={ORDER_DETAIL.infoBanner}

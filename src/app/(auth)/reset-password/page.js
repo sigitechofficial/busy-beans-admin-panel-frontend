@@ -9,6 +9,8 @@ import { PostAPI } from "@/utilities/PostAPI";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import MiniLoader from "@/components/ui/MiniLoader";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import { RETURN_URL } from "@/utilities/URL";
+import api from "@/utilities/StatusErrorHandler";
 
 export default function ResetPassword() {
   if (typeof window !== "undefined") {
@@ -54,41 +56,94 @@ export default function ResetPassword() {
           {
             id: userID,
             password: passwords?.newPassword,
+            tokenId: localStorage.getItem("devToken"),
           }
         );
         if (res?.data?.status === "success") {
           setModal(true);
           setLoader(false);
-          localStorage.setItem("accessToken", res?.data?.data?.token);
+          const user = res?.data?.data?.user || {};
+          const loginType =
+            userType === "Local Partner"
+              ? "sales-rep"
+              : userType === "Supplier"
+                ? "supplier"
+                : "admin";
+
+          localStorage.setItem("accessToken", res?.data?.data?.token || "");
           localStorage.setItem("loginStatus", true);
           localStorage.setItem(
             "userName",
-            userType === "Local Partner"
-              ? res?.data?.data?.user?.srName
-              : userType === "Supplier"
-              ? res?.data?.data?.user?.supplierName
-              : res?.data?.data?.user?.name
+            loginType === "admin"
+              ? user?.name
+              : loginType === "supplier"
+                ? user?.supplierName
+                : loginType === "sales-rep"
+                  ? user?.srName || user?.name
+                  : user?.name
           );
-          localStorage.setItem("email", res?.data?.data?.user?.email);
-          localStorage.setItem("userID", res?.data?.data?.user?.id);
+          localStorage.setItem("email", user?.email || "");
+          localStorage.setItem("partnerType", user?.partnerType || "");
+          localStorage.setItem("userID", user?.id || "");
           localStorage.setItem(
             "userType",
-            userType === "Local Partner"
-              ? "salesRepresentative"
-              : userType === "Supplier"
-              ? "supplier"
-              : "admin"
+            loginType === "sales-rep" ? "salesRepresentative" : loginType
           );
-          if (userType === "Local Partner") {
+
+          if (Array.isArray(user?.permissions) && user?.permissions.length > 0) {
             localStorage.setItem(
-              "connectAccountId",
-              res?.data?.data?.user?.connectAccountId
+              "permissions",
+              JSON.stringify(user.permissions.map((p) => p.key))
             );
-            localStorage.setItem(
-              "isAccountConnected",
-              res?.data?.data?.user?.isAccountConnected
-            );
-            // handleConnectAccountID(res?.data?.data?.user?.id);
+          } else {
+            localStorage.setItem("permissions", "all");
+          }
+          localStorage.setItem("employeeId", user?.id || "");
+
+          if (user?.employeeOf) {
+            localStorage.setItem("isEmployee", "true");
+            localStorage.setItem("employeeOf", user.employeeOf);
+            try {
+              const employeeId = user?.id;
+              const stripeResponse = await api.post(
+                `api/v1/admin/employee/${employeeId}/stripe-connect-account`,
+                { returnUrl: RETURN_URL },
+                { suppressSuccessToast: true }
+              );
+              if (stripeResponse?.data?.status === "success") {
+                const stripeData = stripeResponse?.data?.data;
+                if (stripeData?.accountId) {
+                  localStorage.setItem("employeeStripeAccountId", stripeData.accountId);
+                }
+                if (stripeData?.accountState !== undefined) {
+                  localStorage.setItem(
+                    "employeeStripeAccountState",
+                    stripeData.accountState.toString()
+                  );
+                }
+                if (stripeData?.accountState === true && stripeData?.account) {
+                  localStorage.setItem(
+                    "employeeStripeAccount",
+                    JSON.stringify(stripeData.account)
+                  );
+                } else if (
+                  stripeData?.accountState === false &&
+                  stripeData?.onboardingLink
+                ) {
+                  localStorage.setItem(
+                    "employeeStripeOnboardingLink",
+                    stripeData.onboardingLink
+                  );
+                }
+              }
+            } catch (error) {
+              console.error("Error fetching Stripe Connect account:", error);
+            }
+          }
+
+          if (loginType === "sales-rep") {
+            localStorage.setItem("connectAccountId", user?.connectAccountId || "");
+            localStorage.setItem("isAccountConnected", user?.isAccountConnected || "");
           }
         } else {
           throw new Error(
@@ -120,7 +175,7 @@ export default function ResetPassword() {
           {loader ? (
             <MiniLoader />
           ) : (
-            <div className="font-satoshi space-y-3 sm:space-y-4">
+            <div className="font-satoshi space-y-3 sm:space-y-4 pb-10">
               <form
                 onSubmit={handleSubmit}
                 className="space-y-4 sm:space-y-6 flex flex-col justify-between"
@@ -218,7 +273,7 @@ export default function ResetPassword() {
                 <div>
                   <button
                     type="submit"
-                    className="font-medium rounded-xl bg-theme text-white w-full py-2.5 sm:py-3 text-sm sm:text-base min-h-[44px] touch-manipulation"
+                    className="font-medium rounded-sm bg-theme text-white w-full py-2.5 sm:py-3 text-sm sm:text-base min-h-[44px] touch-manipulation"
                   >
                     Done
                   </button>

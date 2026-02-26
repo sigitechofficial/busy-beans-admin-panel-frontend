@@ -23,9 +23,9 @@ export default function IndividualInvoices() {
   const apiUrl =
     invoiceSource === "admin"
       ? userType === "salesRepresentative"
-        ? `api/v1/admin/orders?salesRepId=${userID}&type=direct-invoice`
-        : `api/v1/admin/orders?type=direct-invoice`
-      : `api/v1/admin/partner-order/orders-list?type=direct-invoice`;
+        ? `api/v1/admin/orders?salesRepId=${userID}&type=direct-invoice&sort=invoiceDate`
+        : `api/v1/admin/orders?type=direct-invoice&sort=invoiceDate`
+      : `api/v1/admin/partner-order/orders-list?type=direct-invoice&sort=invoiceDate`;
 
   const { data, isLoading } = GetAPI(apiUrl);
 

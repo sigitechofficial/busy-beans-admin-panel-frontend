@@ -83,7 +83,7 @@ export default function ForgotPassword() {
           {loader ? (
             <MiniLoader />
           ) : (
-            <div className="font-satoshi space-y-3 sm:space-y-4">
+            <div className="font-satoshi space-y-3 sm:space-y-4 pb-10">
               <form
                 onSubmit={handleSubmit}
                 className="space-y-4 sm:space-y-6 flex flex-col justify-between"

@@ -2065,7 +2065,8 @@ export default function Leftbar(props) {
               data-testid={LEFTBAR.orderManagementSection}
               active={
                 pathname === "/sales-representative/create-order" ||
-                pathname.includes("/orders/delete-invoice")
+                pathname.includes("/orders/delete-invoice") ||
+                pathname.includes("/sales-representative/delete-invoice")
               }
               status={
                 active?.orderManagement?.tab === "orderManagement" &&
@@ -2096,7 +2097,7 @@ export default function Leftbar(props) {
                   )}
                   <ListItems
                     title="Delete Invoice"
-                    to="/orders/delete-invoice"
+                    to="/sales-representative/delete-invoice"
                     data-testid={LEFTBAR.listItem(
                       "orderManagement",
                       "Delete Invoice"

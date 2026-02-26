@@ -88,6 +88,7 @@ export default function VerifyEmail() {
         {
           id: userID,
           otp: `${inputRefs.current[0].value}${inputRefs.current[1].value}${inputRefs.current[2].value}${inputRefs.current[3].value}`,
+          tokenId: localStorage.getItem("devToken"),
         }
       );
       console.log("🚀 ~ handleVerifyOTP ~ res:", res);

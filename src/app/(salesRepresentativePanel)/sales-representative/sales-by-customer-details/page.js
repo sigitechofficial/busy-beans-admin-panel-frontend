@@ -70,7 +70,11 @@ function SalesByCustomerDetailsReport() {
 
   // Build customer list API endpoint
   const getCustomerListEndpoint = (page, limit, search = "") => {
-    const base = "api/v1/admin/customer-management/customer-list/all";
+    const salesRepId =
+      typeof window !== "undefined" ? localStorage.getItem("userID") : "";
+    const base = salesRepId
+      ? `api/v1/admin/customer-management/customer-list/sale-rep-id/${salesRepId}`
+      : "api/v1/admin/customer-management/customer-list/all";
     const params = new URLSearchParams();
     params.set("page", page.toString());
     params.set("limit", limit.toString());

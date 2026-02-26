@@ -1002,6 +1002,28 @@ export default function OrderDetail() {
                         )}
                       </p>
                     )}
+                  <p className="font-semibold">
+                    Payment Link First Opened:{" "}
+                    {data?.data?.order?.paymentLinkFirstOpenedAt
+                      ? formatDateTimeISO(
+                          data?.data?.order?.paymentLinkFirstOpenedAt,
+                          "datetime",
+                        )
+                      : "—"}
+                  </p>
+                  <p className="font-semibold">
+                    Payment Link Last Opened:{" "}
+                    {data?.data?.order?.paymentLinkLastOpenedAt
+                      ? formatDateTimeISO(
+                          data?.data?.order?.paymentLinkLastOpenedAt,
+                          "datetime",
+                        )
+                      : "—"}
+                  </p>
+                  <p className="font-semibold">
+                    Payment Link Open Count:{" "}
+                    {data?.data?.order?.paymentLinkOpenCount ?? 0}
+                  </p>
                 </div>
               </div>
 

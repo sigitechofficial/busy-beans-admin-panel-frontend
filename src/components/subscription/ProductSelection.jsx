@@ -13,12 +13,21 @@ export default function ProductSelection({
   selectedPartnerId = null,
 }) {
   const [searchTerm, setSearchTerm] = useState("");
+  const userType =
+    typeof window !== "undefined" ? localStorage.getItem("userType") : "";
+  const userID =
+    typeof window !== "undefined"
+      ? localStorage.getItem("userID") || localStorage.getItem("userId")
+      : "";
+  const isSalesRepresentativeUser = userType === "salesRepresentative";
 
   // Admin customer → admin products; partner customer → that partner's inventory
   const productUrl =
-    selectedPartnerId != null && selectedPartnerId !== ""
-      ? `api/v1/admin/products/sales-rep?salesRepId=${selectedPartnerId}&page=1&limit=500`
-      : "api/v1/admin/product?status=1";
+    isSalesRepresentativeUser
+      ? `api/v1/admin/products/sales-rep?salesRepId=${userID}&page=1&limit=500`
+      : selectedPartnerId != null && selectedPartnerId !== ""
+        ? `api/v1/admin/products/sales-rep?salesRepId=${selectedPartnerId}&page=1&limit=500`
+        : "api/v1/admin/product?status=1";
 
   const { data, isLoading } = GetAPI(productUrl);
 
@@ -66,7 +75,8 @@ export default function ProductSelection({
   };
 
   const displayPrice = (product) =>
-    selectedPartnerId != null && (product?.customPrice != null || product?.customPrice === 0)
+    (isSalesRepresentativeUser || selectedPartnerId != null) &&
+    (product?.customPrice != null || product?.customPrice === 0)
       ? product.customPrice
       : product?.price;
 

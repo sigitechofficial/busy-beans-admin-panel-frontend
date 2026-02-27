@@ -24,7 +24,12 @@ const STEPS = {
   SUCCESS: 6,
 };
 
-export default function SubscriptionModal({ visible, onHide, machine }) {
+export default function SubscriptionModal({
+  visible,
+  onHide,
+  machine,
+  isSalesRepresentativeUser = false,
+}) {
   const router = useRouter();
   const [step, setStep] = useState(STEPS.USER_SELECT);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -286,6 +291,7 @@ export default function SubscriptionModal({ visible, onHide, machine }) {
               }}
               onAddNewUser={handleAddNewUser}
               selectedPartnerId={selectedPartnerId}
+              isSalesRepresentativeUser={isSalesRepresentativeUser}
               onPartnerChange={(partnerId) => {
                 setSelectedPartnerId(partnerId ?? null);
                 setSelectedUser(null);

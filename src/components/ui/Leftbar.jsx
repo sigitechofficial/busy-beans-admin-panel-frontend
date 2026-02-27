@@ -2286,33 +2286,38 @@ export default function Leftbar(props) {
             />
           )}
 
-          {/* {hasPermission("subscription_view") && (
+          {hasPermission("subscription_view") && partnerType === "direct-partner" && (
             <ListHead
               title="Machine Subscriptions"
               active={pathname === "/subscription" || pathname === "/purchased"}
               data-testid={LEFTBAR.subscriptionManagementSection}
               Icon={MdCoffeeMaker}
-              Angle={
-                active?.subscription?.tab === "subscription" &&
-                active?.subscription?.status
-                  ? FaAngleUp
-                  : FaAngleDown
+              status={
+                active?.machineSubscriptions?.tab === "machineSubscriptions" &&
+                active?.machineSubscriptions?.status
+                  ? true
+                  : false
               }
+              Angle={FaAngleRight}
               onClick={() =>
-                handleActive("subscription", active?.subscription?.status)
+                handleActive(
+                  "machineSubscriptions",
+                  active?.machineSubscriptions?.status
+                )
               }
             />
-          )} */}
+          )}
 
-          {/* {active?.subscription?.tab === "subscription" &&
-            active?.subscription?.status && (
+          {partnerType === "direct-partner" &&
+            active?.machineSubscriptions?.tab === "machineSubscriptions" &&
+            active?.machineSubscriptions?.status && (
               <>
                 <div className="m-2 relative space-y-1">
                   <ListItems
                     title="Subscription"
                     to="/subscription"
                     data-testid={LEFTBAR.listItem(
-                      "subscription",
+                      "machineSubscriptions",
                       "Subscription"
                     )}
                   />
@@ -2324,11 +2329,10 @@ export default function Leftbar(props) {
                       "Purchased"
                     )}
                   />
-
                 </div>
                 <hr className="w-full" />
               </>
-            )} */}
+            )}
 
           {hasPermission("invoice_view") && (
             <ListHead

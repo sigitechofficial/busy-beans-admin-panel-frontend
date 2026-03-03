@@ -23,6 +23,11 @@ import ErrorHandler from "@/utilities/ErrorHandler";
 import { hasPermission } from "@/utilities/Permission";
 import Switch from "react-switch";
 import { MdInsertComment, MdOutlineConfirmationNumber } from "react-icons/md";
+import {
+  preventInvalidNumberInputKeys,
+  isValidTwoDecimalInput,
+  formatToFixedTwo,
+} from "@/utilities/numberInput";
 
 export default function CreateInvoice() {
   const router = useRouter();
@@ -427,9 +432,16 @@ export default function CreateInvoice() {
         if (field === "qty") {
           return { ...item, qty: normalizeQty(value) };
         }
+        if (field === "unit") {
+          if (!isValidTwoDecimalInput(value)) return item;
+          return {
+            ...item,
+            unit: value === "" ? 0 : parseFloat(value) || 0,
+          };
+        }
         return {
           ...item,
-          [field]: field === "unit" ? parseFloat(value) || 0 : value,
+          [field]: value,
         };
       })
     );
@@ -471,9 +483,16 @@ export default function CreateInvoice() {
         if (field === "qty") {
           return { ...item, qty: normalizeQty(value) };
         }
+        if (field === "unit") {
+          if (!isValidTwoDecimalInput(value)) return item;
+          return {
+            ...item,
+            unit: value === "" ? 0 : parseFloat(value) || 0,
+          };
+        }
         return {
           ...item,
-          [field]: field === "unit" ? parseFloat(value) || 0 : value,
+          [field]: value,
         };
       })
     );
@@ -1953,6 +1972,7 @@ export default function CreateInvoice() {
                       min={1}
                       className="w-16 border border-gray-200 rounded px-1 py-1 text-center"
                       value={item.qty ?? 1}
+                      onKeyDown={preventInvalidNumberInputKeys}
                       onWheel={(e) => e.currentTarget.blur()}
                       onChange={(e) =>
                         handleItemQtyChange(itemIdx, e.target.value)
@@ -2020,6 +2040,7 @@ export default function CreateInvoice() {
                       min={1}
                       className="w-16 border border-gray-200 rounded px-1 py-1 text-center"
                       value={item.qty ?? 1}
+                      onKeyDown={preventInvalidNumberInputKeys}
                       onChange={(e) =>
                         handleExtraInputChange(idx, "qty", e.target.value)
                       }
@@ -2035,6 +2056,7 @@ export default function CreateInvoice() {
                           step="0.01"
                           className="w-20 border border-gray-200 rounded px-1 py-1 text-right"
                           value={item.unit ?? 0}
+                          onKeyDown={preventInvalidNumberInputKeys}
                         />
                       </td>
                     )}
@@ -2084,6 +2106,7 @@ export default function CreateInvoice() {
                       min={1}
                       className="w-16 border rounded px-1 py-1 text-center"
                       value={item.qty}
+                      onKeyDown={preventInvalidNumberInputKeys}
                       onWheel={(e) => e.currentTarget.blur()}
                       onChange={(e) =>
                         handleChargeInputChange(idx, "qty", e.target.value)
@@ -2097,9 +2120,17 @@ export default function CreateInvoice() {
                       step="0.01"
                       className="w-20 border rounded px-1 py-1 text-right"
                       value={item.unit}
+                      onKeyDown={preventInvalidNumberInputKeys}
                       onWheel={(e) => e.currentTarget.blur()}
                       onChange={(e) =>
                         handleChargeInputChange(idx, "unit", e.target.value)
+                      }
+                      onBlur={(e) =>
+                        handleChargeInputChange(
+                          idx,
+                          "unit",
+                          formatToFixedTwo(e.target.value)
+                        )
                       }
                     />
                   </td>
@@ -2168,10 +2199,11 @@ export default function CreateInvoice() {
                         value={invoiceFields?.shippingCharges ?? ""}
                         type="text"
                         inputMode="decimal"
+                        onKeyDown={preventInvalidNumberInputKeys}
                         disabled={isPartnerLoggedInCustomerOrder && isDirectPartnerLoggedIn}
                         onChange={(e) => {
                           const value = e.target.value;
-                          if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                          if (isValidTwoDecimalInput(value)) {
                             setInvoiceFields((prev) => ({
                               ...prev,
                               shippingCharges: value,
@@ -2180,17 +2212,10 @@ export default function CreateInvoice() {
                         }}
                         onBlur={(e) => {
                           const value = e.target.value.trim();
-                          if (value === "") {
-                            setInvoiceFields((prev) => ({ ...prev, shippingCharges: "" }));
-                            return;
-                          }
-                          const num = parseFloat(value);
-                          if (!Number.isNaN(num) && num >= 0) {
-                            setInvoiceFields((prev) => ({
-                              ...prev,
-                              shippingCharges: num.toFixed(2),
-                            }));
-                          }
+                          setInvoiceFields((prev) => ({
+                            ...prev,
+                            shippingCharges: formatToFixedTwo(value),
+                          }));
                         }}
                       />
                     ) : shippingCharge ? (

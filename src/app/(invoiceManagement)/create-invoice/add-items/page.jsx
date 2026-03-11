@@ -19,6 +19,8 @@ import {
   preventInvalidNumberInputKeys,
   isValidTwoDecimalInput,
   formatToFixedTwo,
+  normalizeQtyWithMaxDigits,
+  hasExceededMaxIntegerDigits,
 } from "@/utilities/numberInput";
 
 export default function AddItems() {
@@ -146,18 +148,34 @@ export default function AddItems() {
   };
 
   const normalizeQty = (rawValue) => {
-    let clean = String(rawValue).replace(/\D/g, "");
-    if (clean === "") return "";
-    if (clean === "0") return 1;
-    return parseInt(clean, 10);
+    return normalizeQtyWithMaxDigits(rawValue);
   };
+
+  const wouldExceedInvoiceDerivedLimits = (nextGrandTotal, nextTotalWeight) =>
+    hasExceededMaxIntegerDigits(nextGrandTotal) ||
+    hasExceededMaxIntegerDigits(nextTotalWeight);
 
   // Item qty handler
   const handleItemQtyChange = (itemIdx, value) => {
     setItems((prev) =>
-      prev.map((item, idx) =>
-        idx === itemIdx ? { ...item, qty: normalizeQty(value) } : item
-      )
+      prev.map((item, idx) => {
+        if (idx !== itemIdx) return item;
+        const nextQty = normalizeQty(value);
+        const oldQty = Number(item.qty) || 0;
+        const safeNextQty = Number(nextQty) || 0;
+        const unitPrice = Number(item.unit ?? item.price) || 0;
+        const itemWeight = Number(item.weight) || 0;
+        const nextGrandTotal = Number(total) - oldQty * unitPrice + safeNextQty * unitPrice;
+        const nextTotalWeight =
+          Number(calculatedTotalWeight) - oldQty * itemWeight + safeNextQty * itemWeight;
+
+        if (wouldExceedInvoiceDerivedLimits(nextGrandTotal, nextTotalWeight)) {
+          info_toaster("Values cannot make total weight or grand total exceed 10 digits.");
+          return item;
+        }
+
+        return { ...item, qty: nextQty };
+      })
     );
   };
 
@@ -213,13 +231,37 @@ export default function AddItems() {
       prev.map((item, idx) => {
         if (idx !== rowIdx) return item;
         if (field === "qty") {
-          return { ...item, qty: normalizeQty(value) };
+          const nextQty = normalizeQty(value);
+          const oldQty = Number(item.qty) || 0;
+          const safeNextQty = Number(nextQty) || 0;
+          const unitPrice = Number(item.unit) || 0;
+          const itemWeight = Number(item.weight) || 0;
+          const nextGrandTotal = Number(total) - oldQty * unitPrice + safeNextQty * unitPrice;
+          const nextTotalWeight =
+            Number(calculatedTotalWeight) - oldQty * itemWeight + safeNextQty * itemWeight;
+
+          if (wouldExceedInvoiceDerivedLimits(nextGrandTotal, nextTotalWeight)) {
+            info_toaster("Values cannot make total weight or grand total exceed 10 digits.");
+            return item;
+          }
+
+          return { ...item, qty: nextQty };
         }
         if (field === "unit") {
           if (!isValidTwoDecimalInput(value)) return item;
+          const nextUnit = value === "" ? 0 : parseFloat(value) || 0;
+          const qty = Number(item.qty) || 0;
+          const oldUnit = Number(item.unit) || 0;
+          const nextGrandTotal = Number(total) - qty * oldUnit + qty * nextUnit;
+
+          if (wouldExceedInvoiceDerivedLimits(nextGrandTotal, calculatedTotalWeight)) {
+            info_toaster("Values cannot make total weight or grand total exceed 10 digits.");
+            return item;
+          }
+
           return {
             ...item,
-            unit: value === "" ? 0 : parseFloat(value) || 0,
+            unit: nextUnit,
           };
         }
         return {
@@ -264,13 +306,34 @@ export default function AddItems() {
       prev.map((item, idx) => {
         if (idx !== rowIdx) return item;
         if (field === "qty") {
-          return { ...item, qty: normalizeQty(value) };
+          const nextQty = normalizeQty(value);
+          const oldQty = Number(item.qty) || 0;
+          const safeNextQty = Number(nextQty) || 0;
+          const unitPrice = Number(item.unit) || 0;
+          const nextGrandTotal = Number(total) - oldQty * unitPrice + safeNextQty * unitPrice;
+
+          if (wouldExceedInvoiceDerivedLimits(nextGrandTotal, calculatedTotalWeight)) {
+            info_toaster("Values cannot make total weight or grand total exceed 10 digits.");
+            return item;
+          }
+
+          return { ...item, qty: nextQty };
         }
         if (field === "unit") {
           if (!isValidTwoDecimalInput(value)) return item;
+          const nextUnit = value === "" ? 0 : parseFloat(value) || 0;
+          const qty = Number(item.qty) || 0;
+          const oldUnit = Number(item.unit) || 0;
+          const nextGrandTotal = Number(total) - qty * oldUnit + qty * nextUnit;
+
+          if (wouldExceedInvoiceDerivedLimits(nextGrandTotal, calculatedTotalWeight)) {
+            info_toaster("Values cannot make total weight or grand total exceed 10 digits.");
+            return item;
+          }
+
           return {
             ...item,
-            unit: value === "" ? 0 : parseFloat(value) || 0,
+            unit: nextUnit,
           };
         }
         return {
@@ -398,6 +461,16 @@ export default function AddItems() {
     })) || [];
 
   const handleGenerateInvoice = async () => {
+    if (hasExceededMaxIntegerDigits(calculatedTotalWeight)) {
+      info_toaster("Total weight cannot exceed 10 digits.");
+      return;
+    }
+
+    if (hasExceededMaxIntegerDigits(total)) {
+      info_toaster("Grand total cannot exceed 10 digits.");
+      return;
+    }
+
     if (Number(total) <= 0) {
       info_toaster("Invoice total must be greater than 0.");
       return;

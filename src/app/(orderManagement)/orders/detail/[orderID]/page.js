@@ -112,6 +112,15 @@ export default function OrderDetail() {
     isLoading: emailLogLoading,
   } = GetAPI(emailLogApiUrl);
 
+  const invoiceTrackingApiUrl = showInvoiceTrackingModal
+    ? `api/v1/admin/order-management/invoice-tracking/customer-order/${orderID}`
+    : "";
+  const {
+    data: invoiceTrackingData,
+    isLoading: invoiceTrackingLoading,
+    reFetch: reFetchInvoiceTracking,
+  } = GetAPI(invoiceTrackingApiUrl);
+
   const emailLogs = emailLogData?.data?.emailLogs ?? [];
 
   const handleSupplierAcknowledgement = async () => {
@@ -554,17 +563,23 @@ export default function OrderDetail() {
       setRetryCooldownEndsAt(Object.keys(next).length ? next : {});
       if (lastTimerEnded) {
         reFetchEmailLogs();
+        if (showInvoiceTrackingModal) {
+          reFetchInvoiceTracking();
+        }
       }
       const sectionEnd = sectionRefreshCooldownEndsAtRef.current;
       if (sectionEnd != null && now >= sectionEnd) {
         sectionRefreshCooldownEndsAtRef.current = null;
         setSectionRefreshCooldownEndsAt(null);
         reFetchEmailLogs();
+        if (showInvoiceTrackingModal) {
+          reFetchInvoiceTracking();
+        }
       }
       setCooldownTick((t) => t + 1);
     }, 1000);
     return () => clearInterval(interval);
-  }, [reFetchEmailLogs]);
+  }, [reFetchEmailLogs, reFetchInvoiceTracking, showInvoiceTrackingModal]);
 
   const shortId = (val) =>
     val && val.length > 12
@@ -1757,70 +1772,89 @@ export default function OrderDetail() {
           dismissableMask={true}
         >
           <div className="py-1">
-            {[
-              {
-                label: "Invoice Created",
-                at: data?.data?.order?.invoiceDate,
-                done: Boolean(data?.data?.order?.invoiceDate),
-                dateOnly: true,
-              },
-              {
-                label: `Sent ${data?.data?.order?.invoiceEmailSentCount ?? 0} times`,
-                at:
-                  data?.data?.order?.invoiceReminder ||
-                  data?.data?.order?.invoiceDate,
-                done: Boolean(data?.data?.order?.invoiceEmailSentCount),
-                dateOnly: true,
-              },
-              {
-                label: "First Open",
-                at: data?.data?.order?.paymentLinkFirstOpenedAt,
-                done: Boolean(data?.data?.order?.paymentLinkFirstOpenedAt),
-              },
-              {
-                label: "Recently Opened",
-                at: data?.data?.order?.paymentLinkLastOpenedAt,
-                done: Boolean(data?.data?.order?.paymentLinkLastOpenedAt),
-              },
-              {
-                label: `Viewed ${data?.data?.order?.paymentLinkOpenCount ?? 0} times`,
-                at:
-                  data?.data?.order?.paymentLinkLastOpenedAt ||
-                  data?.data?.order?.paymentLinkFirstOpenedAt,
-                done: (data?.data?.order?.paymentLinkOpenCount ?? 0) > 0,
-              },
-              {
-                label: "Paid",
-                at: data?.data?.order?.invoicePaidDate,
-                done: Boolean(data?.data?.order?.invoicePaidDate),
-                dateOnly: true,
-              },
-            ].map((step, index, arr) => (
-              <div key={`${step.label}-${index}`} className="relative pl-8 pb-5">
-                {index !== arr.length - 1 && (
-                  <span className="absolute left-[11px] top-5 h-[calc(100%-6px)] w-[2px] bg-gray-200" />
+            {sectionRefreshCooldownEndsAt != null && (
+              <div className="mb-3 rounded-md border border-theme/20 bg-theme/5 px-3 py-2 text-xs text-theme font-medium">
+                Refreshing invoice activity in{" "}
+                {Math.max(
+                  0,
+                  Math.ceil((sectionRefreshCooldownEndsAt - Date.now()) / 1000),
                 )}
-                <span
-                  className={`absolute left-0 top-1 h-[22px] w-[22px] rounded-full border-2 ${
-                    step.done
-                      ? "border-green-500 bg-green-50"
-                      : "border-gray-300 bg-white"
-                  }`}
-                >
-                  {step.done && (
-                    <span className="absolute inset-[5px] rounded-full bg-green-500" />
-                  )}
-                </span>
-                <p className="text-[15px] font-semibold text-gray-800">{step.label}</p>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  {step.at
-                    ? step.dateOnly
-                      ? dayjs(step.at).format("MM/DD/YYYY")
-                      : formatDateTimeISO(step.at, "datetime")
-                    : "—"}
-                </p>
+                s...
               </div>
-            ))}
+            )}
+            {invoiceTrackingLoading ? (
+              <div className="w-full min-h-[260px] flex items-center justify-center">
+                <MiniLoader />
+              </div>
+            ) : (
+              (() => {
+                const invoiceTrackingOrder = invoiceTrackingData?.data?.order;
+                return [
+                  {
+                    label: "Invoice Created",
+                    at: invoiceTrackingOrder?.invoiceDate,
+                    done: Boolean(invoiceTrackingOrder?.invoiceDate),
+                    dateOnly: true,
+                  },
+                  {
+                    label: `Sent ${invoiceTrackingOrder?.invoiceEmailSentCount ?? 0} times`,
+                    at:
+                      invoiceTrackingOrder?.invoiceReminder ||
+                      invoiceTrackingOrder?.invoiceDate,
+                    done: Boolean(invoiceTrackingOrder?.invoiceEmailSentCount),
+                    dateOnly: true,
+                  },
+                  {
+                    label: "First Open",
+                    at: invoiceTrackingOrder?.paymentLinkFirstOpenedAt,
+                    done: Boolean(invoiceTrackingOrder?.paymentLinkFirstOpenedAt),
+                  },
+                  {
+                    label: "Recently Opened",
+                    at: invoiceTrackingOrder?.paymentLinkLastOpenedAt,
+                    done: Boolean(invoiceTrackingOrder?.paymentLinkLastOpenedAt),
+                  },
+                  {
+                    label: `Viewed ${invoiceTrackingOrder?.paymentLinkOpenCount ?? 0} times`,
+                    at:
+                      invoiceTrackingOrder?.paymentLinkLastOpenedAt ||
+                      invoiceTrackingOrder?.paymentLinkFirstOpenedAt,
+                    done: (invoiceTrackingOrder?.paymentLinkOpenCount ?? 0) > 0,
+                  },
+                  {
+                    label: "Paid",
+                    at: invoiceTrackingOrder?.invoicePaidDate,
+                    done: Boolean(invoiceTrackingOrder?.invoicePaidDate),
+                    dateOnly: true,
+                  },
+                ].map((step, index, arr) => (
+                  <div key={`${step.label}-${index}`} className="relative pl-8 pb-5">
+                    {index !== arr.length - 1 && (
+                      <span className="absolute left-[11px] top-5 h-[calc(100%-6px)] w-[2px] bg-gray-200" />
+                    )}
+                    <span
+                      className={`absolute left-0 top-1 h-[22px] w-[22px] rounded-full border-2 ${
+                        step.done
+                          ? "border-green-500 bg-green-50"
+                          : "border-gray-300 bg-white"
+                      }`}
+                    >
+                      {step.done && (
+                        <span className="absolute inset-[5px] rounded-full bg-green-500" />
+                      )}
+                    </span>
+                    <p className="text-[15px] font-semibold text-gray-800">{step.label}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {step.at
+                        ? step.dateOnly
+                          ? dayjs(step.at).format("MM/DD/YYYY")
+                          : formatDateTimeISO(step.at, "datetime")
+                        : "—"}
+                    </p>
+                  </div>
+                ));
+              })()
+            )}
           </div>
         </Dialog>
 

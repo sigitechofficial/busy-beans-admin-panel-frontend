@@ -28,10 +28,14 @@ import {
   isValidTwoDecimalInput,
   formatToFixedTwo,
   normalizeQtyWithMaxDigits,
+  hasExceededMaxNumericDigits,
   hasExceededMaxIntegerDigits,
 } from "@/utilities/numberInput";
 
 export default function CreateInvoice() {
+  const MAX_CREATE_INVOICE_QTY_DIGITS = 5;
+  const MAX_CREATE_INVOICE_UNIT_DIGITS = 6;
+
   const router = useRouter();
   let userID, userType, partnerType;
   if (typeof window !== "undefined") {
@@ -357,8 +361,17 @@ export default function CreateInvoice() {
   };
 
   const normalizeQty = (rawValue) => {
-    return normalizeQtyWithMaxDigits(rawValue);
+    return normalizeQtyWithMaxDigits(rawValue, MAX_CREATE_INVOICE_QTY_DIGITS);
   };
+
+  const clampQtyValue = (value) => {
+    const qty = Number(value) || 0;
+    return Math.max(1, Math.min(99999, qty));
+  };
+
+  const isValidUnitPriceInput = (value) =>
+    isValidTwoDecimalInput(value) &&
+    !hasExceededMaxNumericDigits(value, MAX_CREATE_INVOICE_UNIT_DIGITS);
 
   const wouldExceedInvoiceDerivedLimits = (nextGrandTotal, nextTotalWeight) =>
     hasExceededMaxIntegerDigits(nextGrandTotal) ||
@@ -407,7 +420,7 @@ export default function CreateInvoice() {
     if (itemIdx !== -1) {
       setItems((prev) =>
         prev.map((item, idx) =>
-          idx === itemIdx ? { ...item, qty: +item.qty + 1 } : item
+          idx === itemIdx ? { ...item, qty: clampQtyValue((Number(item.qty) || 0) + 1) } : item
         )
       );
       setModal(false);
@@ -418,7 +431,9 @@ export default function CreateInvoice() {
       const existingIdx = prev.findIndex((item) => item.productId == prod?.id);
       if (existingIdx !== -1) {
         return prev.map((item, idx) =>
-          idx === existingIdx ? { ...item, qty: +item.qty + 1 } : item
+          idx === existingIdx
+            ? { ...item, qty: clampQtyValue((Number(item.qty) || 0) + 1) }
+            : item
         );
       }
       const unit = unitPriceForNewItem(prod);
@@ -429,7 +444,7 @@ export default function CreateInvoice() {
           productId: prod?.id,
           code: prod?.productCode || prod?.code || "",
           name: prod?.name,
-          qty: prod?.qty || 1,
+          qty: clampQtyValue(prod?.qty),
           unit,
           checked: true,
           weight: prod?.weight,
@@ -465,7 +480,7 @@ export default function CreateInvoice() {
           return { ...item, qty: nextQty };
         }
         if (field === "unit") {
-          if (!isValidTwoDecimalInput(value)) return item;
+          if (!isValidUnitPriceInput(value)) return item;
           const nextUnit = value === "" ? 0 : parseFloat(value) || 0;
           const qty = Number(item.qty) || 0;
           const oldUnit = Number(item.unit) || 0;
@@ -537,7 +552,7 @@ export default function CreateInvoice() {
           return { ...item, qty: nextQty };
         }
         if (field === "unit") {
-          if (!isValidTwoDecimalInput(value)) return item;
+          if (!isValidUnitPriceInput(value)) return item;
           const nextUnit = value === "" ? 0 : parseFloat(value) || 0;
           const qty = Number(item.qty) || 0;
           const oldUnit = Number(item.unit) || 0;
@@ -2045,7 +2060,9 @@ export default function CreateInvoice() {
                       min={1}
                       className="w-16 border border-gray-200 rounded px-1 py-1 text-center"
                       value={item.qty ?? 1}
-                      onKeyDown={preventInvalidNumberInputKeys}
+                      onKeyDown={(e) =>
+                        preventInvalidNumberInputKeys(e, MAX_CREATE_INVOICE_QTY_DIGITS)
+                      }
                       onWheel={(e) => e.currentTarget.blur()}
                       onChange={(e) =>
                         handleItemQtyChange(itemIdx, e.target.value)
@@ -2113,7 +2130,9 @@ export default function CreateInvoice() {
                       min={1}
                       className="w-16 border border-gray-200 rounded px-1 py-1 text-center"
                       value={item.qty ?? 1}
-                      onKeyDown={preventInvalidNumberInputKeys}
+                      onKeyDown={(e) =>
+                        preventInvalidNumberInputKeys(e, MAX_CREATE_INVOICE_QTY_DIGITS)
+                      }
                       onChange={(e) =>
                         handleExtraInputChange(idx, "qty", e.target.value)
                       }
@@ -2179,7 +2198,9 @@ export default function CreateInvoice() {
                       min={1}
                       className="w-16 border rounded px-1 py-1 text-center"
                       value={item.qty}
-                      onKeyDown={preventInvalidNumberInputKeys}
+                      onKeyDown={(e) =>
+                        preventInvalidNumberInputKeys(e, MAX_CREATE_INVOICE_QTY_DIGITS)
+                      }
                       onWheel={(e) => e.currentTarget.blur()}
                       onChange={(e) =>
                         handleChargeInputChange(idx, "qty", e.target.value)
@@ -2193,7 +2214,9 @@ export default function CreateInvoice() {
                       step="0.01"
                       className="w-20 border rounded px-1 py-1 text-right"
                       value={item.unit}
-                      onKeyDown={preventInvalidNumberInputKeys}
+                      onKeyDown={(e) =>
+                        preventInvalidNumberInputKeys(e, MAX_CREATE_INVOICE_UNIT_DIGITS)
+                      }
                       onWheel={(e) => e.currentTarget.blur()}
                       onChange={(e) =>
                         handleChargeInputChange(idx, "unit", e.target.value)

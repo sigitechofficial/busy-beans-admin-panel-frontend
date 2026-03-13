@@ -41,6 +41,7 @@ const DrawerBeans = ({
     var partnerType = localStorage.getItem("partnerType");
     var isEmployee = localStorage.getItem("isEmployee") === "true";
   }
+  const isAdminEmployee = userType === "admin" && isEmployee;
   const [companyNameOptions, setCompanyNameOptions] = useState([]);
   const [emailOptions, setEmailOptions] = useState([]);
 
@@ -149,6 +150,10 @@ const DrawerBeans = ({
     params.set("limit", limit.toString());
     if (search.trim()) {
       params.set("search", search.trim());
+    }
+    // Employee with customer_create: add cus=all; selected-customer_create only: no param (main entities untouched)
+    if (isEmployee && hasPermission("customer_create")) {
+      params.set("cus", "all");
     }
     return `${base}?${params.toString()}`;
   };
@@ -709,14 +714,24 @@ const DrawerBeans = ({
       }
     } else {
       // Send Quotation flow
+      const selectedCustomer = allCustomers.find(
+        (customer) =>
+          customer?.id === order?.userId || customer?.email === email
+      );
+      const fallbackAddressId =
+        selectedCustomer?.addresses?.[0]?.id ||
+        selectedCustomer?.addressId ||
+        selectedCustomer?.defaultAddressId ||
+        "";
+      const resolvedAddressId = order?.addressId || fallbackAddressId;
+
       if (cartItems.length === 0) {
         info_toaster("Product cannot be empty");
       } else if (!email?.trim()) {
         info_toaster("Email cannot be empty");
       } else if (isDirectPartner && !order?.salesRepId) {
         info_toaster("Please select a partner");
-      } else if (!isDirectPartner && !order?.addressId && partnerType !== "direct-partner") {
-        // For local partners, address is auto-selected in handleEmail, so skip validation
+      } else if (!isDirectPartner && order?.userId && !resolvedAddressId) {
         info_toaster("Address cannot be empty");
       } else {
         setLoader(true);
@@ -745,11 +760,11 @@ const DrawerBeans = ({
             ...(isDirectPartner || isSelfOrder
               ? {
                   salesRepId: order?.salesRepId || userID,
-                  addressId: order?.addressId,
+                  addressId: resolvedAddressId || order?.addressId,
                 }
               : {
                   userId: order?.userId,
-                  addressId: order?.addressId,
+                  addressId: resolvedAddressId,
                 }),
           };
 
@@ -827,17 +842,18 @@ const DrawerBeans = ({
 
     setAddressOptions([...addressList]);
 
-    // For local partners (partnerType === "direct-partner"), automatically select first address
-    const isLocalPartner = partnerType === "direct-partner";
-    const firstAddressId = addresses.length > 0 ? addresses[0]?.id : null;
+    // Auto-select first available customer address for quotation flow.
+    // This avoids false "Address cannot be empty" when address selector is not shown.
+    const firstAddressId =
+      addresses.length > 0
+        ? addresses[0]?.id
+        : selectedEmail?.addressId || selectedEmail?.defaultAddressId || null;
 
     setOrder((prev) => ({
       ...prev,
       userId: selectedEmail?.id,
-      // Auto-select first address for local partners when sending quotation
-      addressId: isLocalPartner && type !== "createOrder" && firstAddressId 
-        ? firstAddressId 
-        : prev.addressId,
+      addressId:
+        type !== "createOrder" && firstAddressId ? firstAddressId : prev.addressId,
     }));
   };
 
@@ -921,10 +937,13 @@ const DrawerBeans = ({
       partners?.length > 0 &&
       (partners.some((p) => String(p?.id) === String(order?.salesRepId)) ||
         partners.some((p) => String(p?.id) === String(propSelectedPartnerId)));
+    const isSalesRepQuotationFlow =
+      type !== "createOrder" && userType === "salesRepresentative";
     fetchChargesForCustomer(
       selectedEmail?.id,
       totalWeight,
-      isDirectOnly
+      isDirectOnly,
+      isSalesRepQuotationFlow
     );
   };
 
@@ -990,7 +1009,8 @@ const DrawerBeans = ({
     }
     if (customerIdForShipping && totalWeight > 0) {
       const isPartnerOrder =
-        type === "createOrder" && (isDirectPartner || isSelfOrder);
+        (type === "createOrder" && (isDirectPartner || isSelfOrder)) ||
+        (type !== "createOrder" && userType === "salesRepresentative");
       fetchChargesForCustomer(
         customerIdForShipping,
         totalWeight,
@@ -1139,8 +1159,8 @@ const DrawerBeans = ({
             <div className="relative space-y-6 font-sf pb-20 bg-theme text-white">
               {type === "createOrder" ? (
                 <div className="space-y-4">
-                  {/* Switch for Direct Partner */}
-                  {userType === "admin" && (
+                  {/* Switch for Direct Partner - hidden for admin employee */}
+                  {userType === "admin" && !isAdminEmployee && (
                     <div className="flex items-center gap-x-2 justify-end">
                       <label className="text-white font-medium">
                         Local Partners
@@ -1374,66 +1394,69 @@ const DrawerBeans = ({
                       />
                     </div> */}
 
-                  <div>
-                    <div className="w-full font-sf font-normal text-base text-theme-black-2 flex items-center gap-3 px-5 py-[5px] duration-300 border-2 border-white hover:border-goldenLight focus-within:border-goldenLight rounded-t">
-                      <MdInsertComment size={24} />
-                      <div className="relative w-full">
-                        <input
-                          type="text"
-                          id="courier-note"
-                          className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${
-                            order?.note ? "placeholder-transparent" : ""
-                          }`}
-                          value={order?.note}
-                          onChange={(e) =>
-                            setOrder({ ...order, note: e.target.value })
-                          }
-                          data-testid={ORDERS_CREATE_DRAWER.noteInput}
-                        />
-                        <label
-                          htmlFor="courier-note"
-                          className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${
-                            order?.note
-                              ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
-                              : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
-                          }`}
-                        >
-                          {order?.note
-                            ? "Note for the supplier (optional)"
-                            : "Add note for the supplier (optional)"}
-                        </label>
+                  {/* Optional note and PO number - hidden for admin employee */}
+                  {!isAdminEmployee && (
+                    <div>
+                      <div className="w-full font-sf font-normal text-base text-theme-black-2 flex items-center gap-3 px-5 py-[5px] duration-300 border-2 border-white hover:border-goldenLight focus-within:border-goldenLight rounded-t">
+                        <MdInsertComment size={24} />
+                        <div className="relative w-full">
+                          <input
+                            type="text"
+                            id="courier-note"
+                            className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${
+                              order?.note ? "placeholder-transparent" : ""
+                            }`}
+                            value={order?.note}
+                            onChange={(e) =>
+                              setOrder({ ...order, note: e.target.value })
+                            }
+                            data-testid={ORDERS_CREATE_DRAWER.noteInput}
+                          />
+                          <label
+                            htmlFor="courier-note"
+                            className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${
+                              order?.note
+                                ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
+                                : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
+                            }`}
+                          >
+                            {order?.note
+                              ? "Note for the supplier (optional)"
+                              : "Add note for the supplier (optional)"}
+                          </label>
+                        </div>
+                      </div>
+                      <div className="w-full font-sf font-normal text-base text-theme-black-2 flex items-center gap-3 px-5 py-[5px] duration-300 border-2 border-white hover:border-goldenLight focus-within:border-goldenLight rounded-b">
+                        <MdOutlineConfirmationNumber size={24} />
+                        <div className="relative w-full">
+                          <input
+                            type="text"
+                            id="poNumber"
+                            className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${
+                              order?.note ? "placeholder-transparent" : ""
+                            }`}
+                            value={order?.poNumber}
+                            onChange={(e) =>
+                              setOrder({ ...order, poNumber: e.target.value })
+                            }
+                            data-testid={ORDERS_CREATE_DRAWER.poNumberInput}
+                          />
+                          <label
+                            htmlFor="poNumber"
+                            className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${
+                              order?.poNumber
+                                ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
+                                : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
+                            }`}
+                          >
+                            {order?.poNumber
+                              ? "Purchase Order Number"
+                              : "Add Purchase Order Number (optional)"}
+                          </label>
+                        </div>
                       </div>
                     </div>
-                    <div className="w-full font-sf font-normal text-base text-theme-black-2 flex items-center gap-3 px-5 py-[5px] duration-300 border-2 border-white hover:border-goldenLight focus-within:border-goldenLight rounded-b">
-                      <MdOutlineConfirmationNumber size={24} />
-                      <div className="relative w-full">
-                        <input
-                          type="text"
-                          id="poNumber"
-                          className={`w-full h-full py-5 pt-7 pb-2 focus:outline-none bg-transparent peer ${
-                            order?.note ? "placeholder-transparent" : ""
-                          }`}
-                          value={order?.poNumber}
-                          onChange={(e) =>
-                            setOrder({ ...order, poNumber: e.target.value })
-                          }
-                          data-testid={ORDERS_CREATE_DRAWER.poNumberInput}
-                        />
-                        <label
-                          htmlFor="poNumber"
-                          className={`absolute left-0 top-4 placeholder:text-themeLight transition-all ${
-                            order?.poNumber
-                              ? "top-[5px] text-[13px] peer-focus:text-goldenLight"
-                              : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-goldenLight peer-focus:top-[7px] peer-focus:text-[13px] peer-focus:text-goldenLight"
-                          }`}
-                        >
-                          {order?.poNumber
-                            ? "Purchase Order Number"
-                            : "Add Purchase Order Number (optional)"}
-                        </label>
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </div>
               ) : (
                 <div className="flex flex-col gap-y-2">

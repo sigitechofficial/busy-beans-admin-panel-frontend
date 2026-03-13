@@ -30,71 +30,24 @@
 }
 
 .selected-row {
-  background-color: #86644c !important;
-  color: white;
-}
-
-.custom-checkbox .p-checkbox-box {
-  border: 1px solid black;
-  background-color: transparent;
-}
-
-.custom-checkbox .p-checkbox-box.p-highlight {
-  background-color: #3e342c !important;
-  border-color: #3e342c !important;
-}
-
-.custom-checkbox .p-checkbox-box.p-highlight .p-checkbox-icon {
-  color: white !important;
-}
-
-.custom-checkbox .p-checkbox-box:not(.p-highlight) {
-  border-color: black !important;
-}
-
-.p-datatable thead .p-checkbox-box {
-  border: 1px solid black;
-  background-color: transparent;
-}
-
-.p-datatable thead .p-checkbox-box.p-highlight {
-  background-color: #3e342c !important;
-  border-color: #3e342c !important;
-}
-
-.p-datatable thead .p-checkbox-box.p-highlight .p-checkbox-icon {
-  color: white !important;
-}
-
-.p-datatable thead .p-checkbox-box:not(.p-highlight) {
-  border-color: black !important;
-}
-
-.p-datatable thead .p-checkbox-box:hover {
-  border-color: #3e342c;
+  background-color: #e5e7eb !important; /* soft gray */
+  color: #111827 !important;
 }
 
 /* Inventory stock table: highlighted headers */
 .inventory-stock-table .p-datatable thead th {
-  background-color: #e5e7eb !important;
-  font-weight: 600 !important;
-  color: #374151 !important;
-  border-bottom: 2px solid #d1d5db !important;
-}
-
-.inventory-stock-table .p-datatable thead th.p-sortable-column:hover {
   background-color: #d1d5db !important;
 }
 
 /* Chrome, Safari, Edge, Opera */
-input[type=number]::-webkit-outer-spin-button,
-input[type=number]::-webkit-inner-spin-button {
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
 /* Firefox */
-input[type=number] {
+input[type="number"] {
   -moz-appearance: textfield;
 }
 

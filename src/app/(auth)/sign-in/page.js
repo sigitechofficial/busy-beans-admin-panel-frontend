@@ -90,13 +90,7 @@ export default function SignIn() {
       validationSchema: loginSchema,
       onSubmit: async (values, action) => {
         setLoader(true);
-        let captchaRes = await validateRecaptcha();
-
-        if (!captchaRes) {
-          error_toaster("Bot Detection");
-          setLoader(false);
-          return;
-        }
+   
         try {
           let res = await loginAPI(
             type === "admin"
@@ -106,7 +100,8 @@ export default function SignIn() {
               email: values.email,
               password: values.password,
               tokenId: localStorage.getItem("devToken"),
-            }
+            },
+            { suppressSuccessToast: true }
           );
           if (res?.data?.status === "success") {
             setLoader(false);
@@ -227,6 +222,18 @@ export default function SignIn() {
               );
               // handleConnectAccountID(res?.data?.data?.user?.id);
             }
+          } else if (res?.data?.status === "temporary-block") {
+            setLoader(false);
+            localStorage.setItem("loginOtpUserId", String(res?.data?.data?.id ?? ""));
+            localStorage.setItem("loginOtpEmail", res?.data?.data?.email ?? values.email);
+            localStorage.setItem("loginOtpEntity", res?.data?.data?.entity ?? "");
+            localStorage.setItem("loginOtpContext", res?.data?.data?.context ?? "login");
+            localStorage.setItem("loginOtpType", type);
+            info_toaster(
+              res?.data?.message ||
+                "OTP sent to your email. Please verify to continue.",
+            );
+            router.push("/verify-login-otp");
           } else {
             throw new Error(
               res?.data?.message || "An unexpected error occurred."

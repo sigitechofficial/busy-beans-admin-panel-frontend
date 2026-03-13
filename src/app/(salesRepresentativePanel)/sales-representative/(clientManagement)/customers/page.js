@@ -12,15 +12,26 @@ import { PatchAPI } from "@/utilities/PatchAPI";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
+import { hasPermission } from "@/utilities/Permission";
 
 export default function SalesRepresentativeCustomers() {
   if (typeof window !== "undefined") {
     var userID = localStorage.getItem("userID");
+    var isEmployee = localStorage.getItem("isEmployee") === "true";
   }
 
   const router = useRouter();
+  const customerListUrl = (() => {
+    const params = new URLSearchParams();
+    // params.set("orderCreation", "yes");
+    if (isEmployee && hasPermission("customer_create")) {
+      params.set("cus", "all");
+    }
+    return `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}?${params.toString()}`;
+  })();
+
   const { data, reFetch, isLoading } = GetAPI(
-    `api/v1/admin/customer-management/customer-list/sale-rep-id/${userID}&orderCreation=yes`
+    customerListUrl
   );
 
   const handleStatus = async (id, status) => {

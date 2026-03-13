@@ -48,56 +48,16 @@ import { hasPermission } from "@/utilities/Permission";
 import { LEFTBAR } from "@/components/ui/leftbar.testid";
 
 export default function Leftbar(props) {
-  // Use state to avoid hydration mismatch (localStorage only available on client)
-  // Initialize with values from localStorage if available (for immediate render)
-  const [userType, setUserType] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("userType");
-    }
-    return null;
-  });
-  const [partnerType, setPartnerType] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("partnerType");
-    }
-    return null;
-  });
-  const [userID, setUserID] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("userID");
-    }
-    return null;
-  });
-  const [connectAccountId, setConnectAccountId] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("connectAccountId");
-    }
-    return null;
-  });
-  const [isAccountConnected, setIsAccountConnected] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("isAccountConnected");
-    }
-    return null;
-  });
-  const [isEmployee, setIsEmployee] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("isEmployee") === "true";
-    }
-    return false;
-  });
-  const [employeeStripeAccountState, setEmployeeStripeAccountState] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("employeeStripeAccountState");
-    }
-    return null;
-  });
-  const [employeeId, setEmployeeId] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("employeeId");
-    }
-    return null;
-  });
+  // Initialize to null/false so server and client first paint match (avoids hydration mismatch).
+  // Values are set from localStorage in useEffect after mount.
+  const [userType, setUserType] = useState(null);
+  const [partnerType, setPartnerType] = useState(null);
+  const [userID, setUserID] = useState(null);
+  const [connectAccountId, setConnectAccountId] = useState(null);
+  const [isAccountConnected, setIsAccountConnected] = useState(null);
+  const [isEmployee, setIsEmployee] = useState(false);
+  const [employeeStripeAccountState, setEmployeeStripeAccountState] = useState(null);
+  const [employeeId, setEmployeeId] = useState(null);
   const [forceUpdate, setForceUpdate] = useState(0); // Force re-render trigger
 
   useEffect(() => {
@@ -655,7 +615,8 @@ export default function Leftbar(props) {
               active={
                 pathname.includes("/orders/create") ||
                 pathname.includes("/orders/emails") ||
-                pathname.includes("/orders/email-logs")
+                pathname.includes("/orders/email-logs") ||
+                pathname.includes("/orders/delete-invoice")
               }
               Angle={
                 FaAngleRight
@@ -685,6 +646,7 @@ export default function Leftbar(props) {
 
                   <ListItems title="Emails" to="/orders/emails" />
                   <ListItems title="Email Logs" to="/orders/email-logs" />
+                  <ListItems title="Delete Invoice" to="/orders/delete-invoice" />
                 </div>
               </>
             )}
@@ -1325,7 +1287,7 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
-          {hasPermission("product_view") && (
+          {!isEmployee && hasPermission("product_view") && (
             <ListHead
               title="Inventory Management"
               // to="/inventory/stock"
@@ -1348,7 +1310,8 @@ export default function Leftbar(props) {
             />
           )}
 
-          {active?.inventoryManagement?.tab === "inventoryManagement" &&
+          {!isEmployee &&
+            active?.inventoryManagement?.tab === "inventoryManagement" &&
             active?.inventoryManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
@@ -1992,27 +1955,30 @@ export default function Leftbar(props) {
               </>
             )}
 
-          <ListHead
-            title="Inventory Management"
-            active={pathname === "/sales-representative/inventory/stock"}
-            data-testid={LEFTBAR.inventoryManagementSection}
-            Icon={MdInventory}
-            status={
-              active?.salesRepInventoryManagement?.tab === "salesRepInventoryManagement" &&
-              active?.salesRepInventoryManagement?.status
-                ? true
-                : false
-            }
-            Angle={FaAngleRight}
-            onClick={() =>
-              handleActive(
-                "salesRepInventoryManagement",
+          {!isEmployee && (
+            <ListHead
+              title="Inventory Management"
+              active={pathname === "/sales-representative/inventory/stock"}
+              data-testid={LEFTBAR.inventoryManagementSection}
+              Icon={MdInventory}
+              status={
+                active?.salesRepInventoryManagement?.tab === "salesRepInventoryManagement" &&
                 active?.salesRepInventoryManagement?.status
-              )
-            }
-          />
+                  ? true
+                  : false
+              }
+              Angle={FaAngleRight}
+              onClick={() =>
+                handleActive(
+                  "salesRepInventoryManagement",
+                  active?.salesRepInventoryManagement?.status
+                )
+              }
+            />
+          )}
 
-          {active?.salesRepInventoryManagement?.tab === "salesRepInventoryManagement" &&
+          {!isEmployee &&
+            active?.salesRepInventoryManagement?.tab === "salesRepInventoryManagement" &&
             active?.salesRepInventoryManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
@@ -2101,7 +2067,11 @@ export default function Leftbar(props) {
               title="Order Management"
               Icon={MdShoppingCart}
               data-testid={LEFTBAR.orderManagementSection}
-              active={pathname === "/sales-representative/create-order"}
+              active={
+                pathname === "/sales-representative/create-order" ||
+                pathname.includes("/orders/delete-invoice") ||
+                pathname.includes("/sales-representative/delete-invoice")
+              }
               status={
                 active?.orderManagement?.tab === "orderManagement" &&
                 active?.orderManagement?.status
@@ -2129,6 +2099,14 @@ export default function Leftbar(props) {
                       )}
                     />
                   )}
+                  <ListItems
+                    title="Delete Invoice"
+                    to="/sales-representative/delete-invoice"
+                    data-testid={LEFTBAR.listItem(
+                      "orderManagement",
+                      "Delete Invoice"
+                    )}
+                  />
                 </div>
               </>
             )}
@@ -2312,33 +2290,38 @@ export default function Leftbar(props) {
             />
           )}
 
-          {/* {hasPermission("subscription_view") && (
+          {hasPermission("subscription_view") && partnerType === "direct-partner" && (
             <ListHead
               title="Machine Subscriptions"
               active={pathname === "/subscription" || pathname === "/purchased"}
               data-testid={LEFTBAR.subscriptionManagementSection}
               Icon={MdCoffeeMaker}
-              Angle={
-                active?.subscription?.tab === "subscription" &&
-                active?.subscription?.status
-                  ? FaAngleUp
-                  : FaAngleDown
+              status={
+                active?.machineSubscriptions?.tab === "machineSubscriptions" &&
+                active?.machineSubscriptions?.status
+                  ? true
+                  : false
               }
+              Angle={FaAngleRight}
               onClick={() =>
-                handleActive("subscription", active?.subscription?.status)
+                handleActive(
+                  "machineSubscriptions",
+                  active?.machineSubscriptions?.status
+                )
               }
             />
-          )} */}
+          )}
 
-          {/* {active?.subscription?.tab === "subscription" &&
-            active?.subscription?.status && (
+          {partnerType === "direct-partner" &&
+            active?.machineSubscriptions?.tab === "machineSubscriptions" &&
+            active?.machineSubscriptions?.status && (
               <>
                 <div className="m-2 relative space-y-1">
                   <ListItems
                     title="Subscription"
                     to="/subscription"
                     data-testid={LEFTBAR.listItem(
-                      "subscription",
+                      "machineSubscriptions",
                       "Subscription"
                     )}
                   />
@@ -2350,11 +2333,10 @@ export default function Leftbar(props) {
                       "Purchased"
                     )}
                   />
-
                 </div>
                 <hr className="w-full" />
               </>
-            )} */}
+            )}
 
           {hasPermission("invoice_view") && (
             <ListHead

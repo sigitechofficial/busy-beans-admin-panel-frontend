@@ -78,7 +78,7 @@ export default function CustomersByEmployee() {
   const apiUrl = `${baseUrl.trim()}?${params.toString()}`;
 
   // Fetch data if authenticated
-  const { data, isLoading } = GetAPI(apiUrl);
+  const { data, isLoading, reFetch } = GetAPI(apiUrl);
 
   const columns = [
     { field: "name", header: "Name" },
@@ -148,6 +148,7 @@ export default function CustomersByEmployee() {
       if (res?.data?.status === "success") {
         // success_toaster("Customers imported successfully!");
         setSelectedRows([]);
+        reFetch();
       } else {
         throw new Error(res?.data?.message || "An unexpected error occurred.");
       }

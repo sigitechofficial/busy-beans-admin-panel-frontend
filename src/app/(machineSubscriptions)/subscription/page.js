@@ -21,6 +21,10 @@ import { FaPeopleGroup } from "react-icons/fa6";
 import SubscriptionModal from "@/components/subscription/SubscriptionModal";
 
 export default function MachineSubscriptions() {
+  const isSalesRepresentativeUser =
+    typeof window !== "undefined" &&
+    localStorage.getItem("userType") === "salesRepresentative";
+
   const { data, reFetch } = GetAPI("api/v1/admin/coffee-machine");
   // const { machinesData } = GetAPI(`api/v1/admin/machines`);
   const allMachines = data?.data?.data ?? [];
@@ -291,15 +295,17 @@ export default function MachineSubscriptions() {
               className="bg-white border border-gray-200 rounded-xl overflow-hidden relative group shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col"
             >
               {/* Delete button on hover */}
-              <span
-                onClick={() => {
-                  setModal("delete");
-                  setMachineId(machine?.id);
-                }}
-                className="absolute top-3 right-3 z-10 size-8 rounded-full bg-red-500 cursor-pointer opacity-0 group-hover:opacity-100 duration-300 transition-all flex justify-center items-center shadow-lg hover:bg-red-600 hover:scale-110"
-              >
-                <MdDelete size={16} color="white" />
-              </span>
+              {!isSalesRepresentativeUser && hasPermission("machine_delete") && (
+                <span
+                  onClick={() => {
+                    setModal("delete");
+                    setMachineId(machine?.id);
+                  }}
+                  className="absolute top-3 right-3 z-10 size-8 rounded-full bg-red-500 cursor-pointer opacity-0 group-hover:opacity-100 duration-300 transition-all flex justify-center items-center shadow-lg hover:bg-red-600 hover:scale-110"
+                >
+                  <MdDelete size={16} color="white" />
+                </span>
+              )}
 
               {/* Compact Image Container */}
               <div className="bg-gradient-to-br from-[#fef1d8] via-[#fef7e8] to-[#fff9f0] overflow-hidden">
@@ -356,7 +362,7 @@ export default function MachineSubscriptions() {
 
                 {/* Compact Action Buttons */}
                 <div className="flex items-center gap-2 mt-auto">
-                  {hasPermission("machine_update") && (
+                  {!isSalesRepresentativeUser && hasPermission("machine_update") && (
                     <button
                       onClick={() => openEdit(machine?.id)}
                       className="flex-1 bg-gray-900 text-white h-10 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-800 transition-all duration-200 active:scale-95"
@@ -382,6 +388,7 @@ export default function MachineSubscriptions() {
         visible={!!subscribingMachine}
         onHide={() => setSubscribingMachine(null)}
         machine={subscribingMachine}
+        isSalesRepresentativeUser={isSalesRepresentativeUser}
       />
 
       {/* Modal */}

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
@@ -48,6 +48,15 @@ export default function CreateOrder() {
   const [addProductPrices, setAddProductPrices] = useState({}); // { productId: { price, wholesalePrice } }
   const [submitAddProductLoader, setSubmitAddProductLoader] = useState(false);
   const [selectedAddProducts, setSelectedAddProducts] = useState([]); // Array of selected productIds
+  const [isAdminEmployee, setIsAdminEmployee] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setIsAdminEmployee(
+      localStorage.getItem("userType") === "admin" &&
+        localStorage.getItem("isEmployee") === "true"
+    );
+  }, []);
 
   const { data: category, isLoading } = GetAPI(`api/v1/admin/category?status=1`);
   const { data: salesRepData } = GetAPI("api/v1/admin/sales-rep");
@@ -503,73 +512,75 @@ export default function CreateOrder() {
       </div>
 
       <div className="space-y-8 pt-28 2xl:pt-32 px-6 2xl:px-12">
-        {/* View Mode Selection Section */}
-        <div className="bg-white rounded-lg border border-borderColor shadow-tableShadow p-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-6">
-              <span className="text-sm font-semibold text-gray-700">View Products:</span>
-              <div className="flex items-center gap-1 border border-gray-200 rounded-lg overflow-hidden">
-                <button
-                  onClick={() => {
-                    setViewMode("admin");
-                    handleClearPartner();
-                  }}
-                  className={`px-6 py-2.5 text-sm font-medium transition-all duration-200 ${
-                    viewMode === "admin"
-                      ? "bg-theme text-white"
-                      : "bg-white text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  Admin
-                </button>
-                <div className="w-px h-6 bg-gray-200"></div>
-                <button
-                  onClick={handleLocalPartnerClick}
-                  className={`px-6 py-2.5 text-sm font-medium transition-all duration-200 relative ${
-                    viewMode === "localPartner"
-                      ? "bg-theme text-white"
-                      : "bg-white text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  {selectedPartnerName || "Local Partner"}
-                  {selectedPartnerId && (
-                    <span
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleClearPartner();
-                      }}
-                      className="ml-2 text-xs opacity-75 hover:opacity-100"
-                      title="Clear selection"
-                    >
-                      ×
-                    </span>
-                  )}
-                </button>
+        {/* View Mode Selection Section - hidden for admin employee */}
+        {!isAdminEmployee && (
+          <div className="bg-white rounded-lg border border-borderColor shadow-tableShadow p-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-6">
+                <span className="text-sm font-semibold text-gray-700">View Products:</span>
+                <div className="flex items-center gap-1 border border-gray-200 rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => {
+                      setViewMode("admin");
+                      handleClearPartner();
+                    }}
+                    className={`px-6 py-2.5 text-sm font-medium transition-all duration-200 ${
+                      viewMode === "admin"
+                        ? "bg-theme text-white"
+                        : "bg-white text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    Admin
+                  </button>
+                  <div className="w-px h-6 bg-gray-200"></div>
+                  <button
+                    onClick={handleLocalPartnerClick}
+                    className={`px-6 py-2.5 text-sm font-medium transition-all duration-200 relative ${
+                      viewMode === "localPartner"
+                        ? "bg-theme text-white"
+                        : "bg-white text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    {selectedPartnerName || "Local Partner"}
+                    {selectedPartnerId && (
+                      <span
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleClearPartner();
+                        }}
+                        className="ml-2 text-xs opacity-75 hover:opacity-100"
+                        title="Clear selection"
+                      >
+                        ×
+                      </span>
+                    )}
+                  </button>
+                </div>
               </div>
+              {selectedPartnerId && (
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setAddProductModalVisible(true)}
+                    className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-theme border border-theme rounded-lg hover:bg-themeDark transition-all duration-200"
+                  >
+                    <MdEdit size={18} />
+                    Add Product
+                  </button>
+                  <button
+                    onClick={() => setChangePriceModalVisible(true)}
+                    className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-theme border border-theme rounded-lg hover:bg-theme hover:text-white transition-all duration-200"
+                  >
+                    <MdEdit size={18} />
+                    Change Price
+                  </button>
+                </div>
+              )}
             </div>
-            {selectedPartnerId && (
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setAddProductModalVisible(true)}
-                  className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-theme border border-theme rounded-lg hover:bg-themeDark transition-all duration-200"
-                >
-                  <MdEdit size={18} />
-                  Add Product
-                </button>
-                <button
-                  onClick={() => setChangePriceModalVisible(true)}
-                  className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-theme border border-theme rounded-lg hover:bg-theme hover:text-white transition-all duration-200"
-                >
-                  <MdEdit size={18} />
-                  Change Price
-                </button>
-              </div>
-            )}
           </div>
-        </div>
+        )}
 
-        {/* Page context info - outside View Products card */}
-        {viewMode === "admin" && (
+        {/* Page context info - hidden for admin employee */}
+        {!isAdminEmployee && viewMode === "admin" && (
           <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
             <p className="text-sm font-medium text-amber-800">
               You are viewing <strong>Admin inventory</strong>.
@@ -579,7 +590,7 @@ export default function CreateOrder() {
             </p>
           </div>
         )}
-        {viewMode === "localPartner" && selectedPartnerId && (
+        {!isAdminEmployee && viewMode === "localPartner" && selectedPartnerId && (
           <div className="p-4 rounded-lg bg-emerald-50 border border-emerald-200">
             <p className="text-sm font-medium text-emerald-800">
               You are viewing <strong>{selectedPartnerName}&apos;s inventory</strong> (Local Partner).

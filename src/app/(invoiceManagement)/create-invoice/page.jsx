@@ -23,8 +23,19 @@ import ErrorHandler from "@/utilities/ErrorHandler";
 import { hasPermission } from "@/utilities/Permission";
 import Switch from "react-switch";
 import { MdInsertComment, MdOutlineConfirmationNumber } from "react-icons/md";
+import {
+  preventInvalidNumberInputKeys,
+  isValidTwoDecimalInput,
+  formatToFixedTwo,
+  normalizeQtyWithMaxDigits,
+  hasExceededMaxNumericDigits,
+  hasExceededMaxIntegerDigits,
+} from "@/utilities/numberInput";
 
 export default function CreateInvoice() {
+  const MAX_CREATE_INVOICE_QTY_DIGITS = 5;
+  const MAX_CREATE_INVOICE_UNIT_DIGITS = 6;
+
   const router = useRouter();
   let userID, userType, partnerType;
   if (typeof window !== "undefined") {
@@ -350,18 +361,43 @@ export default function CreateInvoice() {
   };
 
   const normalizeQty = (rawValue) => {
-    let clean = String(rawValue).replace(/\D/g, "");
-    if (clean === "") return "";
-    if (clean === "0") return 1;
-    return parseInt(clean, 10);
+    return normalizeQtyWithMaxDigits(rawValue, MAX_CREATE_INVOICE_QTY_DIGITS);
   };
+
+  const clampQtyValue = (value) => {
+    const qty = Number(value) || 0;
+    return Math.max(1, Math.min(99999, qty));
+  };
+
+  const isValidUnitPriceInput = (value) =>
+    isValidTwoDecimalInput(value) &&
+    !hasExceededMaxNumericDigits(value, MAX_CREATE_INVOICE_UNIT_DIGITS);
+
+  const wouldExceedInvoiceDerivedLimits = (nextGrandTotal, nextTotalWeight) =>
+    hasExceededMaxIntegerDigits(nextGrandTotal) ||
+    hasExceededMaxIntegerDigits(nextTotalWeight);
 
   // Item qty handler
   const handleItemQtyChange = (itemIdx, value) => {
     setItems((prev) =>
-      prev.map((item, idx) =>
-        idx === itemIdx ? { ...item, qty: normalizeQty(value) } : item
-      )
+      prev.map((item, idx) => {
+        if (idx !== itemIdx) return item;
+        const nextQty = normalizeQty(value);
+        const oldQty = Number(item.qty) || 0;
+        const safeNextQty = Number(nextQty) || 0;
+        const unitPrice = Number(item.unit ?? item.price) || 0;
+        const itemWeight = Number(item.weight) || 0;
+        const nextGrandTotal = Number(total) - oldQty * unitPrice + safeNextQty * unitPrice;
+        const nextTotalWeight =
+          Number(calculatedTotalWeight) - oldQty * itemWeight + safeNextQty * itemWeight;
+
+        if (wouldExceedInvoiceDerivedLimits(nextGrandTotal, nextTotalWeight)) {
+          info_toaster("Values cannot make total weight or grand total exceed 10 digits.");
+          return item;
+        }
+
+        return { ...item, qty: nextQty };
+      })
     );
   };
 
@@ -384,7 +420,7 @@ export default function CreateInvoice() {
     if (itemIdx !== -1) {
       setItems((prev) =>
         prev.map((item, idx) =>
-          idx === itemIdx ? { ...item, qty: +item.qty + 1 } : item
+          idx === itemIdx ? { ...item, qty: clampQtyValue((Number(item.qty) || 0) + 1) } : item
         )
       );
       setModal(false);
@@ -395,7 +431,9 @@ export default function CreateInvoice() {
       const existingIdx = prev.findIndex((item) => item.productId == prod?.id);
       if (existingIdx !== -1) {
         return prev.map((item, idx) =>
-          idx === existingIdx ? { ...item, qty: +item.qty + 1 } : item
+          idx === existingIdx
+            ? { ...item, qty: clampQtyValue((Number(item.qty) || 0) + 1) }
+            : item
         );
       }
       const unit = unitPriceForNewItem(prod);
@@ -406,7 +444,7 @@ export default function CreateInvoice() {
           productId: prod?.id,
           code: prod?.productCode || prod?.code || "",
           name: prod?.name,
-          qty: prod?.qty || 1,
+          qty: clampQtyValue(prod?.qty),
           unit,
           checked: true,
           weight: prod?.weight,
@@ -425,11 +463,42 @@ export default function CreateInvoice() {
       prev.map((item, idx) => {
         if (idx !== rowIdx) return item;
         if (field === "qty") {
-          return { ...item, qty: normalizeQty(value) };
+          const nextQty = normalizeQty(value);
+          const oldQty = Number(item.qty) || 0;
+          const safeNextQty = Number(nextQty) || 0;
+          const unitPrice = Number(item.unit) || 0;
+          const itemWeight = Number(item.weight) || 0;
+          const nextGrandTotal = Number(total) - oldQty * unitPrice + safeNextQty * unitPrice;
+          const nextTotalWeight =
+            Number(calculatedTotalWeight) - oldQty * itemWeight + safeNextQty * itemWeight;
+
+          if (wouldExceedInvoiceDerivedLimits(nextGrandTotal, nextTotalWeight)) {
+            info_toaster("Values cannot make total weight or grand total exceed 10 digits.");
+            return item;
+          }
+
+          return { ...item, qty: nextQty };
+        }
+        if (field === "unit") {
+          if (!isValidUnitPriceInput(value)) return item;
+          const nextUnit = value === "" ? 0 : parseFloat(value) || 0;
+          const qty = Number(item.qty) || 0;
+          const oldUnit = Number(item.unit) || 0;
+          const nextGrandTotal = Number(total) - qty * oldUnit + qty * nextUnit;
+
+          if (wouldExceedInvoiceDerivedLimits(nextGrandTotal, calculatedTotalWeight)) {
+            info_toaster("Values cannot make total weight or grand total exceed 10 digits.");
+            return item;
+          }
+
+          return {
+            ...item,
+            unit: nextUnit,
+          };
         }
         return {
           ...item,
-          [field]: field === "unit" ? parseFloat(value) || 0 : value,
+          [field]: value,
         };
       })
     );
@@ -469,11 +538,39 @@ export default function CreateInvoice() {
       prev.map((item, idx) => {
         if (idx !== rowIdx) return item;
         if (field === "qty") {
-          return { ...item, qty: normalizeQty(value) };
+          const nextQty = normalizeQty(value);
+          const oldQty = Number(item.qty) || 0;
+          const safeNextQty = Number(nextQty) || 0;
+          const unitPrice = Number(item.unit) || 0;
+          const nextGrandTotal = Number(total) - oldQty * unitPrice + safeNextQty * unitPrice;
+
+          if (wouldExceedInvoiceDerivedLimits(nextGrandTotal, calculatedTotalWeight)) {
+            info_toaster("Values cannot make total weight or grand total exceed 10 digits.");
+            return item;
+          }
+
+          return { ...item, qty: nextQty };
+        }
+        if (field === "unit") {
+          if (!isValidUnitPriceInput(value)) return item;
+          const nextUnit = value === "" ? 0 : parseFloat(value) || 0;
+          const qty = Number(item.qty) || 0;
+          const oldUnit = Number(item.unit) || 0;
+          const nextGrandTotal = Number(total) - qty * oldUnit + qty * nextUnit;
+
+          if (wouldExceedInvoiceDerivedLimits(nextGrandTotal, calculatedTotalWeight)) {
+            info_toaster("Values cannot make total weight or grand total exceed 10 digits.");
+            return item;
+          }
+
+          return {
+            ...item,
+            unit: nextUnit,
+          };
         }
         return {
           ...item,
-          [field]: field === "unit" ? parseFloat(value) || 0 : value,
+          [field]: value,
         };
       })
     );
@@ -1265,6 +1362,16 @@ export default function CreateInvoice() {
       return;
     }
 
+    if (hasExceededMaxIntegerDigits(calculatedTotalWeight)) {
+      info_toaster("Total weight cannot exceed 10 digits.");
+      return;
+    }
+
+    if (hasExceededMaxIntegerDigits(total)) {
+      info_toaster("Grand total cannot exceed 10 digits.");
+      return;
+    }
+
     if (Number(total) <= 0) {
       info_toaster("Invoice total must be greater than 0.");
       return;
@@ -1953,6 +2060,9 @@ export default function CreateInvoice() {
                       min={1}
                       className="w-16 border border-gray-200 rounded px-1 py-1 text-center"
                       value={item.qty ?? 1}
+                      onKeyDown={(e) =>
+                        preventInvalidNumberInputKeys(e, MAX_CREATE_INVOICE_QTY_DIGITS)
+                      }
                       onWheel={(e) => e.currentTarget.blur()}
                       onChange={(e) =>
                         handleItemQtyChange(itemIdx, e.target.value)
@@ -2020,6 +2130,9 @@ export default function CreateInvoice() {
                       min={1}
                       className="w-16 border border-gray-200 rounded px-1 py-1 text-center"
                       value={item.qty ?? 1}
+                      onKeyDown={(e) =>
+                        preventInvalidNumberInputKeys(e, MAX_CREATE_INVOICE_QTY_DIGITS)
+                      }
                       onChange={(e) =>
                         handleExtraInputChange(idx, "qty", e.target.value)
                       }
@@ -2035,6 +2148,7 @@ export default function CreateInvoice() {
                           step="0.01"
                           className="w-20 border border-gray-200 rounded px-1 py-1 text-right"
                           value={item.unit ?? 0}
+                          onKeyDown={preventInvalidNumberInputKeys}
                         />
                       </td>
                     )}
@@ -2084,6 +2198,9 @@ export default function CreateInvoice() {
                       min={1}
                       className="w-16 border rounded px-1 py-1 text-center"
                       value={item.qty}
+                      onKeyDown={(e) =>
+                        preventInvalidNumberInputKeys(e, MAX_CREATE_INVOICE_QTY_DIGITS)
+                      }
                       onWheel={(e) => e.currentTarget.blur()}
                       onChange={(e) =>
                         handleChargeInputChange(idx, "qty", e.target.value)
@@ -2097,9 +2214,19 @@ export default function CreateInvoice() {
                       step="0.01"
                       className="w-20 border rounded px-1 py-1 text-right"
                       value={item.unit}
+                      onKeyDown={(e) =>
+                        preventInvalidNumberInputKeys(e, MAX_CREATE_INVOICE_UNIT_DIGITS)
+                      }
                       onWheel={(e) => e.currentTarget.blur()}
                       onChange={(e) =>
                         handleChargeInputChange(idx, "unit", e.target.value)
+                      }
+                      onBlur={(e) =>
+                        handleChargeInputChange(
+                          idx,
+                          "unit",
+                          formatToFixedTwo(e.target.value)
+                        )
                       }
                     />
                   </td>
@@ -2168,10 +2295,11 @@ export default function CreateInvoice() {
                         value={invoiceFields?.shippingCharges ?? ""}
                         type="text"
                         inputMode="decimal"
+                        onKeyDown={preventInvalidNumberInputKeys}
                         disabled={isPartnerLoggedInCustomerOrder && isDirectPartnerLoggedIn}
                         onChange={(e) => {
                           const value = e.target.value;
-                          if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                          if (isValidTwoDecimalInput(value)) {
                             setInvoiceFields((prev) => ({
                               ...prev,
                               shippingCharges: value,
@@ -2180,17 +2308,10 @@ export default function CreateInvoice() {
                         }}
                         onBlur={(e) => {
                           const value = e.target.value.trim();
-                          if (value === "") {
-                            setInvoiceFields((prev) => ({ ...prev, shippingCharges: "" }));
-                            return;
-                          }
-                          const num = parseFloat(value);
-                          if (!Number.isNaN(num) && num >= 0) {
-                            setInvoiceFields((prev) => ({
-                              ...prev,
-                              shippingCharges: num.toFixed(2),
-                            }));
-                          }
+                          setInvoiceFields((prev) => ({
+                            ...prev,
+                            shippingCharges: formatToFixedTwo(value),
+                          }));
                         }}
                       />
                     ) : shippingCharge ? (

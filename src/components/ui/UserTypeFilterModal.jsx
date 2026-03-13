@@ -11,7 +11,8 @@ export default function UserTypeFilterModal({
   onHide, 
   onApply, 
   initialFilters = { userType: null, salesRepIds: null },
-  allowMultiSelect = true // Default to true for backward compatibility
+  allowMultiSelect = true, // Default to true for backward compatibility
+  enableEmployeeOption = false,
 }) {
   const [selectedUserType, setSelectedUserType] = useState(initialFilters.userType);
   const [selectedSalesReps, setSelectedSalesReps] = useState(() => {
@@ -35,9 +36,17 @@ export default function UserTypeFilterModal({
     }
   });
   const [showSalesRepDropdown, setShowSalesRepDropdown] = useState(initialFilters.userType === "salesRep");
+  const [selectedEmployees, setSelectedEmployees] = useState(() => {
+    if (Array.isArray(initialFilters.employeeIds) && initialFilters.employeeIds.length > 0) {
+      return { value: initialFilters.employeeIds[0], label: `Employee ${initialFilters.employeeIds[0]}` };
+    }
+    return null;
+  });
+  const [showEmployeeDropdown, setShowEmployeeDropdown] = useState(initialFilters.userType === "employee");
 
   // Fetch sales reps list
   const { data: salesRepData } = GetAPI("api/v1/admin/sales-rep");
+  const { data: employeeData } = GetAPI(enableEmployeeOption ? "api/v1/admin/employees" : "");
 
   const salesRepOptions = allowMultiSelect
     ? [
@@ -55,6 +64,13 @@ export default function UserTypeFilterModal({
             label: rep.srName || rep.name,
           }))
         : []);
+
+  const employeeOptions = employeeData?.data?.data
+    ? employeeData.data.data.map((emp) => ({
+        value: emp.id,
+        label: emp.name || emp.employeeName || `Employee ${emp.id}`,
+      }))
+    : [];
 
   // Update selectedSalesReps labels when data loads (for cases where data loads after modal opens)
   useEffect(() => {
@@ -101,6 +117,7 @@ export default function UserTypeFilterModal({
       setSelectedUserType(initialFilters.userType);
       if (initialFilters.userType === "salesRep") {
         setShowSalesRepDropdown(true);
+        setShowEmployeeDropdown(false);
         if (allowMultiSelect) {
           if (initialFilters.salesRepIds === null) {
             // "ALL" is selected (null means all sales reps) - only for multi-select
@@ -138,19 +155,47 @@ export default function UserTypeFilterModal({
             setSelectedSalesReps(null);
           }
         }
+      } else if (initialFilters.userType === "employee") {
+        setShowSalesRepDropdown(false);
+        setShowEmployeeDropdown(true);
+        if (Array.isArray(initialFilters.employeeIds) && initialFilters.employeeIds.length > 0) {
+          const firstId = initialFilters.employeeIds[0];
+          if (employeeData?.data?.data) {
+            const emp = employeeData.data.data.find((e) => e.id === firstId);
+            setSelectedEmployees(
+              emp
+                ? { value: emp.id, label: emp.name || emp.employeeName || `Employee ${emp.id}` }
+                : { value: firstId, label: `Employee ${firstId}` }
+            );
+          } else {
+            setSelectedEmployees({ value: firstId, label: `Employee ${firstId}` });
+          }
+        } else {
+          setSelectedEmployees(null);
+        }
       } else {
         setShowSalesRepDropdown(false);
+        setShowEmployeeDropdown(false);
         setSelectedSalesReps(allowMultiSelect ? [] : null);
+        setSelectedEmployees(null);
       }
     }
-  }, [visible, initialFilters, salesRepData, allowMultiSelect]);
+  }, [visible, initialFilters, salesRepData, employeeData, allowMultiSelect]);
 
   useEffect(() => {
     if (selectedUserType === "salesRep") {
       setShowSalesRepDropdown(true);
+      setShowEmployeeDropdown(false);
+      setSelectedEmployees(null);
+    } else if (selectedUserType === "employee") {
+      setShowSalesRepDropdown(false);
+      setShowEmployeeDropdown(true);
+      setSelectedSalesReps(allowMultiSelect ? [] : null);
     } else {
       setShowSalesRepDropdown(false);
+      setShowEmployeeDropdown(false);
       setSelectedSalesReps(allowMultiSelect ? [] : null);
+      setSelectedEmployees(null);
     }
   }, [selectedUserType, allowMultiSelect]);
 
@@ -158,6 +203,9 @@ export default function UserTypeFilterModal({
     setSelectedUserType(option?.value || null);
     if (option?.value !== "salesRep") {
       setSelectedSalesReps(allowMultiSelect ? [] : null);
+    }
+    if (option?.value !== "employee") {
+      setSelectedEmployees(null);
     }
   };
 
@@ -235,6 +283,13 @@ export default function UserTypeFilterModal({
           };
         }
       }
+    } else if (selectedUserType === "employee") {
+      if (!selectedEmployees || !selectedEmployees.value) return;
+      filters = {
+        userType: "employee",
+        salesRepIds: null,
+        employeeIds: [selectedEmployees.value],
+      };
     }
 
     onApply(filters);
@@ -244,7 +299,9 @@ export default function UserTypeFilterModal({
   const handleReset = () => {
     setSelectedUserType(null);
     setSelectedSalesReps(allowMultiSelect ? [] : null);
+    setSelectedEmployees(null);
     setShowSalesRepDropdown(false);
+    setShowEmployeeDropdown(false);
   };
 
   return (
@@ -267,7 +324,7 @@ export default function UserTypeFilterModal({
             placeholder="Select Filter Type"
             value={
               selectedUserType
-                ? { value: selectedUserType, label: selectedUserType === "admin" ? "Admin" : selectedUserType === "salesRep" ? "Local Partner" : "All" }
+                ? { value: selectedUserType, label: selectedUserType === "admin" ? "Admin" : selectedUserType === "salesRep" ? "Local Partner" : selectedUserType === "employee" ? "Employee" : "All" }
                 : null
             }
             onChange={handleUserTypeChange}
@@ -275,6 +332,7 @@ export default function UserTypeFilterModal({
               { value: "all", label: "All" },
               { value: "admin", label: "Admin" },
               { value: "salesRep", label: "Local Partner" },
+              ...(enableEmployeeOption ? [{ value: "employee", label: "Employee" }] : []),
             ]}
             isClearable
           />
@@ -304,6 +362,27 @@ export default function UserTypeFilterModal({
                 ? "Select one or more local partners. You can select multiple partners."
                 : "Select a local partner."}
             </p>
+          </div>
+        )}
+
+        {showEmployeeDropdown && (
+          <div>
+            <label className="block text-sm font-workSans font-semibold text-labelColor mb-2">
+              Employee
+            </label>
+            <Select
+              styles={{
+                ...drawerSelectStyles,
+                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+              }}
+              placeholder="Select Employee"
+              value={selectedEmployees}
+              onChange={(selectedOption) => setSelectedEmployees(selectedOption || null)}
+              options={employeeOptions}
+              isClearable
+              menuPortalTarget={typeof document !== "undefined" ? document.body : null}
+            />
+            <p className="text-xs text-gray-500 mt-1">Select an employee.</p>
           </div>
         )}
 

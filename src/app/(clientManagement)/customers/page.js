@@ -24,6 +24,11 @@ import { CLIENT_MANAGEMENT } from "./customer.testid";
 
 export default function Customers() {
   const router = useRouter();
+  if (typeof window !== "undefined") {
+    var userType = localStorage.getItem("userType");
+    var isEmployee = localStorage.getItem("isEmployee") === "true";
+  }
+  const isAdminEmployee = userType === "admin" && isEmployee;
   const [type, setType] = useState("all");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(100);
@@ -37,13 +42,15 @@ export default function Customers() {
   });
 
   // Build API URL with pagination and search query parameters
-  const baseUrl = `api/v1/admin/customer-management/customer-list${
-    type === "all"
-      ? "/all"
-      : type === "unassigned"
-      ? "/sale-rep/not-assign"
-      : "/sale-rep/assign"
-  }`;
+  const baseUrl = isAdminEmployee
+    ? "api/v1/admin/customer-management/customer-list/not-assigned"
+    : `api/v1/admin/customer-management/customer-list${
+        type === "all"
+          ? "/all"
+          : type === "unassigned"
+          ? "/sale-rep/not-assign"
+          : "/sale-rep/assign"
+      }`;
   
   // Build URL with proper query parameters
   const params = new URLSearchParams();
@@ -51,6 +58,9 @@ export default function Customers() {
   params.set("limit", limit.toString());
   if (searchQuery.trim()) {
     params.set("search", searchQuery.trim());
+  }
+  if (isAdminEmployee && hasPermission("customer_create")) {
+    params.set("cus", "all");
   }
   const apiUrl = `${baseUrl}?${params.toString()}`;
 

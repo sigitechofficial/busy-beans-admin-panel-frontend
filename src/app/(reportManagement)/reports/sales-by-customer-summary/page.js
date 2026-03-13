@@ -16,10 +16,11 @@ import { LuSearch } from "react-icons/lu";
 import { MdFilterAlt } from "react-icons/md";
 import UserTypeFilterModal from "@/components/ui/UserTypeFilterModal";
 import { error_toaster } from "@/utilities/Toaster";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 function SalesByCustomerSummaryReport() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   if (typeof window !== "undefined") {
     var userType = localStorage.getItem("userType");
@@ -125,10 +126,10 @@ function SalesByCustomerSummaryReport() {
       }
     }
     if (employeeIdParam) {
-      const salesRepIds = employeeIdParam.includes(",")
+      const employeeIds = employeeIdParam.includes(",")
         ? employeeIdParam.split(",").map((id) => Number(id.trim()))
         : [Number(employeeIdParam)];
-      return { userType: "salesRep", salesRepIds };
+      return { userType: "employee", employeeIds, salesRepIds: null };
     }
     if (salesRepId) {
       const salesRepIds = salesRepId.includes(",")
@@ -139,17 +140,60 @@ function SalesByCustomerSummaryReport() {
     if (userTypeParam) {
       return { userType: userTypeParam, salesRepIds: null };
     }
-    return { userType: null, salesRepIds: null };
+    return { userType: null, salesRepIds: null, employeeIds: null };
   });
+
+  const parseFiltersFromParams = (params) => {
+    const employeeIdParam = params.get("employeeId");
+    const salesRepId = params.get("salesRepId");
+    const userTypeParam = params.get("userType");
+    const salesRepIdsParam = params.get("salesRepIds");
+
+    if (employeeIdParam) {
+      const employeeIds = employeeIdParam.includes(",")
+        ? employeeIdParam.split(",").map((id) => Number(id.trim()))
+        : [Number(employeeIdParam)];
+      return { userType: "employee", salesRepIds: null, employeeIds };
+    }
+
+    if (userTypeParam === "salesRep" && salesRepIdsParam) {
+      try {
+        const parsedIds = JSON.parse(salesRepIdsParam);
+        const salesRepIds = Array.isArray(parsedIds) ? parsedIds : [parsedIds];
+        return { userType: "salesRep", salesRepIds, employeeIds: null };
+      } catch (e) {
+        return { userType: "salesRep", salesRepIds: null, employeeIds: null };
+      }
+    }
+
+    if (salesRepId) {
+      const salesRepIds = salesRepId.includes(",")
+        ? salesRepId.split(",").map((id) => Number(id.trim()))
+        : [Number(salesRepId)];
+      return { userType: "salesRep", salesRepIds, employeeIds: null };
+    }
+
+    if (userTypeParam === "admin") {
+      return { userType: "admin", salesRepIds: null, employeeIds: null };
+    }
+
+    if (userTypeParam === "salesRep") {
+      return { userType: "salesRep", salesRepIds: null, employeeIds: null };
+    }
+
+    return { userType: null, salesRepIds: null, employeeIds: null };
+  };
 
   // Build API URL with filters
   const buildApiUrl = () => {
     let url = `api/v1/admin/admin-reports/customer-sales-report?startDate=${dateRange?.startDate}&endDate=${dateRange?.endDate}`;
 
-    // When page was opened with employeeId in URL (e.g. from dashboard MTD/YTD employee click), send employeeId only
-    const employeeIdFromUrl = searchParams.get("employeeId");
-    if (employeeIdFromUrl) {
-      url += `&employeeId=${employeeIdFromUrl}`;
+    if (
+      filters.userType === "employee" &&
+      Array.isArray(filters?.employeeIds) &&
+      filters?.employeeIds?.length > 0
+    ) {
+      url += `&employeeId=${filters.employeeIds.join(",")}`;
       return url;
     }
 
@@ -287,6 +331,53 @@ function SalesByCustomerSummaryReport() {
       });
     }
   }, [customDates.startDate, customDates.endDate, displayCustomFilters, searchParams]);
+
+  // URL -> filter state sync (supports browser back/forward and direct URL edits)
+  useEffect(() => {
+    const nextFilters = parseFiltersFromParams(searchParams);
+    setFilters((prev) => {
+      const prevStr = JSON.stringify(prev || {});
+      const nextStr = JSON.stringify(nextFilters || {});
+      return prevStr === nextStr ? prev : nextFilters;
+    });
+  }, [searchParams]);
+
+  // filter state -> URL sync (single source of truth for applied filters)
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    // Always keep applied date range in URL
+    if (dateRange?.startDate && dateRange?.endDate) {
+      params.set("startDate", dateRange.startDate);
+      params.set("endDate", dateRange.endDate);
+    }
+
+    // Clear known filter params first
+    params.delete("userType");
+    params.delete("salesRepId");
+    params.delete("salesRepIds");
+    params.delete("employeeId");
+
+    // Apply selected filter params
+    if (filters?.userType === "admin") {
+      params.set("userType", "admin");
+    } else if (filters?.userType === "salesRep") {
+      params.set("userType", "salesRep");
+      if (Array.isArray(filters?.salesRepIds) && filters.salesRepIds.length > 0) {
+        params.set("salesRepId", filters.salesRepIds.join(","));
+      }
+    } else if (filters?.userType === "employee") {
+      if (Array.isArray(filters?.employeeIds) && filters.employeeIds.length > 0) {
+        params.set("employeeId", filters.employeeIds.join(","));
+      }
+    }
+
+    const current = searchParams.toString();
+    const next = params.toString();
+    if (next !== current) {
+      router.replace(`${pathname}?${next}`);
+    }
+  }, [dateRange?.startDate, dateRange?.endDate, filters, pathname, router, searchParams]);
 
   const handleChange = (val) => {
     if (val?.value === "custom") {
@@ -431,7 +522,7 @@ function SalesByCustomerSummaryReport() {
     const filterLabel = filters?.userType
       ? filters.userType === "admin"
         ? "Admin"
-        : searchParams.get("employeeId")
+        : filters.userType === "employee"
           ? "Employee"
           : "Local Partner"
       : "None";
@@ -596,7 +687,7 @@ function SalesByCustomerSummaryReport() {
             <span className="text-sm font-inter font-semibold text-gray-900">
               {filters.userType === "admin"
                 ? "Admin"
-                : searchParams.get("employeeId")
+                : filters.userType === "employee"
                   ? "Employee"
                   : "Local Partner"}
               {filters.userType === "salesRep" &&
@@ -763,6 +854,7 @@ function SalesByCustomerSummaryReport() {
         onHide={() => setFilterModalVisible(false)}
         onApply={handleFilterApply}
         initialFilters={filters}
+        enableEmployeeOption
       />
     </div>
   );

@@ -1287,7 +1287,7 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
-          {hasPermission("product_view") && (
+          {!isEmployee && hasPermission("product_view") && (
             <ListHead
               title="Inventory Management"
               // to="/inventory/stock"
@@ -1310,7 +1310,8 @@ export default function Leftbar(props) {
             />
           )}
 
-          {active?.inventoryManagement?.tab === "inventoryManagement" &&
+          {!isEmployee &&
+            active?.inventoryManagement?.tab === "inventoryManagement" &&
             active?.inventoryManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
@@ -1954,27 +1955,30 @@ export default function Leftbar(props) {
               </>
             )}
 
-          <ListHead
-            title="Inventory Management"
-            active={pathname === "/sales-representative/inventory/stock"}
-            data-testid={LEFTBAR.inventoryManagementSection}
-            Icon={MdInventory}
-            status={
-              active?.salesRepInventoryManagement?.tab === "salesRepInventoryManagement" &&
-              active?.salesRepInventoryManagement?.status
-                ? true
-                : false
-            }
-            Angle={FaAngleRight}
-            onClick={() =>
-              handleActive(
-                "salesRepInventoryManagement",
+          {!isEmployee && (
+            <ListHead
+              title="Inventory Management"
+              active={pathname === "/sales-representative/inventory/stock"}
+              data-testid={LEFTBAR.inventoryManagementSection}
+              Icon={MdInventory}
+              status={
+                active?.salesRepInventoryManagement?.tab === "salesRepInventoryManagement" &&
                 active?.salesRepInventoryManagement?.status
-              )
-            }
-          />
+                  ? true
+                  : false
+              }
+              Angle={FaAngleRight}
+              onClick={() =>
+                handleActive(
+                  "salesRepInventoryManagement",
+                  active?.salesRepInventoryManagement?.status
+                )
+              }
+            />
+          )}
 
-          {active?.salesRepInventoryManagement?.tab === "salesRepInventoryManagement" &&
+          {!isEmployee &&
+            active?.salesRepInventoryManagement?.tab === "salesRepInventoryManagement" &&
             active?.salesRepInventoryManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
@@ -2286,33 +2290,38 @@ export default function Leftbar(props) {
             />
           )}
 
-          {/* {hasPermission("subscription_view") && (
+          {hasPermission("subscription_view") && partnerType === "direct-partner" && (
             <ListHead
               title="Machine Subscriptions"
               active={pathname === "/subscription" || pathname === "/purchased"}
               data-testid={LEFTBAR.subscriptionManagementSection}
               Icon={MdCoffeeMaker}
-              Angle={
-                active?.subscription?.tab === "subscription" &&
-                active?.subscription?.status
-                  ? FaAngleUp
-                  : FaAngleDown
+              status={
+                active?.machineSubscriptions?.tab === "machineSubscriptions" &&
+                active?.machineSubscriptions?.status
+                  ? true
+                  : false
               }
+              Angle={FaAngleRight}
               onClick={() =>
-                handleActive("subscription", active?.subscription?.status)
+                handleActive(
+                  "machineSubscriptions",
+                  active?.machineSubscriptions?.status
+                )
               }
             />
-          )} */}
+          )}
 
-          {/* {active?.subscription?.tab === "subscription" &&
-            active?.subscription?.status && (
+          {partnerType === "direct-partner" &&
+            active?.machineSubscriptions?.tab === "machineSubscriptions" &&
+            active?.machineSubscriptions?.status && (
               <>
                 <div className="m-2 relative space-y-1">
                   <ListItems
                     title="Subscription"
                     to="/subscription"
                     data-testid={LEFTBAR.listItem(
-                      "subscription",
+                      "machineSubscriptions",
                       "Subscription"
                     )}
                   />
@@ -2324,11 +2333,10 @@ export default function Leftbar(props) {
                       "Purchased"
                     )}
                   />
-
                 </div>
                 <hr className="w-full" />
               </>
-            )} */}
+            )}
 
           {hasPermission("invoice_view") && (
             <ListHead

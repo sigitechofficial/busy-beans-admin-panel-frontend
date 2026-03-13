@@ -48,6 +48,7 @@ export default function OrderDetail() {
   const [chequeId, setChequeId] = useState("");
   const [copiedId, setCopiedId] = useState(null);
   const [emailLogsExpanded, setEmailLogsExpanded] = useState(false);
+  const [showInvoiceTrackingModal, setShowInvoiceTrackingModal] = useState(false);
   const [retryEmailLogId, setRetryEmailLogId] = useState(null);
   const [retryCooldownEndsAt, setRetryCooldownEndsAt] = useState({});
   const [, setCooldownTick] = useState(0);
@@ -106,6 +107,16 @@ export default function OrderDetail() {
     reFetch: reFetchEmailLogs,
     isLoading: emailLogLoading,
   } = GetAPI(emailLogApiUrl);
+
+  const invoiceTrackingApiUrl =
+    showInvoiceTrackingModal && orderID
+      ? `api/v1/admin/order-management/invoice-tracking/partner-order/${orderID}`
+      : "";
+  const {
+    data: invoiceTrackingData,
+    isLoading: invoiceTrackingLoading,
+    reFetch: reFetchInvoiceTracking,
+  } = GetAPI(invoiceTrackingApiUrl);
 
   const emailLogs = emailLogData?.data?.emailLogs ?? [];
 
@@ -485,17 +496,23 @@ export default function OrderDetail() {
       setRetryCooldownEndsAt(Object.keys(next).length ? next : {});
       if (lastTimerEnded) {
         reFetchEmailLogs();
+        if (showInvoiceTrackingModal) {
+          reFetchInvoiceTracking();
+        }
       }
       const sectionEnd = sectionRefreshCooldownEndsAtRef.current;
       if (sectionEnd != null && now >= sectionEnd) {
         sectionRefreshCooldownEndsAtRef.current = null;
         setSectionRefreshCooldownEndsAt(null);
         reFetchEmailLogs();
+        if (showInvoiceTrackingModal) {
+          reFetchInvoiceTracking();
+        }
       }
       setCooldownTick((t) => t + 1);
     }, 1000);
     return () => clearInterval(interval);
-  }, [reFetchEmailLogs]);
+  }, [reFetchEmailLogs, reFetchInvoiceTracking, showInvoiceTrackingModal]);
 
   const shortId = (val) =>
     val && val.length > 12
@@ -804,46 +821,41 @@ export default function OrderDetail() {
                   </div>
                 </div>
 
-                <div>
-                  <p className="font-semibold">
-                    Invoice Sent:{" "}
-                    {data?.data?.order?.invoiceDate
-                      ? dayjs(data?.data?.order?.invoiceDate).format(
-                          "MM/DD/YYYY"
-                        )
-                      : "Not Sent"}
-                  </p>
-                  {data?.data?.order?.invoiceReminder &&
-                    data?.data?.order?.invoiceDate && (
-                      <p className="font-semibold">
-                        Invoice Reminder:{" "}
-                        {dayjs(data?.data?.order?.invoiceReminder).format(
-                          "MM/DD/YYYY"
-                        )}
+                <div className="self-start rounded-lg border border-blue-100 bg-white/80 px-3 py-2.5 shadow-sm w-full xl:w-auto xl:min-w-[320px] max-w-full">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold text-gray-800">
+                        Invoice Sent:{" "}
+                        <span className="text-gray-700 font-medium">
+                          {data?.data?.order?.invoiceDate
+                            ? dayjs(data?.data?.order?.invoiceDate).format("MM/DD/YYYY")
+                            : "Not Sent"}
+                        </span>
                       </p>
-                    )}
-                  <p className="font-semibold">
-                    Payment Link First Opened:{" "}
-                    {data?.data?.order?.paymentLinkFirstOpenedAt
-                      ? formatDateTimeISO(
-                          data?.data?.order?.paymentLinkFirstOpenedAt,
-                          "datetime"
-                        )
-                      : "—"}
-                  </p>
-                  <p className="font-semibold">
-                    Payment Link Last Opened:{" "}
-                    {data?.data?.order?.paymentLinkLastOpenedAt
-                      ? formatDateTimeISO(
-                          data?.data?.order?.paymentLinkLastOpenedAt,
-                          "datetime"
-                        )
-                      : "—"}
-                  </p>
-                  <p className="font-semibold">
-                    Payment Link Open Count:{" "}
-                    {data?.data?.order?.paymentLinkOpenCount ?? 0}
-                  </p>
+                      <p className="text-sm font-semibold text-gray-800">
+                        Invoice Reminder:{" "}
+                        <span className="text-gray-700 font-medium">
+                          {data?.data?.order?.invoiceReminder &&
+                          data?.data?.order?.invoiceDate
+                            ? dayjs(data?.data?.order?.invoiceReminder).format("MM/DD/YYYY")
+                            : "—"}
+                        </span>
+                      </p>
+                    </div>
+                    <div className="relative group shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setShowInvoiceTrackingModal(true)}
+                        className="h-9 w-9 rounded-md border border-theme/30 text-theme flex items-center justify-center hover:bg-theme hover:text-white transition-colors"
+                        aria-label="View invoice tracking"
+                      >
+                        <CgNotes size={16} />
+                      </button>
+                      <span className="pointer-events-none absolute -top-9 right-0 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap text-[11px] bg-gray-900 text-white px-2 py-1 rounded">
+                        View invoice tracking
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -1507,11 +1519,106 @@ export default function OrderDetail() {
                   orderData={data?.data?.order}
                   modal={modal}
                   setModal={setModal}
+                  onSectionRefreshTrigger={startSectionRefreshTimer}
                 />
               </div>
             </div>
           </div>
         )}
+
+        <Dialog
+          visible={showInvoiceTrackingModal}
+          onHide={() => setShowInvoiceTrackingModal(false)}
+          header="Invoice Activity"
+          className="font-nunito w-[92vw] max-w-md"
+          dismissableMask={true}
+        >
+          <div className="py-1">
+            {sectionRefreshCooldownEndsAt != null && (
+              <div className="mb-3 rounded-md border border-theme/20 bg-theme/5 px-3 py-2 text-xs text-theme font-medium">
+                Refreshing invoice activity in{" "}
+                {Math.max(
+                  0,
+                  Math.ceil((sectionRefreshCooldownEndsAt - Date.now()) / 1000),
+                )}
+                s...
+              </div>
+            )}
+            {invoiceTrackingLoading ? (
+              <div className="w-full min-h-[260px] flex items-center justify-center">
+                <MiniLoader />
+              </div>
+            ) : (
+              (() => {
+                const invoiceTrackingOrder = invoiceTrackingData?.data?.order;
+                return [
+                  {
+                    label: "Invoice Created",
+                    at: invoiceTrackingOrder?.invoiceDate,
+                    done: Boolean(invoiceTrackingOrder?.invoiceDate),
+                    dateOnly: true,
+                  },
+                  {
+                    label: `Sent ${invoiceTrackingOrder?.invoiceEmailSentCount ?? 0} times`,
+                    at:
+                      invoiceTrackingOrder?.invoiceReminder ||
+                      invoiceTrackingOrder?.invoiceDate,
+                    done: Boolean(invoiceTrackingOrder?.invoiceEmailSentCount),
+                    dateOnly: true,
+                  },
+                  {
+                    label: "First Open",
+                    at: invoiceTrackingOrder?.paymentLinkFirstOpenedAt,
+                    done: Boolean(invoiceTrackingOrder?.paymentLinkFirstOpenedAt),
+                  },
+                  {
+                    label: "Recently Opened",
+                    at: invoiceTrackingOrder?.paymentLinkLastOpenedAt,
+                    done: Boolean(invoiceTrackingOrder?.paymentLinkLastOpenedAt),
+                  },
+                  {
+                    label: `Viewed ${invoiceTrackingOrder?.paymentLinkOpenCount ?? 0} times`,
+                    at:
+                      invoiceTrackingOrder?.paymentLinkLastOpenedAt ||
+                      invoiceTrackingOrder?.paymentLinkFirstOpenedAt,
+                    done: (invoiceTrackingOrder?.paymentLinkOpenCount ?? 0) > 0,
+                  },
+                  {
+                    label: "Paid",
+                    at: invoiceTrackingOrder?.invoicePaidDate,
+                    done: Boolean(invoiceTrackingOrder?.invoicePaidDate),
+                    dateOnly: true,
+                  },
+                ].map((step, index, arr) => (
+                  <div key={`${step.label}-${index}`} className="relative pl-8 pb-5">
+                    {index !== arr.length - 1 && (
+                      <span className="absolute left-[11px] top-5 h-[calc(100%-6px)] w-[2px] bg-gray-200" />
+                    )}
+                    <span
+                      className={`absolute left-0 top-1 h-[22px] w-[22px] rounded-full border-2 ${
+                        step.done
+                          ? "border-green-500 bg-green-50"
+                          : "border-gray-300 bg-white"
+                      }`}
+                    >
+                      {step.done && (
+                        <span className="absolute inset-[5px] rounded-full bg-green-500" />
+                      )}
+                    </span>
+                    <p className="text-[15px] font-semibold text-gray-800">{step.label}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {step.at
+                        ? step.dateOnly
+                          ? dayjs(step.at).format("MM/DD/YYYY")
+                          : formatDateTimeISO(step.at, "datetime")
+                        : "—"}
+                    </p>
+                  </div>
+                ));
+              })()
+            )}
+          </div>
+        </Dialog>
 
         <Dialog
           visible={

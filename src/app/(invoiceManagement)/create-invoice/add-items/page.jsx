@@ -15,6 +15,13 @@ import { CiMenuBurger } from "react-icons/ci";
 import { IoIosSearch } from "react-icons/io";
 import Select from "react-select";
 import { QuickbooksPingCheck } from "@/utilities/constants";
+import {
+  preventInvalidNumberInputKeys,
+  isValidTwoDecimalInput,
+  formatToFixedTwo,
+  normalizeQtyWithMaxDigits,
+  hasExceededMaxIntegerDigits,
+} from "@/utilities/numberInput";
 
 export default function AddItems() {
   const router = useRouter();
@@ -141,18 +148,34 @@ export default function AddItems() {
   };
 
   const normalizeQty = (rawValue) => {
-    let clean = String(rawValue).replace(/\D/g, "");
-    if (clean === "") return "";
-    if (clean === "0") return 1;
-    return parseInt(clean, 10);
+    return normalizeQtyWithMaxDigits(rawValue);
   };
+
+  const wouldExceedInvoiceDerivedLimits = (nextGrandTotal, nextTotalWeight) =>
+    hasExceededMaxIntegerDigits(nextGrandTotal) ||
+    hasExceededMaxIntegerDigits(nextTotalWeight);
 
   // Item qty handler
   const handleItemQtyChange = (itemIdx, value) => {
     setItems((prev) =>
-      prev.map((item, idx) =>
-        idx === itemIdx ? { ...item, qty: normalizeQty(value) } : item
-      )
+      prev.map((item, idx) => {
+        if (idx !== itemIdx) return item;
+        const nextQty = normalizeQty(value);
+        const oldQty = Number(item.qty) || 0;
+        const safeNextQty = Number(nextQty) || 0;
+        const unitPrice = Number(item.unit ?? item.price) || 0;
+        const itemWeight = Number(item.weight) || 0;
+        const nextGrandTotal = Number(total) - oldQty * unitPrice + safeNextQty * unitPrice;
+        const nextTotalWeight =
+          Number(calculatedTotalWeight) - oldQty * itemWeight + safeNextQty * itemWeight;
+
+        if (wouldExceedInvoiceDerivedLimits(nextGrandTotal, nextTotalWeight)) {
+          info_toaster("Values cannot make total weight or grand total exceed 10 digits.");
+          return item;
+        }
+
+        return { ...item, qty: nextQty };
+      })
     );
   };
 
@@ -208,11 +231,42 @@ export default function AddItems() {
       prev.map((item, idx) => {
         if (idx !== rowIdx) return item;
         if (field === "qty") {
-          return { ...item, qty: normalizeQty(value) };
+          const nextQty = normalizeQty(value);
+          const oldQty = Number(item.qty) || 0;
+          const safeNextQty = Number(nextQty) || 0;
+          const unitPrice = Number(item.unit) || 0;
+          const itemWeight = Number(item.weight) || 0;
+          const nextGrandTotal = Number(total) - oldQty * unitPrice + safeNextQty * unitPrice;
+          const nextTotalWeight =
+            Number(calculatedTotalWeight) - oldQty * itemWeight + safeNextQty * itemWeight;
+
+          if (wouldExceedInvoiceDerivedLimits(nextGrandTotal, nextTotalWeight)) {
+            info_toaster("Values cannot make total weight or grand total exceed 10 digits.");
+            return item;
+          }
+
+          return { ...item, qty: nextQty };
+        }
+        if (field === "unit") {
+          if (!isValidTwoDecimalInput(value)) return item;
+          const nextUnit = value === "" ? 0 : parseFloat(value) || 0;
+          const qty = Number(item.qty) || 0;
+          const oldUnit = Number(item.unit) || 0;
+          const nextGrandTotal = Number(total) - qty * oldUnit + qty * nextUnit;
+
+          if (wouldExceedInvoiceDerivedLimits(nextGrandTotal, calculatedTotalWeight)) {
+            info_toaster("Values cannot make total weight or grand total exceed 10 digits.");
+            return item;
+          }
+
+          return {
+            ...item,
+            unit: nextUnit,
+          };
         }
         return {
           ...item,
-          [field]: field === "unit" ? parseFloat(value) || 0 : value,
+          [field]: value,
         };
       })
     );
@@ -252,11 +306,39 @@ export default function AddItems() {
       prev.map((item, idx) => {
         if (idx !== rowIdx) return item;
         if (field === "qty") {
-          return { ...item, qty: normalizeQty(value) };
+          const nextQty = normalizeQty(value);
+          const oldQty = Number(item.qty) || 0;
+          const safeNextQty = Number(nextQty) || 0;
+          const unitPrice = Number(item.unit) || 0;
+          const nextGrandTotal = Number(total) - oldQty * unitPrice + safeNextQty * unitPrice;
+
+          if (wouldExceedInvoiceDerivedLimits(nextGrandTotal, calculatedTotalWeight)) {
+            info_toaster("Values cannot make total weight or grand total exceed 10 digits.");
+            return item;
+          }
+
+          return { ...item, qty: nextQty };
+        }
+        if (field === "unit") {
+          if (!isValidTwoDecimalInput(value)) return item;
+          const nextUnit = value === "" ? 0 : parseFloat(value) || 0;
+          const qty = Number(item.qty) || 0;
+          const oldUnit = Number(item.unit) || 0;
+          const nextGrandTotal = Number(total) - qty * oldUnit + qty * nextUnit;
+
+          if (wouldExceedInvoiceDerivedLimits(nextGrandTotal, calculatedTotalWeight)) {
+            info_toaster("Values cannot make total weight or grand total exceed 10 digits.");
+            return item;
+          }
+
+          return {
+            ...item,
+            unit: nextUnit,
+          };
         }
         return {
           ...item,
-          [field]: field === "unit" ? parseFloat(value) || 0 : value,
+          [field]: value,
         };
       })
     );
@@ -379,6 +461,16 @@ export default function AddItems() {
     })) || [];
 
   const handleGenerateInvoice = async () => {
+    if (hasExceededMaxIntegerDigits(calculatedTotalWeight)) {
+      info_toaster("Total weight cannot exceed 10 digits.");
+      return;
+    }
+
+    if (hasExceededMaxIntegerDigits(total)) {
+      info_toaster("Grand total cannot exceed 10 digits.");
+      return;
+    }
+
     if (Number(total) <= 0) {
       info_toaster("Invoice total must be greater than 0.");
       return;
@@ -689,6 +781,7 @@ export default function AddItems() {
                       min={1}
                       className="w-16 border border-gray-200 rounded px-1 py-1 text-center"
                       value={item.qty ?? 1}
+                      onKeyDown={preventInvalidNumberInputKeys}
                       onWheel={(e) => e.currentTarget.blur()}
                       onChange={(e) =>
                         handleItemQtyChange(itemIdx, e.target.value)
@@ -756,6 +849,7 @@ export default function AddItems() {
                       min={1}
                       className="w-16 border border-gray-200 rounded px-1 py-1 text-center"
                       value={item.qty ?? 1}
+                      onKeyDown={preventInvalidNumberInputKeys}
                       onChange={(e) =>
                         handleExtraInputChange(idx, "qty", e.target.value)
                       }
@@ -771,6 +865,7 @@ export default function AddItems() {
                           step="0.01"
                           className="w-20 border border-gray-200 rounded px-1 py-1 text-right"
                           value={item.unit ?? 0}
+                          onKeyDown={preventInvalidNumberInputKeys}
                         />
                       </td>
                     )}
@@ -820,6 +915,7 @@ export default function AddItems() {
                       min={1}
                       className="w-16 border rounded px-1 py-1 text-center"
                       value={item.qty}
+                      onKeyDown={preventInvalidNumberInputKeys}
                       onWheel={(e) => e.currentTarget.blur()}
                       onChange={(e) =>
                         handleChargeInputChange(idx, "qty", e.target.value)
@@ -833,9 +929,17 @@ export default function AddItems() {
                       step="0.01"
                       className="w-20 border rounded px-1 py-1 text-right"
                       value={item.unit}
+                      onKeyDown={preventInvalidNumberInputKeys}
                       onWheel={(e) => e.currentTarget.blur()}
                       onChange={(e) =>
                         handleChargeInputChange(idx, "unit", e.target.value)
+                      }
+                      onBlur={(e) =>
+                        handleChargeInputChange(
+                          idx,
+                          "unit",
+                          formatToFixedTwo(e.target.value)
+                        )
                       }
                     />
                   </td>
@@ -897,12 +1001,14 @@ export default function AddItems() {
                     {!manual?.show ? (
                       <input
                         className="w-20 border border-gray-200 rounded px-1 py-1 text-right"
-                        value={invoiceFields?.shippingCharges ? parseFloat(invoiceFields.shippingCharges).toFixed(2) : ""}
+                        value={invoiceFields?.shippingCharges ?? ""}
                         type="text"
+                        inputMode="decimal"
+                        onKeyDown={preventInvalidNumberInputKeys}
                         onChange={(e) => {
                           const value = e.target.value;
                           // Allow empty, numbers, and one decimal point
-                          if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                          if (isValidTwoDecimalInput(value)) {
                             setInvoiceFields((prev) => ({
                               ...prev,
                               shippingCharges: value,
@@ -912,12 +1018,10 @@ export default function AddItems() {
                         onBlur={(e) => {
                           // Format to 2 decimal places on blur
                           const value = e.target.value;
-                          if (value && !isNaN(value)) {
-                            setInvoiceFields((prev) => ({
-                              ...prev,
-                              shippingCharges: parseFloat(value).toFixed(2),
-                            }));
-                          }
+                          setInvoiceFields((prev) => ({
+                            ...prev,
+                            shippingCharges: formatToFixedTwo(value),
+                          }));
                         }}
                       />
                     ) : shippingCharge ? (

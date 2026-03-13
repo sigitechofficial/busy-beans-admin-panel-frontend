@@ -714,14 +714,24 @@ const DrawerBeans = ({
       }
     } else {
       // Send Quotation flow
+      const selectedCustomer = allCustomers.find(
+        (customer) =>
+          customer?.id === order?.userId || customer?.email === email
+      );
+      const fallbackAddressId =
+        selectedCustomer?.addresses?.[0]?.id ||
+        selectedCustomer?.addressId ||
+        selectedCustomer?.defaultAddressId ||
+        "";
+      const resolvedAddressId = order?.addressId || fallbackAddressId;
+
       if (cartItems.length === 0) {
         info_toaster("Product cannot be empty");
       } else if (!email?.trim()) {
         info_toaster("Email cannot be empty");
       } else if (isDirectPartner && !order?.salesRepId) {
         info_toaster("Please select a partner");
-      } else if (!isDirectPartner && !order?.addressId && partnerType !== "direct-partner") {
-        // For local partners, address is auto-selected in handleEmail, so skip validation
+      } else if (!isDirectPartner && order?.userId && !resolvedAddressId) {
         info_toaster("Address cannot be empty");
       } else {
         setLoader(true);
@@ -750,11 +760,11 @@ const DrawerBeans = ({
             ...(isDirectPartner || isSelfOrder
               ? {
                   salesRepId: order?.salesRepId || userID,
-                  addressId: order?.addressId,
+                  addressId: resolvedAddressId || order?.addressId,
                 }
               : {
                   userId: order?.userId,
-                  addressId: order?.addressId,
+                  addressId: resolvedAddressId,
                 }),
           };
 
@@ -832,17 +842,18 @@ const DrawerBeans = ({
 
     setAddressOptions([...addressList]);
 
-    // For local partners (partnerType === "direct-partner"), automatically select first address
-    const isLocalPartner = partnerType === "direct-partner";
-    const firstAddressId = addresses.length > 0 ? addresses[0]?.id : null;
+    // Auto-select first available customer address for quotation flow.
+    // This avoids false "Address cannot be empty" when address selector is not shown.
+    const firstAddressId =
+      addresses.length > 0
+        ? addresses[0]?.id
+        : selectedEmail?.addressId || selectedEmail?.defaultAddressId || null;
 
     setOrder((prev) => ({
       ...prev,
       userId: selectedEmail?.id,
-      // Auto-select first address for local partners when sending quotation
-      addressId: isLocalPartner && type !== "createOrder" && firstAddressId 
-        ? firstAddressId 
-        : prev.addressId,
+      addressId:
+        type !== "createOrder" && firstAddressId ? firstAddressId : prev.addressId,
     }));
   };
 
@@ -926,10 +937,13 @@ const DrawerBeans = ({
       partners?.length > 0 &&
       (partners.some((p) => String(p?.id) === String(order?.salesRepId)) ||
         partners.some((p) => String(p?.id) === String(propSelectedPartnerId)));
+    const isSalesRepQuotationFlow =
+      type !== "createOrder" && userType === "salesRepresentative";
     fetchChargesForCustomer(
       selectedEmail?.id,
       totalWeight,
-      isDirectOnly
+      isDirectOnly,
+      isSalesRepQuotationFlow
     );
   };
 
@@ -995,7 +1009,8 @@ const DrawerBeans = ({
     }
     if (customerIdForShipping && totalWeight > 0) {
       const isPartnerOrder =
-        type === "createOrder" && (isDirectPartner || isSelfOrder);
+        (type === "createOrder" && (isDirectPartner || isSelfOrder)) ||
+        (type !== "createOrder" && userType === "salesRepresentative");
       fetchChargesForCustomer(
         customerIdForShipping,
         totalWeight,

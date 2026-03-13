@@ -12,8 +12,11 @@ export default function UserSelection({
   onAddNewUser,
   selectedPartnerId,
   onPartnerChange,
+  isSalesRepresentativeUser = false,
 }) {
   const router = useRouter();
+  const localSalesRepId =
+    typeof window !== "undefined" ? localStorage.getItem("userID") : "";
 
   // Partner options: Admin (null) + list of partners
   const { data: salesRepData } = GetAPI("api/v1/admin/sales-rep");
@@ -35,8 +38,9 @@ export default function UserSelection({
   const [customerSearchQuery, setCustomerSearchQuery] = useState("");
 
   const getCustomerListEndpoint = (page, limit, search = "", partnerId = selectedPartnerId) => {
-    const base =
-      partnerId != null && partnerId !== ""
+    const base = isSalesRepresentativeUser
+      ? `api/v1/admin/customer-management/customer-list/sale-rep-id/${localSalesRepId}`
+      : partnerId != null && partnerId !== ""
         ? `api/v1/admin/customer-management/customer-list/sale-rep-id/${partnerId}`
         : "api/v1/admin/customer-management/customer-list/not-assigned";
     const params = new URLSearchParams();
@@ -225,27 +229,28 @@ export default function UserSelection({
 
   return (
     <div className="space-y-6">
-      {/* Customer source */}
-      <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-4">
-        <label className="text-sm font-semibold text-gray-700 block mb-1">
-          Show customers for
-        </label>
-        <p className="text-xs text-gray-500 mb-3">
-          Admin customers or pick a partner to see their customers
-        </p>
-        <Select
-          options={partnerOptions}
-          value={currentPartnerOption || partnerOptions[0]}
-          onChange={(opt) => {
-            const newId = opt?.value ?? null;
-            onPartnerChange?.(newId);
-            onSelect(null);
-          }}
-          classNamePrefix="select"
-          menuPortalTarget={typeof document !== "undefined" ? document.body : null}
-          styles={selectStyles}
-        />
-      </div>
+      {!isSalesRepresentativeUser && (
+        <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-4">
+          <label className="text-sm font-semibold text-gray-700 block mb-1">
+            Show customers for
+          </label>
+          <p className="text-xs text-gray-500 mb-3">
+            Admin customers or pick a partner to see their customers
+          </p>
+          <Select
+            options={partnerOptions}
+            value={currentPartnerOption || partnerOptions[0]}
+            onChange={(opt) => {
+              const newId = opt?.value ?? null;
+              onPartnerChange?.(newId);
+              onSelect(null);
+            }}
+            classNamePrefix="select"
+            menuPortalTarget={typeof document !== "undefined" ? document.body : null}
+            styles={selectStyles}
+          />
+        </div>
+      )}
 
       {/* Customer selection */}
       <div className="rounded-lg border border-gray-200 bg-white p-4">
@@ -258,14 +263,16 @@ export default function UserSelection({
               Search by name or email
             </p>
           </div>
-          <button
-            type="button"
-            onClick={handleAddNewUser}
-            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-theme border border-theme rounded-lg hover:bg-theme/5 transition-colors shrink-0"
-          >
-            <FaPlus size={12} />
-            Add New User
-          </button>
+          {!isSalesRepresentativeUser && (
+            <button
+              type="button"
+              onClick={handleAddNewUser}
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-theme border border-theme rounded-lg hover:bg-theme/5 transition-colors shrink-0"
+            >
+              <FaPlus size={12} />
+              Add New User
+            </button>
+          )}
         </div>
         <Select
           isLoading={customerLoading}

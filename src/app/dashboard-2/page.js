@@ -17,10 +17,11 @@ import { useState, useEffect, useRef } from "react";
 import UserTypeFilterModal from "@/components/ui/UserTypeFilterModal";
 import { PostAPI } from "@/utilities/PostAPI";
 import ErrorHandler from "@/utilities/ErrorHandler";
-import { BASE_URL, STRIPE_PUBLIC_KEY } from "@/utilities/URL";
+import { BASE_URL, RETURN_URL, STRIPE_PUBLIC_KEY } from "@/utilities/URL";
 import { success_toaster, error_toaster } from "@/utilities/Toaster";
 import { loadStripe } from "@stripe/stripe-js";
 import api from "@/utilities/StatusErrorHandler";
+import { broadcastEmployeeStripeConnected } from "@/utilities/stripeSyncChannel";
 
 export default function Dashboard2() {
   const router = useRouter();
@@ -188,6 +189,81 @@ export default function Dashboard2() {
     stripeAccountStatus();
     checkBankStatus();
   }, [userType, userID, isEmployee, url]);
+
+  // Admin employee:
+  // Recheck Stripe account on refresh only when account is false OR onboarding is in progress.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (userType !== "admin" || !isEmployee) return;
+
+    const employeeId = localStorage.getItem("employeeId");
+    const employeeStripeState = localStorage.getItem("employeeStripeAccountState");
+    const connectionInProgress =
+      localStorage.getItem("employeeStripeConnectionInProgress") === "true";
+
+    if (!employeeId) return;
+    if (employeeStripeState !== "false" && !connectionInProgress) return;
+
+    const refreshEmployeeStripeState = async () => {
+      try {
+        const stripeResponse = await api.post(
+          `api/v1/admin/employee/${employeeId}/stripe-connect-account`,
+          { returnUrl: RETURN_URL },
+          { suppressSuccessToast: true }
+        );
+
+        if (stripeResponse?.data?.status === "success") {
+          const stripeData = stripeResponse?.data?.data;
+
+          if (stripeData?.accountId) {
+            localStorage.setItem("employeeStripeAccountId", stripeData.accountId);
+          }
+          if (stripeData?.accountState !== undefined) {
+            localStorage.setItem(
+              "employeeStripeAccountState",
+              String(stripeData.accountState)
+            );
+          }
+          if (stripeData?.account) {
+            localStorage.setItem(
+              "employeeStripeAccount",
+              JSON.stringify(stripeData.account)
+            );
+          }
+
+          if (stripeData?.accountState === true) {
+            localStorage.removeItem("employeeStripeConnectionInProgress");
+            localStorage.removeItem("employeeStripeOnboardingLink");
+            broadcastEmployeeStripeConnected({
+              accountState: true,
+              accountId: stripeData?.accountId,
+            });
+            return;
+          }
+
+          if (
+            stripeData?.accountState === false &&
+            stripeData?.onboardingLink
+          ) {
+            localStorage.setItem(
+              "employeeStripeOnboardingLink",
+              stripeData.onboardingLink
+            );
+            localStorage.setItem("employeeStripeConnectionInProgress", "true");
+            window.open(
+              stripeData.onboardingLink,
+              "_blank",
+              "noopener,noreferrer"
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Failed to refresh employee Stripe account state:", error);
+      }
+    };
+
+    refreshEmployeeStripeState();
+  }, [userType, isEmployee]);
 
   const handleConnectAccount = async () => {
     if (typeof window === "undefined") return;

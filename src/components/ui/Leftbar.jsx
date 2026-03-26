@@ -46,6 +46,7 @@ import { getMessagingInstance, onMessage } from "@/utilities/firebase";
 import { requestDeviceToken } from "@/utilities/requestFCMToken";
 import { hasPermission } from "@/utilities/Permission";
 import { LEFTBAR } from "@/components/ui/leftbar.testid";
+import { subscribeEmployeeStripeConnected } from "@/utilities/stripeSyncChannel";
 
 export default function Leftbar(props) {
   // Initialize to null/false so server and client first paint match (avoids hydration mismatch).
@@ -110,6 +111,24 @@ export default function Leftbar(props) {
 
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = subscribeEmployeeStripeConnected((payload) => {
+      if (payload?.accountState !== true) return;
+
+      localStorage.setItem("employeeStripeAccountState", "true");
+      localStorage.removeItem("employeeStripeConnectionInProgress");
+      localStorage.removeItem("employeeStripeOnboardingLink");
+      if (payload?.accountId) {
+        localStorage.setItem("employeeStripeAccountId", payload.accountId);
+      }
+
+      setEmployeeStripeAccountState("true");
+      setForceUpdate((prev) => prev + 1);
+    });
+
+    return unsubscribe;
   }, []);
 
   // Poll localStorage for employee-related values (only when component is mounted and userType is set)
@@ -461,6 +480,17 @@ export default function Leftbar(props) {
     } catch (error) {
       ErrorHandler(error);
     }
+  };
+
+  const handleEmployeeStripeOnboarding = () => {
+    if (typeof window === "undefined") return;
+    const onboardingLink = localStorage.getItem("employeeStripeOnboardingLink");
+    if (!onboardingLink) {
+      info_toaster("Stripe onboarding link is not available.");
+      return;
+    }
+    localStorage.setItem("employeeStripeConnectionInProgress", "true");
+    window.open(onboardingLink, "_blank", "noopener,noreferrer");
   };
 
   // useEffect(() => {
@@ -1560,6 +1590,23 @@ export default function Leftbar(props) {
               onClick={handleEmployeeStripeDashboard}
               active={false}
               data-testid={LEFTBAR.employeeStripeDashboard}
+            />
+          )}
+
+          {(() => {
+            if (typeof window === "undefined") {
+              return isEmployee && employeeStripeAccountState === "false";
+            }
+            const checkIsEmployee = localStorage.getItem("isEmployee") === "true";
+            const checkStripeState = localStorage.getItem("employeeStripeAccountState");
+            return checkIsEmployee && checkStripeState === "false";
+          })() && (
+            <ListHead
+              title="Connect Stripe Account"
+              Icon={MdPayments}
+              onClick={handleEmployeeStripeOnboarding}
+              active={false}
+              data-testid={LEFTBAR.stripeActionButton}
             />
           )}
 

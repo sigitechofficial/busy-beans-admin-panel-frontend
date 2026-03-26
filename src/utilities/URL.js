@@ -4,7 +4,7 @@ const ENV = "staging"; // "local" | "staging" | "production" | "aws"
 
 const CONFIG = {
   local: {
-    BASE_URL: "http://192.168.18.143:8013/",
+    BASE_URL: "http://192.168.1.26:8013/",
     STRIPE_PUBLIC_KEY:
       "pk_test_51RPXZNCxTuXimvwHkvKO6MrVTckQ45X3JC2AkCVyV9fxLCK442YPbG8yM2NOexEqnD3wNAXdKfrOyEH2dTSzYKpt00WTyK7kzl",
     RETURN_URL: "http://192.168.18.36:3000",

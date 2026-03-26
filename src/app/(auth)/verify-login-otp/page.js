@@ -6,6 +6,7 @@ import { PostAPI } from "@/utilities/PostAPI";
 import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import { RETURN_URL } from "@/utilities/URL";
 import api from "@/utilities/StatusErrorHandler";
+import { broadcastEmployeeStripeConnected } from "@/utilities/stripeSyncChannel";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -137,12 +138,20 @@ export default function VerifyLoginOtp() {
                 );
               }
               if (stripeData?.accountState === true) {
+                localStorage.removeItem(
+                  "employeeStripeConnectionInProgress",
+                );
+                localStorage.removeItem("employeeStripeOnboardingLink");
                 if (stripeData?.account) {
                   localStorage.setItem(
                     "employeeStripeAccount",
                     JSON.stringify(stripeData.account),
                   );
                 }
+                broadcastEmployeeStripeConnected({
+                  accountState: true,
+                  accountId: stripeData?.accountId,
+                });
               } else if (
                 stripeData?.accountState === false &&
                 stripeData?.onboardingLink
@@ -151,11 +160,19 @@ export default function VerifyLoginOtp() {
                   "employeeStripeOnboardingLink",
                   stripeData.onboardingLink,
                 );
+                localStorage.setItem(
+                  "employeeStripeConnectionInProgress",
+                  "true",
+                );
                 info_toaster(
                   stripeData?.message || "Stripe account setup required",
                 );
                 shouldRedirectToOnboarding = true;
-                window.location.href = stripeData.onboardingLink;
+                window.open(
+                  stripeData.onboardingLink,
+                  "_blank",
+                  "noopener,noreferrer",
+                );
               }
             }
           } catch (error) {

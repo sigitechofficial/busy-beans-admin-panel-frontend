@@ -8,6 +8,7 @@ import { requestDeviceToken } from "@/utilities/requestFCMToken";
 import { error_toaster, success_toaster, info_toaster } from "@/utilities/Toaster";
 import { BASE_URL, RECAPTCHA_SITE_KEY, RETURN_URL } from "@/utilities/URL";
 import api from "@/utilities/StatusErrorHandler";
+import { broadcastEmployeeStripeConnected } from "@/utilities/stripeSyncChannel";
 import { useFormik } from "formik";
 import Link from "next/link";
 import Image from "next/image";
@@ -185,20 +186,36 @@ export default function SignIn() {
                   // Scenario A: Account is active
                   if (stripeData?.accountState === true) {
                     // Account is fully connected and active
+                    localStorage.removeItem(
+                      "employeeStripeConnectionInProgress",
+                    );
+                    localStorage.removeItem("employeeStripeOnboardingLink");
                     if (stripeData?.account) {
                       localStorage.setItem("employeeStripeAccount", JSON.stringify(stripeData.account));
                     }
+                    broadcastEmployeeStripeConnected({
+                      accountState: true,
+                      accountId: stripeData?.accountId,
+                    });
                   }
                   // Scenario B & C: Account exists but not active OR new account created
                   else if (stripeData?.accountState === false && stripeData?.onboardingLink) {
                     // Store onboarding link for later use
                     localStorage.setItem("employeeStripeOnboardingLink", stripeData.onboardingLink);
+                    localStorage.setItem(
+                      "employeeStripeConnectionInProgress",
+                      "true",
+                    );
                     // Show info message about pending onboarding
                     info_toaster(stripeData?.message || "Stripe account setup required");
                     // Set flag to redirect
                     shouldRedirectToOnboarding = true;
-                    // Navigate to onboarding link
-                    window.location.href = stripeData.onboardingLink;
+                    // Navigate to onboarding link in a new tab
+                    window.open(
+                      stripeData.onboardingLink,
+                      "_blank",
+                      "noopener,noreferrer"
+                    );
                   }
                 }
               } catch (error) {

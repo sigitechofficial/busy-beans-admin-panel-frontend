@@ -98,6 +98,7 @@ export default function RootLayout({ children, params }) {
         />
       </head>
       <body
+        suppressHydrationWarning
         className={`${switzer.variable} ${satoshi.variable} ${inter.variable} ${nunito.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <div

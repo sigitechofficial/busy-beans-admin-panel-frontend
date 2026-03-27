@@ -1563,6 +1563,13 @@ export default function Leftbar(props) {
             />
           )}
 
+          <ListHead
+            title="Tasting Requests"
+            Icon={MdCoffeeMaker}
+            to="/free-tasting"
+            active={pathname.includes("/free-tasting")}
+          />
+
           {/* Stripe Dashboard for Employees */}
           {(() => {
             // Always check localStorage directly to ensure we have the latest value

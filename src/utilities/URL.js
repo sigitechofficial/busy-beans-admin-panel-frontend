@@ -1,6 +1,6 @@
 import { error_toaster } from "./Toaster";
 
-const ENV = "production"; // "local" | "staging" | "production"
+const ENV = "staging"; // "local" | "staging" | "production"
 
 const CONFIG = {
   local: {

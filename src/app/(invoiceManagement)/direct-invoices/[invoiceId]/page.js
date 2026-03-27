@@ -778,8 +778,10 @@ export default function OrderDetail() {
                                 styles={selectStyles2}
                                 options={paymentStausOptions}
                                 onChange={(e) => {
+                                  if (isEmployee) return;
                                   handlePaymentStatus(e);
                                 }}
+                                isDisabled={isEmployee}
                               />
                             </span>
                           )}

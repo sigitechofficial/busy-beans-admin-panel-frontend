@@ -181,15 +181,77 @@ export default function EmployeePayouts() {
         "employees"
       );
 
-      if (res?.data?.status === "success") {
-        success_toaster(res?.data?.message || `${selectedRows.length} record(s) transferred successfully`);
-        // Reset states on success
-        setSelectedRows([]);
-        setSelectedEmployee(null);
-        reFetch();
-      } else {
+      if (res?.data?.status !== "success") {
         throw new Error(res?.data?.message || "An unexpected error occurred.");
       }
+
+      const transferData = res?.data?.data || {};
+      const results = Array.isArray(transferData?.results) ? transferData.results : [];
+      const failedOrders = Array.isArray(transferData?.failedOrders)
+        ? transferData.failedOrders
+        : [];
+      const successfulCount = Number(transferData?.successful || 0);
+      const failedCount = Number(transferData?.failed || 0);
+
+      // Prefer order-level failed messages when available.
+      if (failedOrders.length > 0) {
+        failedOrders.forEach((failedItem) => {
+          const orderId = failedItem?.orderId ? `Order ${failedItem.orderId}` : "Order";
+          const employeeLabel = failedItem?.employeeId
+            ? ` (Employee ${failedItem.employeeId})`
+            : "";
+          error_toaster(
+            `${orderId}${employeeLabel}: ${
+              failedItem?.message || "Transfer failed."
+            }`
+          );
+        });
+      }
+
+      // Show per-record message for both success and failure.
+      results.forEach((result) => {
+        // If order-level failures exist, skip generic failed result toast
+        // to avoid duplicate failure notifications.
+        if (failedOrders.length > 0 && result?.status !== "success") return;
+
+        const employeeLabel = result?.employeeId
+          ? `Employee ${result.employeeId}`
+          : "Employee";
+        const orderIdsLabel = Array.isArray(result?.orderIds) && result.orderIds.length
+          ? ` (orders: ${result.orderIds.join(", ")})`
+          : "";
+        const msg = `${employeeLabel}${orderIdsLabel}: ${
+          result?.message || (result?.status === "success" ? "Transferred successfully." : "Transfer failed.")
+        }`;
+
+        if (result?.status === "success") {
+          success_toaster(msg);
+        } else {
+          error_toaster(msg);
+        }
+      });
+
+      // Fallback overall summary message when API doesn't return per-item results.
+      if (results.length === 0) {
+        if (successfulCount > 0 && failedCount === 0) {
+          success_toaster(
+            res?.data?.message || `${successfulCount} record(s) transferred successfully`
+          );
+        } else if (failedCount > 0 && successfulCount === 0) {
+          error_toaster(res?.data?.message || "All selected transfers failed.");
+        } else if (successfulCount > 0 && failedCount > 0) {
+          error_toaster(
+            `${successfulCount} transfer(s) succeeded and ${failedCount} failed.`
+          );
+        }
+      }
+
+      // Only clear selection when no failures remain; keeps failed rows selected for retry.
+      if (failedCount === 0) {
+        setSelectedRows([]);
+        setSelectedEmployee(null);
+      }
+      reFetch();
     } catch (error) {
       ErrorHandler(error);
     }

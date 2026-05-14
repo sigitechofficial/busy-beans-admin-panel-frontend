@@ -1,84 +1,681 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
-import ManagementTab from "@/components/ui/ManagementTab";
-import MyDataTable from "@/components/ui/MyDataTable";
-import GetAPI from "@/utilities/GetAPI";
-import Loader from "@/components/ui/Loader";
-import { useRouter } from "next/navigation";
-import dayjs from "dayjs";
-import { useDataContext } from "@/utilities/DataContext";
-import { CiMenuBurger } from "react-icons/ci";
 
-export default function IndividualInvoices() {
-  if (typeof window !== "undefined") {
-    var userID = localStorage.getItem("userID");
-    var userType = localStorage.getItem("userType");
+import BackButton from "@/components/ui/BackButton";
+import Loader from "@/components/ui/Loader";
+import MyDataTable from "@/components/ui/MyDataTable";
+import { useDataContext } from "@/utilities/DataContext";
+import GetAPI from "@/utilities/GetAPI";
+import { drawerSelectStyles } from "@/utilities/SelectStyle";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { CiMenuBurger } from "react-icons/ci";
+import { ImCross } from "react-icons/im";
+import Select from "react-select";
+import { PULLOUT_INTENT_QBO_SYNC } from "../../../(reportManagement)/reports/report.testid";
+import dayjs from "dayjs";
+import { formatUSD } from "@/utilities/constants";
+import { error_toaster, success_toaster, info_toaster } from "@/utilities/Toaster";
+import { PostAPI } from "@/utilities/PostAPI";
+import ErrorHandler from "@/utilities/ErrorHandler";
+
+const SYNC_CHUNK = 100;
+
+function formatPulloutDate(val) {
+  if (val === null || val === undefined || val === "") return "-";
+  const asNumber = Number(val);
+  if (!Number.isNaN(asNumber) && asNumber > 0) {
+    return dayjs(asNumber).format("MM/DD/YYYY");
   }
+  const parsed = dayjs(val);
+  return parsed.isValid() ? parsed.format("MM/DD/YYYY") : "-";
+}
+
+function outcomeBadgeClass(outcome) {
+  if (outcome === "synced") return "bg-emerald-100 text-emerald-900 border-emerald-200";
+  if (outcome === "skipped") return "bg-amber-100 text-amber-900 border-amber-200";
+  if (outcome === "failed") return "bg-red-100 text-red-900 border-red-200";
+  return "bg-stone-100 text-stone-800 border-stone-200";
+}
+
+/** Known `reason` values from Pullout_Custom_Field_Sync_Frontend_Guide — for clearer tooltips. */
+function syncReasonLabel(reason) {
+  if (!reason) return "";
+  const map = {
+    pullout_gates_not_met: "Order no longer passes sync gates (try refresh).",
+    skipped_admin_sync_direct_partner_order: "Admin QBO is not used for this direct-partner order.",
+    skipped_admin_sync_dropship_direct_invoice_order: "Admin QBO is not used for this dropship direct-invoice order.",
+    admin_qbo_not_connected: "Admin QuickBooks is disconnected — reconnect QBO.",
+    admin_qbo_customer_not_connected: "Customer not mapped to admin QBO yet.",
+    admin_qbo_token_or_realm_missing: "QBO token or realm missing — reconnect QuickBooks.",
+    pullout_already_set: "Pullout intent already on QBO; database reconciled to synced.",
+    no_admin_invoice_id: "No admin invoice id yet; backend created or linked an invoice (see sync result).",
+  };
+  return map[reason] ?? "";
+}
+
+/** Table row shape (must match MyDataTable `data` rows for selection). */
+function mapServiceRowToData(row, sl) {
+  const receivableOn =
+    row.adminReceivableStatus === true ||
+    row.adminReceivableStatus === 1 ||
+    row.adminReceivableStatus === "1";
+  return {
+    id: row.id,
+    orderId: row.id,
+    sl,
+    invoiceNumber: row.invoiceNumber || "-",
+    orderDate: row.on ? dayjs(row.on).format("MM/DD/YYYY") : "-",
+    companyName: row.companyName || "-",
+    salesRepName: row.salesRepName || "-",
+    partnerType: row.partnerType || "-",
+    paymentStatus: row.paymentStatus || "-",
+    totalBill: formatUSD(parseFloat(row.totalBill) || 0),
+    adminReceivable: receivableOn ? "Yes" : "No",
+    adminReceivableAmount: formatUSD(parseFloat(row.adminReceivableAmount) || 0),
+    localPatnerCommission: formatUSD(parseFloat(row.localPatnerCommission) || 0),
+    pulloutIntentId: row.pulloutIntentId || "-",
+    pulloutDate: formatPulloutDate(row.pulloutDate),
+    quickBooksInvoiceId: row.quickBooksInvoiceId || "-",
+    pulloutIntentIdSynced: row.pulloutIntentIdSynced || "-",
+    pendingReason: row.pendingReason || "-",
+  };
+}
+
+export default function QuickBooksInvoicesPulloutSyncPage() {
+  const [customDates, setCustomDates] = useState({ startDate: "", endDate: "" });
+  const [selectedOption, setSelectedOption] = useState({
+    value: "allTime",
+    label: "All Time",
+  });
+  const [displayCustomFilters, setDisplayCustomFilters] = useState(false);
+
+  const getInitialDateRange = () => {
+    const today = dayjs();
+    return {
+      startDate: "2025-01-01",
+      endDate: today.format("YYYY-MM-DD"),
+    };
+  };
+
+  const [dateRange, setDateRange] = useState(getInitialDateRange());
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
+  const [selectedSalesRep, setSelectedSalesRep] = useState({
+    value: "all",
+    label: "All Local Partners",
+  });
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [syncing, setSyncing] = useState(false);
+  const [syncProgress, setSyncProgress] = useState({ done: 0, total: 0 });
+  const [lastSync, setLastSync] = useState(null);
+  const reselectAfterSyncRef = useRef(null);
 
   const router = useRouter();
-  const { data } = GetAPI(
-    userType === "salesRepresentative"
-      ? `api/v1/admin/orders?salesRepId=${userID}`
-      : `api/v1/admin/orders`
-  );
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const currentSyncStatus =
+    searchParams?.get("syncStatus") === "synced" ? "synced" : "unsynced";
+  const [adminGate, setAdminGate] = useState("checking");
 
-  const columns = [
-    { field: "invoiceNumber", header: "INV#" },
-    { field: "companyName", header: "Company" },
-    { field: "orderDate", header: "Order Date", sort: true },
-    { field: "totalBill", header: "Total" },
-    { field: "paymentStatus", header: "Status" },
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (localStorage.getItem("userType") !== "admin") {
+      info_toaster("This page is only available to admin users.");
+      router.replace("/");
+      setAdminGate("denied");
+      return;
+    }
+    setAdminGate("ok");
+  }, [router]);
+
+  const { data: salesRepData } = GetAPI(adminGate === "ok" ? "api/v1/admin/sales-rep" : "");
+
+  const salesRepOptions = [
+    { value: "all", label: "All Local Partners" },
+    ...(salesRepData?.data?.data
+      ? salesRepData.data.data.map((rep) => ({
+          value: rep.id,
+          label: rep.srName || rep.name || `Sales Rep ${rep.id}`,
+        }))
+      : []),
   ];
 
-  const datas = [];
-  const resultedOrders = data?.data?.data?.filter((detail, i) => {
-    return (
-      (detail?.paymentStatus === "pending" || detail?.paymentStatus === "done") &&
-      datas.push({
-        id: detail?.id,
-        invoiceNumber: detail?.invoiceNumber,
-        companyName: detail?.companyName,
-        totalBill: "$" + detail?.totalBill,
-        paymentStatus: detail?.paymentStatus === "done" ? "Paid" : "Unpaid",
-        orderDate: dayjs(detail?.on).format("MM/DD/YYYY"),
-      })
-    );
-  });
+  const buildApiUrl = () => {
+    const baseUrl = "api/v1/admin/admin-reports/pullout-intent-unsynced-orders";
+    const params = new URLSearchParams();
+    if (dateRange?.startDate && dateRange?.endDate) {
+      params.set("startDate", dateRange.startDate);
+      params.set("endDate", dateRange.endDate);
+    }
+    params.set("page", String(page));
+    params.set("limit", String(limit));
+    if (selectedSalesRep?.value && selectedSalesRep.value !== "all") {
+      params.set("salesRepId", String(selectedSalesRep.value));
+    }
+    if (currentSyncStatus === "synced") {
+      params.set("syncStatus", "synced");
+    }
+    return `${baseUrl}?${params.toString()}`;
+  };
+
+  const { data, isLoading, reFetch } = GetAPI(adminGate === "ok" ? buildApiUrl() : "");
+
+  const options = [
+    { value: "allTime", label: "All Time" },
+    { value: "currentYear", label: "Current year" },
+    { value: "currentMonth", label: "Current Month" },
+    { value: "currentWeek", label: "Current Week" },
+    { value: "lastYear", label: "Last Year" },
+    { value: "last90Days", label: "Last 90 days" },
+    { value: "lastMonth", label: "Last Month" },
+    { value: "monthToDate", label: "Month to date" },
+    { value: "lastWeek", label: "Last Week" },
+    { value: "custom", label: "Custom" },
+    { value: "noDateFilter", label: "No date filter (all qualifying)" },
+  ];
+
+  const calculateDateRange = (filterValue) => {
+    const today = dayjs();
+    let startDate = "";
+    let endDate = "";
+
+    switch (filterValue) {
+      case "noDateFilter":
+        return { startDate: "", endDate: "" };
+      case "allTime":
+        startDate = "2025-01-01";
+        endDate = today.format("YYYY-MM-DD");
+        break;
+      case "currentYear":
+        startDate = today.startOf("year").format("YYYY-MM-DD");
+        endDate = today.endOf("year").format("YYYY-MM-DD");
+        break;
+      case "currentMonth":
+        startDate = today.startOf("month").format("YYYY-MM-DD");
+        endDate = today.endOf("month").format("YYYY-MM-DD");
+        break;
+      case "currentWeek":
+        startDate = today.startOf("week").format("YYYY-MM-DD");
+        endDate = today.endOf("week").format("YYYY-MM-DD");
+        break;
+      case "lastYear":
+        startDate = today.subtract(1, "year").startOf("year").format("YYYY-MM-DD");
+        endDate = today.subtract(1, "year").endOf("year").format("YYYY-MM-DD");
+        break;
+      case "last90Days":
+        startDate = today.subtract(90, "days").format("YYYY-MM-DD");
+        endDate = today.format("YYYY-MM-DD");
+        break;
+      case "lastMonth":
+        startDate = today.subtract(1, "month").startOf("month").format("YYYY-MM-DD");
+        endDate = today.subtract(1, "month").endOf("month").format("YYYY-MM-DD");
+        break;
+      case "monthToDate":
+        startDate = today.startOf("month").format("YYYY-MM-DD");
+        endDate = today.format("YYYY-MM-DD");
+        break;
+      case "lastWeek":
+        startDate = today.subtract(1, "week").startOf("week").format("YYYY-MM-DD");
+        endDate = today.subtract(1, "week").endOf("week").format("YYYY-MM-DD");
+        break;
+      case "custom":
+        break;
+      default:
+        startDate = "";
+        endDate = "";
+    }
+    return { startDate, endDate };
+  };
+
+  const rawRows = useMemo(() => {
+    if (!data) return [];
+    if (Array.isArray(data?.data)) return data.data;
+    if (Array.isArray(data?.data?.data)) return data.data.data;
+    return [];
+  }, [data]);
+
+  const pagination = data?.pagination || {};
+
+  const columns = [
+    { field: "sl", header: "SL", sort: true, minWidth: "5rem" },
+    { field: "invoiceNumber", header: "Invoice #", sort: true },
+    { field: "orderDate", header: "Order date", sort: true },
+    { field: "companyName", header: "Customer" },
+    { field: "salesRepName", header: "Local partner" },
+    { field: "partnerType", header: "Partner type" },
+    { field: "paymentStatus", header: "Payment status" },
+    { field: "totalBill", header: "Total bill", sort: true },
+    { field: "adminReceivable", header: "Admin receivable" },
+    { field: "adminReceivableAmount", header: "Admin receivable $", sort: true },
+    { field: "localPatnerCommission", header: "Partner commission $", sort: true },
+    { field: "pulloutIntentId", header: "Pullout intent ID", minWidth: "14rem" },
+    { field: "pulloutDate", header: "Pullout date", sort: true },
+    { field: "quickBooksInvoiceId", header: "QBO invoice ID" },
+    { field: "pulloutIntentIdSynced", header: "Sync state" },
+    { field: "pendingReason", header: "Pending reason", minWidth: "12rem" },
+  ];
+
+  const datas = rawRows.map((row, i) =>
+    mapServiceRowToData(row, (page - 1) * limit + i + 1)
+  );
+
+  useEffect(() => {
+    const pending = reselectAfterSyncRef.current;
+    if (!pending) return;
+    const { failedIds } = pending;
+    const next = rawRows
+      .filter((row) => failedIds.has(Number(row.id)))
+      .map((row, idx) => mapServiceRowToData(row, idx + 1));
+    setSelectedRows(next);
+    reselectAfterSyncRef.current = null;
+  }, [rawRows]);
+
+  const runBulkSync = useCallback(
+    async (orderIds) => {
+      const unique = [
+        ...new Set(
+          orderIds
+            .map((id) => Number(id))
+            .filter((id) => Number.isFinite(id) && id > 0)
+        ),
+      ];
+      if (!unique.length) {
+        info_toaster("Select at least one order.");
+        return;
+      }
+
+      setSyncing(true);
+      setSyncProgress({ done: 0, total: unique.length });
+      const allResults = [];
+      let agg = { total: 0, synced: 0, skipped: 0, failed: 0 };
+
+      try {
+        for (let i = 0; i < unique.length; i += SYNC_CHUNK) {
+          const chunk = unique.slice(i, i + SYNC_CHUNK);
+          const res = await PostAPI(
+            "api/v1/admin/qbo/pullout-custom-field/sync",
+            { orderIds: chunk },
+            "report",
+            { suppressSuccessToast: true }
+          );
+          const body = res?.data;
+          if (body?.results) allResults.push(...body.results);
+          if (body?.summary) {
+            agg = {
+              total: agg.total + (body.summary.total || 0),
+              synced: agg.synced + (body.summary.synced || 0),
+              skipped: agg.skipped + (body.summary.skipped || 0),
+              failed: agg.failed + (body.summary.failed || 0),
+            };
+          }
+          setSyncProgress({ done: Math.min(i + chunk.length, unique.length), total: unique.length });
+        }
+
+        setLastSync({ summary: agg, results: allResults, at: Date.now() });
+
+        const failedIds = new Set(
+          allResults
+            .filter((r) => r.outcome === "failed")
+            .map((r) => Number(r.orderId))
+            .filter((id) => Number.isFinite(id))
+        );
+
+        success_toaster(
+          `Pushed ${agg.synced} invoice(s) to QuickBooks${agg.total ? ` (${agg.synced} of ${agg.total} in batch)` : ""}. Skipped: ${agg.skipped}, failed: ${agg.failed}.`
+        );
+
+        // Guide: keep only failed rows selected after refetch so admin can retry those ids.
+        reselectAfterSyncRef.current = { failedIds };
+        await reFetch?.();
+      } catch (err) {
+        ErrorHandler(err);
+      } finally {
+        setSyncing(false);
+        setSyncProgress({ done: 0, total: 0 });
+      }
+    },
+    [reFetch]
+  );
+
+  const handleSyncClick = () => {
+    const ids = selectedRows
+      .map((r) => Number(r.id))
+      .filter((n) => Number.isFinite(n) && n > 0);
+    void runBulkSync(ids);
+  };
+
+  const retryFailedFromLastSync = () => {
+    const ids = (lastSync?.results || [])
+      .filter((r) => r.outcome === "failed")
+      .map((r) => Number(r.orderId))
+      .filter((n) => Number.isFinite(n) && n > 0);
+    void runBulkSync(ids);
+  };
+
+  useEffect(() => {
+    if (selectedOption.value !== "custom" && !displayCustomFilters) {
+      const dates = calculateDateRange(selectedOption.value);
+      setDateRange(dates);
+      setPage(1);
+    }
+  }, [selectedOption, displayCustomFilters]);
+
+  useEffect(() => {
+    if (displayCustomFilters && customDates.startDate && customDates.endDate) {
+      const start = dayjs(customDates.startDate);
+      const end = dayjs(customDates.endDate);
+      const today = dayjs();
+      if (start.isAfter(end)) {
+        error_toaster("Start date cannot be after end date.");
+        return;
+      }
+      if (start.isAfter(today) || end.isAfter(today)) {
+        error_toaster("Dates cannot be in the future.");
+        return;
+      }
+      setDateRange({
+        startDate: customDates.startDate,
+        endDate: customDates.endDate,
+      });
+      setPage(1);
+    }
+  }, [customDates.startDate, customDates.endDate, displayCustomFilters]);
+
+  const handleChange = (val) => {
+    if (val?.value === "custom") {
+      setDisplayCustomFilters(true);
+    } else {
+      setSelectedOption(val);
+      setDisplayCustomFilters(false);
+      const dates = calculateDateRange(val?.value);
+      setDateRange(dates);
+      setCustomDates({ startDate: "", endDate: "" });
+      setPage(1);
+    }
+  };
+
+  const handleCancel = () => {
+    setDisplayCustomFilters(false);
+    setCustomDates({ startDate: "", endDate: "" });
+    setSelectedOption({ value: "allTime", label: "All Time" });
+    setDateRange(getInitialDateRange());
+    setPage(1);
+  };
+
+  const handleCustomDates = (e) => {
+    setCustomDates({ ...customDates, [e.target.name]: e.target.value });
+  };
+
+  const handleSalesRepChange = (val) => {
+    setSelectedSalesRep(val);
+    setPage(1);
+  };
+
+  const handleSyncStatusChange = (value) => {
+    setSelectedRows([]);
+    if (value === "synced") {
+      router.replace(`${pathname}?syncStatus=synced`);
+    } else {
+      router.replace(pathname);
+    }
+  };
 
   const { toggle, setToggle } = useDataContext();
 
-  return data?.length === 0 ? (
+  if (adminGate === "checking") {
+    return <Loader />;
+  }
+  if (adminGate !== "ok") {
+    return null;
+  }
+
+  return isLoading && !data ? (
     <Loader />
   ) : (
-    <div className="w-full">
-      <div className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+    <div data-testid={PULLOUT_INTENT_QBO_SYNC.root}>
+      <div
+        className="w-full md:w-[calc(100%-240px)] lg:w-[calc(100%-288px)] bg-white z-10 flex items-center justify-between h-[70px] 2xl:h-[94px] border-b px-6 2xl:px-12 fixed"
+        data-testid={PULLOUT_INTENT_QBO_SYNC.headerBar}
       >
         <div className="flex items-center gap-2">
-          <p
-            onClick={() => setToggle(!toggle)}
-            className="cursor-pointer md:hidden"
-          >
+          <p onClick={() => setToggle(!toggle)} className="cursor-pointer md:hidden">
             <CiMenuBurger size={20} />
           </p>
-          <h2 className="text-xl font-inter font-semibold">Invoices</h2>
+          <h2
+            className="text-xl font-inter font-semibold"
+            data-testid={PULLOUT_INTENT_QBO_SYNC.title}
+          >
+            QuickBooks invoices — pullout intent sync
+          </h2>
         </div>
       </div>
 
-      <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
+      <div className="space-y-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
+        <div className="flex items-center gap-2 flex-wrap">
+          {[
+            { value: "unsynced", label: "Current" },
+            { value: "synced", label: "Synced" },
+          ].map((tab) => (
+            <button
+              key={tab.value}
+              type="button"
+              onClick={() => handleSyncStatusChange(tab.value)}
+              className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                currentSyncStatus === tab.value
+                  ? "bg-black text-white border-black"
+                  : "bg-white text-slate-600 border-slate-300 hover:bg-slate-100"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <p className="max-w-4xl text-sm text-secondary">
+          {currentSyncStatus === "synced"
+            ? "Customer orders that have already been synced to admin QuickBooks."
+            : "Customer orders (dropship partner, bank check pullouts) whose PulloutIntentId is not yet on the admin QuickBooks invoice. Select rows and sync; successful rows disappear from this list on refresh."}
+        </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-          <ManagementTab title="Total Orders" desc={resultedOrders?.length}/>
+        <div
+          className="flex items-center justify-between flex-wrap gap-y-3"
+          data-testid={PULLOUT_INTENT_QBO_SYNC.filterSection}
+        >
+          <div className="flex items-center gap-x-4 flex-wrap gap-y-3">
+            <BackButton />
+            {dateRange.startDate && dateRange.endDate && (
+              <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-md border border-gray-200">
+                <span className="text-sm font-inter font-medium text-gray-600">Date range:</span>
+                <span className="text-sm font-inter font-semibold text-gray-900">
+                  {dayjs(dateRange.startDate).format("MMM DD, YYYY")} —{" "}
+                  {dayjs(dateRange.endDate).format("MMM DD, YYYY")}
+                </span>
+              </div>
+            )}
+            {!dateRange.startDate && !dateRange.endDate && (
+              <span className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded px-3 py-1">
+                {currentSyncStatus === "synced"
+                  ? "No order-date filter (API returns all qualifying synced rows)."
+                  : "No order-date filter (API returns all qualifying unsynced rows)."}
+              </span>
+            )}
+            <div className="min-w-[220px]">
+              <Select
+                styles={drawerSelectStyles}
+                value={selectedSalesRep}
+                onChange={handleSalesRepChange}
+                options={salesRepOptions}
+                placeholder="Filter by local partner"
+                data-testid={PULLOUT_INTENT_QBO_SYNC.salesRepSelect}
+              />
+            </div>
+          </div>
+
+          <div className="min-w-40">
+            {displayCustomFilters ? (
+              <div className="flex gap-x-2 items-center h-[42px] flex-wrap">
+                <div className="space-x-2">
+                  <label htmlFor="pis-start" className="text-labelColor font-semibold text-sm">
+                    Start:
+                  </label>
+                  <input
+                    type="date"
+                    id="pis-start"
+                    name="startDate"
+                    value={customDates.startDate}
+                    onChange={handleCustomDates}
+                    className="h-[42px] rounded-md px-3 outline-none border font-medium text-labelColor"
+                    data-testid={PULLOUT_INTENT_QBO_SYNC.filterStartDate}
+                  />
+                </div>
+                <div className="space-x-2">
+                  <label htmlFor="pis-end" className="text-labelColor font-semibold text-sm">
+                    End:
+                  </label>
+                  <input
+                    type="date"
+                    id="pis-end"
+                    name="endDate"
+                    value={customDates.endDate}
+                    onChange={handleCustomDates}
+                    className="h-[42px] rounded-md px-3 outline-none border font-medium text-labelColor"
+                    data-testid={PULLOUT_INTENT_QBO_SYNC.filterEndDate}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="px-2 h-[42px] rounded-lg border border-theme text-theme bg-white hover:bg-theme hover:text-white"
+                  data-testid={PULLOUT_INTENT_QBO_SYNC.filterClearBtn}
+                >
+                  <ImCross size={20} />
+                </button>
+              </div>
+            ) : (
+              <Select
+                styles={drawerSelectStyles}
+                value={selectedOption}
+                onChange={handleChange}
+                options={options}
+                data-testid={PULLOUT_INTENT_QBO_SYNC.filterSelect}
+              />
+            )}
+          </div>
         </div>
 
-        <div>
+        {currentSyncStatus !== "synced" && (
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              disabled={syncing || selectedRows.length === 0}
+              onClick={handleSyncClick}
+              className="rounded-lg bg-theme px-5 py-2.5 font-inter font-medium text-buttonTextColor disabled:opacity-50 disabled:cursor-not-allowed"
+              data-testid={PULLOUT_INTENT_QBO_SYNC.syncButton}
+            >
+              {syncing
+                ? `Syncing… ${syncProgress.done}/${syncProgress.total}`
+                : `Sync to QuickBooks (${selectedRows.length})`}
+            </button>
+            <button
+              type="button"
+              disabled={syncing}
+              onClick={() => reFetch?.()}
+              className="rounded-lg border border-borderColor px-4 py-2 text-sm font-medium text-secondary hover:bg-stone-50"
+              data-testid={PULLOUT_INTENT_QBO_SYNC.refreshButton}
+            >
+              Refresh list
+            </button>
+            {lastSync?.results?.some((r) => r.outcome === "failed") ? (
+              <button
+                type="button"
+                disabled={syncing}
+                onClick={retryFailedFromLastSync}
+                className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-800 hover:bg-red-100"
+                data-testid={PULLOUT_INTENT_QBO_SYNC.retryFailedButton}
+              >
+                Retry failed (last run)
+              </button>
+            ) : null}
+          </div>
+        )}
+
+        {lastSync ? (
+          <div
+            className="rounded-lg border border-borderColor bg-stone-50 p-4 space-y-3"
+            data-testid={PULLOUT_INTENT_QBO_SYNC.resultsPanel}
+          >
+            <h3 className="font-inter font-semibold text-secondary">Last sync summary</h3>
+            <div className="flex flex-wrap gap-4 text-sm">
+              <span>Total: {lastSync.summary?.total ?? 0}</span>
+              <span className="text-emerald-800">Synced: {lastSync.summary?.synced ?? 0}</span>
+              <span className="text-amber-800">Skipped: {lastSync.summary?.skipped ?? 0}</span>
+              <span className="text-red-800">Failed: {lastSync.summary?.failed ?? 0}</span>
+            </div>
+            <div className="max-h-64 overflow-auto rounded border border-stone-200 bg-white">
+              <table className="min-w-full text-left text-xs">
+                <thead className="bg-stone-100 font-semibold text-stone-700">
+                  <tr>
+                    <th className="px-2 py-2">Order ID</th>
+                    <th className="px-2 py-2">Outcome</th>
+                    <th className="px-2 py-2">Action</th>
+                    <th className="px-2 py-2">QBO invoice</th>
+                    <th className="px-2 py-2">HTTP</th>
+                    <th className="px-2 py-2">Reason</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(lastSync.results || []).map((r, idx) => {
+                    const human = syncReasonLabel(r.reason);
+                    const reasonTitle = human ? `${human} (${r.reason})` : r.reason || "";
+                    return (
+                      <tr key={`${r.orderId}-${idx}`} className="border-t border-stone-100">
+                        <td className="px-2 py-1.5 font-mono">{r.orderId}</td>
+                        <td className="px-2 py-1.5">
+                          <span
+                            className={`inline-block rounded border px-2 py-0.5 ${outcomeBadgeClass(r.outcome)}`}
+                          >
+                            {r.outcome}
+                          </span>
+                        </td>
+                        <td className="px-2 py-1.5">{r.action ?? "—"}</td>
+                        <td className="px-2 py-1.5 font-mono">{r.invoiceId ?? "—"}</td>
+                        <td className="px-2 py-1.5">{r.statusCode != null ? r.statusCode : "—"}</td>
+                        <td className="px-2 py-1.5 max-w-md truncate" title={reasonTitle}>
+                          {r.reason || "—"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : null}
+
+        <div data-testid={PULLOUT_INTENT_QBO_SYNC.tableWrapper}>
           <MyDataTable
+            checkbox={currentSyncStatus !== "synced"}
+            selectedRows={selectedRows}
+            setSelectedRows={setSelectedRows}
+            dataKey="id"
             columns={columns}
             data={datas}
-            placeholder={"Search ..."}
-            pagination={true}
-            onRowClick={(e) => {
-              router.push(`/orders/detail/${e.data.id}`);
+            placeholder="Search table…"
+            pagination
+            search
+            serverPagination={{
+              page: pagination.page || page,
+              limit: pagination.limit || limit,
+              totalRecords: pagination.total ?? 0,
+              totalPages: pagination.totalPages,
+              onPageChange: (newPage) => setPage(newPage),
+              onLimitChange: (newLimit) => {
+                setLimit(newLimit);
+                setPage(1);
+              },
             }}
-            search={true}
+            csvFileName={`quickbooks-pullout-sync-${dayjs().format("YYYY-MM-DD")}.csv`}
+            rowTestId={(row) => `data-testid-${PULLOUT_INTENT_QBO_SYNC.row(row.id)}`}
           />
         </div>
       </div>

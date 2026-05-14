@@ -105,6 +105,13 @@ export default function page() {
             to="/reports/product-wise-sales-summary"
             data-testid={REPORT_MANAGEMENT.productWiseSalesSummaryReportCard}
           />
+
+          <ReportCard
+            Icon={BsCardList}
+            title="Pulled Orders Receivable Report"
+            to="/reports/pulled-orders-receivable"
+            data-testid={REPORT_MANAGEMENT.pulledOrdersReceivableReportCard}
+          />
         </div>
       </div>
     </div>

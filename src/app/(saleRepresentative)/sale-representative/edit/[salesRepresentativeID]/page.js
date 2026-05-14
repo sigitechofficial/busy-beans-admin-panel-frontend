@@ -182,7 +182,10 @@ export default function EditsSalesRepresentative() {
         formData.append("territoryName", saleRepresentative?.territory);
         formData.append("image", saleRepresentative?.image);
         formData.append("phoneNumber", saleRepresentative?.phoneNumber);
-        formData.append("creditLimit", saleRepresentative?.creditLimit);
+        const creditLimitRaw = saleRepresentative?.creditLimit;
+        if (creditLimitRaw != null && String(creditLimitRaw).trim() !== "") {
+          formData.append("creditLimit", creditLimitRaw);
+        }
         formData.append("partnerType", saleRepresentative?.partnerType);
         formData.append(
           "countryCode",

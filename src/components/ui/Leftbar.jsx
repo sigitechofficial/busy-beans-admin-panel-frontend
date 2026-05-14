@@ -322,6 +322,23 @@ export default function Leftbar(props) {
     handleActive("customerOrder", active?.customerOrder?.status);
   };
 
+  /** Expand Quickbooks Invoices when deep-linking to admin pullout sync or QBO order views */
+  useEffect(() => {
+    if (userType !== "admin") return;
+    if (
+      pathname === "/Quickbooks/invoices" ||
+      pathname.startsWith("/orders/quickbooks")
+    ) {
+      setActive((prev) => {
+        if (prev.quickbookOrders?.status) return prev;
+        return {
+          ...prev,
+          quickbookOrders: { tab: "quickbookOrders", status: true },
+        };
+      });
+    }
+  }, [pathname, userType]);
+
   const authenticateQuickbooks = async () => {
     try {
       const token =
@@ -684,7 +701,10 @@ export default function Leftbar(props) {
           <ListHead
             title="Quickbooks Invoices"
             Icon={MdBusiness}
-            active={pathname.includes("/orders/quickbooks")}
+            active={
+              pathname.includes("/orders/quickbooks") ||
+              pathname === "/Quickbooks/invoices"
+            }
             Angle={FaAngleRight}
             onClick={handleQuickbooksOrdersToggle}
             status={active?.quickbookOrders?.status}
@@ -702,6 +722,15 @@ export default function Leftbar(props) {
                 title="Customer Invoices"
                 to="/orders/quickbooks/customer"
                 data-testid={LEFTBAR.listItem("customer", "Orders")}
+              />
+
+              <ListItems
+                title="Pullout intent sync"
+                to="/Quickbooks/invoices"
+                data-testid={LEFTBAR.listItem(
+                  "quickbooksInvoices",
+                  "Pullout intent sync"
+                )}
               />
 
               <hr className="w-full" />

@@ -615,10 +615,10 @@ export default function QuickBooksInvoicesPulloutSyncPage() {
             pagination
             search
             serverPagination={{
-              page: pagination.page || page,
-              limit: pagination.limit || limit,
-              totalRecords: pagination.total ?? 0,
-              totalPages: pagination.totalPages,
+              page: pagination?.page || page,
+              limit: pagination?.limit || limit,
+              totalRecords: pagination?.total ?? 0,
+              totalPages: pagination?.totalPages,
               onPageChange: (newPage) => setPage(newPage),
               onLimitChange: (newLimit) => {
                 setLimit(newLimit);

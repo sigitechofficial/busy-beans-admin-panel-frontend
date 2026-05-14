@@ -11,6 +11,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { CiMenuBurger } from "react-icons/ci";
 import { ImCross } from "react-icons/im";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import Select from "react-select";
 import { PULLOUT_INTENT_QBO_SYNC } from "../../../(reportManagement)/reports/report.testid";
 import dayjs from "dayjs";
@@ -157,9 +158,17 @@ export default function QuickBooksInvoicesPulloutSyncPage() {
     return `${baseUrl}?${params.toString()}`;
   };
 
-  const { data, loading: isLoading, reFetch, pagination } = GetAPI(buildApiUrl());
+  const { data, isLoading, reFetch } = GetAPI(adminGate === "ok" ? buildApiUrl() : "");
 
-  const rawRows = data?.data?.data || [];
+  /** API: `{ status, pagination, data: Row[] }` — rows are `data`, not `data.data`. */
+  const rawRows = useMemo(() => {
+    if (!data) return [];
+    if (Array.isArray(data.data)) return data.data;
+    if (Array.isArray(data?.data?.data)) return data.data.data;
+    return [];
+  }, [data]);
+
+  const pagination = data?.pagination || {};
 
   const calculateDateRange = (value) => {
     const today = dayjs();
@@ -247,7 +256,7 @@ export default function QuickBooksInvoicesPulloutSyncPage() {
         ...new Set(
           orderIds
             .map((id) => Number(id))
-            .filter((id) => Number.isNaN(id) && id > 0)
+            .filter((id) => Number.isFinite(id) && id > 0)
         ),
       ];
       if (!unique.length) {
@@ -269,36 +278,38 @@ export default function QuickBooksInvoicesPulloutSyncPage() {
             "report",
             { suppressSuccessToast: true }
           );
-          if (res?.data?.data) {
-            allResults.push(...res.data.data);
-            const chunkAgg = res.data.data.reduce(
-              (acc, r) => {
-                acc.total++;
-                if (r.outcome === "synced") acc.synced++;
-                else if (r.outcome === "skipped") acc.skipped++;
-                else if (r.outcome === "failed") acc.failed++;
-                return acc;
-              },
-              { total: 0, synced: 0, skipped: 0, failed: 0 }
-            );
-            agg.total += chunkAgg.total;
-            agg.synced += chunkAgg.synced;
-            agg.skipped += chunkAgg.skipped;
-            agg.failed += chunkAgg.failed;
-            setSyncProgress({ done: agg.total, total: unique.length });
+          const body = res?.data;
+          if (body?.results?.length) {
+            allResults.push(...body.results);
           }
+          if (body?.summary) {
+            agg.total += body.summary.total || 0;
+            agg.synced += body.summary.synced || 0;
+            agg.skipped += body.summary.skipped || 0;
+            agg.failed += body.summary.failed || 0;
+          }
+          setSyncProgress({
+            done: Math.min(i + chunk.length, unique.length),
+            total: unique.length,
+          });
         }
 
         setLastSync({ results: allResults, summary: agg });
         success_toaster(`Sync complete: ${agg.synced} synced, ${agg.skipped} skipped, ${agg.failed} failed.`);
         reselectAfterSyncRef.current = {
-          failedIds: new Set(allResults.filter((r) => r.outcome === "failed").map((r) => r.orderId)),
+          failedIds: new Set(
+            allResults
+              .filter((r) => r.outcome === "failed")
+              .map((r) => Number(r.orderId))
+              .filter((id) => Number.isFinite(id))
+          ),
         };
         reFetch?.();
       } catch (error) {
         ErrorHandler(error);
       } finally {
         setSyncing(false);
+        setSyncProgress({ done: 0, total: 0 });
       }
     },
     [reFetch]
@@ -412,20 +423,25 @@ export default function QuickBooksInvoicesPulloutSyncPage() {
       </div>
 
       <div className="space-y-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center flex-wrap">
           {[
-            { value: "unsynced", label: "Current" },
+            { value: "unsynced", label: "Not synced" },
             { value: "synced", label: "Synced" },
           ].map((tab) => (
             <button
               key={tab.value}
               type="button"
               onClick={() => handleSyncStatusChange(tab.value)}
-              className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
+              className={`${
                 currentSyncStatus === tab.value
-                  ? "bg-black text-white border-black"
-                  : "bg-white text-slate-600 border-slate-300 hover:bg-slate-100"
-              }`}
+                  ? "bg-black text-white"
+                  : "bg-white text-black"
+              } font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 duration-200`}
+              data-testid={
+                tab.value === "unsynced"
+                  ? PULLOUT_INTENT_QBO_SYNC.tabNotSynced
+                  : PULLOUT_INTENT_QBO_SYNC.tabSynced
+              }
             >
               {tab.label}
             </button>
@@ -499,7 +515,7 @@ export default function QuickBooksInvoicesPulloutSyncPage() {
                 <button
                   type="button"
                   onClick={handleCancel}
-                  className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md text-sm hover:bg-gray-300"
+                  className="bg-white text-black font-workSans font-medium border border-black px-5 py-2.5 duration-200 hover:bg-gray-50"
                   data-testid={PULLOUT_INTENT_QBO_SYNC.cancelCustomButton}
                 >
                   Cancel
@@ -516,31 +532,27 @@ export default function QuickBooksInvoicesPulloutSyncPage() {
             />
           </div>
           {currentSyncStatus === "unsynced" && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center flex-wrap gap-2">
               <button
                 type="button"
                 disabled={syncing || !selectedRows.length}
                 onClick={() => runBulkSync(selectedRows.map((r) => r.id))}
-                className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-800 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center justify-center gap-2 bg-theme text-white px-4 py-2 rounded-lg border border-theme hover:bg-white hover:text-theme transition-colors duration-200 font-medium disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-theme disabled:hover:text-white"
                 data-testid={PULLOUT_INTENT_QBO_SYNC.syncSelectedButton}
               >
-                {syncing ? `Syncing... (${syncProgress.done}/${syncProgress.total})` : `Sync selected (${selectedRows.length})`}
-              </button>
-              <button
-                type="button"
-                disabled={syncing}
-                onClick={() => reFetch?.()}
-                className="rounded-lg border border-borderColor px-4 py-2 text-sm font-medium text-secondary hover:bg-stone-50"
-                data-testid={PULLOUT_INTENT_QBO_SYNC.refreshButton}
-              >
-                Refresh list
+                {syncing
+                  ? `Syncing (${syncProgress.done}/${syncProgress.total})`
+                  : `Sync selected (${selectedRows.length})`}
+                {syncing && (
+                  <AiOutlineLoading3Quarters className="w-4 h-4 animate-spin flex-shrink-0" />
+                )}
               </button>
               {lastSync?.results?.some((r) => r.outcome === "failed") ? (
                 <button
                   type="button"
                   disabled={syncing}
                   onClick={retryFailedFromLastSync}
-                  className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-800 hover:bg-red-100"
+                  className="bg-white text-black font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 duration-200 hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed"
                   data-testid={PULLOUT_INTENT_QBO_SYNC.retryFailedButton}
                 >
                   Retry failed (last run)

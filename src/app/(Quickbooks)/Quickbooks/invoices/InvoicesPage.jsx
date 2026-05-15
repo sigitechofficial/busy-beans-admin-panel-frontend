@@ -144,6 +144,9 @@ export default function QuickBooksInvoicesPulloutSyncPage() {
 
   const buildApiUrl = () => {
     const baseUrl = "api/v1/admin/admin-reports/pullout-intent-unsynced-orders";
+    if (currentSyncStatus === "unsynced") {
+      return baseUrl;
+    }
     const params = new URLSearchParams();
     if (dateRange?.startDate && dateRange?.endDate) {
       params.set("startDate", dateRange.startDate);
@@ -154,7 +157,7 @@ export default function QuickBooksInvoicesPulloutSyncPage() {
     if (selectedSalesRep.value !== "all") {
       params.set("salesRepId", selectedSalesRep.value);
     }
-    params.set("syncStatus", currentSyncStatus);
+    params.set("syncStatus", "synced");
     return `${baseUrl}?${params.toString()}`;
   };
 
@@ -314,15 +317,6 @@ export default function QuickBooksInvoicesPulloutSyncPage() {
     },
     [reFetch]
   );
-
-  const retryFailedFromLastSync = useCallback(() => {
-    if (!lastSync?.results) return;
-    const ids = lastSync.results
-      .filter((r) => r.outcome === "failed")
-      .map((r) => Number(r.orderId))
-      .filter((n) => Number.isFinite(n) && n > 0);
-    void runBulkSync(ids);
-  }, [lastSync, runBulkSync]);
 
   useEffect(() => {
     if (selectedOption.value !== "custom" && !displayCustomFilters) {
@@ -547,17 +541,6 @@ export default function QuickBooksInvoicesPulloutSyncPage() {
                   <AiOutlineLoading3Quarters className="w-4 h-4 animate-spin flex-shrink-0" />
                 )}
               </button>
-              {lastSync?.results?.some((r) => r.outcome === "failed") ? (
-                <button
-                  type="button"
-                  disabled={syncing}
-                  onClick={retryFailedFromLastSync}
-                  className="bg-white text-black font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 duration-200 hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed"
-                  data-testid={PULLOUT_INTENT_QBO_SYNC.retryFailedButton}
-                >
-                  Retry failed (last run)
-                </button>
-              ) : null}
             </div>
           )}
         </div>

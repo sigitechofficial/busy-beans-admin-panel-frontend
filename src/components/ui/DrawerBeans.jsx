@@ -1529,7 +1529,7 @@ const DrawerBeans = ({
                               key={index}
                               className="font-sf relative flex sm:flex-row items-start rounded-2xl h-full mb-3"
                             >
-                              <div className="flex justify-center items-center sm:w-[260px] w-[200px] sm:h-[72px] h-[72px] rounded-lg bg-gray-100 p-2">
+                              <div className="flex justify-center items-center w-full sm:max-w-[130px] sm:h-[72px] h-[72px] rounded-lg bg-gray-100 p-2">
                                 <Image
                                   src={cartI?.image ? `${BASE_URL}${cartI?.image}` : "/images/logocoffee.png"}
                                   alt={cartI?.name || "product"}

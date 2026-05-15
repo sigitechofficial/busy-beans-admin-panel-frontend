@@ -25,6 +25,18 @@ import { hasPermission } from "@/utilities/Permission";
 import Select from "react-select";
 import selectStyles from "@/utilities/SelectStyle";
 import { EMPLOYEES } from "./employee.testids"
+import { parsePhoneNumberFromString } from "libphonenumber-js";
+
+/** Dial (left) + national (right) must form a valid E.164 number when national is non-empty. */
+function getEmployeePhoneValidationMessage(countryCode, phoneNumber) {
+  const dial = String(countryCode ?? "").replace(/\D/g, "");
+  const national = String(phoneNumber ?? "").replace(/\D/g, "");
+  if (!national) return null;
+  if (!dial) return "Please select a country code.";
+  const parsed = parsePhoneNumberFromString(`+${dial}${national}`);
+  if (!parsed?.isValid()) return "Please enter a valid phone number.";
+  return null;
+}
 
 export default function Employee() {
   const router = useRouter();
@@ -33,6 +45,8 @@ export default function Employee() {
     var isEmployee = localStorage.getItem("isEmployee") === "true";
   }
   const isAdmin = userType === "admin" && !isEmployee;
+
+  const MAX_PHONE_DIGITS = 15; // E.164 max (national number only is usually shorter, but this is a safe cap)
 
   const [selectedPartnerId, setSelectedPartnerId] = useState("");
   const employeesUrl =
@@ -107,6 +121,29 @@ export default function Employee() {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const handlePhoneNumberChange = (e) => {
+    const raw = e.target.value ?? "";
+    const digitsOnly = String(raw).replace(/\D/g, "").slice(0, MAX_PHONE_DIGITS);
+    setFormData((prev) => ({ ...prev, phoneNumber: digitsOnly }));
+  };
+
+  const handlePhoneKeyDown = (e) => {
+    const allowedKeys = new Set([
+      "Backspace",
+      "Delete",
+      "ArrowLeft",
+      "ArrowRight",
+      "Home",
+      "End",
+      "Tab",
+      "Enter",
+    ]);
+    if (allowedKeys.has(e.key)) return;
+    if (e.ctrlKey || e.metaKey) return; // allow copy/paste/select-all shortcuts
+    if (/^\d$/.test(e.key)) return;
+    e.preventDefault();
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -118,6 +155,11 @@ export default function Employee() {
       ) {
         return info_toaster("Name, email, and password are required");
       }
+      const phoneMsg = getEmployeePhoneValidationMessage(
+        formData.countryCode,
+        formData.phoneNumber
+      );
+      if (phoneMsg) return info_toaster(phoneMsg);
       setLoader("add");
       try {
         const res = await PostAPI("api/v1/admin/employee", formData, "employees");
@@ -138,6 +180,11 @@ export default function Employee() {
       if (!formData.name.trim() || !formData.email.trim()) {
         return info_toaster("Name and email are required");
       }
+      const phoneMsg = getEmployeePhoneValidationMessage(
+        formData.countryCode,
+        formData.phoneNumber
+      );
+      if (phoneMsg) return info_toaster(phoneMsg);
       const payload = {
         name: formData.name,
         email: formData.email,
@@ -647,7 +694,11 @@ export default function Employee() {
                               <PhoneInput
                                 country={"us"}
                                 value={formData.countryCode}
-                                onChange={(phone) => setFormData({ ...formData, countryCode: phone })}
+                                onChange={(phone) =>
+                                  setFormData((prev) => ({ ...prev, countryCode: phone }))
+                                }
+                                countryCodeEditable={false}
+                                enableSearch={false}
                                 containerStyle={{ width: "100%" }}
                                 inputStyle={{
                                   width: "100%",
@@ -655,6 +706,7 @@ export default function Employee() {
                                   borderRadius: "8px",
                                   border: "1px solid #d1d5db",
                                   paddingLeft: "44px",
+                                  cursor: "default",
                                 }}
                                 buttonStyle={{
                                   height: "40px",
@@ -662,7 +714,24 @@ export default function Employee() {
                                   borderRight: "none",
                                   borderRadius: "8px 0 0 8px",
                                 }}
-                                dropdownStyle={{ zIndex: 50 }}
+                                dropdownStyle={{ zIndex: 1100 }}
+                                inputProps={{
+                                  readOnly: true,
+                                  autoComplete: "off",
+                                  onPaste: (e) => e.preventDefault(),
+                                  onDrop: (e) => e.preventDefault(),
+                                  onKeyDown: (e) => {
+                                    if (
+                                      e.key === "Tab" ||
+                                      e.key === "Escape" ||
+                                      e.ctrlKey ||
+                                      e.metaKey
+                                    ) {
+                                      return;
+                                    }
+                                    e.preventDefault();
+                                  },
+                                }}
                               />
                             </div>
                             <div className="col-span-8 sm:col-span-9">
@@ -670,7 +739,11 @@ export default function Employee() {
                                 type="tel"
                                 name="phoneNumber"
                                 value={formData.phoneNumber}
-                                onChange={handleChange}
+                                onChange={handlePhoneNumberChange}
+                                onKeyDown={handlePhoneKeyDown}
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                maxLength={MAX_PHONE_DIGITS}
                                 placeholder="Phone number"
                                 className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm h-[40px] focus:ring-2 focus:ring-theme/20 focus:border-theme outline-none"
                                 data-testid={EMPLOYEES.phoneInput}

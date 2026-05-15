@@ -153,7 +153,6 @@ const PULLOUT_INTENT_QBO_SYNC = {
   tabSynced: "pullout-intent-qbo-sync-tab-synced",
   syncButton: "pullout-intent-qbo-sync-submit",
   syncSelectedButton: "pullout-intent-qbo-sync-submit",
-  retryFailedButton: "pullout-intent-qbo-sync-retry-failed",
   resultsPanel: "pullout-intent-qbo-sync-results-panel",
   tableWrapper: "pullout-intent-qbo-sync-table-wrapper",
   row: (id) => `pullout-intent-qbo-sync-row-${id}`,

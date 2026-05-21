@@ -142,26 +142,36 @@ export default function QuickBooksInvoicesPulloutSyncPage() {
       : []),
   ];
 
-  const buildApiUrl = () => {
+  const listApiUrl = useMemo(() => {
+    if (adminGate !== "ok") return "";
     const baseUrl = "api/v1/admin/admin-reports/pullout-intent-unsynced-orders";
-    if (currentSyncStatus === "unsynced") {
-      return baseUrl;
-    }
     const params = new URLSearchParams();
-    if (dateRange?.startDate && dateRange?.endDate) {
-      params.set("startDate", dateRange.startDate);
-      params.set("endDate", dateRange.endDate);
-    }
-    params.set("page", page.toString());
-    params.set("limit", limit.toString());
-    if (selectedSalesRep.value !== "all") {
-      params.set("salesRepId", selectedSalesRep.value);
-    }
-    params.set("syncStatus", "synced");
-    return `${baseUrl}?${params.toString()}`;
-  };
+    params.set("page", String(page));
+    params.set("limit", String(limit));
 
-  const { data, isLoading, reFetch } = GetAPI(adminGate === "ok" ? buildApiUrl() : "");
+    if (currentSyncStatus === "synced") {
+      if (dateRange?.startDate && dateRange?.endDate) {
+        params.set("startDate", dateRange.startDate);
+        params.set("endDate", dateRange.endDate);
+      }
+      if (selectedSalesRep.value !== "all") {
+        params.set("salesRepId", String(selectedSalesRep.value));
+      }
+      params.set("syncStatus", "synced");
+    }
+
+    return `${baseUrl}?${params.toString()}`;
+  }, [
+    adminGate,
+    currentSyncStatus,
+    page,
+    limit,
+    dateRange?.startDate,
+    dateRange?.endDate,
+    selectedSalesRep.value,
+  ]);
+
+  const { data, isLoading, reFetch } = GetAPI(listApiUrl);
 
   /** API: `{ status, pagination, data: Row[] }` — rows are `data`, not `data.data`. */
   const rawRows = useMemo(() => {
@@ -172,6 +182,14 @@ export default function QuickBooksInvoicesPulloutSyncPage() {
   }, [data]);
 
   const pagination = data?.pagination || {};
+
+  /** Keep SL aligned with loaded rows until the new page response arrives. */
+  const paginationPending =
+    isLoading &&
+    pagination?.page != null &&
+    (pagination.page !== page || pagination.limit !== limit);
+  const slPage = paginationPending ? pagination.page : page;
+  const slLimit = paginationPending ? pagination.limit : limit;
 
   const calculateDateRange = (value) => {
     const today = dayjs();
@@ -239,7 +257,7 @@ export default function QuickBooksInvoicesPulloutSyncPage() {
   ];
 
   const datas = rawRows.map((row, i) =>
-    mapServiceRowToData(row, (page - 1) * limit + i + 1)
+    mapServiceRowToData(row, (slPage - 1) * slLimit + i + 1)
   );
 
   useEffect(() => {
@@ -379,7 +397,9 @@ export default function QuickBooksInvoicesPulloutSyncPage() {
 
   const handleSyncStatusChange = (value) => {
     setSelectedRows([]);
+    setPage(1);
     if (value === "synced") {
+      setLastSync(null);
       router.replace(`${pathname}?syncStatus=synced`);
     } else {
       router.replace(pathname);
@@ -545,7 +565,7 @@ export default function QuickBooksInvoicesPulloutSyncPage() {
           )}
         </div>
 
-        {lastSync ? (
+        {lastSync && currentSyncStatus === "unsynced" ? (
           <div
             className="rounded-lg border border-borderColor bg-stone-50 p-4 space-y-3"
             data-testid={PULLOUT_INTENT_QBO_SYNC.resultsPanel}
@@ -610,10 +630,10 @@ export default function QuickBooksInvoicesPulloutSyncPage() {
             pagination
             search
             serverPagination={{
-              page: pagination?.page || page,
-              limit: pagination?.limit || limit,
+              page,
+              limit,
               totalRecords: pagination?.total ?? 0,
-              totalPages: pagination?.totalPages,
+              totalPages: pagination?.totalPages ?? 1,
               onPageChange: (newPage) => setPage(newPage),
               onLimitChange: (newLimit) => {
                 setLimit(newLimit);

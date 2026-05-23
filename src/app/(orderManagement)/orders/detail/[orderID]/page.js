@@ -29,6 +29,7 @@ import { ORDER_DETAIL } from "../../orders.testids";
 import { FiCopy } from "react-icons/fi";
 import { QuickbooksPingCheck, formatDateTimeISO } from "@/utilities/constants";
 import { useUserType } from "@/utilities/useUserType";
+import { logEmailTypeToBulkApi } from "@/utilities/emailLogTypes";
 
 export default function OrderDetail() {
   const { isAllowed: canViewEmailLogs } = useUserType(
@@ -497,17 +498,8 @@ export default function OrderDetail() {
     }
   };
 
-  // Map email log type to email-helper API emailType
-  const logEmailTypeToApi = {
-    invoice_sent: "invoice-sent",
-    invoice_reminder: "invoice-reminder",
-    paid_receipt: "paid-invoice",
-    paid_receipt_admin: "paid-invoice",
-    supplier_new_order: "order-ship-supplier",
-  };
-
   const handleRetryEmail = async (log) => {
-    const apiEmailType = logEmailTypeToApi[log.emailType] || log.emailType;
+    const apiEmailType = logEmailTypeToBulkApi(log.emailType);
     const orderTypeApi =
       log.orderType === "local-partner" ? "local-partner" : "customer";
     setRetryEmailLogId(log.id);

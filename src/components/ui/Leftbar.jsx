@@ -2152,6 +2152,7 @@ export default function Leftbar(props) {
               data-testid={LEFTBAR.orderManagementSection}
               active={
                 pathname === "/sales-representative/create-order" ||
+                pathname.includes("/orders/email-logs") ||
                 pathname.includes("/orders/delete-invoice") ||
                 pathname.includes("/sales-representative/delete-invoice")
               }
@@ -2182,6 +2183,14 @@ export default function Leftbar(props) {
                       )}
                     />
                   )}
+                  <ListItems
+                    title="Email Logs"
+                    to="/orders/email-logs"
+                    data-testid={LEFTBAR.listItem(
+                      "orderManagement",
+                      "Email Logs"
+                    )}
+                  />
                   <ListItems
                     title="Delete Invoice"
                     to="/sales-representative/delete-invoice"

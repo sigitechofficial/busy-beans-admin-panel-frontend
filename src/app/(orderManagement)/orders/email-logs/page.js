@@ -6,15 +6,21 @@ import GetAPI from "@/utilities/GetAPI";
 import { PostAPI } from "@/utilities/PostAPI";
 import Loader from "@/components/ui/Loader";
 import ErrorHandler from "@/utilities/ErrorHandler";
-import { success_toaster } from "@/utilities/Toaster";
+import { success_toaster, info_toaster } from "@/utilities/Toaster";
 import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import InfoTooltip from "@/components/ui/InfoTooltip";
 import { useUserType } from "@/utilities/useUserType";
 import { Calendar } from "primereact/calendar";
 import Select from "react-select";
 import selectStyles from "@/utilities/SelectStyle";
 import dayjs from "dayjs";
 import { formatDateTimeISO } from "@/utilities/constants";
+import {
+  getEmailLogTypeLabel,
+  logEmailTypeToBulkApi,
+} from "@/utilities/emailLogTypes";
 
 const EMAIL_TYPE_OPTIONS = [
   { value: "", label: "All types" },
@@ -25,11 +31,13 @@ const EMAIL_TYPE_OPTIONS = [
   { value: "paid_receipt", label: "Paid receipt (customer)" },
   { value: "paid_receipt_admin", label: "Paid receipt (admin/partner)" },
   { value: "supplier_new_order", label: "Supplier new order" },
+  { value: "order_confirmation", label: "Order confirmation" },
+  { value: "order_dispatch", label: "Order dispatch" },
+  { value: "order_shipped", label: "Order shipped" },
 ];
 
 function getEmailTypeLabel(emailType) {
-  const opt = EMAIL_TYPE_OPTIONS.find((o) => o.value === emailType);
-  return opt ? opt.label : emailType || "—";
+  return getEmailLogTypeLabel(emailType);
 }
 
 function parseMetadata(metadata) {
@@ -41,8 +49,100 @@ function parseMetadata(metadata) {
   }
 }
 
+function isRetryAlreadySent(entry) {
+  return (
+    entry?.retrySuccess === true ||
+    entry?.retrySuccess === 1 ||
+    entry?.retrySuccess === "1" ||
+    entry?.retrySuccess === "true"
+  );
+}
+
+function parseRecipientList(recipients) {
+  if (!recipients?.trim()) return [];
+  return recipients
+    .split(/[,;]+/)
+    .map((email) => email.trim())
+    .filter(Boolean);
+}
+
+function getRetrySentTooltipMessage(entry) {
+  const recipientList = parseRecipientList(entry?.recipients);
+  const emailTypeLabel = getEmailLogTypeLabel(entry?.emailType);
+  const orderId = entry?.orderId;
+
+  return (
+    <div className="space-y-2.5">
+      <p className="text-xs leading-relaxed text-slate-600">
+        A retry email was successfully sent after the original failure. This entry is
+        closed and cannot be retried again.
+      </p>
+
+      {(orderId != null || emailTypeLabel) && (
+        <div className="rounded-md border border-emerald-100 bg-emerald-50/70 px-2.5 py-2 space-y-1">
+          {orderId != null ? (
+            <p className="text-xs text-slate-700">
+              <span className="font-medium text-slate-800">Order ID:</span> {orderId}
+            </p>
+          ) : null}
+          {emailTypeLabel ? (
+            <p className="text-xs text-slate-700">
+              <span className="font-medium text-slate-800">Email type:</span> {emailTypeLabel}
+            </p>
+          ) : null}
+        </div>
+      )}
+
+      {recipientList.length > 0 ? (
+        <div>
+          <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+            Delivered to
+          </p>
+          <ul className="max-h-28 space-y-1 overflow-y-auto pr-1">
+            {recipientList.map((email) => (
+              <li
+                key={email}
+                className="break-all rounded border border-slate-100 bg-slate-50 px-2 py-1 text-xs text-slate-700"
+              >
+                {email}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function entryToBulkItem(entry) {
+  const orderType = entry.orderType === "local-partner" ? "local-partner" : "customer";
+  return {
+    orderId: Number(entry.orderId) || entry.orderId,
+    orderType,
+    emailType: logEmailTypeToBulkApi(entry.emailType),
+  };
+}
+
+function dedupeOrdersToSentEmail(items) {
+  const seen = new Set();
+  return items.filter((item) => {
+    const orderType = item.orderType === "local-partner" ? "local-partner" : "customer";
+    const key = `${orderType}:${Number(item.orderId)}:${item.emailType}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+const BULK_REFETCH_DELAY_MS = 8000;
+const SINGLE_RETRY_COOLDOWN_MS = 12000;
+
+function canRetryLogEntry(entry) {
+  return entry?.emailSent === "Failed" && !isRetryAlreadySent(entry);
+}
+
 export default function EmailLogsPage() {
-  const { isAllowed } = useUserType("admin");
+  const { isAllowed } = useUserType(["admin", "salesRepresentative"]);
   const { setToggle, toggle } = useDataContext();
 
   const [page, setPage] = useState(1);
@@ -53,8 +153,13 @@ export default function EmailLogsPage() {
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
   const [retryEmailLogId, setRetryEmailLogId] = useState(null);
+  const [bulkSending, setBulkSending] = useState(false);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [bulkRefetchEndsAt, setBulkRefetchEndsAt] = useState(null);
   const [retryCooldownEndsAt, setRetryCooldownEndsAt] = useState({});
   const [, setCooldownTick] = useState(0);
+
+  const isFailedFilter = emailType === "Failed";
 
   // Debounce Order ID 500ms before updating API params
   useEffect(() => {
@@ -109,61 +214,98 @@ export default function EmailLogsPage() {
         : [];
   const pagination = dateRangeError ? {} : (data?.data?.pagination ?? {});
 
-  const logEmailTypeToApi = {
-    invoice_sent: "invoice-sent",
-    invoice_reminder: "invoice-reminder",
-    paid_receipt: "paid-invoice",
-    paid_receipt_admin: "paid-invoice",
-    supplier_new_order: "order-ship-supplier",
-  };
+  const runBulkEmailHelper = async (rawEntries, { singleLogId = null } = {}) => {
+    const items = dedupeOrdersToSentEmail(rawEntries.map(entryToBulkItem));
+    if (!items.length) {
+      info_toaster("Select at least one failed log to retry.");
+      return;
+    }
 
-  const handleRetryEmail = async (entry) => {
-    const apiEmailType = logEmailTypeToApi[entry.emailType] || entry.emailType;
-    const orderTypeApi =
-      entry.orderType === "local-partner" ? "local-partner" : "customer";
-    setRetryEmailLogId(entry.id);
+    if (singleLogId) {
+      setRetryEmailLogId(singleLogId);
+    } else {
+      setBulkSending(true);
+    }
+
     try {
       const res = await PostAPI(
-        "api/v1/admin/order-management/email-helper",
-        {
-          orderId: String(entry.orderId),
-          orderType: orderTypeApi,
-          emailType: apiEmailType,
-        }
+        "api/v1/admin/order-management/bulk-email-helper",
+        { ordersToSentEmail: items },
+        "order-management",
+        { suppressSuccessToast: true }
       );
-      if (res?.data?.status === "success" || res?.data?.status === true) {
-        success_toaster("Email sent successfully");
+      const body = res?.data;
+      const ok = body?.status === "success" || body?.status === true;
+      if (!ok) {
+        throw new Error(body?.message || "Failed to send emails.");
+      }
+
+      const payload = body?.data ?? {};
+      const summary = payload.summary ?? {};
+
+      success_toaster(
+        `Emails sent: ${summary.success ?? 0} succeeded, ${summary.failed ?? 0} failed` +
+          (summary.duplicatesRemoved
+            ? ` (${summary.duplicatesRemoved} duplicate${summary.duplicatesRemoved === 1 ? "" : "s"} removed)`
+            : "")
+      );
+
+      const cooldownUpdate = {};
+      const cooldownMs = singleLogId ? SINGLE_RETRY_COOLDOWN_MS : BULK_REFETCH_DELAY_MS;
+      rawEntries.forEach((entry) => {
+        if (entry?.id != null) {
+          cooldownUpdate[entry.id] = Date.now() + cooldownMs;
+        }
+      });
+      setRetryCooldownEndsAt((prev) => ({ ...prev, ...cooldownUpdate }));
+
+      if (!singleLogId) {
+        setSelectedRows([]);
+      }
+
+      if (singleLogId) {
+        reFetchEmailLogs();
       } else {
-        throw new Error(res?.data?.message || "Failed to send email.");
+        setBulkRefetchEndsAt(Date.now() + BULK_REFETCH_DELAY_MS);
       }
     } catch (error) {
       ErrorHandler(error);
     } finally {
       setRetryEmailLogId(null);
-      setRetryCooldownEndsAt((prev) => ({
-        ...prev,
-        [entry.id]: Date.now() + 12000,
-      }));
+      setBulkSending(false);
     }
   };
 
-  const cooldownEndsAtRef = useRef(retryCooldownEndsAt);
+  const handleRetryEmail = (entry) => {
+    void runBulkEmailHelper([entry], { singleLogId: entry.id });
+  };
+
+  const handleBulkRetry = () => {
+    const entries = selectedRows
+      .filter((row) => row.canRetry)
+      .map((row) => row._rawEntry)
+      .filter(Boolean);
+    void runBulkEmailHelper(entries);
+  };
+
+  const retryableSelectedCount = selectedRows.filter((row) => row.canRetry).length;
+
+  const bulkRefetchRemainingSeconds = bulkRefetchEndsAt
+    ? Math.max(0, Math.ceil((bulkRefetchEndsAt - Date.now()) / 1000))
+    : 0;
+
+  const bulkRefetchEndsAtRef = useRef(bulkRefetchEndsAt);
   useEffect(() => {
-    cooldownEndsAtRef.current = retryCooldownEndsAt;
-  }, [retryCooldownEndsAt]);
+    bulkRefetchEndsAtRef.current = bulkRefetchEndsAt;
+  }, [bulkRefetchEndsAt]);
 
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
-      const prev = cooldownEndsAtRef.current;
-      const next = {};
-      Object.entries(prev).forEach(([id, end]) => {
-        if (end > now) next[id] = end;
-      });
-      const hadActive = Object.keys(prev).length > 0;
-      const lastTimerEnded = hadActive && Object.keys(next).length === 0;
-      setRetryCooldownEndsAt(Object.keys(next).length ? next : {});
-      if (lastTimerEnded) {
+      const refetchEnd = bulkRefetchEndsAtRef.current;
+      if (refetchEnd && refetchEnd <= now) {
+        setBulkRefetchEndsAt(null);
+        setSelectedRows([]);
         reFetchEmailLogs();
       }
       setCooldownTick((t) => t + 1);
@@ -175,15 +317,18 @@ export default function EmailLogsPage() {
     return rawLogs.map((entry) => {
       const meta = parseMetadata(entry.metadata);
       const isFailed = entry.emailSent === "Failed";
+      const canRetry = canRetryLogEntry(entry);
       const cooldownEnd = retryCooldownEndsAt[entry.id];
       const remainingSeconds = cooldownEnd
         ? Math.max(0, Math.ceil((cooldownEnd - Date.now()) / 1000))
         : 0;
       const isRetrying = retryEmailLogId === entry.id;
-      const retryDisabled = isRetrying || remainingSeconds > 0;
+      const retryDisabled = bulkSending || isRetrying || remainingSeconds > 0;
 
       return {
         id: entry.id,
+        _rawEntry: entry,
+        canRetry,
         sentAt: entry.sentAt
           ? formatDateTimeISO(entry.sentAt, "datetime")
           : "—",
@@ -204,35 +349,43 @@ export default function EmailLogsPage() {
           ),
         errorMessage: entry.errorMessage ?? "—",
         action: isFailed ? (
-          <button
-            type="button"
-            onClick={() => handleRetryEmail(entry)}
-            disabled={retryDisabled}
-            className="px-4 py-2 rounded-lg border-2 border-theme text-theme text-sm font-semibold hover:bg-theme hover:text-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {isRetrying
-              ? "Sending…"
-              : remainingSeconds > 0
-              ? `Retry (${remainingSeconds}s)`
-              : "Retry"}
-          </button>
+          isRetryAlreadySent(entry) ? (
+            <InfoTooltip title="Retry completed" position="left">
+              {getRetrySentTooltipMessage(entry)}
+            </InfoTooltip>
+          ) : isFailedFilter ? (
+            <InfoTooltip variant="neutral" title="Not attempted retry" position="left" />
+          ) : (
+            <button
+              type="button"
+              onClick={() => handleRetryEmail(entry)}
+              disabled={retryDisabled}
+              className="px-4 py-2 rounded-lg border-2 border-theme text-theme text-sm font-semibold hover:bg-theme hover:text-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isRetrying
+                ? "Sending…"
+                : remainingSeconds > 0
+                ? `Retry (${remainingSeconds}s)`
+                : "Retry"}
+            </button>
+          )
         ) : (
           "—"
         ),
       };
     });
-  }, [rawLogs, retryEmailLogId, retryCooldownEndsAt]);
+  }, [rawLogs, retryEmailLogId, bulkSending, retryCooldownEndsAt, isFailedFilter]);
 
   const columns = [
-    { field: "sentAt", header: "Sent at", sort: false },
+    { field: "orderId", header: "Order ID", sort: true },
     { field: "emailType", header: "Type", sort: false },
-    { field: "orderId", header: "Order ID", sort: false },
     { field: "orderType", header: "Order type", sort: false },
     { field: "recipients", header: "Recipients", sort: false },
     { field: "subject", header: "Subject", sort: false },
     { field: "status", header: "Status", sort: false },
+    { field: "sentAt", header: "Sent at", sort: true },
     { field: "errorMessage", header: "Error", sort: false },
-    { field: "action", header: "Action", sort: false },
+    { field: "action", header: "Retry", sort: false },
   ];
 
   const handlePageChange = (newPage) => {
@@ -245,8 +398,13 @@ export default function EmailLogsPage() {
   };
 
   const handleEmailTypeChange = (option) => {
-    setEmailType(option?.value ?? "");
+    const next = option?.value ?? "";
+    setEmailType(next);
     setPage(1);
+    setSelectedRows([]);
+    if (next !== "Failed") {
+      setBulkRefetchEndsAt(null);
+    }
   };
 
   const handleOrderIdChange = (e) => {
@@ -331,23 +489,58 @@ export default function EmailLogsPage() {
               {dateRangeError}
             </p>
           )}
+          {isFailedFilter ? (
+            <button
+              type="button"
+              disabled={
+                bulkSending ||
+                bulkRefetchRemainingSeconds > 0 ||
+                retryableSelectedCount === 0
+              }
+              onClick={handleBulkRetry}
+              className="inline-flex items-center justify-center gap-2 bg-theme text-white px-4 py-2 rounded-lg border border-theme hover:bg-white hover:text-theme transition-colors duration-200 font-medium disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-theme disabled:hover:text-white ml-auto"
+            >
+              {bulkSending
+                ? "Sending…"
+                : bulkRefetchRemainingSeconds > 0
+                ? `Refreshing in ${bulkRefetchRemainingSeconds}s…`
+                : `Retry selected (${retryableSelectedCount})`}
+              {bulkSending && (
+                <AiOutlineLoading3Quarters className="w-4 h-4 animate-spin flex-shrink-0" />
+              )}
+            </button>
+          ) : null}
         </div>
 
-        <MyDataTable
-          columns={columns}
-          data={tableData}
-          pagination
-          serverPagination={{
-            page: pagination.page ?? page,
-            limit: pagination.limit ?? limit,
-            totalRecords: pagination.total ?? 0,
-            totalPages: pagination.totalPages ?? 0,
-            onPageChange: handlePageChange,
-            onLimitChange: handleLimitChange,
-          }}
-          dataKey="id"
-          hide
-        />
+        {dateRangeError ? (
+          <p className="text-sm text-slate-600 rounded-xl border border-borderColor bg-white p-8 text-center shadow-tableShadow">
+            Fix the date range above to load email logs.
+          </p>
+        ) : isLoading ? (
+          <div className="flex min-h-[360px] items-center justify-center rounded-xl border border-borderColor bg-white shadow-tableShadow">
+            <Loader />
+          </div>
+        ) : (
+          <MyDataTable
+            checkbox={isFailedFilter}
+            isRowCheckboxDisabled={(row) => !row.canRetry}
+            selectedRows={selectedRows}
+            setSelectedRows={isFailedFilter ? setSelectedRows : undefined}
+            columns={columns}
+            data={tableData}
+            pagination
+            serverPagination={{
+              page: pagination.page ?? page,
+              limit: pagination.limit ?? limit,
+              totalRecords: pagination.total ?? 0,
+              totalPages: pagination.totalPages ?? 0,
+              onPageChange: handlePageChange,
+              onLimitChange: handleLimitChange,
+            }}
+            dataKey="id"
+            hide
+          />
+        )}
       </div>
     </div>
   );

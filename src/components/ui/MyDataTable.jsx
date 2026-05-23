@@ -17,6 +17,7 @@ export default function MyDataTable({
   onSearchChange, // Callback function to handle search changes for server-side search
   searchValue, // Controlled search value from parent (for server-side search)
   checkbox,
+  isRowCheckboxDisabled,
   sortField: sortFieldProp,
   sortOrder: sortOrderProp,
   onSort: onSortProp,
@@ -140,15 +141,27 @@ export default function MyDataTable({
 
   // Normalize ids to string so number vs string (e.g. 123 vs "123") match
   const toId = (val) => (val == null ? "" : String(val));
+  const isCheckboxDisabled = (row) =>
+    typeof isRowCheckboxDisabled === "function" && isRowCheckboxDisabled(row);
+
+  const selectableRows = useMemo(
+    () =>
+      isRowCheckboxDisabled
+        ? sortedData.filter((item) => !isCheckboxDisabled(item))
+        : sortedData,
+    [sortedData, isRowCheckboxDisabled]
+  );
+
   const selectedIds = useMemo(
     () => new Set((selected ?? []).map((s) => toId(s?.[dataKey])).filter(Boolean)),
     [selected, dataKey]
   );
   const isAllSelected =
-    sortedData.length > 0 &&
-    sortedData.every((item) => selectedIds.has(toId(item?.[dataKey])));
-  const isSomeSelected =
-    sortedData.some((item) => selectedIds.has(toId(item?.[dataKey])));
+    selectableRows.length > 0 &&
+    selectableRows.every((item) => selectedIds.has(toId(item?.[dataKey])));
+  const isSomeSelected = selectableRows.some((item) =>
+    selectedIds.has(toId(item?.[dataKey]))
+  );
 
   // Native checkbox: visible checked state, no PrimeReact dependency
   useEffect(() => {
@@ -164,7 +177,17 @@ export default function MyDataTable({
     rowCheckboxRefsMap.current.forEach((el, id) => {
       if (el && typeof el.checked !== "undefined") el.checked = ids.has(id);
     });
-  }, [checkbox, selected, dataKey]);
+  }, [checkbox, selected, dataKey, sortedData]);
+
+  // Drop rows that became non-selectable from the current selection
+  useEffect(() => {
+    if (!checkbox || !isRowCheckboxDisabled || !selected?.length) return;
+    const next = selected.filter((row) => !isCheckboxDisabled(row));
+    if (next.length !== selected.length) {
+      selectedRef.current = next;
+      updateSelected(next);
+    }
+  }, [checkbox, isRowCheckboxDisabled, selected, sortedData]);
 
   const checkIcon = (
     <svg className="check-icon w-3.5 h-3.5 text-white shrink-0 opacity-0 transition-opacity duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
@@ -187,7 +210,7 @@ export default function MyDataTable({
           e.stopPropagation();
           e.nativeEvent?.stopImmediatePropagation?.();
           if (e.target.checked) {
-            const next = [...sortedData];
+            const next = [...selectableRows];
             selectedRef.current = next;
             updateSelected(next);
           } else {
@@ -221,10 +244,12 @@ export default function MyDataTable({
     const rowData = rowDataOrOptions?.data ?? rowDataOrOptions;
     const rowIdRaw = rowData?.[dataKey];
     const rowIdStr = toId(rowIdRaw);
-    const isChecked = selectedIds.has(rowIdStr);
+    const disabled = isCheckboxDisabled(rowData);
+    const isChecked = !disabled && selectedIds.has(rowIdStr);
     const handleChange = (e) => {
       e.stopPropagation();
       e.nativeEvent?.stopImmediatePropagation?.();
+      if (disabled) return;
       const current = selectedRef.current ?? [];
       const copy = [...current];
       const idx = copy.findIndex((row) => toId(row?.[dataKey]) === rowIdStr);
@@ -246,21 +271,34 @@ export default function MyDataTable({
       else rowCheckboxRefsMap.current.delete(rowIdStr);
     };
     return (
-      <div key={`row-cb-${rowIdStr}`} onClick={handleClick} className="relative inline-flex items-center justify-center">
+      <div
+        key={`row-cb-${rowIdStr}`}
+        onClick={disabled ? undefined : handleClick}
+        className={`relative inline-flex items-center justify-center ${
+          disabled ? "opacity-40 cursor-not-allowed" : ""
+        }`}
+      >
         <input
           ref={setRef}
           type="checkbox"
-          defaultChecked={!!isChecked}
+          disabled={disabled}
+          checked={!!isChecked}
           onChange={handleChange}
           onClick={handleClick}
-          className="peer absolute inset-0 w-5 h-5 cursor-pointer opacity-0 z-[1]"
-          aria-label={`Select row ${rowIdStr || ""}`}
+          className={`peer absolute inset-0 w-5 h-5 opacity-0 z-[1] ${
+            disabled ? "cursor-not-allowed" : "cursor-pointer"
+          }`}
+          aria-label={
+            disabled
+              ? `Row ${rowIdStr || ""} cannot be selected`
+              : `Select row ${rowIdStr || ""}`
+          }
         />
         <span
           className="pointer-events-none w-5 h-5 rounded-md border-2 border-gray-300 bg-white flex items-center justify-center
             transition-colors duration-150 ease-out
-            peer-hover:border-gray-400 peer-focus:ring-2 peer-focus:ring-gray-400/40 peer-focus:ring-offset-1
-            peer-checked:bg-gray-800 peer-checked:border-gray-800 peer-checked:[&>svg]:opacity-100"
+            peer-enabled:peer-hover:border-gray-400 peer-enabled:peer-focus:ring-2 peer-enabled:peer-focus:ring-gray-400/40 peer-enabled:peer-focus:ring-offset-1
+            peer-enabled:peer-checked:bg-gray-800 peer-enabled:peer-checked:border-gray-800 peer-enabled:peer-checked:[&>svg]:opacity-100"
           aria-hidden
         >
           {checkIcon}

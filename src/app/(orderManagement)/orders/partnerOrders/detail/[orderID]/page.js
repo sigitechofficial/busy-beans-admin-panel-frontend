@@ -30,6 +30,7 @@ import { FiCopy } from "react-icons/fi";
 import { BASE_URL } from "@/utilities/URL";
 import { formatDateTimeISO } from "@/utilities/constants";
 import { useUserType } from "@/utilities/useUserType";
+import { logEmailTypeToBulkApi } from "@/utilities/emailLogTypes";
 
 export default function OrderDetail() {
   const { isAllowed: canViewEmailLogs } = useUserType(
@@ -436,16 +437,8 @@ export default function OrderDetail() {
     }
   };
 
-  const logEmailTypeToApi = {
-    invoice_sent: "invoice-sent",
-    invoice_reminder: "invoice-reminder",
-    paid_receipt: "paid-invoice",
-    paid_receipt_admin: "paid-invoice",
-    supplier_new_order: "order-ship-supplier",
-  };
-
   const handleRetryEmail = async (log) => {
-    const apiEmailType = logEmailTypeToApi[log.emailType] || log.emailType;
+    const apiEmailType = logEmailTypeToBulkApi(log.emailType);
     setRetryEmailLogId(log.id);
     try {
       const res = await PostAPI("api/v1/admin/order-management/email-helper", {

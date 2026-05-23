@@ -59,3 +59,55 @@ export function getEmailLogTypeLabel(emailType) {
   if (!emailType) return "—";
   return EMAIL_LOG_TYPE_LABELS[emailType] || emailType;
 }
+
+export function isCustomerOrderEntry(entry) {
+  return entry?.orderType === "customer";
+}
+
+/** Order ID shown in email-log tables (partner rows use partnerOrderId). */
+export function getDisplayOrderId(entry) {
+  if (isCustomerOrderEntry(entry)) {
+    const id = entry?.orderId;
+    return id != null && id !== "" ? id : "—";
+  }
+  const id = entry?.partnerOrderId ?? entry?.orderId;
+  return id != null && id !== "" ? id : "—";
+}
+
+/** Value for bulk/email-helper `orderId` (always the field name; partner id when not customer). */
+export function getEmailRetryOrderId(entry, fallbackOrderId) {
+  if (isCustomerOrderEntry(entry)) {
+    const id = entry?.orderId ?? fallbackOrderId;
+    return Number(id) || id;
+  }
+  const id = entry?.partnerOrderId ?? entry?.orderId ?? fallbackOrderId;
+  return Number(id) || id;
+}
+
+export function entryToBulkEmailItem(entry) {
+  const orderType = entry.orderType === "local-partner" ? "local-partner" : "customer";
+  return {
+    orderId: getEmailRetryOrderId(entry),
+    orderType,
+    emailType: logEmailTypeToBulkApi(entry.emailType),
+  };
+}
+
+export function dedupeOrdersToSentEmail(items) {
+  const seen = new Set();
+  return items.filter((item) => {
+    const orderType = item.orderType === "local-partner" ? "local-partner" : "customer";
+    const key = `${orderType}:${Number(item.orderId)}:${item.emailType}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+export function getEmailHelperRetryPayload(entry, { fallbackOrderId } = {}) {
+  const orderType = entry?.orderType === "local-partner" ? "local-partner" : "customer";
+  return {
+    orderId: String(getEmailRetryOrderId(entry, fallbackOrderId)),
+    orderType,
+  };
+}

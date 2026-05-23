@@ -19,7 +19,9 @@ import dayjs from "dayjs";
 import { formatDateTimeISO } from "@/utilities/constants";
 import {
   getEmailLogTypeLabel,
-  logEmailTypeToBulkApi,
+  getDisplayOrderId,
+  entryToBulkEmailItem,
+  dedupeOrdersToSentEmail,
 } from "@/utilities/emailLogTypes";
 
 const EMAIL_TYPE_OPTIONS = [
@@ -69,7 +71,7 @@ function parseRecipientList(recipients) {
 function getRetrySentTooltipMessage(entry) {
   const recipientList = parseRecipientList(entry?.recipients);
   const emailTypeLabel = getEmailLogTypeLabel(entry?.emailType);
-  const orderId = entry?.orderId;
+  const orderId = getDisplayOrderId(entry);
 
   return (
     <div className="space-y-2.5">
@@ -112,26 +114,6 @@ function getRetrySentTooltipMessage(entry) {
       ) : null}
     </div>
   );
-}
-
-function entryToBulkItem(entry) {
-  const orderType = entry.orderType === "local-partner" ? "local-partner" : "customer";
-  return {
-    orderId: Number(entry.orderId) || entry.orderId,
-    orderType,
-    emailType: logEmailTypeToBulkApi(entry.emailType),
-  };
-}
-
-function dedupeOrdersToSentEmail(items) {
-  const seen = new Set();
-  return items.filter((item) => {
-    const orderType = item.orderType === "local-partner" ? "local-partner" : "customer";
-    const key = `${orderType}:${Number(item.orderId)}:${item.emailType}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
 }
 
 const BULK_REFETCH_DELAY_MS = 8000;
@@ -215,7 +197,7 @@ export default function EmailLogsPage() {
   const pagination = dateRangeError ? {} : (data?.data?.pagination ?? {});
 
   const runBulkEmailHelper = async (rawEntries, { singleLogId = null } = {}) => {
-    const items = dedupeOrdersToSentEmail(rawEntries.map(entryToBulkItem));
+    const items = dedupeOrdersToSentEmail(rawEntries.map(entryToBulkEmailItem));
     if (!items.length) {
       info_toaster("Select at least one failed log to retry.");
       return;
@@ -333,7 +315,7 @@ export default function EmailLogsPage() {
           ? formatDateTimeISO(entry.sentAt, "datetime")
           : "—",
         emailType: getEmailTypeLabel(entry.emailType),
-        orderId: entry.orderId ?? "—",
+        orderId: getDisplayOrderId(entry),
         orderType: entry.orderType ?? "—",
         recipients: entry.recipients ?? "—",
         subject: meta.subject ?? "—",

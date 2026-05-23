@@ -30,7 +30,7 @@ import { FiCopy } from "react-icons/fi";
 import { BASE_URL } from "@/utilities/URL";
 import { formatDateTimeISO } from "@/utilities/constants";
 import { useUserType } from "@/utilities/useUserType";
-import { logEmailTypeToBulkApi } from "@/utilities/emailLogTypes";
+import { getEmailHelperRetryPayload, logEmailTypeToBulkApi } from "@/utilities/emailLogTypes";
 
 export default function OrderDetail() {
   const { isAllowed: canViewEmailLogs } = useUserType(
@@ -442,8 +442,7 @@ export default function OrderDetail() {
     setRetryEmailLogId(log.id);
     try {
       const res = await PostAPI("api/v1/admin/order-management/email-helper", {
-        partnerOrderId: String(orderID),
-        orderType: "local-partner",
+        ...getEmailHelperRetryPayload(log, { fallbackOrderId: orderID }),
         emailType: apiEmailType,
       });
       if (res?.data?.status === "success" || res?.data?.status === true) {

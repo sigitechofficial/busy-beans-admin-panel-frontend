@@ -29,7 +29,7 @@ import { ORDER_DETAIL } from "../../orders.testids";
 import { FiCopy } from "react-icons/fi";
 import { QuickbooksPingCheck, formatDateTimeISO } from "@/utilities/constants";
 import { useUserType } from "@/utilities/useUserType";
-import { logEmailTypeToBulkApi } from "@/utilities/emailLogTypes";
+import { getEmailHelperRetryPayload, logEmailTypeToBulkApi } from "@/utilities/emailLogTypes";
 
 export default function OrderDetail() {
   const { isAllowed: canViewEmailLogs } = useUserType(
@@ -500,13 +500,10 @@ export default function OrderDetail() {
 
   const handleRetryEmail = async (log) => {
     const apiEmailType = logEmailTypeToBulkApi(log.emailType);
-    const orderTypeApi =
-      log.orderType === "local-partner" ? "local-partner" : "customer";
     setRetryEmailLogId(log.id);
     try {
       const res = await PostAPI("api/v1/admin/order-management/email-helper", {
-        orderId: String(log.orderId),
-        orderType: orderTypeApi,
+        ...getEmailHelperRetryPayload(log, { fallbackOrderId: orderID }),
         emailType: apiEmailType,
       });
       if (res?.data?.status === "success" || res?.data?.status === true) {

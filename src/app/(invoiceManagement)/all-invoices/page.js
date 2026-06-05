@@ -29,6 +29,8 @@ export default function AllInvoices() {
   const router = useRouter();
   const [type, setType] = useState("all");
   const [invoiceSource, setInvoiceSource] = useState("customer");
+  const [customerInvoiceOwner, setCustomerInvoiceOwner] = useState("all");
+  const [selectedPartnerId, setSelectedPartnerId] = useState(null);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(100);
   const [searchQuery, setSearchQuery] = useState("");
@@ -169,7 +171,41 @@ export default function AllInvoices() {
     params.set("on[gte]", dateRange.startDate);
     params.set("on[lte]", dateRange.endDate);
   }
+  if (
+    userType === "admin" &&
+    invoiceSource === "customer" &&
+    customerInvoiceOwner === "admin"
+  ) {
+    params.set("salesRepId", "null");
+  } else if (
+    userType === "admin" &&
+    invoiceSource === "customer" &&
+    customerInvoiceOwner === "partner"
+  ) {
+    params.set("salesRepId[ne]", "null");
+  }
+  if (userType === "admin" && invoiceSource === "partner" && selectedPartnerId) {
+    params.set("salesRepId", selectedPartnerId.toString());
+  }
   const apiUrl = `${urlBase}?${params.toString()}`;
+
+  const { data: salesRepData } = GetAPI(
+    userType === "admin" ? "api/v1/admin/sales-rep" : "",
+    "sales-rep"
+  );
+  const partnersList = salesRepData?.data?.data || [];
+  const partnerOptions = [
+    { value: "all", label: "All Partners" },
+    ...partnersList.map((partner) => ({
+      value: partner.id,
+      label: `${partner?.srName || partner?.name || "—"}${
+        partner?.territoryName ? ` (${partner.territoryName})` : ""
+      }`,
+    })),
+  ];
+  const selectedPartnerOption =
+    partnerOptions.find((option) => option.value === (selectedPartnerId ?? "all")) ||
+    partnerOptions[0];
 
   const { data, isLoading, reFetch } = GetAPI(apiUrl, "orders");
 
@@ -316,6 +352,7 @@ export default function AllInvoices() {
           <button
             onClick={() => {
               setInvoiceSource("customer");
+              setSelectedPartnerId(null);
               setPage(1);
             }}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
@@ -344,84 +381,178 @@ export default function AllInvoices() {
         </div>
       </div>
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
-        <div>
-          <button
-            onClick={() => {
-              setType("all");
-              setPage(1);
-            }}
-            className={`${
-              type === "all" ? "bg-black text-white" : "bg-white text-black"
-            } font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
-                  duration-200 max-sm:w-60`}
-          >
-            All Invoices
-          </button>
-          <button
-            onClick={() => {
-              setType("paid");
-              setPage(1);
-            }}
-            className={`${
-              type === "paid" ? "bg-black text-white" : "bg-white text-black"
-            }  font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
-                  duration-200 max-sm:w-60`}
-          >
-            Paid Invoices
-          </button>
-          <button
-            onClick={() => {
-              setType("unpaid");
-              setPage(1);
-            }}
-            className={`${
-              type === "unpaid" ? "bg-black text-white" : "bg-white text-black"
-            }  font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
-                  duration-200 max-sm:w-60`}
-          >
-            Unpaid Invoices
-          </button>
-        </div>
-
-        {/* Date filter - same options as reports/sales-by-customer-summary */}
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Date range:</label>
-            <div className="w-[200px]">
-              <Select
-                options={dateFilterOptions}
-                value={selectedDateOption}
-                onChange={handleDateOptionChange}
-                styles={selectStyles}
-                placeholder="Select"
-                isClearable={false}
-              />
+        <div className="flex flex-col gap-4">
+          <div className="overflow-x-auto">
+            <div className="inline-flex flex-nowrap min-w-max">
+              <button
+                onClick={() => {
+                  setType("all");
+                  setPage(1);
+                }}
+                className={`${
+                  type === "all" ? "bg-black text-white" : "bg-white text-black"
+                } shrink-0 whitespace-nowrap font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 duration-200`}
+              >
+                All Invoices
+              </button>
+              <button
+                onClick={() => {
+                  setType("paid");
+                  setPage(1);
+                }}
+                className={`${
+                  type === "paid" ? "bg-black text-white" : "bg-white text-black"
+                } shrink-0 whitespace-nowrap -ml-px font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 duration-200`}
+              >
+                Paid Invoices
+              </button>
+              <button
+                onClick={() => {
+                  setType("unpaid");
+                  setPage(1);
+                }}
+                className={`${
+                  type === "unpaid" ? "bg-black text-white" : "bg-white text-black"
+                } shrink-0 whitespace-nowrap -ml-px font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 duration-200`}
+              >
+                Unpaid Invoices
+              </button>
             </div>
           </div>
-          {displayCustomDateFilters && (
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="flex items-center gap-2">
-                <label htmlFor="all-invoices-startDate" className="text-sm font-medium text-gray-700">Start</label>
-                <input
-                  type="date"
-                  id="all-invoices-startDate"
-                  value={customDates.startDate}
-                  onChange={(e) => setCustomDates((prev) => ({ ...prev, startDate: e.target.value }))}
-                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <label htmlFor="all-invoices-endDate" className="text-sm font-medium text-gray-700">End</label>
-                <input
-                  type="date"
-                  id="all-invoices-endDate"
-                  value={customDates.endDate}
-                  onChange={(e) => setCustomDates((prev) => ({ ...prev, endDate: e.target.value }))}
-                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                />
+
+          {userType === "admin" && invoiceSource === "customer" && (
+            <div className="overflow-x-auto">
+              <div className="inline-flex flex-nowrap min-w-max">
+                <button
+                  onClick={() => {
+                    setCustomerInvoiceOwner("all");
+                    setPage(1);
+                  }}
+                  className={`${
+                    customerInvoiceOwner === "all"
+                      ? "bg-black text-white"
+                      : "bg-white text-black"
+                  } shrink-0 whitespace-nowrap font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 duration-200`}
+                >
+                  All
+                </button>
+                <button
+                  onClick={() => {
+                    setCustomerInvoiceOwner("admin");
+                    setPage(1);
+                  }}
+                  className={`${
+                    customerInvoiceOwner === "admin"
+                      ? "bg-black text-white"
+                      : "bg-white text-black"
+                  } shrink-0 whitespace-nowrap -ml-px font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 duration-200`}
+                >
+                  Admin
+                </button>
+                <button
+                  onClick={() => {
+                    setCustomerInvoiceOwner("partner");
+                    setPage(1);
+                  }}
+                  className={`${
+                    customerInvoiceOwner === "partner"
+                      ? "bg-black text-white"
+                      : "bg-white text-black"
+                  } shrink-0 whitespace-nowrap -ml-px font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 duration-200`}
+                >
+                  Partner
+                </button>
               </div>
             </div>
           )}
+        </div>
+
+        <div className="rounded-lg border border-gray-200 bg-gray-50/80 px-4 py-4">
+          <div className="flex flex-col xl:flex-row xl:flex-wrap xl:items-center gap-4 xl:gap-6">
+            {userType === "admin" && invoiceSource === "partner" && (
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                <label className="text-sm font-medium text-gray-700 sm:w-28 shrink-0">
+                  Local Partner
+                </label>
+                <div className="w-full sm:w-[260px]">
+                  <Select
+                    options={partnerOptions}
+                    value={selectedPartnerOption}
+                    onChange={(option) => {
+                      setSelectedPartnerId(
+                        option?.value === "all" ? null : option?.value ?? null
+                      );
+                      setPage(1);
+                    }}
+                    styles={selectStyles}
+                    placeholder="Select Partner"
+                    isClearable={false}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+              <label className="text-sm font-medium text-gray-700 sm:w-28 shrink-0">
+                Date range
+              </label>
+              <div className="w-full sm:w-[260px]">
+                <Select
+                  options={dateFilterOptions}
+                  value={selectedDateOption}
+                  onChange={handleDateOptionChange}
+                  styles={selectStyles}
+                  placeholder="Select"
+                  isClearable={false}
+                />
+              </div>
+            </div>
+
+            {displayCustomDateFilters && (
+              <>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                  <label
+                    htmlFor="all-invoices-startDate"
+                    className="text-sm font-medium text-gray-700 sm:w-28 shrink-0"
+                  >
+                    Start date
+                  </label>
+                  <input
+                    type="date"
+                    id="all-invoices-startDate"
+                    value={customDates.startDate}
+                    onChange={(e) =>
+                      setCustomDates((prev) => ({
+                        ...prev,
+                        startDate: e.target.value,
+                      }))
+                    }
+                    className="w-full sm:w-[260px] h-[42px] border border-gray-300 rounded-lg px-3 text-sm bg-white"
+                  />
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                  <label
+                    htmlFor="all-invoices-endDate"
+                    className="text-sm font-medium text-gray-700 sm:w-28 shrink-0"
+                  >
+                    End date
+                  </label>
+                  <input
+                    type="date"
+                    id="all-invoices-endDate"
+                    value={customDates.endDate}
+                    onChange={(e) =>
+                      setCustomDates((prev) => ({
+                        ...prev,
+                        endDate: e.target.value,
+                      }))
+                    }
+                    className="w-full sm:w-[260px] h-[42px] border border-gray-300 rounded-lg px-3 text-sm bg-white"
+                  />
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">

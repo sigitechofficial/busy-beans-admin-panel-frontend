@@ -18,14 +18,31 @@ export default function IndividualInvoices() {
 
   const router = useRouter();
   const [invoiceSource, setInvoiceSource] = useState("admin");
+  const [customerInvoiceOwner, setCustomerInvoiceOwner] = useState("all");
 
-  // Determine API URL based on invoice source
-  const apiUrl =
+  const baseUrl =
     invoiceSource === "admin"
       ? userType === "salesRepresentative"
         ? `api/v1/admin/orders?salesRepId=${userID}&type=direct-invoice&sort=invoiceDate`
         : `api/v1/admin/orders?type=direct-invoice&sort=invoiceDate`
       : `api/v1/admin/partner-order/orders-list?type=direct-invoice&sort=invoiceDate`;
+
+  const [urlBase, existingQuery] = baseUrl.split("?");
+  const params = new URLSearchParams(existingQuery || "");
+  if (
+    userType === "admin" &&
+    invoiceSource === "admin" &&
+    customerInvoiceOwner === "admin"
+  ) {
+    params.set("salesRepId", "null");
+  } else if (
+    userType === "admin" &&
+    invoiceSource === "admin" &&
+    customerInvoiceOwner === "partner"
+  ) {
+    params.set("salesRepId[ne]", "null");
+  }
+  const apiUrl = `${urlBase}?${params.toString()}`;
 
   const { data, isLoading } = GetAPI(apiUrl);
 
@@ -112,6 +129,43 @@ export default function IndividualInvoices() {
       </div>
 
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
+        {userType === "admin" && invoiceSource === "admin" && (
+          <div className="overflow-x-auto">
+            <div className="inline-flex flex-nowrap min-w-max">
+              <button
+                onClick={() => setCustomerInvoiceOwner("all")}
+                className={`${
+                  customerInvoiceOwner === "all"
+                    ? "bg-black text-white"
+                    : "bg-white text-black"
+                } shrink-0 whitespace-nowrap font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 duration-200`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setCustomerInvoiceOwner("admin")}
+                className={`${
+                  customerInvoiceOwner === "admin"
+                    ? "bg-black text-white"
+                    : "bg-white text-black"
+                } shrink-0 whitespace-nowrap -ml-px font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 duration-200`}
+              >
+                Admin
+              </button>
+              <button
+                onClick={() => setCustomerInvoiceOwner("partner")}
+                className={`${
+                  customerInvoiceOwner === "partner"
+                    ? "bg-black text-white"
+                    : "bg-white text-black"
+                } shrink-0 whitespace-nowrap -ml-px font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 duration-200`}
+              >
+                Partner
+              </button>
+            </div>
+          </div>
+        )}
+
         <div
           className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5"
           data-testid={INDIVIDUAL_INVOICES.statsGrid}

@@ -34,6 +34,7 @@ export default function Customers() {
   const [limit, setLimit] = useState(100);
   const [searchQuery, setSearchQuery] = useState("");
   const [loader, setLoader] = useState("");
+  const [approvingId, setApprovingId] = useState(null);
   const [modal, setModal] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectedState, setselectedState] = useState({
@@ -41,11 +42,27 @@ export default function Customers() {
     label: "ALL",
   });
 
+  const customerFilterTabs = [
+    { value: "all", label: "All Customers" },
+    { value: "unassigned", label: "Unassigned Local Partner" },
+    { value: "assigned", label: "Assigned Local Partner" },
+    { value: "approval-required", label: "Approval Required" },
+  ];
+
+  const selectedFilterTab =
+    customerFilterTabs.find((tab) => tab.value === type) ??
+    customerFilterTabs[0];
+
+  const handleFilterChange = (nextType) => {
+    setType(nextType);
+    setPage(1);
+  };
+
   // Build API URL with pagination and search query parameters
   const baseUrl = isAdminEmployee
     ? "api/v1/admin/customer-management/customer-list/not-assigned"
     : `api/v1/admin/customer-management/customer-list${
-        type === "all"
+        type === "all" || type === "approval-required"
           ? "/all"
           : type === "unassigned"
           ? "/sale-rep/not-assign"
@@ -58,6 +75,9 @@ export default function Customers() {
   params.set("limit", limit.toString());
   if (searchQuery.trim()) {
     params.set("search", searchQuery.trim());
+  }
+  if (type === "approval-required") {
+    params.set("approvedByAdmin", "null");
   }
   if (isAdminEmployee && hasPermission("customer_create")) {
     params.set("cus", "all");
@@ -120,6 +140,27 @@ export default function Customers() {
     }
   };
 
+  const handleApproveCustomer = async (id) => {
+    setApprovingId(id);
+    try {
+      const res = await PatchAPI(
+        `api/v1/admin/customer-approve/${id}`,
+        {},
+        "customer"
+      );
+      if (res?.data?.status === "success") {
+        success_toaster("Customer approved successfully");
+        reFetch();
+      } else {
+        throw new Error(res?.data?.message || "An unexpected error occurred.");
+      }
+    } catch (error) {
+      ErrorHandler(error);
+    } finally {
+      setApprovingId(null);
+    }
+  };
+
   const columns = [
     // { field: "sl", header: "SL", sort: true },
     { field: "name", header: "Name", sort: true },
@@ -146,8 +187,33 @@ export default function Customers() {
       field: "changeStatus",
       header: "Status",
     },
+    ...(type === "approval-required"
+      ? [{ field: "approve", header: "Approve" }]
+      : []),
     // { field: "action", header: "Action" },  // pending to be done
   ];
+
+  const renderApproveToggle = (customerId) => (
+    <label
+      className="flex gap-2 items-center"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="w-max text-xs text-white bg-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+        Pending
+      </div>
+      <Switch
+        onChange={() => handleApproveCustomer(customerId)}
+        checked={false}
+        disabled={approvingId === customerId}
+        uncheckedIcon={false}
+        checkedIcon={false}
+        onColor="#86644c"
+        onHandleColor="#fff"
+        className="react-switch"
+        boxShadow="none"
+      />
+    </label>
+  );
 
   const salesRepresentativeColumns = [
     { field: "sl", header: "SL", sort: true },
@@ -272,6 +338,15 @@ export default function Customers() {
             )}
           </div>
         ),
+          ...(type === "approval-required" && {
+            approve: hasPermission("customer_update")
+              ? renderApproveToggle(customer?.id)
+              : (
+                <div className="w-max text-xs text-white bg-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+                  Pending
+                </div>
+              ),
+          }),
           // action: (
           //   <button
           //     className="border border-theme rounded-md p-2 text-theme"
@@ -335,6 +410,15 @@ export default function Customers() {
               <FaEdit size={24} />
             </button>
           ),
+          ...(type === "approval-required" && {
+            approve: hasPermission("customer_update")
+              ? renderApproveToggle(customer?.id)
+              : (
+                <div className="w-max text-xs text-white bg-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+                  Pending
+                </div>
+              ),
+          }),
         });
   });
 
@@ -423,52 +507,43 @@ export default function Customers() {
           />
         </div>
 
-        <div className="flex justify-between">
-          <div>
-            <button
-              onClick={() => {
-              setType("all");
-              setPage(1); // Reset to first page when filter changes
-            }}
-              className={`${
-                type === "all" ? "bg-black text-white" : "bg-white text-black"
-              } font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
-            duration-200 max-sm:w-60`}
-            >
-              All Customers
-            </button>
-            <button
-              onClick={() => {
-              setType("unassigned");
-              setPage(1); // Reset to first page when filter changes
-            }}
-              className={`${
-                type === "unassigned"
-                  ? "bg-black text-white"
-                  : "bg-white text-black"
-              }  font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
-            duration-200 max-sm:w-60`}
-            >
-              Unassigned Local Partner
-            </button>
-            <button
-              onClick={() => {
-              setType("assigned");
-              setPage(1); // Reset to first page when filter changes
-            }}
-              className={`${
-                type === "assigned"
-                  ? "bg-black text-white"
-                  : "bg-white text-black"
-              }  font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 
-            duration-200 max-sm:w-60`}
-            >
-              Assigned Local Partner
-            </button>
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="w-full xl:min-w-0 xl:flex-1">
+            <div className="md:hidden w-full max-w-md">
+              <Select
+                options={customerFilterTabs}
+                value={selectedFilterTab}
+                onChange={(option) => handleFilterChange(option.value)}
+                styles={drawerSelectStyles}
+                className="w-full"
+              />
+            </div>
+
+            <div className="hidden md:block w-full overflow-x-auto">
+              <div className="inline-flex flex-nowrap min-w-max">
+                {customerFilterTabs.map((tab, index) => (
+                  <button
+                    key={tab.value}
+                    onClick={() => handleFilterChange(tab.value)}
+                    className={`${
+                      type === tab.value
+                        ? "bg-black text-white"
+                        : "bg-white text-black"
+                    } shrink-0 whitespace-nowrap font-workSans font-medium border border-black px-4 lg:px-6 xl:px-8 py-2.5 text-sm lg:text-base duration-200 ${
+                      index > 0 ? "-ml-px" : ""
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
           <div
-            className={`${
-              type === "all" || type === "assigned" ? "hidden" : "block"
+            className={`shrink-0 ${
+              type === "all" || type === "assigned" || type === "approval-required"
+                ? "hidden"
+                : "block"
             }`}
           >
             {/* <button
@@ -549,7 +624,13 @@ export default function Customers() {
               setSearchQuery(searchValue);
               setPage(1); // Reset to first page when search changes
             }}
-            checkbox={type === "all" || type === "assigned" ? false : true}
+            checkbox={
+              type === "all" ||
+              type === "assigned" ||
+              type === "approval-required"
+                ? false
+                : true
+            }
             selectedRows={selectedRows}
             setSelectedRows={setSelectedRows}
             search={true}

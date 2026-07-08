@@ -46,7 +46,7 @@ export default function Customers() {
     { value: "all", label: "All Customers" },
     { value: "unassigned", label: "Unassigned Local Partner" },
     { value: "assigned", label: "Assigned Local Partner" },
-    { value: "approval-required", label: "Approval Required" },
+    { value: "approval-required", label: "New Customers" },
   ];
 
   const selectedFilterTab =
@@ -165,7 +165,9 @@ export default function Customers() {
     // { field: "sl", header: "SL", sort: true },
     { field: "name", header: "Name", sort: true },
     { field: "mainContact", header: "	Main Contact" },
-    // { field: "email", header: "Email", sort: true },
+    ...(type === "approval-required"
+      ? [{ field: "email", header: "Email", sort: true, minWidth: "14rem" }]
+      : []),
     // { field: "phoneNumber", header: "Phone Number", sort: true },
     // { field: "emailToSendInvoices", header: "Invoice Email", sort: true },
     // { field: "saleTaxNumber", header: "Sale Tax Number", sort: true },
@@ -192,6 +194,19 @@ export default function Customers() {
       : []),
     // { field: "action", header: "Action" },  // pending to be done
   ];
+
+  const renderEmailStatus = (customer) => {
+    const isVerified = customer?.verifiedAtt || customer?.verifiedAt;
+    return isVerified ? (
+      <div className="w-max text-xs bg-themeGreen text-white font-semibold p-2 rounded-md flex justify-center">
+        OK
+      </div>
+    ) : (
+      <div className="w-max text-xs bg-[#EE4A4A14] text-[#EE4A4A] font-semibold p-2 rounded-md flex justify-center">
+        Not Verified
+      </div>
+    );
+  };
 
   const renderApproveToggle = (customerId) => (
     <label
@@ -248,7 +263,10 @@ export default function Customers() {
           sl: i + 1,
           name: customer?.companyName, //company name
           mainContact: customer?.name, //Main contact name
-          email: customer?.email,
+          email:
+            type === "approval-required"
+              ? renderEmailStatus(customer)
+              : customer?.email,
           phoneNumber: `${customer?.countryCode ?? ""} ${
             customer?.phoneNumber
           }`,
@@ -361,7 +379,10 @@ export default function Customers() {
           id: customer?.id,
           sl: i + 1,
           name: customer?.name,
-          email: customer?.email,
+          email:
+            type === "approval-required"
+              ? renderEmailStatus(customer)
+              : customer?.email,
           phoneNumber: customer?.phoneNumber,
           emailToSendInvoices: customer?.emailToSendInvoices,
           saleTaxNumber: customer?.saleTaxNumber,

@@ -149,7 +149,6 @@ export default function Customers() {
         "customer"
       );
       if (res?.data?.status === "success") {
-        success_toaster("Customer approved successfully");
         reFetch();
       } else {
         throw new Error(res?.data?.message || "An unexpected error occurred.");

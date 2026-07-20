@@ -11,6 +11,7 @@ import Select from "react-select";
 import { selectStyles2 } from "@/utilities/SelectStyle";
 import MiniLoader from "./MiniLoader";
 import { usePathname, useRouter } from "next/navigation";
+import { truncateToTwoDecimals } from "@/utilities/numberInput";
 
 export default function OrderCard(props) {
   if (typeof window !== "undefined") {
@@ -412,14 +413,9 @@ export default function OrderCard(props) {
                 Qty.
               </th>
               {userType !== "supplier" && (
-                <>
-                  <th className="py-2 px-2 text-center border border-gray-200">
-                    Discount
-                  </th>
-                  <th className="py-2 px-2 text-center border border-gray-200">
-                    Invoiced
-                  </th>
-                </>
+                <th className="py-2 px-2 text-center border border-gray-200">
+                  Discount
+                </th>
               )}
               <th className="py-2 px-2 text-center border border-gray-200">
                 Paid
@@ -473,14 +469,9 @@ export default function OrderCard(props) {
                       {item?.qty}
                     </td>
                     {userType !== "supplier" && (
-                      <>
-                        <td className="py-2 px-2 text-center border border-gray-200">
-                          {item?.discount}
-                        </td>
-                        <td className="py-2 px-2 text-center border border-gray-200">
-                          {props?.orderData?.invoicePdf ? "Yes" : "Not Yet"}
-                        </td>
-                      </>
+                      <td className="py-2 px-2 text-center border border-gray-200">
+                        {truncateToTwoDecimals(item?.discount)}
+                      </td>
                     )}
                     <td className="py-2 px-2 text-center border border-gray-200">
                       {props?.orderData?.paymentStatus === "pending"
@@ -493,13 +484,13 @@ export default function OrderCard(props) {
                     {(userType === "admin" ||
                       userType === "salesRepresentative") && (
                       <td className="py-2 px-2 text-right border border-gray-200">
-                        {parseFloat(item?.price / item?.qty).toFixed(2)}
+                        {truncateToTwoDecimals(item?.price / item?.qty)}
                       </td>
                     )}
                     {(userType === "admin" ||
                       userType === "salesRepresentative") && (
                       <td className="py-2 px-2 text-right border border-gray-200">
-                        {parseFloat(item?.price).toFixed(2)}
+                        {truncateToTwoDecimals(item?.price)}
                       </td>
                     )}
                   </tr>
@@ -511,14 +502,14 @@ export default function OrderCard(props) {
             {(userType === "admin" || userType === "salesRepresentative") && (
               <tr>
                 <td
-                  colSpan={userType !== "supplier" ? 9 : 7}
+                  colSpan={userType !== "supplier" ? 8 : 7}
                   className="border border-gray-200"
                 ></td>
                 <td className="py-2 px-2 text-right font-semibold border border-gray-200">
                   Sub-Total
                 </td>
                 <td className="py-2 px-2 text-right font-semibold border border-gray-200">
-                  {parseFloat(props?.orderData?.subTotal || 0).toFixed(2)}
+                  {truncateToTwoDecimals(props?.orderData?.subTotal || 0)}
                 </td>
               </tr>
             )}
@@ -526,16 +517,14 @@ export default function OrderCard(props) {
             {(userType === "admin" || userType === "salesRepresentative") && (
               <tr>
                 <td
-                  colSpan={userType !== "supplier" ? 9 : 7}
+                  colSpan={userType !== "supplier" ? 8 : 7}
                   className="border border-gray-200"
                 ></td>
                 <td className="py-2 px-2 text-right border border-gray-200">
                   Shipping Charges
                 </td>
                 <td className="py-2 px-2 text-right border border-gray-200">
-                  {parseFloat(props?.orderData?.shippingCharges || 0).toFixed(
-                    2
-                  )}
+                  {truncateToTwoDecimals(props?.orderData?.shippingCharges || 0)}
                 </td>
               </tr>
             )}
@@ -543,14 +532,14 @@ export default function OrderCard(props) {
             {(userType === "admin" || userType === "salesRepresentative") && (
               <tr>
                 <td
-                  colSpan={userType !== "supplier" ? 9 : 7}
+                  colSpan={userType !== "supplier" ? 8 : 7}
                   className="border border-gray-200"
                 ></td>
                 <td className="py-2 px-2 text-right font-bold border border-gray-200">
                   Total USD ({props?.orderData?.items?.length} items)
                 </td>
                 <td className="py-2 px-2 text-right font-bold border border-gray-200">
-                  {parseFloat(props?.orderData?.totalBill || 0).toFixed(2)}
+                  {truncateToTwoDecimals(props?.orderData?.totalBill || 0)}
                 </td>
               </tr>
             )}

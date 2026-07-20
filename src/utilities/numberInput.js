@@ -70,3 +70,13 @@ export const formatToFixedTwo = (value) => {
   if (Number.isNaN(num) || num < 0) return "";
   return num.toFixed(2);
 };
+
+/** Truncate (do not round) to 2 decimal places for display. */
+export const truncateToTwoDecimals = (value) => {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return "0.00";
+  const negative = num < 0;
+  const [intPart, decPart = ""] = String(Math.abs(num)).split(".");
+  const result = `${intPart}.${(decPart + "00").slice(0, 2)}`;
+  return negative ? `-${result}` : result;
+};

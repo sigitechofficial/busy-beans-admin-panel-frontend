@@ -33,6 +33,7 @@ import { useUserType } from "@/utilities/useUserType";
 import { getEmailHelperRetryPayload, logEmailTypeToBulkApi } from "@/utilities/emailLogTypes";
 import {
   MIN_TRACKING_NUMBER_LENGTH,
+  MAX_TRACKING_NUMBER_LENGTH,
   sanitizeTrackingNumberInput,
   validateTrackingNumber,
 } from "@/utilities/trackingNumber";
@@ -1618,13 +1619,14 @@ export default function OrderDetail() {
                   }
                   placeholder="Enter tracking number"
                   minLength={MIN_TRACKING_NUMBER_LENGTH}
+                  maxLength={MAX_TRACKING_NUMBER_LENGTH}
                   className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3 focus:border-theme"
                   autoFocus
                   data-testid={ORDER_DETAIL.dialog.trackingNumberInput}
                 />
                 <p className="text-xs text-gray-500">
-                  Min {MIN_TRACKING_NUMBER_LENGTH} characters. Letters, numbers,
-                  and hyphens only (no emojis).
+                  {MIN_TRACKING_NUMBER_LENGTH}–{MAX_TRACKING_NUMBER_LENGTH}{" "}
+                  characters. Letters, numbers, and hyphens only (no emojis).
                 </p>
               </div>
               <div className="flex items-center justify-end gap-x-3 [&>button]:font-nunito [&>button]:py-2.5 [&>button]:font-medium">

@@ -26,11 +26,16 @@ import { CiMenuBurger } from "react-icons/ci";
 import { useDataContext } from "@/utilities/DataContext";
 import { hasPermission } from "@/utilities/Permission";
 import { ORDER_DETAIL } from "../../../orders.testids";
-import { FiCopy } from "react-icons/fi";
+import { FiCopy, FiEdit2 } from "react-icons/fi";
 import { BASE_URL } from "@/utilities/URL";
 import { formatDateTimeISO } from "@/utilities/constants";
 import { useUserType } from "@/utilities/useUserType";
 import { getEmailHelperRetryPayload, logEmailTypeToBulkApi } from "@/utilities/emailLogTypes";
+import {
+  MIN_TRACKING_NUMBER_LENGTH,
+  sanitizeTrackingNumberInput,
+  validateTrackingNumber,
+} from "@/utilities/trackingNumber";
 
 export default function OrderDetail() {
   const { isAllowed: canViewEmailLogs } = useUserType(
@@ -57,11 +62,12 @@ export default function OrderDetail() {
     useState(null);
   const sectionRefreshCooldownEndsAtRef = useRef(null);
   const [modal, setModal] = useState({
-    type: "", // addCheque , editCheque
+    type: "", // addCheque , editCheque , updateTrackingNumber
     status: false,
   });
 
   const [loader, setLoader] = useState("");
+  const [editTrackingNumber, setEditTrackingNumber] = useState("");
   const [addCheque, setAddCheque] = useState({
     chequeNumber: "",
     chequeDate: "",
@@ -120,6 +126,48 @@ export default function OrderDetail() {
   } = GetAPI(invoiceTrackingApiUrl);
 
   const emailLogs = emailLogData?.data?.emailLogs ?? [];
+
+  const openUpdateTrackingModal = () => {
+    setEditTrackingNumber(
+      sanitizeTrackingNumberInput(data?.data?.order?.trackingNumber || ""),
+    );
+    setModal({ type: "updateTrackingNumber", status: true });
+  };
+
+  const handleUpdateTrackingNumber = async (e) => {
+    e.preventDefault();
+    const trackingNumber = editTrackingNumber.trim();
+    const validationError = validateTrackingNumber(trackingNumber);
+    if (validationError) {
+      error_toaster(validationError);
+      return;
+    }
+    setLoader("updateTrackingNumber");
+    try {
+      const res = await PatchAPI(
+        "api/v1/admin/order-management/update-tracking-number",
+        {
+          orderId: Number(data?.data?.order?.id),
+          trackingNumber,
+          orderType: "partner-order", // partner-only orders (not customer)
+        },
+      );
+      if (res?.data?.status === "success") {
+        setModal({ type: "", status: false });
+        setEditTrackingNumber("");
+        reFetch();
+        setLoader("");
+      } else {
+        setLoader("");
+        throw new Error(
+          res?.data?.message || "Failed to update tracking number",
+        );
+      }
+    } catch (error) {
+      ErrorHandler(error);
+      setLoader("");
+    }
+  };
 
   const handleSupplierAcknowledgement = async () => {
     setLoader("acknowledgeSupplier");
@@ -1280,11 +1328,25 @@ export default function OrderDetail() {
                   )}
                   {data?.data?.order?.trackingNumber && (
                     <div
-                      className="flex items-center gap-5 border-b"
+                      className="flex items-center gap-5 border-b py-0.5"
                       data-testid={ORDER_DETAIL.summaryCard.trackingNumberRow}
                     >
-                      <p className="w-28">Tracking No: </p>
-                      <p>{data?.data?.order?.trackingNumber}</p>
+                      <p className="w-28 shrink-0">Tracking No: </p>
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <p className="leading-none">
+                          {data?.data?.order?.trackingNumber}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={openUpdateTrackingModal}
+                          className="inline-flex items-center justify-center p-1.5 rounded-full bg-blue-50 text-blue-500 hover:bg-blue-100 hover:text-blue-700 transition-colors"
+                          title="Update tracking number"
+                          aria-label="Update tracking number"
+                          data-testid={ORDER_DETAIL.summaryCard.editTrackingBtn}
+                        >
+                          <FiEdit2 size={14} className="block" />
+                        </button>
+                      </div>
                     </div>
                   )}
                   {data?.data?.order?.frequency && (
@@ -1518,6 +1580,76 @@ export default function OrderDetail() {
             </div>
           </div>
         )}
+
+        <Dialog
+          visible={
+            modal?.type === "updateTrackingNumber" && modal?.status
+          }
+          onHide={() => {
+            setModal({ type: "", status: false });
+            setEditTrackingNumber("");
+          }}
+          header={
+            <div className="font-nunito font-bold text-xl">
+              Update Tracking Number
+            </div>
+          }
+          className="font-nunito w-[92vw] max-w-md"
+          dismissableMask={true}
+          data-testid={ORDER_DETAIL.dialog.updateTrackingRoot}
+        >
+          {loader === "updateTrackingNumber" ? (
+            <div className="w-full min-h-[160px] flex items-center justify-center">
+              <MiniLoader />
+            </div>
+          ) : (
+            <form onSubmit={handleUpdateTrackingNumber} className="space-y-5 pt-1">
+              <div className="flex flex-col gap-y-2">
+                <label className="text-labelColor font-medium font-satoshi">
+                  Tracking Number
+                </label>
+                <input
+                  type="text"
+                  value={editTrackingNumber}
+                  onChange={(e) =>
+                    setEditTrackingNumber(
+                      sanitizeTrackingNumberInput(e.target.value),
+                    )
+                  }
+                  placeholder="Enter tracking number"
+                  minLength={MIN_TRACKING_NUMBER_LENGTH}
+                  className="border border-borderColor text-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3 focus:border-theme"
+                  autoFocus
+                  data-testid={ORDER_DETAIL.dialog.trackingNumberInput}
+                />
+                <p className="text-xs text-gray-500">
+                  Min {MIN_TRACKING_NUMBER_LENGTH} characters. Letters, numbers,
+                  and hyphens only (no emojis).
+                </p>
+              </div>
+              <div className="flex items-center justify-end gap-x-3 [&>button]:font-nunito [&>button]:py-2.5 [&>button]:font-medium">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setModal({ type: "", status: false });
+                    setEditTrackingNumber("");
+                  }}
+                  className="rounded-lg border border-gray-300 text-gray-700 bg-white shadow-buttonShadow px-5 hover:bg-gray-100 duration-150"
+                  data-testid={ORDER_DETAIL.dialog.updateTrackingCancelBtn}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-theme text-white duration-150 rounded-lg border border-theme shadow-buttonShadow px-5 hover:opacity-90"
+                  data-testid={ORDER_DETAIL.dialog.updateTrackingSubmitBtn}
+                >
+                  Update
+                </button>
+              </div>
+            </form>
+          )}
+        </Dialog>
 
         <Dialog
           visible={showInvoiceTrackingModal}

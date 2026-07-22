@@ -200,6 +200,7 @@ const ORDER_DETAIL = {
     shippingCompanyRow: "summary-shipping-company",
     pulloutIntentIdRow: "summary-pullout-transfer-id",
     trackingNumberRow: "summary-tracking-number",
+    editTrackingBtn: "summary-edit-tracking-btn",
     frequencyRow: "summary-frequency",
     invoiceDateRow: "summary-invoice-date",
     invoicePaidDateRow: "summary-invoice-paid-date",
@@ -226,6 +227,10 @@ const ORDER_DETAIL = {
     bankBranchInput: "dialog-bank-branch",
     chequeTypeSelect: "dialog-cheque-type",
     chequeReceiptDateInput: "dialog-cheque-receipt-date",
+    updateTrackingRoot: "dialog-update-tracking",
+    trackingNumberInput: "dialog-tracking-number",
+    updateTrackingCancelBtn: "dialog-update-tracking-cancel",
+    updateTrackingSubmitBtn: "dialog-update-tracking-submit",
   },
 
   pageLoader: "page-loader",

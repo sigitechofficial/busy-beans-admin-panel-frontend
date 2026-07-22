@@ -7,6 +7,7 @@ import { PostAPI } from "@/utilities/PostAPI";
 import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import { PatchAPI } from "@/utilities/PatchAPI";
 import { hasPermission } from "@/utilities/Permission";
+import { truncateToTwoDecimals } from "@/utilities/numberInput";
 
 export default function InvoicePDFDownload({ invoiceData, reFetch, adminAddress }) {
   const invoiceRef = useRef(null);
@@ -431,8 +432,12 @@ export default function InvoicePDFDownload({ invoiceData, reFetch, adminAddress 
                             />
                           )}
                         </div>
-                        <div className="px-2 text-right">${prod?.unitPrice ?? ""}</div>
-                        <div className="px-2 text-right">${prod?.price ?? ""}</div>
+                        <div className="px-2 text-right">
+                          ${truncateToTwoDecimals(prod?.unitPrice)}
+                        </div>
+                        <div className="px-2 text-right">
+                          ${truncateToTwoDecimals(prod?.price)}
+                        </div>
                       </div>
                     );
                   })}

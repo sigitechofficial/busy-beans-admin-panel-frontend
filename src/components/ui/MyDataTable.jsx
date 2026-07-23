@@ -43,7 +43,6 @@ export default function MyDataTable({
   const tableRef = useRef(null);
   const searchTimeoutRef = useRef(null);
   const headerCheckboxRef = useRef(null);
-  const rowCheckboxRefsMap = useRef(new Map());
   const selectedRef = useRef(selected);
 
   // Keep ref in sync so checkbox handler always has latest selection (avoids stale closure + race with row click)
@@ -163,21 +162,21 @@ export default function MyDataTable({
     selectedIds.has(toId(item?.[dataKey]))
   );
 
+  // Include selection flag in row data so PrimeReact re-renders checkbox cells
+  const tableRows = useMemo(() => {
+    if (!checkbox) return sortedData;
+    return sortedData.map((row) => ({
+      ...row,
+      __isSelected: selectedIds.has(toId(row?.[dataKey])),
+    }));
+  }, [checkbox, sortedData, selectedIds, dataKey]);
+
   // Native checkbox: visible checked state, no PrimeReact dependency
   useEffect(() => {
     if (headerCheckboxRef.current) {
       headerCheckboxRef.current.indeterminate = !isAllSelected && isSomeSelected;
     }
   }, [isAllSelected, isSomeSelected]);
-
-  // Sync row checkbox checked state when selection changes (PrimeReact may not re-render body)
-  useEffect(() => {
-    if (!checkbox) return;
-    const ids = new Set((selected ?? []).map((s) => toId(s?.[dataKey])).filter(Boolean));
-    rowCheckboxRefsMap.current.forEach((el, id) => {
-      if (el && typeof el.checked !== "undefined") el.checked = ids.has(id);
-    });
-  }, [checkbox, selected, dataKey, sortedData]);
 
   // Drop rows that became non-selectable from the current selection
   useEffect(() => {
@@ -190,7 +189,7 @@ export default function MyDataTable({
   }, [checkbox, isRowCheckboxDisabled, selected, sortedData]);
 
   const checkIcon = (
-    <svg className="check-icon w-3.5 h-3.5 text-white shrink-0 opacity-0 transition-opacity duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+    <svg className="check-icon w-3.5 h-3.5 text-white shrink-0 transition-opacity duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
       <path d="M5 13l4 4L19 7" />
     </svg>
   );
@@ -233,7 +232,9 @@ export default function MyDataTable({
           peer-indeterminate:bg-gray-600 peer-indeterminate:border-gray-600 peer-indeterminate:[&>.minus-icon]:opacity-100"
         aria-hidden
       >
-        {checkIcon}
+        <svg className="check-icon w-3.5 h-3.5 text-white shrink-0 opacity-0 transition-opacity duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 13l4 4L19 7" />
+        </svg>
         {minusIcon}
       </span>
     </div>
@@ -245,7 +246,9 @@ export default function MyDataTable({
     const rowIdRaw = rowData?.[dataKey];
     const rowIdStr = toId(rowIdRaw);
     const disabled = isCheckboxDisabled(rowData);
-    const isChecked = !disabled && selectedIds.has(rowIdStr);
+    const isChecked =
+      !disabled &&
+      (rowData?.__isSelected === true || selectedIds.has(rowIdStr));
     const handleChange = (e) => {
       e.stopPropagation();
       e.nativeEvent?.stopImmediatePropagation?.();
@@ -254,8 +257,10 @@ export default function MyDataTable({
       const copy = [...current];
       const idx = copy.findIndex((row) => toId(row?.[dataKey]) === rowIdStr);
       if (idx === -1) {
-        const toAdd = sortedData.find((r) => toId(r?.[dataKey]) === rowIdStr) ?? rowData;
-        copy.push(toAdd);
+        const toAdd =
+          sortedData.find((r) => toId(r?.[dataKey]) === rowIdStr) ?? rowData;
+        const { __isSelected, ...cleanRow } = toAdd || {};
+        copy.push(cleanRow);
       } else {
         copy.splice(idx, 1);
       }
@@ -266,26 +271,21 @@ export default function MyDataTable({
       e.stopPropagation();
       e.nativeEvent?.stopImmediatePropagation?.();
     };
-    const setRef = (el) => {
-      if (el) rowCheckboxRefsMap.current.set(rowIdStr, el);
-      else rowCheckboxRefsMap.current.delete(rowIdStr);
-    };
     return (
       <div
-        key={`row-cb-${rowIdStr}`}
+        key={`row-cb-${rowIdStr}-${isChecked ? "1" : "0"}`}
         onClick={disabled ? undefined : handleClick}
         className={`relative inline-flex items-center justify-center ${
           disabled ? "opacity-40 cursor-not-allowed" : ""
         }`}
       >
         <input
-          ref={setRef}
           type="checkbox"
           disabled={disabled}
           checked={!!isChecked}
           onChange={handleChange}
           onClick={handleClick}
-          className={`peer absolute inset-0 w-5 h-5 opacity-0 z-[1] ${
+          className={`absolute inset-0 w-5 h-5 opacity-0 z-[1] ${
             disabled ? "cursor-not-allowed" : "cursor-pointer"
           }`}
           aria-label={
@@ -295,13 +295,26 @@ export default function MyDataTable({
           }
         />
         <span
-          className="pointer-events-none w-5 h-5 rounded-md border-2 border-gray-300 bg-white flex items-center justify-center
-            transition-colors duration-150 ease-out
-            peer-enabled:peer-hover:border-gray-400 peer-enabled:peer-focus:ring-2 peer-enabled:peer-focus:ring-gray-400/40 peer-enabled:peer-focus:ring-offset-1
-            peer-enabled:peer-checked:bg-gray-800 peer-enabled:peer-checked:border-gray-800 peer-enabled:peer-checked:[&>svg]:opacity-100"
+          className={`pointer-events-none w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors duration-150 ease-out ${
+            isChecked
+              ? "bg-gray-800 border-gray-800"
+              : "bg-white border-gray-300"
+          }`}
           aria-hidden
         >
-          {checkIcon}
+          <svg
+            className={`w-3.5 h-3.5 text-white shrink-0 transition-opacity duration-150 ${
+              isChecked ? "opacity-100" : "opacity-0"
+            }`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M5 13l4 4L19 7" />
+          </svg>
         </span>
       </div>
     );
@@ -511,12 +524,16 @@ export default function MyDataTable({
       {/* PrimeReact DataTable */}
       <div className="manageTable" ref={tableRef}>
         <DataTable
-          value={sortedData}
+          value={tableRows}
           paginator={pagination || !!serverPagination}
           lazy={!!serverPagination}
-          selectionMode="multiple"
-          selection={selected}
-          onSelectionChange={handleSelectionChange}
+          {...(checkbox
+            ? {
+                selectionMode: "multiple",
+                selection: selected,
+                onSelectionChange: handleSelectionChange,
+              }
+            : {})}
           removableSort
           dataKey={dataKey}
           emptyMessage="No Data Found"
@@ -537,7 +554,10 @@ export default function MyDataTable({
           })}
           rowClassName={(rowData) => {
             const base =
-              selected?.some((row) => row?.[dataKey] === rowData?.[dataKey])
+              checkbox &&
+              selected?.some(
+                (row) => toId(row?.[dataKey]) === toId(rowData?.[dataKey]),
+              )
                 ? "selected-row"
                 : "";
             return `${base} ${rowTestId ? rowTestId(rowData) : ""}`;

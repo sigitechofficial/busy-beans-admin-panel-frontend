@@ -30,8 +30,62 @@
 }
 
 .selected-row {
-  background-color: #e5e7eb !important; /* soft gray */
   color: #111827 !important;
+}
+
+/*
+  Rounded row hover — only one row at a time.
+  Reset non-hovered cells explicitly so previous row never stays “stuck”.
+*/
+.manageTable .p-datatable .p-datatable-tbody > tr {
+  background-color: transparent !important;
+}
+
+.manageTable .p-datatable .p-datatable-tbody > tr > td {
+  background-color: transparent !important;
+  border-radius: 0 !important;
+  transition: background-color 120ms ease;
+}
+
+.manageTable .p-datatable .p-datatable-tbody > tr:not(:hover):not(.selected-row) > td {
+  background-color: transparent !important;
+  border-radius: 0 !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .manageTable .p-datatable .p-datatable-tbody > tr:hover > td {
+    background-color: #f3f4f6 !important;
+    border-radius: 0 !important;
+  }
+
+  .manageTable .p-datatable .p-datatable-tbody > tr:hover > td:first-child {
+    border-top-left-radius: 0.5rem !important;
+    border-bottom-left-radius: 0.5rem !important;
+  }
+
+  .manageTable .p-datatable .p-datatable-tbody > tr:hover > td:last-child {
+    border-top-right-radius: 0.5rem !important;
+    border-bottom-right-radius: 0.5rem !important;
+  }
+}
+
+.manageTable .p-datatable .p-datatable-tbody > tr.selected-row > td {
+  background-color: #e5e7eb !important;
+  border-radius: 0 !important;
+}
+
+.manageTable .p-datatable .p-datatable-tbody > tr.selected-row > td:first-child {
+  border-top-left-radius: 0.5rem !important;
+  border-bottom-left-radius: 0.5rem !important;
+}
+
+.manageTable .p-datatable .p-datatable-tbody > tr.selected-row > td:last-child {
+  border-top-right-radius: 0.5rem !important;
+  border-bottom-right-radius: 0.5rem !important;
+}
+
+.manageTable .p-datatable .p-datatable-tbody > tr.selected-row:hover > td {
+  background-color: #e5e7eb !important;
 }
 
 /* Inventory stock table: highlighted headers */

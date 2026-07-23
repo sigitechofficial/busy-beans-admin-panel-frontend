@@ -5,7 +5,7 @@ import Loader from "@/components/ui/Loader";
 import MyDataTable from "@/components/ui/MyDataTable";
 import { useDataContext } from "@/utilities/DataContext";
 import GetAPI from "@/utilities/GetAPI";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CiMenuBurger } from "react-icons/ci";
 import { ImCross } from "react-icons/im";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
@@ -94,6 +94,8 @@ export default function UnpaidPartnerBalance() {
   const columns = [
     { field: "sl", header: "SL", sort: true },
     { field: "orderId", header: "Order ID" },
+    { field: "type", header: "Type", sort: true },
+    { field: "orderType", header: "Order Type", sort: true },
     { field: "Invoice", header: "Invoice #" },
     { field: "orderStatus", header: "Order Status" },
     { field: "paymentStatus", header: "Payment Status" },
@@ -107,60 +109,114 @@ export default function UnpaidPartnerBalance() {
     { field: "overdue", header: "Overdue" },
   ];
 
+  const formatType = (row) => {
+    const raw = String(row?.type ?? row?.invoiceType ?? "")
+      .toLowerCase()
+      .replace(/_/g, "-")
+      .replace(/\s+/g, "-");
+
+    if (raw.includes("direct")) return "Direct Invoice";
+    return "Regular Order";
+  };
+
+  const formatOrderType = (row) => {
+    const raw = String(row?.orderType ?? row?.orderSource ?? "")
+      .toLowerCase()
+      .replace(/_/g, "-")
+      .replace(/\s+/g, "-");
+
+    if (
+      raw.includes("partner") ||
+      row?.isPartnerOrder === true ||
+      row?.partnerOrder === true ||
+      Boolean(row?.salesRepName) ||
+      Boolean(row?.salesRepId)
+    ) {
+      return "Partner Order";
+    }
+
+    return "Admin Order";
+  };
+
   // ---------------------------------------------------------------------
   // TABLE ROW MAPPING
   // ---------------------------------------------------------------------
-  const finalData = rawData?.map((r, i) => ({
-    sl: i + 1,
-    orderId: r?.id,
-    Invoice: r?.invoiceNumber,
-    orderStatus: r?.orderCurrentStatus,
-    paymentStatus: r?.paymentStatus,
-    salesRep: r?.salesRepName,
-    totalQty: r?.totalQuantity,
-    subtotal: r?.subTotal,
-    shipping: r?.shippingCharges,
-    totalBill: r?.totalBill,
-    deliveredOn: formatDateTimeISO(r?.deliveredOn, "datetime"),
-    createdAt: formatDateTimeISO(r?.createdAt, "datetime"),
-    overdue: r?.overdueInvoice ? "Yes" : null,
-  }));
+  const finalData = useMemo(
+    () =>
+      rawData?.map((r, i) => ({
+        sl: i + 1,
+        orderId: r?.id != null ? String(r.id) : `row-${i}`,
+        type: formatType(r),
+        orderType: formatOrderType(r),
+        Invoice: r?.invoiceNumber,
+        orderStatus: r?.orderCurrentStatus,
+        paymentStatus: r?.paymentStatus,
+        salesRep: r?.salesRepName,
+        totalQty: r?.totalQuantity,
+        subtotal: r?.subTotal,
+        shipping: r?.shippingCharges,
+        totalBill: r?.totalBill,
+        deliveredOn: formatDateTimeISO(r?.deliveredOn, "datetime"),
+        createdAt: formatDateTimeISO(r?.createdAt, "datetime"),
+        overdue: r?.overdueInvoice ? "Yes" : null,
+      })) ?? [],
+    [rawData],
+  );
+
+  // After refresh, drop any selected IDs that are no longer in the table
+  // (e.g. orders that were just synced and left the unsynced list)
+  useEffect(() => {
+    if (!selectedRows.length) return;
+    const validIds = new Set(finalData.map((row) => String(row.orderId)));
+    const next = selectedRows.filter((row) =>
+      validIds.has(String(row.orderId)),
+    );
+    if (next.length !== selectedRows.length) {
+      setSelectedRows(next);
+    }
+  }, [finalData, selectedRows]);
 
   const handleSyncInvoice = async () => {
+    if (!selectedRows.length) return;
     setSyncInvoiceLoading(true);
+    const syncedIds = selectedRows.map((r) => Number(r?.orderId)).filter(Boolean);
     try {
-      let response = await PostAPI("qbo/order-invoice/create-multiple", {
+      const response = await PostAPI("qbo/order-invoice/create-multiple", {
         orderType: "customer",
-        orderIds: selectedRows?.map((r) => r?.orderId),
+        orderIds: syncedIds,
       });
-      console.log(response);
       if (response?.data?.status === "success") {
-        // success_toaster(response?.data?.message)
+        // Clear selection so synced order IDs are not kept
         setSelectedRows([]);
         reFetch();
       } else {
         error_toaster(response?.data?.message);
       }
+    } catch (error) {
+      error_toaster(error?.message || "Failed to sync invoices");
     } finally {
       setSyncInvoiceLoading(false);
     }
   };
 
   const handleSyncPayment = async () => {
+    if (!selectedRows.length) return;
     setSyncPaymentLoading(true);
+    const syncedIds = selectedRows.map((r) => Number(r?.orderId)).filter(Boolean);
     try {
-      let response = await PostAPI("qbo/order-payment/sync-multiple", {
+      const response = await PostAPI("qbo/order-payment/sync-multiple", {
         orderType: "customer",
-        orderIds: selectedRows?.map((r) => r?.orderId),
+        orderIds: syncedIds,
       });
-      console.log(response);
       if (response?.data?.status === "success") {
-        // success_toaster(response?.data?.message)
+        // Clear selection so synced order IDs are not kept
         setSelectedRows([]);
         reFetch();
       } else {
         error_toaster(response?.data?.message);
       }
+    } catch (error) {
+      error_toaster(error?.message || "Failed to sync payments");
     } finally {
       setSyncPaymentLoading(false);
     }
@@ -225,7 +281,7 @@ export default function UnpaidPartnerBalance() {
           {partnerType === 2 && (
             <button
               onClick={handleSyncInvoice}
-              disabled={syncInvoiceLoading}
+              disabled={syncInvoiceLoading || selectedRows.length === 0}
               className="inline-flex items-center justify-center gap-2 bg-theme text-white px-4 py-2 rounded-lg border border-theme hover:bg-white hover:text-theme transition-colors duration-200 font-medium disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-theme disabled:hover:text-white"
             >
               Sync Invoice
@@ -238,7 +294,7 @@ export default function UnpaidPartnerBalance() {
           {partnerType === 4 && (
             <button
               onClick={handleSyncPayment}
-              disabled={syncPaymentLoading}
+              disabled={syncPaymentLoading || selectedRows.length === 0}
               className="inline-flex items-center justify-center gap-2 bg-theme text-white px-4 py-2 rounded-lg border border-theme hover:bg-white hover:text-theme transition-colors duration-200 font-medium disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-theme disabled:hover:text-white"
             >
               Sync Payment

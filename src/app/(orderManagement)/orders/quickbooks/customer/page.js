@@ -11,7 +11,7 @@ import { ImCross } from "react-icons/im";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import Select from "react-select";
 import { drawerSelectStyles } from "@/utilities/SelectStyle";
-import { error_toaster, success_toaster } from "@/utilities/Toaster";
+import { error_toaster, success_toaster, warning_toaster } from "@/utilities/Toaster";
 import { PostAPI } from "@/utilities/PostAPI";
 import { formatDateTimeISO } from "@/utilities/constants";
 
@@ -32,6 +32,7 @@ export default function UnpaidPartnerBalance() {
   const [selectedRows, setSelectedRows] = useState([]);
   const [syncInvoiceLoading, setSyncInvoiceLoading] = useState(false);
   const [syncPaymentLoading, setSyncPaymentLoading] = useState(false);
+  const [manualSyncLoading, setManualSyncLoading] = useState(false);
   const { toggle, setToggle } = useDataContext();
 
   // ---------------------------------------------------------------------
@@ -222,6 +223,40 @@ export default function UnpaidPartnerBalance() {
     }
   };
 
+  const handleManualSync = async () => {
+    setManualSyncLoading(true);
+    try {
+      const response = await PostAPI(
+        "api/v1/admin/lambda-function/sync-unsynced-paid-customer-payments",
+        {},
+        "",
+        { suppressSuccessToast: true },
+      );
+      const status = response?.data?.status;
+      const message =
+        response?.data?.message ||
+        response?.data?.data?.message ||
+        "Manual sync completed";
+
+      if (status === "success" || response?.data?.success) {
+        success_toaster(message);
+        setSelectedRows([]);
+        reFetch();
+      } else if (status === "partial-success") {
+        // Mixed results — one warning toast only (not success + error)
+        warning_toaster(message);
+        setSelectedRows([]);
+        reFetch();
+      } else {
+        error_toaster(message || "Failed to run manual sync");
+      }
+    } catch {
+      // HTTP errors are already toasted by the API interceptor
+    } finally {
+      setManualSyncLoading(false);
+    }
+  };
+
   // ---------------------------------------------------------------------
   // RENDER UI
   // ---------------------------------------------------------------------
@@ -243,6 +278,17 @@ export default function UnpaidPartnerBalance() {
             Quickbook Customer Invoices
           </h2>
         </div>
+
+        <button
+          onClick={handleManualSync}
+          disabled={manualSyncLoading}
+          className="inline-flex items-center justify-center gap-2 bg-theme text-white px-4 py-2 rounded-lg border border-theme hover:bg-white hover:text-theme transition-colors duration-200 font-medium disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-theme disabled:hover:text-white"
+        >
+          Run Sync
+          {manualSyncLoading && (
+            <AiOutlineLoading3Quarters className="w-4 h-4 animate-spin flex-shrink-0" />
+          )}
+        </button>
       </header>
 
       {/* CONTENT */}
@@ -278,31 +324,33 @@ export default function UnpaidPartnerBalance() {
             </div>
           </div>
 
-          {partnerType === 2 && (
-            <button
-              onClick={handleSyncInvoice}
-              disabled={syncInvoiceLoading || selectedRows.length === 0}
-              className="inline-flex items-center justify-center gap-2 bg-theme text-white px-4 py-2 rounded-lg border border-theme hover:bg-white hover:text-theme transition-colors duration-200 font-medium disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-theme disabled:hover:text-white"
-            >
-              Sync Invoice
-              {syncInvoiceLoading && (
-                <AiOutlineLoading3Quarters className="w-4 h-4 animate-spin flex-shrink-0" />
-              )}
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {partnerType === 2 && (
+              <button
+                onClick={handleSyncInvoice}
+                disabled={syncInvoiceLoading || selectedRows.length === 0}
+                className="inline-flex items-center justify-center gap-2 bg-theme text-white px-4 py-2 rounded-lg border border-theme hover:bg-white hover:text-theme transition-colors duration-200 font-medium disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-theme disabled:hover:text-white"
+              >
+                Sync Invoice
+                {syncInvoiceLoading && (
+                  <AiOutlineLoading3Quarters className="w-4 h-4 animate-spin flex-shrink-0" />
+                )}
+              </button>
+            )}
 
-          {partnerType === 4 && (
-            <button
-              onClick={handleSyncPayment}
-              disabled={syncPaymentLoading || selectedRows.length === 0}
-              className="inline-flex items-center justify-center gap-2 bg-theme text-white px-4 py-2 rounded-lg border border-theme hover:bg-white hover:text-theme transition-colors duration-200 font-medium disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-theme disabled:hover:text-white"
-            >
-              Sync Payment
-              {syncPaymentLoading && (
-                <AiOutlineLoading3Quarters className="w-4 h-4 animate-spin flex-shrink-0" />
-              )}
-            </button>
-          )}
+            {partnerType === 4 && (
+              <button
+                onClick={handleSyncPayment}
+                disabled={syncPaymentLoading || selectedRows.length === 0}
+                className="inline-flex items-center justify-center gap-2 bg-theme text-white px-4 py-2 rounded-lg border border-theme hover:bg-white hover:text-theme transition-colors duration-200 font-medium disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-theme disabled:hover:text-white"
+              >
+                Sync Payment
+                {syncPaymentLoading && (
+                  <AiOutlineLoading3Quarters className="w-4 h-4 animate-spin flex-shrink-0" />
+                )}
+              </button>
+            )}
+          </div>
 
           {/* DATE FILTERS */}
           {/* <div className="min-w-40">

@@ -128,6 +128,7 @@ export default function UpdateCustomer() {
       state: "",
       zipCode: "",
       status: true,
+      shippingContact: "",
     },
     billingAddress: {
       companyaddress: "",
@@ -211,6 +212,9 @@ export default function UpdateCustomer() {
           state: c.addresses?.[0]?.state || "",
           zipCode: c.addresses?.[0]?.zipCode || "",
           status: c.addresses?.[0]?.status ?? true,
+          shippingContact: String(
+            c.addresses?.[0]?.shippingContact ?? c.shippingContact ?? "",
+          ),
         },
         billingAddress: {
           companyaddress: c.billingAddresses?.[0]?.companyaddress || "",
@@ -478,6 +482,7 @@ export default function UpdateCustomer() {
               state: userData?.address?.state,
               zipCode: userData?.address?.zipCode,
               status: true,
+              shippingContact: userData?.address?.shippingContact || "",
             },
             billingAddress: {
               ...finalBillingAddress,
@@ -612,6 +617,19 @@ export default function UpdateCustomer() {
                     </p>
                     <div className="grid xl:grid-cols-2 gap-y-4 lg:gap-x-12 xl:gap-16">
                       <div className="space-y-4">
+                        <div className="flex flex-col gap-y-2">
+                          <label className="text-labelColor font-medium font-satoshi">
+                            Shipping Contact
+                          </label>
+                          <input
+                            type="text"
+                            name="shippingContact"
+                            onChange={handleAddress}
+                            value={userData?.address?.shippingContact}
+                            placeholder="Enter shipping contact"
+                            className="border border-borderColor text-black focus:border-black placeholder:text-secondary rounded-[4px] outline-none px-2.5 py-3"
+                          />
+                        </div>
                         {/* <div className="flex flex-col gap-y-2">
                           <label className="text-labelColor font-medium font-satoshi">
                             Company Address{" "}

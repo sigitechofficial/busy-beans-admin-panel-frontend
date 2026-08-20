@@ -1614,6 +1614,21 @@ export default function OrderDetail() {
                         {data?.data?.order?.address?.zipCode}
                       </p>
                       <p>{data?.data?.order?.address?.country}</p>
+                      {String(
+                        data?.data?.order?.address?.shippingContact ??
+                          data?.data?.order?.user?.addresses?.[0]
+                            ?.shippingContact ??
+                          "",
+                      ).trim() && (
+                        <p className="normal-case">
+                          Shipping Contact:{" "}
+                          {String(
+                            data?.data?.order?.address?.shippingContact ??
+                              data?.data?.order?.user?.addresses?.[0]
+                                ?.shippingContact,
+                          )}
+                        </p>
+                      )}
                       {data?.data?.order?.user?.phoneNumber && (
                         <p>
                           Phone: {data?.data?.order?.user?.countryCode || "+1"}{" "}

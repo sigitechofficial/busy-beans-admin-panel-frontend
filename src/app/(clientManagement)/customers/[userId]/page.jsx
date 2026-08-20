@@ -874,6 +874,16 @@ function CustomerDetails() {
                     {data?.data?.customer?.addresses?.[0].country?.trim() && (
                       <div>{data?.data?.customer?.addresses?.[0].country}</div>
                     )}
+                    {String(
+                      data?.data?.customer?.addresses?.[0]?.shippingContact ?? "",
+                    ).trim() && (
+                      <div className="normal-case">
+                        <span className="text-gray-500 font-medium">Shipping Contact: </span>
+                        {String(
+                          data?.data?.customer?.addresses?.[0]?.shippingContact,
+                        )}
+                      </div>
+                    )}
                     {data?.data?.customer?.dispatchEmail && (
                       <div className="lowercase break-all">
                         {data?.data?.customer?.dispatchEmail}
@@ -1057,6 +1067,14 @@ function CustomerDetails() {
 
                           {/* Country */}
                           {addr?.country?.trim() && <div>{addr.country}</div>}
+                          {String(addr?.shippingContact ?? "").trim() && (
+                            <div className="normal-case">
+                              <span className="text-gray-500 font-medium">
+                                Shipping Contact:{" "}
+                              </span>
+                              {String(addr.shippingContact)}
+                            </div>
+                          )}
                         </div>
 
                         <div className="pt-3">

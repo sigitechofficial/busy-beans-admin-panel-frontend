@@ -468,7 +468,8 @@ export default function UpdateCustomer() {
               registerBy: userData?.info?.registerBy,
               defaultDiscount: userData?.info?.defaultDiscount ?? null,
             },
-            address: {
+            addresses: {
+              id: customerData?.data?.customer?.addresses?.[0]?.id,
               companyaddress: userData?.address?.companyaddress,
               addressLineOne: userData?.address?.addressLineOne,
               addressLineTwo: userData?.address?.addressLineTwo,

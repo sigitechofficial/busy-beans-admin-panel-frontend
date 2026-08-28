@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { CiMenuBurger } from "react-icons/ci";
 import { PiUserBold } from "react-icons/pi";
 import { info_toaster } from "@/utilities/Toaster";
+import { SUB_ADMIN_PROFILE_PATH } from "@/utilities/subAdminNav";
 
 export default function Header() {
   const router = useRouter();
@@ -19,17 +20,23 @@ export default function Header() {
   const [userName, setUserName] = useState("");
   const [userType, setUserType] = useState("");
   const [isEmployee, setIsEmployee] = useState(false);
+  const [isSubAdmin, setIsSubAdmin] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       setUserName(localStorage.getItem("userName") ?? "");
       setUserType(localStorage.getItem("userType") ?? "");
-      setIsEmployee(!!localStorage.getItem("isEmployee"));
+      setIsEmployee(localStorage.getItem("isEmployee") === "true");
+      setIsSubAdmin(localStorage.getItem("isSubAdmin") === "true");
     }
   }, []);
 
   const handleOpenProfile = () => {
     if (isEmployee) return;
+    if (isSubAdmin) {
+      router.push(SUB_ADMIN_PROFILE_PATH);
+      return;
+    }
     if (userType !== "admin" && userType !== "salesRepresentative") {
       info_toaster("Only admin or Local Partner can view profile");
       return;
@@ -58,14 +65,18 @@ export default function Header() {
               className="size-10 2xl:size-12 bg-black rounded-full flex items-center justify-center cursor-pointer"
               onClick={handleOpenProfile}
               title={
-                userType === "admin"
+                isSubAdmin
+                  ? "Profile"
+                  : userType === "admin"
                   ? "Admin Profile"
                   : userType === "salesRepresentative"
                   ? "Local Partner Profile"
                   : ""
               }
               aria-label={
-                userType === "admin"
+                isSubAdmin
+                  ? "Profile"
+                  : userType === "admin"
                   ? "Admin Profile"
                   : userType === "salesRepresentative"
                   ? "Local Partner Profile"
@@ -86,7 +97,9 @@ export default function Header() {
               </h2>
               <p className="text-lightGray text-xs 2xl:text-sm font-normal font-workSans">
                 {userType === "admin"
-                  ? "Admin"
+                  ? isSubAdmin
+                    ? "Sub Admin"
+                    : "Admin"
                   : userType === "salesRepresentative"
                   ? "Local Partner"
                   : userType === "supplier"
@@ -101,14 +114,18 @@ export default function Header() {
               className="md:hidden inline-flex items-center justify-center rounded p-1.5 ml-3"
               onClick={handleOpenProfile}
               title={
-                userType === "admin"
+                isSubAdmin
+                  ? "Profile"
+                  : userType === "admin"
                   ? "Admin Profile"
                   : userType === "salesRepresentative"
                   ? "Local Partner Profile"
                   : ""
               }
               aria-label={
-                userType === "admin"
+                isSubAdmin
+                  ? "Profile"
+                  : userType === "admin"
                   ? "Admin Profile"
                   : userType === "salesRepresentative"
                   ? "Local Partner Profile"

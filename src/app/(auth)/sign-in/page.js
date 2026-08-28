@@ -9,6 +9,7 @@ import { error_toaster, success_toaster, info_toaster } from "@/utilities/Toaste
 import { BASE_URL, RECAPTCHA_SITE_KEY, RETURN_URL } from "@/utilities/URL";
 import api from "@/utilities/StatusErrorHandler";
 import { broadcastEmployeeStripeConnected } from "@/utilities/stripeSyncChannel";
+import { getDefaultLandingPath } from "@/utilities/subAdminNav";
 import { useFormik } from "formik";
 import Link from "next/link";
 import Image from "next/image";
@@ -107,7 +108,6 @@ export default function SignIn() {
           if (res?.data?.status === "success") {
             setLoader(false);
 
-            router.push("/");
             localStorage.setItem("accessToken", res?.data?.data?.token);
             localStorage.setItem("loginStatus", true);
             localStorage.setItem(
@@ -132,24 +132,36 @@ export default function SignIn() {
               type === "sales-rep" ? "salesRepresentative" : type
             );
 
-            if (
-              Array.isArray(res?.data?.data?.user?.permissions) &&
-              res?.data?.data?.user?.permissions.length > 0
-            ) {
+            const loggedUser = res?.data?.data?.user;
+            const isSubAdminUser =
+              loggedUser?.isSubAdmin === true ||
+              loggedUser?.entity === "subAdmin";
+            if (isSubAdminUser) {
+              localStorage.setItem("isSubAdmin", "true");
               localStorage.setItem(
                 "permissions",
                 JSON.stringify(
-                  res?.data?.data?.user?.permissions.map((p) => p.key)
+                  Array.isArray(loggedUser?.permissions)
+                    ? loggedUser.permissions.map((p) => p.key)
+                    : []
                 )
+              );
+            } else if (
+              Array.isArray(loggedUser?.permissions) &&
+              loggedUser.permissions.length > 0
+            ) {
+              localStorage.setItem(
+                "permissions",
+                JSON.stringify(loggedUser.permissions.map((p) => p.key))
               );
             } else {
               localStorage.setItem("permissions", "all");
             }
-            localStorage.setItem("employeeId", res?.data?.data?.user?.id);
+            localStorage.setItem("employeeId", loggedUser?.id);
 
             let shouldRedirectToOnboarding = false;
 
-            if (res?.data?.data?.user?.employeeOf) {
+            if (!isSubAdminUser && loggedUser?.employeeOf) {
               localStorage.setItem("isEmployee", "true");
               localStorage.setItem(
                 "employeeOf",
@@ -227,6 +239,7 @@ export default function SignIn() {
             // Only show success toast if not redirecting to onboarding
             if (!shouldRedirectToOnboarding) {
               success_toaster("Login Successfully");
+              router.push(getDefaultLandingPath());
             }
             if (type === "sales-rep") {
               localStorage.setItem(

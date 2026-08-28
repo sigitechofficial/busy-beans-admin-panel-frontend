@@ -11,6 +11,7 @@ import GetAPI from "@/utilities/GetAPI";
 import { PatchAPI } from "@/utilities/PatchAPI";
 import Loader from "@/components/ui/Loader";
 import BackButton from "@/components/ui/BackButton";
+import { isStoredSubAdmin, SUB_ADMIN_PROFILE_PATH } from "@/utilities/subAdminNav";
 
 export default function Profile() {
   const router = useRouter();
@@ -41,10 +42,14 @@ export default function Profile() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
+      if (isStoredSubAdmin()) {
+        router.replace(SUB_ADMIN_PROFILE_PATH);
+        return;
+      }
       setUserType(localStorage.getItem("userType") ?? "");
       setUserID(localStorage.getItem("userID") ?? null);
     }
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (userType === "salesRepresentative") {
@@ -142,7 +147,7 @@ export default function Profile() {
     setIsEditing(false);
   };
 
-  return isLoading ? (
+  return isLoading || isStoredSubAdmin() ? (
     <Loader />
   ) : (
     <div className="w-full">

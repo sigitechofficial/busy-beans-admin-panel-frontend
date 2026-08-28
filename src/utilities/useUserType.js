@@ -20,12 +20,13 @@ function normalizeAllowedTypes(allowedTypes) {
  */
 function getStoredUserContext() {
   if (typeof window === "undefined") {
-    return { userType: null, partnerType: null, isEmployee: false };
+    return { userType: null, partnerType: null, isEmployee: false, isSubAdmin: false };
   }
   const userType = localStorage.getItem("userType");
   const partnerType = localStorage.getItem("partnerType");
   const isEmployee = localStorage.getItem("isEmployee") === "true";
-  return { userType, partnerType, isEmployee };
+  const isSubAdmin = localStorage.getItem("isSubAdmin") === "true";
+  return { userType, partnerType, isEmployee, isSubAdmin };
 }
 
 /**
@@ -74,17 +75,18 @@ export function useUserType(allowedTypes, options = {}) {
     userType: null,
     partnerType: null,
     isEmployee: false,
+    isSubAdmin: false,
   });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const { userType, partnerType, isEmployee } = getStoredUserContext();
+    const { userType, partnerType, isEmployee, isSubAdmin } = getStoredUserContext();
     const allowed = normalizeAllowedTypes(allowedTypes);
 
     // No guard: just expose context, allow page
     if (allowed.length === 0) {
-      setState({ isAllowed: true, userType, partnerType, isEmployee });
+      setState({ isAllowed: true, userType, partnerType, isEmployee, isSubAdmin });
       return;
     }
 
@@ -94,11 +96,11 @@ export function useUserType(allowedTypes, options = {}) {
       if (redirectIfNotAllowed) {
         router.back();
       }
-      setState({ isAllowed: false, userType, partnerType, isEmployee });
+      setState({ isAllowed: false, userType, partnerType, isEmployee, isSubAdmin });
       return;
     }
 
-    setState({ isAllowed: true, userType, partnerType, isEmployee });
+    setState({ isAllowed: true, userType, partnerType, isEmployee, isSubAdmin });
     // Run once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);

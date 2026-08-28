@@ -7,6 +7,7 @@ import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import { RETURN_URL } from "@/utilities/URL";
 import api from "@/utilities/StatusErrorHandler";
 import { broadcastEmployeeStripeConnected } from "@/utilities/stripeSyncChannel";
+import { getDefaultLandingPath } from "@/utilities/subAdminNav";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -76,6 +77,7 @@ export default function VerifyLoginOtp() {
         otp,
         context: loginOtpContext || "login",
         tokenId: localStorage.getItem("devToken"),
+        entity: localStorage.getItem("loginOtpEntity") || undefined,
       });
 
       if (res?.data?.status === "success" || res?.data?.status === true) {
@@ -100,7 +102,19 @@ export default function VerifyLoginOtp() {
           "userType",
           loginType === "sales-rep" ? "salesRepresentative" : loginType,
         );
-        if (Array.isArray(user?.permissions) && user?.permissions.length > 0) {
+        const isSubAdminUser =
+          user?.isSubAdmin === true || user?.entity === "subAdmin";
+        if (isSubAdminUser) {
+          localStorage.setItem("isSubAdmin", "true");
+          localStorage.setItem(
+            "permissions",
+            JSON.stringify(
+              Array.isArray(user?.permissions)
+                ? user.permissions.map((p) => p.key)
+                : []
+            )
+          );
+        } else if (Array.isArray(user?.permissions) && user?.permissions.length > 0) {
           localStorage.setItem(
             "permissions",
             JSON.stringify(user.permissions.map((p) => p.key)),
@@ -112,7 +126,7 @@ export default function VerifyLoginOtp() {
 
         let shouldRedirectToOnboarding = false;
 
-        if (user?.employeeOf) {
+        if (!isSubAdminUser && user?.employeeOf) {
           localStorage.setItem("isEmployee", "true");
           localStorage.setItem("employeeOf", user.employeeOf);
           try {
@@ -190,7 +204,7 @@ export default function VerifyLoginOtp() {
         clearLoginOtpCache();
         if (!shouldRedirectToOnboarding) {
           success_toaster(res?.data?.message || "Login Successfully");
-          router.push("/");
+          router.push(getDefaultLandingPath());
         }
       } else {
         throw new Error(res?.data?.message || "OTP verification failed.");

@@ -414,11 +414,14 @@ Partner and supplier portals expose **scoped** report subsets.
 | Path | Purpose |
 |------|---------|
 | `/employee`, `/employee/[id]` | **Active** employee management UI |
+| `/sub-admins` | **Active** HQ sub-admin management (separate from employees) |
 | `/payouts` | Payout operations |
 | `/employees`, `/add-general-employee`, `/add-sale-representative` | Older employee add flows (legacy) |
 | `/all-employees`, `/add-new-employee`, `/all-roles-permissions` | Roles & permissions module (may coexist with newer Employees UI) |
 
 **Rationale:** HQ staff need least-privilege access. Employees inherit feature matrices rather than sharing a single admin password. Stripe Connect may apply for payout-eligible staff.
+
+**Sub-admins (HQ operators):** `/sub-admins` is a separate record type from employees. They log in on the Admin tab, have Admin-wide data for granted modules, no commission/Stripe Connect, and cannot open `/profile`. Permission keys are enforced on the API for `subAdmin` JWT entities (path map). HQ and partner employees are unchanged.
 
 ---
 

@@ -13,6 +13,7 @@ const LEFTBAR = {
   
   // Sections
   dashboardSection: "dashboard-section",
+  profileSection: "profile-section",
   orderManagementSection: "order-management-section",
   supplierManagementSection: "supplier-management-section",
   shippingChargesManagementSection: "shipping-charges-management-section",

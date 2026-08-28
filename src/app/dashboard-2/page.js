@@ -22,6 +22,11 @@ import { success_toaster, error_toaster } from "@/utilities/Toaster";
 import { loadStripe } from "@stripe/stripe-js";
 import api from "@/utilities/StatusErrorHandler";
 import { broadcastEmployeeStripeConnected } from "@/utilities/stripeSyncChannel";
+import { hasPermission } from "@/utilities/Permission";
+import {
+  SUB_ADMIN_PROFILE_PATH,
+  isStoredSubAdmin,
+} from "@/utilities/subAdminNav";
 
 export default function Dashboard2() {
   const router = useRouter();
@@ -51,6 +56,14 @@ export default function Dashboard2() {
     isEmployee = localStorage.getItem("isEmployee") === "true";
     url = window.location.href;
   }
+
+  const blockDashboard = isStoredSubAdmin() && !hasPermission("dashboard_view");
+
+  useEffect(() => {
+    if (blockDashboard) {
+      router.replace(SUB_ADMIN_PROFILE_PATH);
+    }
+  }, [blockDashboard, router]);
 
   // Calculate date ranges for API query parameters
   const today = dayjs();
@@ -96,12 +109,14 @@ export default function Dashboard2() {
 
   // Fetch sales dashboard data from the appropriate API endpoint
   const { data: salesData, isLoading: salesLoading } = GetAPI(
-    dashboardEndpoint,
+    blockDashboard ? "" : dashboardEndpoint,
     `dashboard-sales-${userType || "admin"}`
   );
 
   // Fetch sales reps list to get partner names
-  const { data: salesRepData } = GetAPI("api/v1/admin/sales-rep");
+  const { data: salesRepData } = GetAPI(
+    blockDashboard ? "" : "api/v1/admin/sales-rep"
+  );
 
   // Partner profile (for bank account status) – only when partner
   const partnerProfileUrl =
@@ -731,6 +746,10 @@ export default function Dashboard2() {
   };
 
   const isLoading = salesLoading;
+
+  if (blockDashboard) {
+    return <Loader />;
+  }
 
   if (isLoading) {
     return <Loader />;

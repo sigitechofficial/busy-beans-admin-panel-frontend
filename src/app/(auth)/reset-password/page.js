@@ -11,6 +11,7 @@ import MiniLoader from "@/components/ui/MiniLoader";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { RETURN_URL } from "@/utilities/URL";
 import api from "@/utilities/StatusErrorHandler";
+import { getDefaultLandingPath } from "@/utilities/subAdminNav";
 
 export default function ResetPassword() {
   if (typeof window !== "undefined") {
@@ -57,6 +58,7 @@ export default function ResetPassword() {
             id: userID,
             password: passwords?.newPassword,
             tokenId: localStorage.getItem("devToken"),
+            entity: localStorage.getItem("loginOtpEntity") || undefined,
           }
         );
         if (res?.data?.status === "success") {
@@ -90,7 +92,19 @@ export default function ResetPassword() {
             loginType === "sales-rep" ? "salesRepresentative" : loginType
           );
 
-          if (Array.isArray(user?.permissions) && user?.permissions.length > 0) {
+          const isSubAdminUser =
+            user?.isSubAdmin === true || user?.entity === "subAdmin";
+          if (isSubAdminUser) {
+            localStorage.setItem("isSubAdmin", "true");
+            localStorage.setItem(
+              "permissions",
+              JSON.stringify(
+                Array.isArray(user?.permissions)
+                  ? user.permissions.map((p) => p.key)
+                  : []
+              )
+            );
+          } else if (Array.isArray(user?.permissions) && user?.permissions.length > 0) {
             localStorage.setItem(
               "permissions",
               JSON.stringify(user.permissions.map((p) => p.key))
@@ -100,7 +114,7 @@ export default function ResetPassword() {
           }
           localStorage.setItem("employeeId", user?.id || "");
 
-          if (user?.employeeOf) {
+          if (!isSubAdminUser && user?.employeeOf) {
             localStorage.setItem("isEmployee", "true");
             localStorage.setItem("employeeOf", user.employeeOf);
             try {
@@ -313,7 +327,7 @@ export default function ResetPassword() {
           <button
             onClick={() => {
               success_toaster("Login Successfully");
-              router.push("/");
+              router.push(getDefaultLandingPath());
             }}
             className="py-3 max-w-[500px] rounded-lg border border-theme text-white bg-theme font-satoshi w-full"
           >

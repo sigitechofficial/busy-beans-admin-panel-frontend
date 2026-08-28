@@ -23,6 +23,7 @@ import {
   MdShoppingBag,
   MdStorefront,
   MdLeaderboard,
+  MdPerson,
 } from "react-icons/md";
 import { FaAngleDown, FaAngleRight, FaAngleUp } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
@@ -47,6 +48,7 @@ import { requestDeviceToken } from "@/utilities/requestFCMToken";
 import { hasPermission } from "@/utilities/Permission";
 import { LEFTBAR } from "@/components/ui/leftbar.testid";
 import { subscribeEmployeeStripeConnected } from "@/utilities/stripeSyncChannel";
+import { SUB_ADMIN_PROFILE_PATH, hasDashboardView, canSeeModule } from "@/utilities/subAdminNav";
 
 export default function Leftbar(props) {
   // Initialize to null/false so server and client first paint match (avoids hydration mismatch).
@@ -57,6 +59,7 @@ export default function Leftbar(props) {
   const [connectAccountId, setConnectAccountId] = useState(null);
   const [isAccountConnected, setIsAccountConnected] = useState(null);
   const [isEmployee, setIsEmployee] = useState(false);
+  const [isSubAdmin, setIsSubAdmin] = useState(false);
   const [employeeStripeAccountState, setEmployeeStripeAccountState] = useState(null);
   const [employeeId, setEmployeeId] = useState(null);
   const [forceUpdate, setForceUpdate] = useState(0); // Force re-render trigger
@@ -71,6 +74,7 @@ export default function Leftbar(props) {
         setIsAccountConnected(localStorage.getItem("isAccountConnected"));
         const isEmp = localStorage.getItem("isEmployee") === "true";
         setIsEmployee(isEmp);
+        setIsSubAdmin(localStorage.getItem("isSubAdmin") === "true");
         setEmployeeStripeAccountState(localStorage.getItem("employeeStripeAccountState"));
         setEmployeeId(localStorage.getItem("employeeId"));
       };
@@ -97,6 +101,10 @@ export default function Leftbar(props) {
     const handleStorageChange = (e) => {
       if (e.key === "isEmployee") {
         setIsEmployee(e.newValue === "true");
+        setForceUpdate(prev => prev + 1);
+      }
+      if (e.key === "isSubAdmin") {
+        setIsSubAdmin(e.newValue === "true");
         setForceUpdate(prev => prev + 1);
       }
       if (e.key === "employeeStripeAccountState") {
@@ -269,6 +277,10 @@ export default function Leftbar(props) {
       status: false,
     },
     employees: {
+      tab: "",
+      status: false,
+    },
+    subAdmins: {
       tab: "",
       status: false,
     },
@@ -587,6 +599,8 @@ export default function Leftbar(props) {
   }
 
   const mobileVisible = pastFirstPaint && toggle;
+  const homeHref =
+    isSubAdmin && !hasDashboardView() ? SUB_ADMIN_PROFILE_PATH : "/";
   return (
     <>
       {/* Backdrop - mobile only when drawer open */}
@@ -611,7 +625,7 @@ export default function Leftbar(props) {
         className="flex items-center justify-center font-bold text-4xl 2xl:min-h-[70px] h-[70px] 2xl:h-[94px] border-b max-md:hidden"
         data-testid={LEFTBAR.logoContainer}
       >
-        <Link href="/">
+        <Link href={homeHref}>
           <img
             src="/images/logocoffee.png"
             alt="logo"
@@ -624,7 +638,7 @@ export default function Leftbar(props) {
       {/* Mobile: sticky header with logo + close */}
       <div className="md:hidden flex-shrink-0 sticky top-0 z-10 bg-white border-b flex justify-between items-center py-3 px-4 min-h-[56px] pt-[max(0.75rem,env(safe-area-inset-top))]">
         <Link
-          href="/"
+          href={homeHref}
           className="flex items-center font-bold text-4xl min-h-[44px] min-w-[44px]"
           onClick={() => setToggle(false)}
         >
@@ -647,7 +661,7 @@ export default function Leftbar(props) {
 
       {userType === "admin" ? (
         <ul className="leftbar-nav-scroll flex flex-col space-y-2 md:space-y-1 pt-4 pb-6 overflow-y-auto overflow-x-hidden flex-1 min-h-0 overscroll-contain md:pt-2 md:pb-0 md:h-[90%]">
-          {hasPermission("dashboard_view") && (
+          {canSeeModule("dashboard_view") && (
             <ListHead
               data-testid={LEFTBAR.dashboardSection}
               title="Dashboard"
@@ -655,7 +669,15 @@ export default function Leftbar(props) {
               Icon={MdDashboard}
             />
           )}
-          {hasPermission("orders_view") && (
+          {isSubAdmin && (
+            <ListHead
+              data-testid={LEFTBAR.profileSection}
+              title="Profile"
+              to={SUB_ADMIN_PROFILE_PATH}
+              Icon={MdPerson}
+            />
+          )}
+          {canSeeModule("orders_view") && (
             <ListHead
               title="Order Management"
               Icon={MdShoppingCart}
@@ -698,6 +720,7 @@ export default function Leftbar(props) {
               </>
             )}
 
+          {canSeeModule("quickbooks-invoices_view") && (
           <ListHead
             title="Quickbooks Invoices"
             Icon={MdBusiness}
@@ -709,8 +732,10 @@ export default function Leftbar(props) {
             onClick={handleQuickbooksOrdersToggle}
             status={active?.quickbookOrders?.status}
           />
+          )}
 
-          {active?.quickbookOrders?.status && (
+          {canSeeModule("quickbooks-invoices_view") &&
+            active?.quickbookOrders?.status && (
             <div className="m-2 relative space-y-1">
               <ListItems
                 title="Partner Invoices"
@@ -737,6 +762,7 @@ export default function Leftbar(props) {
             </div>
           )}
 
+          {(canSeeModule("partner-orders_view") || canSeeModule("orders_view")) && (
           <ListHead
             title="Partner Orders"
             Icon={MdBusiness}
@@ -745,8 +771,10 @@ export default function Leftbar(props) {
             onClick={handlePartnerOrdersToggle}
             status={active?.partnerOrders?.status}
           />
+          )}
 
-          {active?.partnerOrders?.status && (
+          {(canSeeModule("partner-orders_view") || canSeeModule("orders_view")) &&
+            active?.partnerOrders?.status && (
             <div className="m-2 relative space-y-1">
               <ListItems
                 title="New Partner Orders"
@@ -802,6 +830,7 @@ export default function Leftbar(props) {
             </div>
           )}
 
+          {(canSeeModule("customer-orders_view") || canSeeModule("orders_view")) && (
           <ListHead
             title="Customer Orders"
             Icon={MdShoppingBag}
@@ -818,8 +847,10 @@ export default function Leftbar(props) {
             status={active?.customerOrder?.status}
             onClick={handleCustomerOrdersToggle}
           />
+          )}
 
-          {active?.customerOrder?.status && (
+          {(canSeeModule("customer-orders_view") || canSeeModule("orders_view")) &&
+            active?.customerOrder?.status && (
             <div className="m-2 relative space-y-1">
               <ListItems
                 title="New Orders"
@@ -890,7 +921,7 @@ export default function Leftbar(props) {
             </div>
           )}
 
-          {hasPermission("supplier_view") && (
+          {canSeeModule("supplier_view") && (
             <ListHead
               title="Supplier Management"
               Icon={MdBusiness}
@@ -985,7 +1016,7 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
-          {hasPermission("local-partner_view") && (
+          {canSeeModule("local-partner_view") && (
             <ListHead
               title="Local Partners"
               Icon={MdHandshake}
@@ -1032,7 +1063,7 @@ export default function Leftbar(props) {
             />
           )}
 
-          {hasPermission("subscription_view") && (
+          {canSeeModule("subscription_view") && (
             <ListHead
               title="Machine Subscriptions"
               active={
@@ -1165,7 +1196,7 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
-          {hasPermission("payment-pullout_view") && (
+          {canSeeModule("payment-pullout_view") && (
             <ListHead
               title="Payment Pullouts"
               active={pathname === "/pullouts"}
@@ -1346,7 +1377,7 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
-          {!isEmployee && hasPermission("product_view") && (
+          {!isEmployee && canSeeModule("product_view") && (
             <ListHead
               title="Inventory Management"
               // to="/inventory/stock"
@@ -1386,7 +1417,7 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
-          {hasPermission("category_view") && (
+          {canSeeModule("category_view") && (
             <ListHead
               title="Category Management"
               // to="/inventory/stock"
@@ -1426,7 +1457,7 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
-          {hasPermission("employees_view") && (
+          {canSeeModule("employees_view") && (
             <ListHead
               title="Employee Management"
               active={pathname === "/employee"}
@@ -1454,15 +1485,34 @@ export default function Leftbar(props) {
                     to="/employee"
                     data-testid={LEFTBAR.listItem("employees", "Employee")}
                   />
-                  <ListItems
-                    title="Payouts"
-                    to="/payouts"
-                    data-testid={LEFTBAR.listItem("employees", "Payouts")}
-                  />
+                  {!isSubAdmin && (
+                    <ListItems
+                      title="Payouts"
+                      to="/payouts"
+                      data-testid={LEFTBAR.listItem("employees", "Payouts")}
+                    />
+                  )}
                 </div>
                 <hr className="w-full" />
               </>
             )}
+
+          {canSeeModule("sub-admins_view") && (
+            <ListHead
+              title="Sub Admins"
+              to="/sub-admins"
+              active={pathname === "/sub-admins"}
+              Icon={MdGroups}
+              status={
+                active?.subAdmins?.tab === "subAdmins" &&
+                active?.subAdmins?.status
+              }
+              Angle={FaAngleRight}
+              onClick={() =>
+                handleActive("subAdmins", active?.subAdmins?.status)
+              }
+            />
+          )}
 
           {/* <ListHead
             title="Employee Management"
@@ -1504,7 +1554,7 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
-          {hasPermission("country_view") && (
+          {canSeeModule("country_view") && (
             <ListHead
               title="Zone Management"
               Icon={MdPublic}
@@ -1573,7 +1623,7 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
-          {hasPermission("charges_view") && (
+          {canSeeModule("charges_view") && (
             <ListHead
               title="Shipping Charges Management"
               Icon={MdLocalShipping}
@@ -1582,7 +1632,7 @@ export default function Leftbar(props) {
               data-testid={LEFTBAR.shippingChargesManagementSection}
             />
           )}
-          {hasPermission("report_view") && (
+          {canSeeModule("report_view") && (
             <ListHead
               title="Report Management"
               Icon={MdInsights}
@@ -1592,12 +1642,14 @@ export default function Leftbar(props) {
             />
           )}
 
+          {canSeeModule("free-tasting_view") && (
           <ListHead
             title="Tasting Requests"
             Icon={MdCoffeeMaker}
             to="/free-tasting"
             active={pathname.includes("/free-tasting")}
           />
+          )}
 
           {/* Stripe Dashboard for Employees */}
           {(() => {
@@ -1618,7 +1670,7 @@ export default function Leftbar(props) {
               setEmployeeStripeAccountState(checkStripeState);
             }
             
-            return checkIsEmployee && checkStripeState === "true";
+            return !isSubAdmin && checkIsEmployee && checkStripeState === "true";
           })() && (
             <ListHead
               title="Stripe Dashboard"
@@ -1635,7 +1687,7 @@ export default function Leftbar(props) {
             }
             const checkIsEmployee = localStorage.getItem("isEmployee") === "true";
             const checkStripeState = localStorage.getItem("employeeStripeAccountState");
-            return checkIsEmployee && checkStripeState === "false";
+            return !isSubAdmin && checkIsEmployee && checkStripeState === "false";
           })() && (
             <ListHead
               title="Connect Stripe Account"
@@ -1647,7 +1699,7 @@ export default function Leftbar(props) {
           )}
 
           {/* Payouts for Employees */}
-          {isEmployee && (
+          {isEmployee && !isSubAdmin && (
             <ListHead
               title="Payouts"
               Icon={MdReceiptLong}
@@ -1657,6 +1709,7 @@ export default function Leftbar(props) {
             />
           )}
 
+          {canSeeModule("quickbooks_view") && (
           <ListHead
             title="QuickBooks"
             Icon={MdAccountBalance}
@@ -1671,7 +1724,9 @@ export default function Leftbar(props) {
             }
             Angle={FaAngleRight}
           />
-          {active?.quickbooks?.tab === "quickbooks" &&
+          )}
+          {canSeeModule("quickbooks_view") &&
+            active?.quickbooks?.tab === "quickbooks" &&
             active?.quickbooks?.status && (
               <>
                 <div className="m-2 relative space-y-1">

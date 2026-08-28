@@ -1,0 +1,28 @@
+const SUB_ADMINS = {
+  root: "sub-admins-root",
+  headerBar: "sub-admins-header-bar",
+  title: "sub-admins-title",
+  newSubAdmin: "new-sub-admin-btn",
+  pageLoader: "sub-admins-page-loader",
+  miniLoader: "sub-admins-mini-loader",
+  tableWrapper: "sub-admins-table-wrapper",
+  table: "sub-admins-table",
+  row: (id) => `sub-admins-row-${id}`,
+  rowEditBtn: (id) => `sub-admins-row-${id}-edit-btn`,
+  rowDeleteBtn: (id) => `sub-admins-row-${id}-delete-btn`,
+  rowStatusSwitch: (id) => `sub-admins-row-${id}-status-switch`,
+  modal: "sub-admins-modal",
+  modalTitle: "sub-admins-modal-title",
+  modalCloseBtn: "sub-admins-modal-close-btn",
+  modalSubmitBtn: "sub-admins-modal-submit-btn",
+  nameInput: "sub-admins-name-input",
+  emailInput: "sub-admins-email-input",
+  phoneInput: "sub-admins-phone-input",
+  passwordInput: "sub-admins-password-input",
+  countryCodeInput: "sub-admins-countryCode-input",
+  featuresCheckbox: (feature) => `sub-admins-feature-checkbox-${feature}`,
+  changePasswordCheckbox: "sub-admins-change-password-checkbox",
+  passwordVisibilityToggle: "sub-admins-password-visibility-toggle",
+};
+
+export { SUB_ADMINS };

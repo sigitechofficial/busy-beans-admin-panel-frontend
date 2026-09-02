@@ -7,6 +7,7 @@ import { PostAPI } from "@/utilities/PostAPI";
 import { error_toaster, success_toaster } from "@/utilities/Toaster";
 import ErrorHandler from "@/utilities/ErrorHandler";
 import MiniLoader from "@/components/ui/MiniLoader";
+import { getFeatureScope } from "@/utilities/subAdminNav";
 
 export default function DeleteInvoiceUtilityPage() {
   const [modal, setModal] = useState(false);
@@ -16,9 +17,10 @@ export default function DeleteInvoiceUtilityPage() {
     orderType: "",
   });
 
+  const orderScope = getFeatureScope("orders");
   const orderTypeOptions = [
-    { label: "Customer", value: "customer" },
-    { label: "Local Partner", value: "local-partner" },
+    ...(orderScope.customer ? [{ label: "Customer", value: "customer" }] : []),
+    ...(orderScope.partner ? [{ label: "Local Partner", value: "local-partner" }] : []),
   ];
 
   const reset = () => {

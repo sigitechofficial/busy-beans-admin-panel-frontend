@@ -5,6 +5,7 @@ import Select from "react-select";
 import { drawerSelectStyles } from "@/utilities/SelectStyle";
 import GetAPI from "@/utilities/GetAPI";
 import { MdFilterAlt } from "react-icons/md";
+import { getFeatureScope } from "@/utilities/subAdminNav";
 
 export default function UserTypeFilterModal({ 
   visible, 
@@ -13,6 +14,7 @@ export default function UserTypeFilterModal({
   initialFilters = { userType: null, salesRepIds: null },
   allowMultiSelect = true, // Default to true for backward compatibility
   enableEmployeeOption = false,
+  scopeFeature = null,
 }) {
   const [selectedUserType, setSelectedUserType] = useState(initialFilters.userType);
   const [selectedSalesReps, setSelectedSalesReps] = useState(() => {
@@ -328,12 +330,17 @@ export default function UserTypeFilterModal({
                 : null
             }
             onChange={handleUserTypeChange}
-            options={[
-              { value: "all", label: "All" },
-              { value: "admin", label: "Admin" },
-              { value: "salesRep", label: "Local Partner" },
-              ...(enableEmployeeOption ? [{ value: "employee", label: "Employee" }] : []),
-            ]}
+            options={(() => {
+              const scope = scopeFeature
+                ? getFeatureScope(scopeFeature)
+                : { customer: true, partner: true };
+              return [
+                ...(scope.customer && scope.partner ? [{ value: "all", label: "All" }] : []),
+                ...(scope.customer ? [{ value: "admin", label: "Admin" }] : []),
+                ...(scope.partner ? [{ value: "salesRep", label: "Local Partner" }] : []),
+                ...(enableEmployeeOption ? [{ value: "employee", label: "Employee" }] : []),
+              ];
+            })()}
             isClearable
           />
         </div>

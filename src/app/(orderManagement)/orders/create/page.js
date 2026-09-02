@@ -20,6 +20,7 @@ import { MdEdit } from "react-icons/md";
 import { useDataContext } from "@/utilities/DataContext";
 import { Dialog } from "primereact/dialog";
 import { ORDERS_CREATE } from "../orders.testids"
+import { defaultFeatureScopeMode, getFeatureScope, showFeatureScopeToggle } from "@/utilities/subAdminNav";
 
 export default function CreateOrder() {
   if (typeof window !== "undefined") {
@@ -34,7 +35,21 @@ export default function CreateOrder() {
   const [createOrderData, setCreateOrderData] = useState(createOrderDataList);
   const [visibleRight, setVisibleRight] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [viewMode, setViewMode] = useState("admin"); // "admin" or "localPartner"
+  const orderScope = getFeatureScope("orders");
+  const showOrderScopeToggle = showFeatureScopeToggle("orders");
+  const [viewMode, setViewMode] = useState(() =>
+    defaultFeatureScopeMode("orders", { customerValue: "admin", partnerValue: "localPartner" })
+  ); // "admin" or "localPartner"
+
+  useEffect(() => {
+    const allowed = defaultFeatureScopeMode("orders", {
+      customerValue: "admin",
+      partnerValue: "localPartner",
+    });
+    if (!showOrderScopeToggle && viewMode !== allowed) {
+      setViewMode(allowed);
+    }
+  }, [showOrderScopeToggle, viewMode]);
   const [selectedPartnerId, setSelectedPartnerId] = useState(null);
   const [selectedPartnerName, setSelectedPartnerName] = useState(null);
   const [partnerModalVisible, setPartnerModalVisible] = useState(false);
@@ -59,7 +74,9 @@ export default function CreateOrder() {
   }, []);
 
   const { data: category, isLoading } = GetAPI(`api/v1/admin/category?status=1`);
-  const { data: salesRepData } = GetAPI("api/v1/admin/sales-rep");
+  const { data: salesRepData } = GetAPI(
+    orderScope.partner ? "api/v1/admin/sales-rep" : ""
+  );
   
   let categoryList = [{ value: "", label: "All" }];
   if (category) {
@@ -513,12 +530,13 @@ export default function CreateOrder() {
 
       <div className="space-y-8 pt-28 2xl:pt-32 px-6 2xl:px-12">
         {/* View Mode Selection Section - hidden for admin employee */}
-        {!isAdminEmployee && (
+        {!isAdminEmployee && (showOrderScopeToggle || (orderScope.partner && !orderScope.customer)) && (
           <div className="bg-white rounded-lg border border-borderColor shadow-tableShadow p-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-6">
                 <span className="text-sm font-semibold text-gray-700">View Products:</span>
                 <div className="flex items-center gap-1 border border-gray-200 rounded-lg overflow-hidden">
+                  {orderScope.customer && (
                   <button
                     onClick={() => {
                       setViewMode("admin");
@@ -532,7 +550,9 @@ export default function CreateOrder() {
                   >
                     Admin
                   </button>
-                  <div className="w-px h-6 bg-gray-200"></div>
+                  )}
+                  {showOrderScopeToggle && <div className="w-px h-6 bg-gray-200"></div>}
+                  {orderScope.partner && (
                   <button
                     onClick={handleLocalPartnerClick}
                     className={`px-6 py-2.5 text-sm font-medium transition-all duration-200 relative ${
@@ -555,6 +575,7 @@ export default function CreateOrder() {
                       </span>
                     )}
                   </button>
+                  )}
                 </div>
               </div>
               {selectedPartnerId && (
@@ -586,7 +607,8 @@ export default function CreateOrder() {
               You are viewing <strong>Admin inventory</strong>.
             </p>
             <p className="text-sm text-amber-700 mt-1">
-              The order will be created for admin <strong>Customers/Partners</strong>. Add products, then click &quot;Create Order&quot; to open the drawer and select the customer/partner.
+              The order will be created for admin <strong>Customers</strong>
+              {showOrderScopeToggle ? "/Partners" : ""}. Add products, then click &quot;Create Order&quot; to open the drawer and select the customer{showOrderScopeToggle ? "/partner" : ""}.
             </p>
           </div>
         )}

@@ -43,19 +43,27 @@ export default function AssignedOrders() {
 
   const columns = [
     { field: "sl", header: "SL", sort: true },
-    { field: "name", header: "Customer Name" },
-    { field: "dispatchedItems", header: "Total Dispatched Items" },
+    { field: "name", header: "Products", sort: true },
+    { field: "dispatchedItems", header: "Total Dispatched Items", sort: true },
   ];
 
-  const datas = [];
-  data?.data?.map((report, i) =>
-    datas.push({
-      sl: i + 1,
-      name: report?.name,
+  const datas = (data?.data ?? [])
+    .map((report) => ({
+      name: report?.name ?? "",
       productNames: report?.productNames,
       dispatchedItems: report?.dispatchedItems ?? 0,
+    }))
+    .sort((a, b) => {
+      const qtyDiff = (b.dispatchedItems ?? 0) - (a.dispatchedItems ?? 0);
+      if (qtyDiff !== 0) return qtyDiff;
+      return String(a.name).localeCompare(String(b.name), undefined, {
+        numeric: true,
+      });
     })
-  );
+    .map((row, i) => ({
+      ...row,
+      sl: i + 1,
+    }));
 
   const handleChange = (val) => {
     if (val?.value === "custom") {
@@ -183,6 +191,8 @@ export default function AssignedOrders() {
             placeholder={"Search ..."}
             pagination={true}
             search={true}
+            defaultSortField="dispatchedItems"
+            defaultSortAsc={false}
           />
         </div>
       </div>

@@ -13,6 +13,7 @@ import { formatUSD } from "@/utilities/constants";
 import { LuSearch } from "react-icons/lu";
 import { MdFilterAlt } from "react-icons/md";
 import UserTypeFilterModal from "@/components/ui/UserTypeFilterModal";
+import { constrainToFeatureScope } from "@/utilities/subAdminNav";
 import { FaChevronDown, FaChevronRight } from "react-icons/fa";
 import { error_toaster } from "@/utilities/Toaster";
 import { useSearchParams } from "next/navigation";
@@ -38,10 +39,12 @@ function ProductWiseSalesSummaryReport() {
   const [expandedRows, setExpandedRows] = useState(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const [filters, setFilters] = useState({
-    userType: null,
-    salesRepIds: null,
-  });
+  const [filters, setFilters] = useState(() =>
+    constrainToFeatureScope("report", {
+      userType: null,
+      salesRepIds: null,
+    })
+  );
   const [selectedProductId, setSelectedProductId] = useState(initialProductId);
 
   // Initialize dateRange with All Time default (January 1, 2025 to today)
@@ -81,7 +84,7 @@ function ProductWiseSalesSummaryReport() {
         }
       }
       
-      setFilters(newFilters);
+      setFilters(constrainToFeatureScope("report", newFilters));
     }
 
     // Auto-fill date range if provided in URL
@@ -290,7 +293,7 @@ function ProductWiseSalesSummaryReport() {
   };
 
   const handleFilterApply = (newFilters) => {
-    setFilters(newFilters);
+    setFilters(constrainToFeatureScope("report", newFilters));
   };
 
   const toggleRow = (categoryId) => {
@@ -978,6 +981,7 @@ function ProductWiseSalesSummaryReport() {
         onHide={() => setFilterModalVisible(false)}
         onApply={handleFilterApply}
         initialFilters={filters}
+        scopeFeature="report"
       />
     </div>
   );

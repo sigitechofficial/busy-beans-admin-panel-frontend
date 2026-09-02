@@ -15,6 +15,7 @@ import { FaChevronDown, FaChevronRight } from "react-icons/fa";
 import { LuSearch } from "react-icons/lu";
 import { MdFilterAlt } from "react-icons/md";
 import UserTypeFilterModal from "@/components/ui/UserTypeFilterModal";
+import { constrainToFeatureScope } from "@/utilities/subAdminNav";
 import { error_toaster } from "@/utilities/Toaster";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
@@ -110,6 +111,7 @@ function SalesByCustomerSummaryReport() {
   const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   const [filters, setFilters] = useState(() => {
+    const parsed = (() => {
     const employeeIdParam = searchParams.get("employeeId");
     const salesRepId = searchParams.get("salesRepId");
     const userTypeParam = searchParams.get("userType");
@@ -141,9 +143,12 @@ function SalesByCustomerSummaryReport() {
       return { userType: userTypeParam, salesRepIds: null };
     }
     return { userType: null, salesRepIds: null, employeeIds: null };
+    })();
+    return constrainToFeatureScope("report", parsed);
   });
 
   const parseFiltersFromParams = (params) => {
+    const parsed = (() => {
     const employeeIdParam = params.get("employeeId");
     const salesRepId = params.get("salesRepId");
     const userTypeParam = params.get("userType");
@@ -182,6 +187,8 @@ function SalesByCustomerSummaryReport() {
     }
 
     return { userType: null, salesRepIds: null, employeeIds: null };
+    })();
+    return constrainToFeatureScope("report", parsed);
   };
 
   // Build API URL with filters
@@ -406,7 +413,7 @@ function SalesByCustomerSummaryReport() {
   };
 
   const handleFilterApply = (newFilters) => {
-    setFilters(newFilters);
+    setFilters(constrainToFeatureScope("report", newFilters));
   };
 
   const toggleRow = (customerId) => {
@@ -855,6 +862,7 @@ function SalesByCustomerSummaryReport() {
         onApply={handleFilterApply}
         initialFilters={filters}
         enableEmployeeOption
+        scopeFeature="report"
       />
     </div>
   );

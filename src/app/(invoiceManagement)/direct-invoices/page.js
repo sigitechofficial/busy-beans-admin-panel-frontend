@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ManagementTab from "@/components/ui/ManagementTab";
 import MyDataTable from "@/components/ui/MyDataTable";
 import GetAPI from "@/utilities/GetAPI";
@@ -9,6 +9,7 @@ import dayjs from "dayjs";
 import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
 import { INDIVIDUAL_INVOICES } from "../invoice.testid";
+import { defaultFeatureScopeMode, getFeatureScope, showFeatureScopeToggle } from "@/utilities/subAdminNav";
 
 export default function IndividualInvoices() {
   if (typeof window !== "undefined") {
@@ -17,8 +18,27 @@ export default function IndividualInvoices() {
   }
 
   const router = useRouter();
-  const [invoiceSource, setInvoiceSource] = useState("admin");
-  const [customerInvoiceOwner, setCustomerInvoiceOwner] = useState("all");
+  const invoiceScope = getFeatureScope("invoice");
+  const showInvoiceSourceToggle = showFeatureScopeToggle("invoice");
+  const isCustomerOnlyScope = invoiceScope.customer && !invoiceScope.partner;
+  const [invoiceSource, setInvoiceSource] = useState(() =>
+    defaultFeatureScopeMode("invoice", { customerValue: "admin", partnerValue: "partner" })
+  );
+  const [customerInvoiceOwner, setCustomerInvoiceOwner] = useState(
+    isCustomerOnlyScope ? "admin" : "all"
+  );
+  useEffect(() => {
+    const allowed = defaultFeatureScopeMode("invoice", {
+      customerValue: "admin",
+      partnerValue: "partner",
+    });
+    if (!showInvoiceSourceToggle && invoiceSource !== allowed) {
+      setInvoiceSource(allowed);
+    }
+    if (isCustomerOnlyScope && customerInvoiceOwner !== "admin") {
+      setCustomerInvoiceOwner("admin");
+    }
+  }, [showInvoiceSourceToggle, invoiceSource, isCustomerOnlyScope, customerInvoiceOwner]);
 
   const baseUrl =
     invoiceSource === "admin"
@@ -102,7 +122,9 @@ export default function IndividualInvoices() {
         </div>
 
         {/* Toggle for Invoice Source */}
+        {showInvoiceSourceToggle && (
         <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+          {invoiceScope.customer && (
           <button
             onClick={() => setInvoiceSource("admin")}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
@@ -113,7 +135,8 @@ export default function IndividualInvoices() {
           >
             Customer Invoices
           </button>
-          {["admin", "salesRepresentative"].includes(userType) && (
+          )}
+          {["admin", "salesRepresentative"].includes(userType) && invoiceScope.partner && (
             <button
               onClick={() => setInvoiceSource("partner")}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
@@ -126,10 +149,11 @@ export default function IndividualInvoices() {
             </button>
           )}
         </div>
+        )}
       </div>
 
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
-        {userType === "admin" && invoiceSource === "admin" && (
+        {userType === "admin" && invoiceSource === "admin" && showInvoiceSourceToggle && (
           <div className="overflow-x-auto">
             <div className="inline-flex flex-nowrap min-w-max">
               <button

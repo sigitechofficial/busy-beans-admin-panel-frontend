@@ -1,11 +1,20 @@
 import axios from "axios";
 import { error_toaster } from "./Toaster";
 import { BASE_URL } from "./URL";
+import { hasPermission } from "./Permission";
 import dayjs from "dayjs";
 
 export const locales = ["es", "en"];
 
 export const QuickbooksPingCheck = async () => {
+  if (
+    typeof window !== "undefined" &&
+    !hasPermission("quickbooks_view") &&
+    !hasPermission("quickbooks-invoices_view")
+  ) {
+    return;
+  }
+
   try {
     const config = {
       headers: {

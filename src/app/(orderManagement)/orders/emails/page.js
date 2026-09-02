@@ -8,6 +8,7 @@ import { PostAPI } from "@/utilities/PostAPI";
 import { BASE_URL } from "@/utilities/URL";
 import { success_toaster, error_toaster } from "@/utilities/Toaster";
 import { Button } from "primereact/button";
+import { getFeatureScope } from "@/utilities/subAdminNav";
 
 export default function Page() {
   const [modal, setModal] = useState(false);
@@ -19,9 +20,10 @@ export default function Page() {
     emailType: "",
   });
 
+  const orderScope = getFeatureScope("orders");
   const orderTypeOptions = [
-    { label: "Local Partner", value: "local-partner" },
-    { label: "Customer", value: "customer" },
+    ...(orderScope.partner ? [{ label: "Local Partner", value: "local-partner" }] : []),
+    ...(orderScope.customer ? [{ label: "Customer", value: "customer" }] : []),
   ];
 
   const emailTypeOptions = [

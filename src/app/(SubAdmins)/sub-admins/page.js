@@ -23,7 +23,63 @@ import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { hasPermission } from "@/utilities/Permission";
 import { SUB_ADMINS } from "./subAdmins.testids";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
-import { SUB_ADMIN_FEATURE_ITEMS, SUB_ADMIN_FEATURES } from "@/utilities/subAdminNav";
+import {
+  SUB_ADMIN_FEATURE_ITEMS,
+  SUB_ADMIN_FEATURES,
+  getSubAdminScopeDisplay,
+  isScopedSubAdminFeature,
+} from "@/utilities/subAdminNav";
+
+const PERM_CHECKBOX =
+  "size-4 rounded border-gray-300 text-theme accent-theme focus:ring-theme/20";
+
+function ScopeCell({ checked, disabled, greyed, onChange, testId, first }) {
+  return (
+    <td
+      className={`px-2 py-2.5 text-center ${first ? "border-l border-gray-200" : ""} ${
+        greyed ? "bg-gray-50" : ""
+      }`}
+    >
+      <input
+        type="checkbox"
+        checked={checked}
+        disabled={disabled}
+        onChange={onChange}
+        className={`${PERM_CHECKBOX} ${disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}`}
+        data-testid={testId}
+      />
+    </td>
+  );
+}
+
+const CRUD_ACTIONS = ["create", "view", "update", "delete"];
+
+const parsePermissionKey = (key) => {
+  if (!key || typeof key !== "string") return null;
+  if (key.endsWith("_scope_customer")) {
+    return { feature: key.slice(0, -"_scope_customer".length), scope: "scope_customer" };
+  }
+  if (key.endsWith("_scope_partner")) {
+    return { feature: key.slice(0, -"_scope_partner".length), scope: "scope_partner" };
+  }
+  const lastUnderscore = key.lastIndexOf("_");
+  if (lastUnderscore <= 0) return null;
+  return {
+    feature: key.slice(0, lastUnderscore),
+    action: key.slice(lastUnderscore + 1),
+  };
+};
+
+const emptyFeatureRow = (feature) => ({
+  feature,
+  create: false,
+  view: false,
+  update: false,
+  delete: false,
+  ...(isScopedSubAdminFeature(feature)
+    ? { scope_customer: false, scope_partner: false }
+    : {}),
+});
 
 /** Dial (left) + national (right) must form a valid E.164 number when national is non-empty. */
 const DEFAULT_COUNTRY_CODE = "1";
@@ -245,23 +301,30 @@ export default function SubAdmins() {
         const permissions = Array.isArray(emp?.permissions) ? emp.permissions : [];
 
         const featuresMap = {};
-        const validActions = new Set(["create", "view", "update", "delete"]);
+        const validActions = new Set(CRUD_ACTIONS);
 
         permissions.forEach((perm) => {
-          if (!perm || typeof perm.key !== "string") return;
-          const [feature, action] = perm.key.split("_");
-          if (!feature || !validActions.has(action)) return;
+          const parsed = parsePermissionKey(perm?.key);
+          if (!parsed?.feature) return;
 
-          if (!featuresMap[feature]) {
-            featuresMap[feature] = {
-              feature,
-              create: false,
-              view: false,
-              update: false,
-              delete: false,
-            };
+          if (!featuresMap[parsed.feature]) {
+            featuresMap[parsed.feature] = emptyFeatureRow(parsed.feature);
           }
-          featuresMap[feature][action] = true;
+          if (parsed.scope) {
+            featuresMap[parsed.feature][parsed.scope] = true;
+            return;
+          }
+          if (!validActions.has(parsed.action)) return;
+          featuresMap[parsed.feature][parsed.action] = true;
+        });
+
+        Object.values(featuresMap).forEach((row) => {
+          if (!isScopedSubAdminFeature(row.feature)) return;
+          const hasAction = CRUD_ACTIONS.some((action) => row[action]);
+          if (hasAction && !row.scope_customer && !row.scope_partner) {
+            row.scope_customer = true;
+            row.scope_partner = true;
+          }
         });
 
         const mappedFeatures = Object.values(featuresMap);
@@ -445,7 +508,7 @@ export default function SubAdmins() {
         {/* Modal */}
         <Dialog
           visible={modal === "add" || modal === "edit" || modal === "delete"}
-          className="font-nunito employee-modal w-[92%] sm:max-w-[560px] rounded-xl shadow-xl [&_.p-dialog-header]:py-2 [&_.p-dialog-header]:px-4 [&_.p-dialog-content]:flex [&_.p-dialog-content]:flex-col [&_.p-dialog-content]:max-h-[85vh] [&_.p-dialog-content]:min-h-0 [&_.p-dialog-content]:overflow-hidden [&_.p-dialog-content]:p-0"
+          className="font-nunito employee-modal w-[92%] sm:max-w-[920px] rounded-xl shadow-xl [&_.p-dialog-header]:py-2 [&_.p-dialog-header]:px-4 [&_.p-dialog-content]:flex [&_.p-dialog-content]:flex-col [&_.p-dialog-content]:max-h-[85vh] [&_.p-dialog-content]:min-h-0 [&_.p-dialog-content]:overflow-hidden [&_.p-dialog-content]:p-0"
           data-testid={SUB_ADMINS.modal}
           dismissableMask={true}
           onHide={handleModalClose}
@@ -646,54 +709,145 @@ export default function SubAdmins() {
 
                       {/* Permissions */}
                       <section className="space-y-2">
-                        <h3 className="text-sm font-semibold text-gray-800 border-b border-gray-200 pb-2">
+                        <h3 className="text-sm font-semibold text-gray-800">
                           Permissions
                         </h3>
                         <p className="text-xs text-gray-500">
-                          Granted modules use Admin-wide data (all customers, including local partners).
+                          Choose which data scope this sub admin can access, then assign permissions for each feature.
+                        </p>
+                        <p className="text-[11px] text-gray-400">
+                          Greyed Access Scope boxes are fixed for that feature. Admin / Local Partner can be changed only on Order Management, Quickbooks Invoices, Invoice Management, Report Management, and Machine Subscriptions.
                         </p>
                         <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
-                          <div className="grid grid-cols-6 gap-3 px-3 py-2.5 bg-gray-100 border-b border-gray-200 text-xs font-semibold text-gray-600">
-                            <span className="col-span-2">Feature</span>
-                            {["Create", "View", "Update", "Delete"].map((action) => (
-                              <span key={action} className="text-center">{action}</span>
-                            ))}
-                          </div>
-                          <div className="divide-y divide-gray-100">
-                            {SUB_ADMIN_FEATURE_ITEMS.map(({ key: feature, label }, idx) => {
-                              const existingFeature = formData.features.find((f) => f.feature === feature) || {};
-                              return (
-                                <div
-                                  key={feature}
-                                  className={`grid grid-cols-6 gap-3 px-3 py-2 items-center text-sm ${idx % 2 === 1 ? "bg-gray-50" : "bg-white"}`}
-                                >
-                                  <span className="col-span-2 text-gray-800">
-                                    {label}
-                                  </span>
-                                  {["create", "view", "update", "delete"].map((action) => (
-                                    <div key={`${feature}-${action}`} className="flex justify-center">
-                                      <input
-                                        type="checkbox"
-                                        checked={!!existingFeature[action]}
-                                        onChange={(e) => {
-                                          const checked = e.target.checked;
-                                          let newFeatures = [...formData.features];
-                                          const featureIndex = newFeatures.findIndex((f) => f.feature === feature);
-                                          if (featureIndex !== -1) {
-                                            newFeatures[featureIndex] = { ...newFeatures[featureIndex], [action]: checked };
-                                          } else {
-                                            newFeatures.push({ feature, [action]: checked });
-                                          }
-                                          setFormData({ ...formData, features: newFeatures });
-                                        }}
-                                        className="size-4 rounded border-gray-300 text-theme focus:ring-theme/20"
-                                        data-testid={SUB_ADMINS.featuresCheckbox}
-                                      />
-                                    </div>
+                          <div className="overflow-x-auto">
+                            <table className="w-full min-w-[720px] border-collapse">
+                              <thead>
+                                <tr className="bg-gray-100 text-xs font-semibold text-gray-600">
+                                  <th
+                                    rowSpan={2}
+                                    className="px-3 py-2 text-left font-semibold border-b border-gray-200 align-bottom w-[22%]"
+                                  >
+                                    Feature
+                                  </th>
+                                  <th
+                                    colSpan={2}
+                                    className="px-2 py-1.5 text-center font-semibold border-b border-l border-gray-200"
+                                  >
+                                    Access Scope
+                                  </th>
+                                  <th
+                                    colSpan={4}
+                                    className="px-2 py-1.5 text-center font-semibold border-b border-l border-gray-200"
+                                  >
+                                    Permissions
+                                  </th>
+                                </tr>
+                                <tr className="bg-gray-100 text-xs font-semibold text-gray-600">
+                                  <th className="px-2 py-1.5 text-center font-semibold border-b border-l border-gray-200 whitespace-nowrap">
+                                    Admin
+                                  </th>
+                                  <th className="px-2 py-1.5 text-center font-semibold border-b border-gray-200 whitespace-nowrap">
+                                    Local Partner
+                                  </th>
+                                  {["Create", "View", "Update", "Delete"].map((action) => (
+                                    <th
+                                      key={action}
+                                      className={`px-2 py-1.5 text-center font-semibold border-b border-gray-200 ${
+                                        action === "Create" ? "border-l" : ""
+                                      }`}
+                                    >
+                                      {action}
+                                    </th>
                                   ))}
-                                </div>
-                              );
-                            })}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {SUB_ADMIN_FEATURE_ITEMS.map(({ key: feature, label }) => {
+                                  const existingFeature =
+                                    formData.features.find((f) => f.feature === feature) ||
+                                    emptyFeatureRow(feature);
+                                  const scoped = isScopedSubAdminFeature(feature);
+                                  const scopeDisplay = getSubAdminScopeDisplay(feature);
+                                  const upsertFeature = (patch) => {
+                                    let newFeatures = [...formData.features];
+                                    const featureIndex = newFeatures.findIndex((f) => f.feature === feature);
+                                    const base =
+                                      featureIndex !== -1
+                                        ? newFeatures[featureIndex]
+                                        : emptyFeatureRow(feature);
+                                    const next = { ...base, feature, ...patch };
+                                    if (
+                                      scoped &&
+                                      CRUD_ACTIONS.some((a) => next[a]) &&
+                                      !next.scope_customer &&
+                                      !next.scope_partner
+                                    ) {
+                                      next.scope_customer = true;
+                                      next.scope_partner = true;
+                                    }
+                                    if (featureIndex !== -1) newFeatures[featureIndex] = next;
+                                    else newFeatures.push(next);
+                                    setFormData({ ...formData, features: newFeatures });
+                                  };
+                                  const customerChecked =
+                                    scopeDisplay.mode === "live"
+                                      ? !!existingFeature.scope_customer
+                                      : !!scopeDisplay.customer;
+                                  const partnerChecked =
+                                    scopeDisplay.mode === "live"
+                                      ? !!existingFeature.scope_partner
+                                      : !!scopeDisplay.partner;
+                                  const scopeEditable = scopeDisplay.mode === "live";
+                                  return (
+                                    <tr
+                                      key={feature}
+                                      className="border-b border-gray-200 last:border-b-0 text-sm"
+                                    >
+                                      <td className="px-3 py-2.5 text-gray-800 font-medium whitespace-nowrap">
+                                        {label}
+                                      </td>
+                                      <ScopeCell
+                                        first
+                                        checked={customerChecked}
+                                        disabled={!scopeEditable}
+                                        greyed={!scopeEditable && !customerChecked}
+                                        onChange={(e) =>
+                                          upsertFeature({ scope_customer: e.target.checked })
+                                        }
+                                        testId={`sub-admins-scope-customer-${feature}`}
+                                      />
+                                      <ScopeCell
+                                        checked={partnerChecked}
+                                        disabled={!scopeEditable}
+                                        greyed={!scopeEditable && !partnerChecked}
+                                        onChange={(e) =>
+                                          upsertFeature({ scope_partner: e.target.checked })
+                                        }
+                                        testId={`sub-admins-scope-partner-${feature}`}
+                                      />
+                                      {CRUD_ACTIONS.map((action, actionIdx) => (
+                                        <td
+                                          key={`${feature}-${action}`}
+                                          className={`px-2 py-2.5 text-center ${
+                                            actionIdx === 0 ? "border-l border-gray-200" : ""
+                                          }`}
+                                        >
+                                          <input
+                                            type="checkbox"
+                                            checked={!!existingFeature[action]}
+                                            onChange={(e) =>
+                                              upsertFeature({ [action]: e.target.checked })
+                                            }
+                                            className={`${PERM_CHECKBOX} cursor-pointer`}
+                                            data-testid={SUB_ADMINS.featuresCheckbox(`${feature}-${action}`)}
+                                          />
+                                        </td>
+                                      ))}
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
                           </div>
                           <div className="px-3 py-2.5 bg-gray-100 border-t border-gray-200 flex items-center justify-end gap-2">
                             <input
@@ -703,20 +857,42 @@ export default function SubAdmins() {
                                 allFeatures.every((feature) => {
                                   const f = formData.features.find((x) => x.feature === feature);
                                   if (feature === "dashboard") return !!f?.view;
-                                  return f && ["create", "view", "update", "delete"].every((a) => f[a]);
+                                  const crudOn = f && CRUD_ACTIONS.every((a) => f[a]);
+                                  if (!crudOn) return false;
+                                  if (isScopedSubAdminFeature(feature)) {
+                                    return !!f.scope_customer && !!f.scope_partner;
+                                  }
+                                  return true;
                                 })
                               }
                               onChange={(e) => {
                                 const checked = e.target.checked;
                                 const newFeatures = allFeatures.map((feature) => {
                                   if (feature === "dashboard") {
-                                    return { feature, create: false, view: checked, update: false, delete: false };
+                                    return {
+                                      feature,
+                                      create: false,
+                                      view: checked,
+                                      update: false,
+                                      delete: false,
+                                    };
                                   }
-                                  return { feature, create: checked, view: checked, update: checked, delete: checked };
+                                  const row = {
+                                    feature,
+                                    create: checked,
+                                    view: checked,
+                                    update: checked,
+                                    delete: checked,
+                                  };
+                                  if (isScopedSubAdminFeature(feature)) {
+                                    row.scope_customer = checked;
+                                    row.scope_partner = checked;
+                                  }
+                                  return row;
                                 });
                                 setFormData({ ...formData, features: newFeatures });
                               }}
-                              className="size-4 rounded border-gray-300 text-theme focus:ring-theme/20"
+                              className={`${PERM_CHECKBOX} cursor-pointer`}
                             />
                             <span className="text-sm font-medium text-gray-600">Select All</span>
                           </div>

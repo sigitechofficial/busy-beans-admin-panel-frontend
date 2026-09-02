@@ -7,9 +7,11 @@ import { BsCardList } from "react-icons/bs";
 import { CiMenuBurger } from "react-icons/ci";
 import { TbReportAnalytics } from "react-icons/tb";
 import { REPORT_MANAGEMENT } from "./report.testid";
+import { getFeatureScope } from "@/utilities/subAdminNav";
 
 export default function page() {
   const { toggle, setToggle } = useDataContext();
+  const reportScope = getFeatureScope("report");
   return (
     <div data-testid={REPORT_MANAGEMENT.root}>
       <div
@@ -43,26 +45,32 @@ export default function page() {
           className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5 xl:gap-10"
           data-testid={REPORT_MANAGEMENT.reportCardSection}
         >
+          {reportScope.partner && (
           <ReportCard
             Icon={TbReportAnalytics}
             title="Partner Profits Report"
             to="/reports/partner-commission"
             data-testid={REPORT_MANAGEMENT.partnerProfitsReportCard}
           />
+          )}
 
+          {reportScope.partner && (
           <ReportCard
             Icon={TbReportAnalytics}
             title="Partner Credit Limit Report"
             to="/reports/partner-credit-limit"
             data-testid={REPORT_MANAGEMENT.partnerCreditLimitReportCard}
           />
+          )}
 
+          {reportScope.partner && (
           <ReportCard
             Icon={BsCardList}
             title="Unpaid Partner Balances Report"
             to="/reports/unpaid-partner-balances"
             data-testid={REPORT_MANAGEMENT.unpaidPartnerBalancesReportCard}
           />
+          )}
 
           <ReportCard
             Icon={BsCardList}
@@ -71,19 +79,23 @@ export default function page() {
             data-testid={REPORT_MANAGEMENT.productsSaleReportCard}
           />
 
+          {reportScope.customer && (
           <ReportCard
             Icon={TbReportAnalytics}
             title="Customers Report"
             to="/reports/customers"
             data-testid={REPORT_MANAGEMENT.customersReportCard}
           />
+          )}
 
+          {reportScope.partner && (
           <ReportCard
             Icon={TbReportAnalytics}
             title="Direct Partner Report"
             to="/reports/direct-partner"
             data-testid={REPORT_MANAGEMENT.customersReportCard}
           />
+          )}
 
           <ReportCard
             Icon={TbReportAnalytics}
@@ -106,12 +118,14 @@ export default function page() {
             data-testid={REPORT_MANAGEMENT.productWiseSalesSummaryReportCard}
           />
 
+          {reportScope.partner && (
           <ReportCard
             Icon={BsCardList}
             title="Pulled Orders Receivable Report"
             to="/reports/pulled-orders-receivable"
             data-testid={REPORT_MANAGEMENT.pulledOrdersReceivableReportCard}
           />
+          )}
         </div>
       </div>
     </div>

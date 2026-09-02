@@ -22,11 +22,14 @@ const api = axios.create({ baseURL: BASE_URL });
 
 const shouldLogout = (error) => {
   const r = error?.response;
+  const message = r?.data?.message ?? "";
   return (
-    // r?.status === 401 ||
-    // r?.data?.error?.statusCode === 401 ||
     r?.data?.status === "authentication-fail" ||
-    /not logged in/i.test(r?.data?.message ?? "")
+    /not logged in/i.test(message) ||
+    (r?.status === 401 &&
+      /session expired|token revoked|invalid or expired token|please log in again/i.test(
+        message,
+      ))
   );
 };
 
@@ -88,8 +91,17 @@ api.interceptors.response.use(
     const networkFallback = !err?.response ? "Network error. Please check your connection." : "";
     const message = msgFromPayload || networkFallback || "Something went wrong.";
 
+    const isGet = (err?.config?.method || "").toLowerCase() === "get";
+    const permissionDenied =
+      err?.response?.status === 403 &&
+      (err?.response?.data?.status === "permission-fail" ||
+        /^Missing permission /i.test(message) ||
+        /do not have permission/i.test(message));
+
     try {
-      error_toaster(message);
+      if (!(isGet && permissionDenied)) {
+        error_toaster(message);
+      }
     } catch {}
 
     return Promise.reject({ ...err, normalizedMessage: message });

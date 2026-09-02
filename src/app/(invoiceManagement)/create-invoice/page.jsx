@@ -31,6 +31,7 @@ import {
   hasExceededMaxNumericDigits,
   hasExceededMaxIntegerDigits,
 } from "@/utilities/numberInput";
+import { defaultFeatureScopeMode, getFeatureScope, showFeatureScopeToggle } from "@/utilities/subAdminNav";
 
 export default function CreateInvoice() {
   const MAX_CREATE_INVOICE_QTY_DIGITS = 5;
@@ -54,10 +55,16 @@ export default function CreateInvoice() {
     setIsSalesRepEmployee(userT === "salesRepresentative" && isEmp);
   }, []);
 
+  const invoiceScope = getFeatureScope("invoice");
+  const showInvoiceScopeToggle = showFeatureScopeToggle("invoice");
+  const isPartnerOnlyScope = invoiceScope.partner && !invoiceScope.customer;
+
   const { data, isLoading } = GetAPI(
     userType === "salesRepresentative"
       ? `api/v1/admin/orders?salesRepId=${userID}`
-      : `api/v1/admin/orders`
+      : isPartnerOnlyScope
+        ? ""
+        : `api/v1/admin/orders`
   );
 
   const datas = [];
@@ -92,11 +99,39 @@ export default function CreateInvoice() {
   const [partners, setPartners] = useState([]);
   const [srNameOptions, setSrNameOptions] = useState([]);
   // View mode: "admin" = admin inventory | "localPartner" = partner's inventory + partner's customers (same as orders/create)
-  const [viewMode, setViewMode] = useState("admin");
+  const [viewMode, setViewMode] = useState(() =>
+    defaultFeatureScopeMode("invoice", { customerValue: "admin", partnerValue: "localPartner" })
+  );
+
+  // Single-scope sub-admins cannot flip into the denied side (or leftover state).
+  useEffect(() => {
+    const allowed = defaultFeatureScopeMode("invoice", {
+      customerValue: "admin",
+      partnerValue: "localPartner",
+    });
+    if (!showInvoiceScopeToggle && viewMode !== allowed) {
+      setViewMode(allowed);
+    }
+    if (!showInvoiceScopeToggle && partnersOrder) {
+      setPartnersOrder(false);
+    }
+  }, [showInvoiceScopeToggle, viewMode, partnersOrder]);
+
   const [selectedPartnerId, setSelectedPartnerId] = useState(null);
   const [selectedPartnerName, setSelectedPartnerName] = useState(null);
   const [partnerModalVisible, setPartnerModalVisible] = useState(false);
   const [tempSelectedPartner, setTempSelectedPartner] = useState(null);
+
+  useEffect(() => {
+    if (
+      isPartnerOnlyScope &&
+      !selectedPartnerId &&
+      !isAdminEmployee &&
+      userType === "admin"
+    ) {
+      setPartnerModalVisible(true);
+    }
+  }, [isPartnerOnlyScope, selectedPartnerId, isAdminEmployee, userType]);
 
   // Pagination state for customers
   const [customerPage, setCustomerPage] = useState(1);
@@ -160,11 +195,13 @@ export default function CreateInvoice() {
   // Use current state values directly (no formData needed)
 
   const { data: shippingChargesData } = GetAPI(
-    "api/v1/admin/shipping-charges-list",
+    hasPermission("charges_view") ? "api/v1/admin/shipping-charges-list" : "",
     "charges"
   );
   const { data: category } = GetAPI(`api/v1/admin/category`);
-  const { data: salesRepData } = GetAPI("api/v1/admin/sales-rep");
+  const { data: salesRepData } = GetAPI(
+    invoiceScope.partner ? "api/v1/admin/sales-rep" : ""
+  );
 
   // Partner options for Local Partner selection modal (same as orders/create)
   const partnerOptions = [];
@@ -184,9 +221,12 @@ export default function CreateInvoice() {
       categoryList.push({ value: cat?.id, label: cat?.name });
     });
   }
-  const url = filterId
-    ? `api/v1/admin/product?categoryId=${filterId}`
-    : `api/v1/admin/product`;
+  const url =
+    viewMode === "admin" && invoiceScope.customer
+      ? filterId
+        ? `api/v1/admin/product?categoryId=${filterId}`
+        : `api/v1/admin/product`
+      : "";
   const { data: ProductList, reFetch: ProductRefetch } = GetAPI(url);
 
   // Add Item modal products: API expects sales rep id in the path.
@@ -694,6 +734,8 @@ export default function CreateInvoice() {
     if (userType === "admin") {
       if (viewMode === "localPartner" && selectedPartnerId) {
         base = `api/v1/admin/customer-management/customer-list/sale-rep-id/${selectedPartnerId}`;
+      } else if (!invoiceScope.customer) {
+        return "";
       } else if (!partnersOrder) {
         base = `api/v1/admin/customer-management/customer-list/not-assigned`;
       } else {
@@ -726,6 +768,7 @@ export default function CreateInvoice() {
   // Fetch charges for customer
   const fetchChargesForCustomer = async (customerId, weight) => {
     if (!customerId || !weight) return;
+    if (!hasPermission("charges_view")) return;
     try {
       const res = await PostAPI(
         `api/v1/admin/shipping-charges-on-weight/customer/${customerId}`,
@@ -953,6 +996,7 @@ export default function CreateInvoice() {
 
   // Handle partner order toggle (admin only) - invoice for partner (direct)
   const handlePartnerOrder = (e) => {
+    if (!showInvoiceScopeToggle) return;
     setPartnersOrder(e);
     resetSelectedItems();
     setOrder({
@@ -1017,7 +1061,7 @@ export default function CreateInvoice() {
   const handleClearPartner = () => {
     setSelectedPartnerId(null);
     setSelectedPartnerName(null);
-    setViewMode("admin");
+    setViewMode(isPartnerOnlyScope ? "localPartner" : "admin");
     setTempSelectedPartner(null);
     resetSelectedItems();
     setOrder({ note: "", paymentMethod: "", poNumber: "", addressId: "", userId: "", salesRepId: "", shippingCharges: "" });
@@ -1028,6 +1072,9 @@ export default function CreateInvoice() {
     setAllCustomers([]);
     setCustomerSearchQuery("");
     selectedCustomerRef.current = null;
+    if (isPartnerOnlyScope) {
+      setPartnerModalVisible(true);
+    }
   };
 
   // Fetch customers with pagination and search
@@ -1037,6 +1084,7 @@ export default function CreateInvoice() {
     searchQuery = customerSearchQuery
   ) => {
     if (customerLoading) return;
+    if (!invoiceScope.customer && !(viewMode === "localPartner" && selectedPartnerId)) return;
     if (partnersOrder && viewMode === "admin") return;
     if (viewMode === "localPartner" && !selectedPartnerId) return;
 
@@ -1049,6 +1097,10 @@ export default function CreateInvoice() {
         customerLimit,
         searchQuery
       );
+      if (!endpoint) {
+        setCustomerLoading(false);
+        return;
+      }
 
       const res = await axios.get(`${BASE_URL}${endpoint}`, {
         headers: {
@@ -1268,7 +1320,11 @@ export default function CreateInvoice() {
       setCustomerSearchQuery("");
       selectedCustomerRef.current = null;
       fetchCustomerData(1, false, "");
-    } else if (!isSelfOrder && !partnersOrder) {
+    } else if (viewMode === "localPartner") {
+      setCompanyNameOptions([]);
+      setAllCustomers([]);
+      selectedCustomerRef.current = null;
+    } else if (!isSelfOrder && !partnersOrder && invoiceScope.customer) {
       selectedCustomerRef.current = null;
       fetchCustomerData(1, false, customerSearchQuery);
     }
@@ -1534,12 +1590,13 @@ export default function CreateInvoice() {
 
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
         {/* ========== VIEW PRODUCTS (Admin only - hidden for admin employee) ========== */}
-        {userType === "admin" && !isAdminEmployee && (
+        {userType === "admin" && !isAdminEmployee && (showInvoiceScopeToggle || (invoiceScope.partner && !invoiceScope.customer)) && (
           <div className="bg-white rounded-lg border border-borderColor shadow-tableShadow p-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-6">
                 <span className="text-sm font-semibold text-gray-700">View Products:</span>
                 <div className="flex items-center gap-1 border border-gray-200 rounded-lg overflow-hidden">
+                  {invoiceScope.customer && (
                   <button
                     type="button"
                     onClick={() => {
@@ -1554,7 +1611,9 @@ export default function CreateInvoice() {
                   >
                     Admin
                   </button>
-                  <div className="w-px h-6 bg-gray-200" />
+                  )}
+                  {showInvoiceScopeToggle && <div className="w-px h-6 bg-gray-200" />}
+                  {invoiceScope.partner && (
                   <button
                     type="button"
                     onClick={handleLocalPartnerClick}
@@ -1581,6 +1640,7 @@ export default function CreateInvoice() {
                       </span>
                     )}
                   </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -1588,13 +1648,24 @@ export default function CreateInvoice() {
         )}
 
         {/* ========== CONTEXT BANNERS (hidden for admin employee) ========== */}
-        {userType === "admin" && !isAdminEmployee && viewMode === "admin" && (
+        {userType === "admin" && !isAdminEmployee && viewMode === "admin" && !isPartnerOnlyScope && (
           <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
             <p className="text-sm font-medium text-amber-800">
               You are viewing <strong>Admin inventory</strong>.
             </p>
             <p className="text-sm text-amber-700 mt-1">
-              The invoice will be created for admin <strong>Customers</strong> or <strong>Partners</strong>. Select company below, add items, then Generate Invoice.
+              The invoice will be created for admin <strong>Customers</strong>
+              {showInvoiceScopeToggle ? <> or <strong>Partners</strong></> : ""}. Select company below, add items, then Generate Invoice.
+            </p>
+          </div>
+        )}
+        {userType === "admin" && !isAdminEmployee && isPartnerOnlyScope && !selectedPartnerId && (
+          <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
+            <p className="text-sm font-medium text-amber-800">
+              Select a <strong>Local Partner</strong> to create invoices.
+            </p>
+            <p className="text-sm text-amber-700 mt-1">
+              You only have Local Partner access. Admin inventory and admin customers are not available.
             </p>
           </div>
         )}
@@ -1672,8 +1743,8 @@ export default function CreateInvoice() {
             <h2 className="text-2xl font-bold text-theme-black-2">Invoice Details</h2>
           </div>
           
-          {/* Toggle for Partners (Admin only, hidden for admin employee) - hide when Local Partner view */}
-          {userType === "admin" && !isAdminEmployee && viewMode === "admin" && (
+          {/* Toggle for Partners: HQ / dual-scope only. Single-scope sub-admins must not reach partner APIs. */}
+          {userType === "admin" && !isAdminEmployee && viewMode === "admin" && showInvoiceScopeToggle && (
             <div className="flex items-center gap-x-2 justify-end mb-4">
               <label className="text-gray-700 font-medium">
                 {partnersOrder ? "Partners" : "Customers"}
@@ -1732,10 +1803,15 @@ export default function CreateInvoice() {
                     Company Name
                   </label>
                   <Select
-                    placeholder="Select Company"
+                    placeholder={
+                      isPartnerOnlyScope && !selectedPartnerId
+                        ? "Select a Local Partner first"
+                        : "Select Company"
+                    }
                     className="w-full"
                     styles={drawerSelectStyles}
                     options={companyNameOptions}
+                    isDisabled={isPartnerOnlyScope && !selectedPartnerId}
                     value={
                       companyNameOptions?.find(
                         (opt) => opt?.value === order?.userId
@@ -2241,7 +2317,14 @@ export default function CreateInvoice() {
                   <div className="flex items-center gap-2">
                     <button
                       className="border px-2 py-2"
-                      onClick={() => setModal(true)}
+                      onClick={() => {
+                        if (isPartnerOnlyScope && !selectedPartnerId) {
+                          info_toaster("Please select a Local Partner first");
+                          setPartnerModalVisible(true);
+                          return;
+                        }
+                        setModal(true);
+                      }}
                     >
                       Add Item
                     </button>

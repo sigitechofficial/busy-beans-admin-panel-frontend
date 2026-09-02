@@ -18,6 +18,7 @@ import { hasPermission } from "@/utilities/Permission";
 import Switch from "react-switch";
 import axios from "axios";
 import { BASE_URL } from "@/utilities/URL";
+import { getFeatureScope, showFeatureScopeToggle } from "@/utilities/subAdminNav";
 
 const DrawerBeansGenerateInvoice = ({
   drawerOpen: open,
@@ -56,6 +57,13 @@ const DrawerBeansGenerateInvoice = ({
   const [email, setEmail] = useState("");
   const [loader, setLoader] = useState(false);
   const [partnersOrder, setPartnersOrder] = useState(false);
+  const invoiceScope = getFeatureScope("invoice");
+  const showInvoiceScopeToggle = showFeatureScopeToggle("invoice");
+  useEffect(() => {
+    if (!invoiceScope.partner && partnersOrder) {
+      setPartnersOrder(false);
+    }
+  }, [invoiceScope.partner, partnersOrder]);
   const [isSelfOrder, setIsSelfOrder] = useState(false); // For sales rep self order
   const [partners, setPartners] = useState([]); // Store partner data for self order
   const [srNameOptions, setSrNameOptions] = useState([]); // Partner options for self order
@@ -337,6 +345,7 @@ const DrawerBeansGenerateInvoice = ({
   };
 
   const handlePartnerOrder = (e) => {
+    if (!showInvoiceScopeToggle) return;
     setPartnersOrder(e);
     // Clear all input data when toggling (for admin only)
     setOrder({
@@ -619,8 +628,8 @@ const DrawerBeansGenerateInvoice = ({
             </h2>
           </div>
 
-          {/* Toggle for Partners (Admin only) */}
-          {userType === "admin" && (
+          {/* Toggle for Partners: HQ / dual-scope only. Single-scope sub-admins must not reach partner APIs. */}
+          {userType === "admin" && showInvoiceScopeToggle && (
             <div className="flex items-center gap-x-2 justify-end">
               <label className="text-white font-medium">
                 {partnersOrder ? "Partners" : "Customers"}

@@ -25,6 +25,7 @@ import { MdInsertComment, MdOutlineConfirmationNumber } from "react-icons/md";
 import { ORDERS_CREATE_DRAWER } from "../../app/(orderManagement)/orders/orders.testids";
 import { hasPermission } from "@/utilities/Permission";
 import Switch from "react-switch";
+import { showFeatureScopeToggle } from "@/utilities/subAdminNav";
 
 const DrawerBeans = ({
   drawerOpen: open,
@@ -42,6 +43,7 @@ const DrawerBeans = ({
     var isEmployee = localStorage.getItem("isEmployee") === "true";
   }
   const isAdminEmployee = userType === "admin" && isEmployee;
+  const showOrderScopeToggle = showFeatureScopeToggle("orders");
   const [companyNameOptions, setCompanyNameOptions] = useState([]);
   const [emailOptions, setEmailOptions] = useState([]);
 
@@ -73,6 +75,11 @@ const DrawerBeans = ({
 
   // ✅ NEW: direct partner state
   const [isDirectPartner, setIsDirectPartner] = useState(false);
+  useEffect(() => {
+    if (!showOrderScopeToggle && isDirectPartner) {
+      setIsDirectPartner(false);
+    }
+  }, [showOrderScopeToggle, isDirectPartner]);
   const [isSelfOrder, setIsSelfOrder] = useState(false);
   const [partners, setPartners] = useState([]);
   const [srNameOptions, setSrNameOptions] = useState([]);
@@ -1159,8 +1166,8 @@ const DrawerBeans = ({
             <div className="relative space-y-6 font-sf pb-20 bg-theme text-white">
               {type === "createOrder" ? (
                 <div className="space-y-4">
-                  {/* Switch for Direct Partner - hidden for admin employee */}
-                  {userType === "admin" && !isAdminEmployee && (
+                  {/* Switch for Direct Partner — hidden for admin employee and single-scope sub-admins */}
+                  {userType === "admin" && !isAdminEmployee && showOrderScopeToggle && (
                     <div className="flex items-center gap-x-2 justify-end">
                       <label className="text-white font-medium">
                         Local Partners

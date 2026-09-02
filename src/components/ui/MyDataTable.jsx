@@ -21,6 +21,8 @@ export default function MyDataTable({
   sortField: sortFieldProp,
   sortOrder: sortOrderProp,
   onSort: onSortProp,
+  defaultSortField,
+  defaultSortAsc = true,
   onRowClick,
   placeholder,
   hide,
@@ -49,7 +51,10 @@ export default function MyDataTable({
   selectedRef.current = selected;
 
   // Client-side sort: use internal state when parent doesn't pass onSort
-  const [internalSort, setInternalSort] = useState({ sortField: null, sortOrder: 1 });
+  const [internalSort, setInternalSort] = useState({
+    sortField: defaultSortField ?? null,
+    sortOrder: defaultSortAsc === false ? -1 : 1,
+  });
   const sortField = onSortProp ? sortFieldProp : internalSort.sortField;
   const sortOrder = onSortProp ? sortOrderProp : internalSort.sortOrder;
   const onSort = onSortProp || ((e) => setInternalSort({ sortField: e.sortField, sortOrder: e.sortOrder }));

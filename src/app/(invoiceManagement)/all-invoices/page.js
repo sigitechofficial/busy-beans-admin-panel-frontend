@@ -17,6 +17,7 @@ import ErrorHandler from "@/utilities/ErrorHandler";
 import { error_toaster } from "@/utilities/Toaster";
 import Select from "react-select";
 import selectStyles from "@/utilities/SelectStyle";
+import { defaultFeatureScopeMode, getFeatureScope, showFeatureScopeToggle } from "@/utilities/subAdminNav";
 
 export default function AllInvoices() {
   if (typeof window !== "undefined") {
@@ -27,9 +28,28 @@ export default function AllInvoices() {
   let slCounter = 1;
 
   const router = useRouter();
+  const invoiceScope = getFeatureScope("invoice");
+  const showInvoiceSourceToggle = showFeatureScopeToggle("invoice");
+  const isCustomerOnlyScope = invoiceScope.customer && !invoiceScope.partner;
   const [type, setType] = useState("all");
-  const [invoiceSource, setInvoiceSource] = useState("customer");
-  const [customerInvoiceOwner, setCustomerInvoiceOwner] = useState("all");
+  const [invoiceSource, setInvoiceSource] = useState(() =>
+    defaultFeatureScopeMode("invoice", { customerValue: "customer", partnerValue: "partner" })
+  );
+  const [customerInvoiceOwner, setCustomerInvoiceOwner] = useState(
+    isCustomerOnlyScope ? "admin" : "all"
+  );
+  useEffect(() => {
+    const allowed = defaultFeatureScopeMode("invoice", {
+      customerValue: "customer",
+      partnerValue: "partner",
+    });
+    if (!showInvoiceSourceToggle && invoiceSource !== allowed) {
+      setInvoiceSource(allowed);
+    }
+    if (isCustomerOnlyScope && customerInvoiceOwner !== "admin") {
+      setCustomerInvoiceOwner("admin");
+    }
+  }, [showInvoiceSourceToggle, invoiceSource, isCustomerOnlyScope, customerInvoiceOwner]);
   const [selectedPartnerId, setSelectedPartnerId] = useState(null);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(100);
@@ -190,7 +210,7 @@ export default function AllInvoices() {
   const apiUrl = `${urlBase}?${params.toString()}`;
 
   const { data: salesRepData } = GetAPI(
-    userType === "admin" ? "api/v1/admin/sales-rep" : "",
+    userType === "admin" && invoiceScope.partner ? "api/v1/admin/sales-rep" : "",
     "sales-rep"
   );
   const partnersList = salesRepData?.data?.data || [];
@@ -348,7 +368,9 @@ export default function AllInvoices() {
         </div>
 
         {/* Toggle for Invoice Source */}
+        {showInvoiceSourceToggle && (
         <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+          {invoiceScope.customer && (
           <button
             onClick={() => {
               setInvoiceSource("customer");
@@ -363,7 +385,8 @@ export default function AllInvoices() {
           >
             Customer Invoices
           </button>
-          {["admin", "salesRepresentative"].includes(userType) && (
+          )}
+          {["admin", "salesRepresentative"].includes(userType) && invoiceScope.partner && (
             <button
               onClick={() => {
                 setInvoiceSource("partner");
@@ -379,6 +402,7 @@ export default function AllInvoices() {
             </button>
           )}
         </div>
+        )}
       </div>
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
         <div className="flex flex-col gap-4">
@@ -420,7 +444,7 @@ export default function AllInvoices() {
             </div>
           </div>
 
-          {userType === "admin" && invoiceSource === "customer" && (
+          {userType === "admin" && invoiceSource === "customer" && showInvoiceSourceToggle && (
             <div className="overflow-x-auto">
               <div className="inline-flex flex-nowrap min-w-max">
                 <button

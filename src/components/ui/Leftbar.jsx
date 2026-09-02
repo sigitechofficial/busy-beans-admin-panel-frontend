@@ -48,7 +48,8 @@ import { requestDeviceToken } from "@/utilities/requestFCMToken";
 import { hasPermission } from "@/utilities/Permission";
 import { LEFTBAR } from "@/components/ui/leftbar.testid";
 import { subscribeEmployeeStripeConnected } from "@/utilities/stripeSyncChannel";
-import { SUB_ADMIN_PROFILE_PATH, hasDashboardView, canSeeModule } from "@/utilities/subAdminNav";
+import { supplierNavCount, supplierNavTotal } from "@/utilities/supplierAllOrders";
+import { SUB_ADMIN_PROFILE_PATH, hasDashboardView, canSeeModule, canSeePartnerOrdersModule, canSeeCustomerOrdersModule, canAccessFeatureScope } from "@/utilities/subAdminNav";
 
 export default function Leftbar(props) {
   // Initialize to null/false so server and client first paint match (avoids hydration mismatch).
@@ -186,7 +187,9 @@ export default function Leftbar(props) {
 
   const generateUrl =
     userType === "admin"
-      ? "api/v1/admin/order-navigation-counts"
+      ? canSeeCustomerOrdersModule()
+        ? "api/v1/admin/order-navigation-counts"
+        : null
       : userType === "salesRepresentative"
       ? `api/v1/admin/order-navigation-counts/sales-rep/${userID}`
       : userType === "supplier"
@@ -195,7 +198,9 @@ export default function Leftbar(props) {
 
   const PartnerCountUrl =
     userType === "admin"
-      ? "api/v1/admin/partner-order-navigation-counts"
+      ? canSeePartnerOrdersModule()
+        ? "api/v1/admin/partner-order-navigation-counts"
+        : null
       : userType === "salesRepresentative"
       ? `api/v1/admin/partner-order-navigation-counts/sales-rep/${userID}`
       : userType === "supplier"
@@ -302,6 +307,7 @@ export default function Leftbar(props) {
     },
     partnerOrders: { tab: "", status: false },
     quickbookOrders: { tab: "", status: false },
+    allOrders: { tab: "", status: false },
   });
 
   const handleActive = (name, status) => {
@@ -333,6 +339,29 @@ export default function Leftbar(props) {
   const handleCustomerOrdersToggle = () => {
     handleActive("customerOrder", active?.customerOrder?.status);
   };
+  const handleAllOrdersToggle = () => {
+    handleActive("allOrders", active?.allOrders?.status);
+  };
+
+  /** Expand All Orders when a supplier is on an order list or detail page */
+  useEffect(() => {
+    if (userType !== "supplier") return;
+    const onOrders =
+      pathname === "/supplier/all-orders" ||
+      pathname === "/supplier/assigned-orders" ||
+      pathname === "/supplier/acknowledge-orders" ||
+      pathname === "/supplier/shiped-orders" ||
+      pathname.includes("/supplier/order-detail") ||
+      pathname.includes("/supplier/partner");
+    if (!onOrders) return;
+    setActive((prev) => {
+      if (prev.allOrders?.status) return prev;
+      return {
+        ...prev,
+        allOrders: { tab: "allOrders", status: true },
+      };
+    });
+  }, [pathname, userType]);
 
   /** Expand Quickbooks Invoices when deep-linking to admin pullout sync or QBO order views */
   useEffect(() => {
@@ -737,18 +766,23 @@ export default function Leftbar(props) {
           {canSeeModule("quickbooks-invoices_view") &&
             active?.quickbookOrders?.status && (
             <div className="m-2 relative space-y-1">
+              {canAccessFeatureScope("quickbooks-invoices", "partner") && (
               <ListItems
                 title="Partner Invoices"
                 to="/orders/quickbooks/partner"
                 data-testid={LEFTBAR.listItem("partner", "Orders")}
               />
+              )}
 
+              {canAccessFeatureScope("quickbooks-invoices", "customer") && (
               <ListItems
                 title="Customer Invoices"
                 to="/orders/quickbooks/customer"
                 data-testid={LEFTBAR.listItem("customer", "Orders")}
               />
+              )}
 
+              {canAccessFeatureScope("quickbooks-invoices", "customer") && (
               <ListItems
                 title="Pullout intent sync"
                 to="/Quickbooks/invoices"
@@ -757,12 +791,13 @@ export default function Leftbar(props) {
                   "Pullout intent sync"
                 )}
               />
+              )}
 
               <hr className="w-full" />
             </div>
           )}
 
-          {(canSeeModule("partner-orders_view") || canSeeModule("orders_view")) && (
+          {canSeePartnerOrdersModule() && (
           <ListHead
             title="Partner Orders"
             Icon={MdBusiness}
@@ -773,7 +808,7 @@ export default function Leftbar(props) {
           />
           )}
 
-          {(canSeeModule("partner-orders_view") || canSeeModule("orders_view")) &&
+          {canSeePartnerOrdersModule() &&
             active?.partnerOrders?.status && (
             <div className="m-2 relative space-y-1">
               <ListItems
@@ -830,7 +865,7 @@ export default function Leftbar(props) {
             </div>
           )}
 
-          {(canSeeModule("customer-orders_view") || canSeeModule("orders_view")) && (
+          {canSeeCustomerOrdersModule() && (
           <ListHead
             title="Customer Orders"
             Icon={MdShoppingBag}
@@ -849,7 +884,7 @@ export default function Leftbar(props) {
           />
           )}
 
-          {(canSeeModule("customer-orders_view") || canSeeModule("orders_view")) &&
+          {canSeeCustomerOrdersModule() &&
             active?.customerOrder?.status && (
             <div className="m-2 relative space-y-1">
               <ListItems
@@ -1157,14 +1192,16 @@ export default function Leftbar(props) {
             active?.invoiceManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  <ListItems
-                    title="Create Invoice"
-                    to="/create-invoice"
-                    data-testid={LEFTBAR.listItem(
-                      "invoiceManagement",
-                      "Create Invoice"
-                    )}
-                  />
+                  {hasPermission("invoice_create") && (
+                    <ListItems
+                      title="Create Invoice"
+                      to="/create-invoice"
+                      data-testid={LEFTBAR.listItem(
+                        "invoiceManagement",
+                        "Create Invoice"
+                      )}
+                    />
+                  )}
 
                   <ListItems
                     title="All Invoices"
@@ -1924,68 +1961,45 @@ export default function Leftbar(props) {
                   /> */}
 
             <ListHead
-              title="Partner Orders"
-              Icon={MdBusiness}
-              active={pathname.includes("/supplier/partner")}
-              status={active?.partnerOrders?.status ? true : false}
-              Angle={FaAngleRight}
-              onClick={handlePartnerOrdersToggle}
-            />
-
-            {active?.partnerOrders?.status && (
-              <div className="m-2 relative space-y-1">
-                <ListItems
-                  title="New Partner Orders"
-                  to="/supplier/partner/new-orders"
-                  data-testid={LEFTBAR.listItem(
-                    "partnerOrders",
-                    "New Partner Orders"
-                  )}
-                  count={PartnerCounts?.data?.data?.[1]?.count}
-                />
-
-                <ListItems
-                  title="Acknowledged Orders"
-                  to="/supplier/partner/acknowledged-orders"
-                  data-testid={LEFTBAR.listItem(
-                    "partnerOrders",
-                    "Acknowledged Orders"
-                  )}
-                  count={PartnerCounts?.data?.data?.[2]?.count}
-                />
-                <ListItems
-                  title="Shipped Orders"
-                  to="/supplier/partner/shipped-orders"
-                  data-testid={LEFTBAR.listItem(
-                    "partnerOrders",
-                    "Shipped Orders"
-                  )}
-                  count={PartnerCounts?.data?.data?.[4]?.count}
-                />
-
-                <hr className="w-full" />
-              </div>
-            )}
-
-            <ListHead
-              title="Customer Orders"
-              Icon={MdBusiness}
+              title="Orders"
+              Icon={MdShoppingCart}
               active={
+                pathname === "/supplier/all-orders" ||
                 pathname === "/supplier/assigned-orders" ||
                 pathname === "/supplier/acknowledge-orders" ||
-                pathname === "/supplier/shiped-orders"
+                pathname === "/supplier/shiped-orders" ||
+                pathname.includes("/supplier/order-detail") ||
+                pathname.includes("/supplier/partner")
               }
-              status={active?.customerOrder?.status ? true : false}
+              status={active?.allOrders?.status ? true : false}
               Angle={FaAngleRight}
-              onClick={handleCustomerOrdersToggle}
+              onClick={handleAllOrdersToggle}
+              data-testid={LEFTBAR.orderManagementSection}
             />
 
-            {active?.customerOrder?.status && (
+            {active?.allOrders?.status && (
               <div className="m-2 relative space-y-1">
+                <ListItems
+                  title="All Orders"
+                  to="/supplier/all-orders"
+                  count={supplierNavTotal(
+                    overAllData?.data?.data,
+                    PartnerCounts?.data?.data
+                  )}
+                  data-testid={LEFTBAR.listItem(
+                    "orderManagement",
+                    "All Orders"
+                  )}
+                />
+
                 <ListItems
                   title="New Orders"
                   to="/supplier/assigned-orders"
-                  count={overAllData?.data?.data?.[1]?.count || ""}
+                  count={supplierNavCount(
+                    overAllData?.data?.data,
+                    PartnerCounts?.data?.data,
+                    1
+                  )}
                   data-testid={LEFTBAR.listItem(
                     "orderManagement",
                     "New Orders"
@@ -1995,7 +2009,11 @@ export default function Leftbar(props) {
                 <ListItems
                   title="Acknowledged Orders"
                   to="/supplier/acknowledge-orders"
-                  count={overAllData?.data?.data?.[2]?.count || ""}
+                  count={supplierNavCount(
+                    overAllData?.data?.data,
+                    PartnerCounts?.data?.data,
+                    2
+                  )}
                   data-testid={LEFTBAR.listItem(
                     "orderManagement",
                     "Acknowledged Orders"
@@ -2005,7 +2023,11 @@ export default function Leftbar(props) {
                 <ListItems
                   title="Shipped Orders"
                   to="/supplier/shiped-orders"
-                  count={overAllData?.data?.data?.[4]?.count || ""}
+                  count={supplierNavCount(
+                    overAllData?.data?.data,
+                    PartnerCounts?.data?.data,
+                    4
+                  )}
                   data-testid={LEFTBAR.listItem(
                     "orderManagement",
                     "Shipped Orders"
@@ -2515,14 +2537,16 @@ export default function Leftbar(props) {
             active?.invoiceManagement?.status && (
               <>
                 <div className="m-2 relative space-y-1">
-                  <ListItems
-                    title="Create Invoice"
-                    to="/create-invoice"
-                    data-testid={LEFTBAR.listItem(
-                      "invoiceManagement",
-                      "Create Invoice"
-                    )}
-                  />
+                  {hasPermission("invoice_create") && (
+                    <ListItems
+                      title="Create Invoice"
+                      to="/create-invoice"
+                      data-testid={LEFTBAR.listItem(
+                        "invoiceManagement",
+                        "Create Invoice"
+                      )}
+                    />
+                  )}
                   <ListItems
                     title="All Invoices"
                     to="/all-invoices"

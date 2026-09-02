@@ -6,7 +6,6 @@ export const requestDeviceToken = async () => {
     // ✅ checking permissions here
     const permission = await Notification.requestPermission();
     if (permission !== "granted") {
-      error_toaster("Firebase notification permission not granted");
       return null;
     }
 

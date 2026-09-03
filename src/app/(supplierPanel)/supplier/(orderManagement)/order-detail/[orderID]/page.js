@@ -409,9 +409,6 @@ export default function OrderDetail() {
                   )}
                 </div>
                 <div className="items-center uppercase flex flex-wrap text-gray-500">
-                  {data?.data?.order?.address?.companyaddress && (
-                    <p>{data.data.order.address.companyaddress}</p>
-                  )}
                   <p>{data?.data?.order?.address?.addressLineOne}</p>
                   <p>{data?.data?.order?.address?.addressLineTwo}</p>
                   <p>

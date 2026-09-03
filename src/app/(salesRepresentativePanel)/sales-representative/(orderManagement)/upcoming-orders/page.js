@@ -164,7 +164,7 @@ export default function UpcomingOrders() {
           <MyDataTable
             columns={columns}
             data={datas}
-            placeholder={"Search ..."}
+            placeholder={"Search by Id, company name..."}
             pagination={true}
             checkbox={true}
             selectedRows={selectedRows}

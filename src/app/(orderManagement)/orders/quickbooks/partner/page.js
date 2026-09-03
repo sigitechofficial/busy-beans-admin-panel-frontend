@@ -10,7 +10,7 @@ import { CiMenuBurger } from "react-icons/ci";
 import { ImCross } from "react-icons/im";
 import Select from "react-select";
 import { drawerSelectStyles } from "@/utilities/SelectStyle";
-import { error_toaster } from "@/utilities/Toaster";
+import { error_toaster, success_toaster, warning_toaster } from "@/utilities/Toaster";
 import { PostAPI } from "@/utilities/PostAPI";
 
 export default function UnpaidPartnerBalance() {
@@ -125,10 +125,12 @@ export default function UnpaidPartnerBalance() {
 
 
   const handleSyncInvoice = async () => {
-    let response = await PostAPI("qbo/order-invoice/create-multiple", { orderType: "local-partner", orderIds: selectedRows?.map((r) => r?.orderId) })
+    if (!selectedRows.length) return;
+    const orderIds = selectedRows.map((r) => Number(r?.orderId)).filter(Boolean);
+    let response = await PostAPI("qbo/order-invoice/create-multiple", { orderType: "local-partner", orderIds })
     console.log(response)
     if (response?.data?.status === "success") {
-      // success_toaster(response?.data?.message)
+      setSelectedRows([]);
       reFetch()
     } else {
       error_toaster(response?.data?.message)
@@ -137,14 +139,48 @@ export default function UnpaidPartnerBalance() {
 
 
   const handleSyncPayment = async () => {
-    let response = await PostAPI("qbo/order-payment/sync-multiple", { orderType: "local-partner", orderIds: selectedRows?.map((r) => r?.orderId) })
+    if (!selectedRows.length) return;
+    const orderIds = selectedRows.map((r) => Number(r?.orderId)).filter(Boolean);
+    try {
+      const response = await PostAPI(
+        "qbo/order-payment/sync-multiple",
+        { orderType: "local-partner", orderIds },
+        "",
+        { suppressSuccessToast: true },
+      );
+      const payload = response?.data?.data || {};
+      const status = response?.data?.status;
+      const successCount = payload.successCount ?? 0;
+      const failureCount = payload.failureCount ?? 0;
+      const partialCount = payload.partialCount ?? 0;
+      const message =
+        response?.data?.message ||
+        payload.message ||
+        "Payment sync finished";
 
-    console.log(response)
-    if (response?.data?.status === "success") {
-      // success_toaster(response?.data?.message)
-      reFetch()
-    } else {
-      error_toaster(response?.data?.message)
+      const allFailed =
+        status === "failed" ||
+        (successCount === 0 && partialCount === 0 && failureCount > 0);
+      const mixed =
+        status === "partial-success" ||
+        partialCount > 0 ||
+        (failureCount > 0 && successCount > 0);
+
+      if (allFailed) {
+        error_toaster(message);
+      } else if (mixed) {
+        warning_toaster(message);
+        setSelectedRows([]);
+        reFetch();
+      } else if (status === "success" || response?.data?.success) {
+        success_toaster(message);
+        setSelectedRows([]);
+        reFetch();
+      } else {
+        error_toaster(message || "Failed to sync payments");
+      }
+    } catch {
+      // HTTP errors are already toasted by the API interceptor
     }
   }
 

@@ -1,5 +1,32 @@
 /** Merge customer + partner orders assigned to one supplier, keeping original IDs. */
 
+function orderWeightLbs(detail) {
+  const stored = detail?.totalWeight;
+  if (stored != null && stored !== "") {
+    const n = Number(stored);
+    if (!Number.isNaN(n)) return n;
+  }
+  const items = detail?.items;
+  if (Array.isArray(items) && items.length) {
+    return items.reduce(
+      (sum, item) =>
+        sum + (Number(item?.weight) || 0) * (Number(item?.qty) || 1),
+      0
+    );
+  }
+  return null;
+}
+
+function formatWeightLbs(detail) {
+  const stored = detail?.totalWeight;
+  if (stored != null && stored !== "") {
+    return `${stored} lbs`;
+  }
+  const n = orderWeightLbs(detail);
+  if (n == null) return "—";
+  return `${n} lbs`;
+}
+
 export function partnerDetailBaseForStatus(statusId) {
   const id = Number(statusId);
   if (id === 2) return "/supplier/partner/new-orders";
@@ -16,8 +43,8 @@ export function mergeSupplierOrders(
     rowKey: `customer-${detail?.id}`,
     id: detail?.id,
     type: "Customer",
-    companyName: detail?.companyName || detail?.customerName || "",
     noOfItems: detail?.totalQuantity ?? detail?.items?.length ?? 0,
+    weight: formatWeightLbs(detail),
     orderCurrentStatus: detail?.orderCurrentStatus,
     createdAt: detail?.createdAt,
     detailPath: `/supplier/order-detail/${detail?.id}`,
@@ -32,8 +59,8 @@ export function mergeSupplierOrders(
       rowKey: `partner-${detail?.id}`,
       id: detail?.id,
       type: "Partner",
-      companyName: detail?.salesRepName || detail?.companyName || "",
       noOfItems: detail?.totalQuantity ?? detail?.items?.length ?? 0,
+      weight: formatWeightLbs(detail),
       orderCurrentStatus: detail?.orderCurrentStatus,
       createdAt: detail?.createdAt,
       detailPath: `${base}/${detail?.id}`,

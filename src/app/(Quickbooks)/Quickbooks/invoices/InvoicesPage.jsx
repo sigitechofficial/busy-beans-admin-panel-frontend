@@ -16,6 +16,8 @@ import Select from "react-select";
 import { PULLOUT_INTENT_QBO_SYNC } from "../../../(reportManagement)/reports/report.testid";
 import dayjs from "dayjs";
 import { formatUSD } from "@/utilities/constants";
+import { hasPermission } from "@/utilities/Permission";
+import { canAccessFeatureScope, isStoredSubAdmin } from "@/utilities/subAdminNav";
 import { error_toaster, success_toaster, info_toaster } from "@/utilities/Toaster";
 import { PostAPI } from "@/utilities/PostAPI";
 import ErrorHandler from "@/utilities/ErrorHandler";
@@ -121,11 +123,25 @@ export default function QuickBooksInvoicesPulloutSyncPage() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (localStorage.getItem("userType") !== "admin") {
+    const userType = localStorage.getItem("userType");
+    if (userType !== "admin") {
       info_toaster("This page is only available to admin users.");
       router.replace("/");
       setAdminGate("denied");
       return;
+    }
+    if (isStoredSubAdmin()) {
+      const canOpen =
+        hasPermission("quickbooks-invoices_view") ||
+        hasPermission("quickbooks-invoices_update");
+      if (!canOpen || !canAccessFeatureScope("quickbooks-invoices", "customer")) {
+        info_toaster(
+          "Pullout intent sync needs Customer QuickBooks Invoices access.",
+        );
+        router.replace("/");
+        setAdminGate("denied");
+        return;
+      }
     }
     setAdminGate("ok");
   }, [router]);
@@ -296,7 +312,7 @@ export default function QuickBooksInvoicesPulloutSyncPage() {
           const res = await PostAPI(
             "api/v1/admin/qbo/pullout-custom-field/sync",
             { orderIds: chunk },
-            "report",
+            "quickbooks-invoices",
             { suppressSuccessToast: true }
           );
           const body = res?.data;

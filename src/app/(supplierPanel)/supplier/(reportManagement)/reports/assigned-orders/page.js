@@ -43,7 +43,6 @@ export default function AssignedOrders() {
 
   const columns = [
     { field: "sl", header: "SL", sort: true },
-    { field: "customerName", header: "Customer Name" },
     { field: "productNames", header: "Product Names" },
     { field: "totalQuantity", header: "Total Quantity" },
     { field: "assignedAt", header: "Assigned At" },
@@ -54,7 +53,6 @@ export default function AssignedOrders() {
   data?.data?.data?.map((report, i) =>
     datas.push({
       sl: i + 1,
-      customerName: report?.customerName,
       productNames: report?.productNames,
       totalQuantity: report?.totalQuantity ?? 0,
       assignedAt: report?.assignedAt ?? "-",

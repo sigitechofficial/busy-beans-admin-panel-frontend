@@ -7,11 +7,17 @@ import { BsCardList } from "react-icons/bs";
 import { CiMenuBurger } from "react-icons/ci";
 import { TbReportAnalytics } from "react-icons/tb";
 import { REPORT_MANAGEMENT } from "./report.testid";
-import { getFeatureScope } from "@/utilities/subAdminNav";
+import {
+  canSeeCustomerReports,
+  canSeePartnerReports,
+  canSeeSalesByCustomerSummary,
+} from "@/utilities/subAdminNav";
 
 export default function page() {
   const { toggle, setToggle } = useDataContext();
-  const reportScope = getFeatureScope("report");
+  const showCustomerReports = canSeeCustomerReports();
+  const showPartnerReports = canSeePartnerReports();
+  const showSalesByCustomerSummary = canSeeSalesByCustomerSummary();
   return (
     <div data-testid={REPORT_MANAGEMENT.root}>
       <div
@@ -45,7 +51,7 @@ export default function page() {
           className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5 xl:gap-10"
           data-testid={REPORT_MANAGEMENT.reportCardSection}
         >
-          {reportScope.partner && (
+          {showPartnerReports && (
           <ReportCard
             Icon={TbReportAnalytics}
             title="Partner Profits Report"
@@ -54,7 +60,7 @@ export default function page() {
           />
           )}
 
-          {reportScope.partner && (
+          {showPartnerReports && (
           <ReportCard
             Icon={TbReportAnalytics}
             title="Partner Credit Limit Report"
@@ -63,7 +69,7 @@ export default function page() {
           />
           )}
 
-          {reportScope.partner && (
+          {showPartnerReports && (
           <ReportCard
             Icon={BsCardList}
             title="Unpaid Partner Balances Report"
@@ -72,14 +78,16 @@ export default function page() {
           />
           )}
 
+          {showCustomerReports && (
           <ReportCard
             Icon={BsCardList}
             title="Products Sale Report"
             to="/reports/products-sale"
             data-testid={REPORT_MANAGEMENT.productsSaleReportCard}
           />
+          )}
 
-          {reportScope.customer && (
+          {showCustomerReports && (
           <ReportCard
             Icon={TbReportAnalytics}
             title="Customers Report"
@@ -88,7 +96,7 @@ export default function page() {
           />
           )}
 
-          {reportScope.partner && (
+          {showPartnerReports && (
           <ReportCard
             Icon={TbReportAnalytics}
             title="Direct Partner Report"
@@ -97,28 +105,34 @@ export default function page() {
           />
           )}
 
+          {showSalesByCustomerSummary && (
           <ReportCard
             Icon={TbReportAnalytics}
             title="Sales by Customer Summary Report"
             to="/reports/sales-by-customer-summary"
             data-testid={REPORT_MANAGEMENT.salesByCustomerSummaryReportCard}
           />
+          )}
 
+          {showCustomerReports && (
           <ReportCard
             Icon={TbReportAnalytics}
             title="Sales by Customer Details"
             to="/reports/sales-by-customer-details"
             data-testid={REPORT_MANAGEMENT.salesByCustomerDetailsReportCard}
           />
+          )}
 
+          {showCustomerReports && (
           <ReportCard
             Icon={TbReportAnalytics}
             title="Product wise sales summary"
             to="/reports/product-wise-sales-summary"
             data-testid={REPORT_MANAGEMENT.productWiseSalesSummaryReportCard}
           />
+          )}
 
-          {reportScope.partner && (
+          {showPartnerReports && (
           <ReportCard
             Icon={BsCardList}
             title="Pulled Orders Receivable Report"

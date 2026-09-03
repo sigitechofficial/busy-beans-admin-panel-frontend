@@ -27,7 +27,6 @@ export default function NewOrders() {
   const columns = [
     // { field: "sl", header: "#", sort: true },
     { field: "id", header: "#", sort: true },
-    { field: "customerName", header: "Customer" },
     { field: "noOfItems", header: "No. of Items" },
     // { field: "itemsPrice", header: "Items Price" },
     // { field: "subTotal", header: "Sub Total" },
@@ -50,7 +49,6 @@ export default function NewOrders() {
     return datas.push({
       sl: i + 1,
       id: detail?.id,
-      customerName: detail?.customerName,
       noOfItems: detail?.items?.length,
       totalBill: "$" + detail?.totalBill,
       subTotal: "$" + detail?.subTotal,

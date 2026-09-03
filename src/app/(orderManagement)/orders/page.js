@@ -655,7 +655,7 @@ export default function Orders() {
             columns={columns}
             data={datas}
             placeholder={
-              "Search by Id, invoice number, po number, note, payment method, shipping company"
+              "Search by Id, company name, order type, invoice number, po number, note"
             }
             pagination={true}
             serverPagination={{

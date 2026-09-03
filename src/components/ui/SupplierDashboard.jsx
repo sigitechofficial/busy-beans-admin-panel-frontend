@@ -61,7 +61,6 @@ function OrderRows({ rows, emptyCopy, showReason }) {
         <thead>
           <tr className="text-gray-500 border-b">
             <th className="py-2 pr-3 font-medium">#</th>
-            <th className="py-2 pr-3 font-medium">Company</th>
             <th className="py-2 pr-3 font-medium">Items</th>
             <th className="py-2 pr-3 font-medium">Age</th>
             {showReason && (
@@ -81,9 +80,6 @@ function OrderRows({ rows, emptyCopy, showReason }) {
               }`}
             >
               <td className="py-2.5 pr-3 text-gray-800 font-medium">{row.id}</td>
-              <td className="py-2.5 pr-3 text-gray-800 truncate max-w-[180px]">
-                {row.companyName || "—"}
-              </td>
               <td className="py-2.5 pr-3 text-gray-700">{row.itemCount ?? 0}</td>
               <td className="py-2.5 pr-3 text-gray-700">{formatAge(row.ageHours)}</td>
               {showReason && (

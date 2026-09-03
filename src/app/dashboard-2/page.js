@@ -22,18 +22,22 @@ import { success_toaster, error_toaster } from "@/utilities/Toaster";
 import { loadStripe } from "@stripe/stripe-js";
 import api from "@/utilities/StatusErrorHandler";
 import { broadcastEmployeeStripeConnected } from "@/utilities/stripeSyncChannel";
-import { hasPermission } from "@/utilities/Permission";
 import {
   SUB_ADMIN_PROFILE_PATH,
+  constrainDashboardScope,
+  getFeatureScope,
+  hasDashboardView,
   isStoredSubAdmin,
 } from "@/utilities/subAdminNav";
 
 export default function Dashboard2() {
   const router = useRouter();
-  const [filters, setFilters] = useState({
-    userType: null,
-    salesRepIds: null,
-  });
+  const [filters, setFilters] = useState(() =>
+    constrainDashboardScope({
+      userType: null,
+      salesRepIds: null,
+    })
+  );
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [showBankRetry, setShowBankRetry] = useState(false);
   const [linking, setLinking] = useState(false);
@@ -57,13 +61,18 @@ export default function Dashboard2() {
     url = window.location.href;
   }
 
-  const blockDashboard = isStoredSubAdmin() && !hasPermission("dashboard_view");
+  const blockDashboard = isStoredSubAdmin() && !hasDashboardView();
+  const dashboardScope = getFeatureScope("dashboard");
 
   useEffect(() => {
     if (blockDashboard) {
       router.replace(SUB_ADMIN_PROFILE_PATH);
     }
   }, [blockDashboard, router]);
+
+  useEffect(() => {
+    setFilters((prev) => constrainDashboardScope(prev));
+  }, []);
 
   // Calculate date ranges for API query parameters
   const today = dayjs();
@@ -94,6 +103,7 @@ export default function Dashboard2() {
   if (filters.userType === "admin") {
     dashboardEndpoint += "&userType=admin";
   } else if (filters.userType === "salesRep") {
+    dashboardEndpoint += "&userType=salesRep";
     if (filters.salesRepIds === null) {
       // "All" sales reps selected
       dashboardEndpoint += "&salesRep[ne]=null";
@@ -113,9 +123,9 @@ export default function Dashboard2() {
     `dashboard-sales-${userType || "admin"}`
   );
 
-  // Fetch sales reps list to get partner names
+  // Fetch sales reps list to get partner names (partner scope / legacy only)
   const { data: salesRepData } = GetAPI(
-    blockDashboard ? "" : "api/v1/admin/sales-rep"
+    blockDashboard || !dashboardScope.partner ? "" : "api/v1/admin/sales-rep"
   );
 
   // Partner profile (for bank account status) – only when partner
@@ -724,17 +734,17 @@ export default function Dashboard2() {
   };
 
   const handleFilterApply = (newFilters) => {
-    // Validate: if salesRep is selected, at least one salesRepId must be selected
+    const next = constrainDashboardScope(newFilters);
+    // Specific partner required unless "All" (null) is selected
     if (
-      newFilters.userType === "salesRep" &&
-      (!Array.isArray(newFilters.salesRepIds) ||
-        newFilters.salesRepIds.length === 0)
+      next.userType === "salesRep" &&
+      next.salesRepIds !== null &&
+      (!Array.isArray(next.salesRepIds) || next.salesRepIds.length === 0)
     ) {
-      // Don't apply the filter - require partner selection
       return;
     }
 
-    setFilters(newFilters);
+    setFilters(next);
     setFilterModalVisible(false);
   };
 
@@ -837,6 +847,8 @@ export default function Dashboard2() {
                     ? "All"
                     : filters.userType === "admin"
                     ? "Admin"
+                    : filters.salesRepIds == null
+                    ? "Local Partner – All"
                     : `${getPartnerName(filters.salesRepIds?.[0])}`}
                 </button>
               )}
@@ -1517,6 +1529,7 @@ export default function Dashboard2() {
         onApply={handleFilterApply}
         initialFilters={filters}
         allowMultiSelect={false}
+        scopeFeature="dashboard"
       />
     </div>
   );

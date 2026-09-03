@@ -41,7 +41,6 @@ export default function UnpaidPartnerBalance() {
 
   const columns = [
     { field: "sl", header: "SL", sort: true },
-    { field: "customerName", header: "Customer Name" },
     { field: "orderDate", header: "Order Date" },
     { field: "orderCurrentStatus", header: "Order Status" },
     { field: "assignedAt", header: "Assigned At" },
@@ -52,7 +51,6 @@ export default function UnpaidPartnerBalance() {
   data?.data?.data?.map((report, i) =>
     datas.push({
       sl: i + 1,
-      customerName: report?.customerName,
       orderDate: report?.orderDate,
       orderCurrentStatus: report?.orderCurrentStatus,
       assignedAt: report?.assignedAt ?? "-",

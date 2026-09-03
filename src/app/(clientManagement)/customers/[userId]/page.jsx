@@ -1172,7 +1172,7 @@ function CustomerDetails() {
                   <MyDataTable
                     columns={orderColumn}
                     data={orderDatas}
-                    placeholder={"Search by order id and invoice number"}
+                    placeholder={"Search by order id, invoice number, company name"}
                     pagination={true}
                     serverPagination={{
                       page: userOrders?.pagination?.page || userOrders?.data?.pagination?.page || orderPage,

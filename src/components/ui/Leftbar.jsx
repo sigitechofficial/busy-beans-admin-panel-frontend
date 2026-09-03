@@ -49,7 +49,7 @@ import { hasPermission } from "@/utilities/Permission";
 import { LEFTBAR } from "@/components/ui/leftbar.testid";
 import { subscribeEmployeeStripeConnected } from "@/utilities/stripeSyncChannel";
 import { supplierNavCount, supplierNavTotal } from "@/utilities/supplierAllOrders";
-import { SUB_ADMIN_PROFILE_PATH, hasDashboardView, canSeeModule, canSeePartnerOrdersModule, canSeeCustomerOrdersModule, canAccessFeatureScope } from "@/utilities/subAdminNav";
+import { SUB_ADMIN_PROFILE_PATH, hasDashboardView, canSeeModule, canSeePartnerOrdersModule, canSeeCustomerOrdersModule, canSeeQuickbooksInvoicesModule, canSeeReportManagement, canAccessFeatureScope } from "@/utilities/subAdminNav";
 
 export default function Leftbar(props) {
   // Initialize to null/false so server and client first paint match (avoids hydration mismatch).
@@ -690,7 +690,7 @@ export default function Leftbar(props) {
 
       {userType === "admin" ? (
         <ul className="leftbar-nav-scroll flex flex-col space-y-2 md:space-y-1 pt-4 pb-6 overflow-y-auto overflow-x-hidden flex-1 min-h-0 overscroll-contain md:pt-2 md:pb-0 md:h-[90%]">
-          {canSeeModule("dashboard_view") && (
+          {hasDashboardView() && (
             <ListHead
               data-testid={LEFTBAR.dashboardSection}
               title="Dashboard"
@@ -749,7 +749,7 @@ export default function Leftbar(props) {
               </>
             )}
 
-          {canSeeModule("quickbooks-invoices_view") && (
+          {canSeeQuickbooksInvoicesModule() && (
           <ListHead
             title="Quickbooks Invoices"
             Icon={MdBusiness}
@@ -763,7 +763,7 @@ export default function Leftbar(props) {
           />
           )}
 
-          {canSeeModule("quickbooks-invoices_view") &&
+          {canSeeQuickbooksInvoicesModule() &&
             active?.quickbookOrders?.status && (
             <div className="m-2 relative space-y-1">
               {canAccessFeatureScope("quickbooks-invoices", "partner") && (
@@ -1540,14 +1540,6 @@ export default function Leftbar(props) {
               to="/sub-admins"
               active={pathname === "/sub-admins"}
               Icon={MdGroups}
-              status={
-                active?.subAdmins?.tab === "subAdmins" &&
-                active?.subAdmins?.status
-              }
-              Angle={FaAngleRight}
-              onClick={() =>
-                handleActive("subAdmins", active?.subAdmins?.status)
-              }
             />
           )}
 
@@ -1669,7 +1661,7 @@ export default function Leftbar(props) {
               data-testid={LEFTBAR.shippingChargesManagementSection}
             />
           )}
-          {canSeeModule("report_view") && (
+          {canSeeReportManagement() && (
             <ListHead
               title="Report Management"
               Icon={MdInsights}

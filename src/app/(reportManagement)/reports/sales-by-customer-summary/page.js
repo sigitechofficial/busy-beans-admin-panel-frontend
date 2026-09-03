@@ -15,7 +15,10 @@ import { FaChevronDown, FaChevronRight } from "react-icons/fa";
 import { LuSearch } from "react-icons/lu";
 import { MdFilterAlt } from "react-icons/md";
 import UserTypeFilterModal from "@/components/ui/UserTypeFilterModal";
-import { constrainToFeatureScope } from "@/utilities/subAdminNav";
+import {
+  canSeeCustomerReports,
+  constrainToFeatureScope,
+} from "@/utilities/subAdminNav";
 import { error_toaster } from "@/utilities/Toaster";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
@@ -207,6 +210,7 @@ function SalesByCustomerSummaryReport() {
     if (filters.userType === "admin") {
       url += "&userType=admin";
     } else if (filters.userType === "salesRep") {
+      url += "&userType=salesRep";
       if (filters.salesRepIds === null) {
         // "All" sales reps selected
         url += "&salesRep[ne]=null";
@@ -437,6 +441,7 @@ function SalesByCustomerSummaryReport() {
   };
 
   const navigateToDetailPage = (customerId) => {
+    if (!canSeeCustomerReports()) return;
     router.push(`/reports/sales-by-customer-details?customerId=${customerId}`);
   };
 

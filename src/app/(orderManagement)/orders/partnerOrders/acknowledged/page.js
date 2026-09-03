@@ -107,7 +107,7 @@ export default function AcknowledgedOrders() {
           <MyDataTable
             columns={columns}
             data={datas}
-            placeholder={"Search by Id, invoice number, po number, note, payment method, shipping company"}
+            placeholder={"Search by Id, partner name, invoice number, po number, note, payment method, shipping company"}
             pagination={true}
             serverPagination={{
               page: data?.pagination?.page || data?.data?.pagination?.page || page,

@@ -209,7 +209,7 @@ export default function UpcomingOrders() {
           <MyDataTable
             columns={columns}
             data={datas}
-            placeholder={"Search by Order ID, User ID, Frequency"}
+            placeholder={"Search by Id, company name, frequency"}
             pagination={true}
             serverPagination={{
               page: data?.pagination?.page || data?.data?.pagination?.page || page,

@@ -768,7 +768,15 @@ export default function CreateInvoice() {
   // Fetch charges for customer
   const fetchChargesForCustomer = async (customerId, weight) => {
     if (!customerId || !weight) return;
-    if (!hasPermission("charges_view")) return;
+    if (
+      !hasPermission("charges_view") &&
+      !hasPermission("invoice_view") &&
+      !hasPermission("invoice_create") &&
+      !hasPermission("orders_view") &&
+      !hasPermission("orders_create")
+    ) {
+      return;
+    }
     try {
       const res = await PostAPI(
         `api/v1/admin/shipping-charges-on-weight/customer/${customerId}`,
@@ -787,7 +795,8 @@ export default function CreateInvoice() {
         throw new Error(res?.data?.message || "Failed to fetch charges.");
       }
     } catch (err) {
-      ErrorHandler(err);
+      const permissionDenied = err?.response?.status === 403;
+      if (!permissionDenied) ErrorHandler(err);
     }
   };
 

@@ -867,6 +867,15 @@ const DrawerBeans = ({
   // Shipping API: POST api/v1/admin/shipping-charges-on-weight/customer/{customerId} with { weight, userType? }. Returns shipping + discounts. For partner order pass userType: "local-partner".
   const fetchChargesForCustomer = async (customerId, weight, forceShippingZero = false, isPartnerOrder = false) => {
     if (!customerId || !weight) return;
+    if (
+      !hasPermission("charges_view") &&
+      !hasPermission("orders_view") &&
+      !hasPermission("orders_create") &&
+      !hasPermission("invoice_view") &&
+      !hasPermission("invoice_create")
+    ) {
+      return;
+    }
 
     const body = { weight, ...(isPartnerOrder ? { userType: "local-partner" } : {}) };
 
@@ -896,7 +905,8 @@ const DrawerBeans = ({
         throw new Error(res?.data?.message || "Failed to fetch charges.");
       }
     } catch (err) {
-      ErrorHandler(err);
+      const permissionDenied = err?.response?.status === 403;
+      if (!permissionDenied) ErrorHandler(err);
     }
   };
 
@@ -946,12 +956,15 @@ const DrawerBeans = ({
         partners.some((p) => String(p?.id) === String(propSelectedPartnerId)));
     const isSalesRepQuotationFlow =
       type !== "createOrder" && userType === "salesRepresentative";
-    fetchChargesForCustomer(
-      selectedEmail?.id,
-      totalWeight,
-      isDirectOnly,
-      isSalesRepQuotationFlow
-    );
+    // Shipping is loaded by the userId/weight effect so this does not double-POST.
+    if (!open) {
+      fetchChargesForCustomer(
+        selectedEmail?.id,
+        totalWeight,
+        isDirectOnly,
+        isSalesRepQuotationFlow
+      );
+    }
   };
 
   // useEffect(() => {

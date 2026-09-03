@@ -4,6 +4,7 @@ export const SUB_ADMIN_PROFILE_PATH = "/sub-admin-profile";
 
 /** Features that get Admin / Local Partner scope checkboxes (sub-admin only). */
 export const SUB_ADMIN_SCOPED_FEATURES = [
+  "dashboard",
   "orders",
   "quickbooks-invoices",
   "invoice",
@@ -28,7 +29,7 @@ export const SUB_ADMIN_LOCKED_SCOPE = {
 
 /**
  * How Access Scope cells render on the Sub Admin permissions table.
- * - live: editable Admin / Local Partner (the 5 scoped features)
+ * - live: editable Admin / Local Partner (Dashboard + the other scoped features)
  * - locked: disabled checkboxes matching the module's inherent track
  * - global: both scopes empty and disabled (HQ-wide modules)
  */
@@ -85,7 +86,10 @@ const ALWAYS_ALLOWED_PATHS = [
  */
 const PATH_PERMISSIONS = [
   { prefix: "/orders/quickbooks", permissions: ["quickbooks-invoices_view"] },
-  { prefix: "/Quickbooks/invoices", permissions: ["quickbooks-invoices_view"] },
+  {
+    prefix: "/Quickbooks/invoices",
+    permissions: ["quickbooks-invoices_view", "quickbooks-invoices_update"],
+  },
   { prefix: "/Quickbooks", permissions: ["quickbooks_view"] },
   {
     prefix: "/orders/partnerOrders",
@@ -163,6 +167,14 @@ export function canSeeModule(viewKey) {
   return hasPermission(viewKey);
 }
 
+/** Quickbooks Invoices nav: update is enough to open Pullout Intent Sync. */
+export function canSeeQuickbooksInvoicesModule() {
+  return (
+    canSeeModule("quickbooks-invoices_view") ||
+    hasPermission("quickbooks-invoices_update")
+  );
+}
+
 /**
  * Partner Orders is its own module for sub-admins.
  * Employees still inherit it from Order Management (they cannot be granted partner-orders).
@@ -182,7 +194,10 @@ export function canSeeCustomerOrdersModule() {
 }
 
 export function hasDashboardView() {
-  return hasPermission("dashboard_view");
+  if (!hasPermission("dashboard_view")) return false;
+  if (!isStoredSubAdmin()) return true;
+  const scopes = getFeatureScope("dashboard");
+  return scopes.customer || scopes.partner;
 }
 
 const FEATURE_ACTIONS = ["view", "create", "update", "delete"];
@@ -200,7 +215,7 @@ function permissionKeysList() {
 }
 
 /**
- * Admin vs Local Partner scope for one of the 5 scoped features.
+ * Admin vs Local Partner scope for a scoped feature.
  * Sub-admins only. HQ admin / employees keep both sides (current behavior).
  * Legacy: `{feature}_view` (or any CRUD key) with no scope keys → both scopes.
  */
@@ -255,9 +270,42 @@ export function constrainToFeatureScope(feature, filters = {}) {
     return next;
   }
   if (scopes.partner && !scopes.customer) {
-    if (next.userType === "admin" || !next.userType) {
+    if (
+      next.userType === "admin" ||
+      next.userType === "employee" ||
+      !next.userType
+    ) {
       next.userType = "salesRep";
       if (next.salesRepIds === undefined) next.salesRepIds = null;
+      delete next.employeeIds;
+    }
+    return next;
+  }
+  return next;
+}
+
+/** Dashboard defaults: admin-only is Admin (`userType=admin`); partner-only is Local Partner – All. */
+export function constrainDashboardScope(filters = {}) {
+  const scopes = getFeatureScope("dashboard");
+  if (scopes.customer && scopes.partner) return filters;
+
+  const next = { ...filters };
+  if (scopes.customer && !scopes.partner) {
+    if (next.userType === "salesRep" || !next.userType) {
+      next.userType = "admin";
+      next.salesRepIds = null;
+    }
+    return next;
+  }
+  if (scopes.partner && !scopes.customer) {
+    if (
+      next.userType === "admin" ||
+      next.userType === "employee" ||
+      !next.userType
+    ) {
+      next.userType = "salesRep";
+      if (next.salesRepIds === undefined) next.salesRepIds = null;
+      delete next.employeeIds;
     }
     return next;
   }
@@ -292,13 +340,44 @@ const PATH_SCOPE_RULES = [
   { prefix: "/reports/direct-partner", feature: "report", scope: "partner" },
   { prefix: "/reports/pulled-orders-receivable", feature: "report", scope: "partner" },
   { prefix: "/reports/customers", feature: "report", scope: "customer" },
+  { prefix: "/reports/sales-by-customer-details", feature: "report", scope: "customer" },
+  {
+    prefix: "/reports/sales-by-customer-summary",
+    feature: "report",
+    scopes: ["customer", "partner"],
+  },
+  { prefix: "/reports/products-sale", feature: "report", scope: "customer" },
+  { prefix: "/reports/product-wise-sales-summary", feature: "report", scope: "customer" },
 ];
+
+/** Partner-named report cards / routes. */
+export function canSeePartnerReports() {
+  return canSeeModule("report_view") && canAccessFeatureScope("report", "partner");
+}
+
+/** HQ / customer report cards / routes (Products Sale, Customers Report, etc.). */
+export function canSeeCustomerReports() {
+  return canSeeModule("report_view") && canAccessFeatureScope("report", "customer");
+}
+
+/**
+ * Sales by Customer Summary has an Admin / Local Partner filter, so either
+ * report scope is enough. Details stays customer-scope-only (no live partner filter).
+ */
+export function canSeeSalesByCustomerSummary() {
+  return canSeeCustomerReports() || canSeePartnerReports();
+}
+
+/** Report Management nav: any report scope is enough to open the hub. */
+export function canSeeReportManagement() {
+  return canSeePartnerReports() || canSeeCustomerReports();
+}
 
 export function canSubAdminAccessPath(pathname) {
   if (!isStoredSubAdmin()) return true;
   if (!pathname) return true;
   if (isAlwaysAllowedPath(pathname)) return true;
-  if (pathname === "/") return hasPermission("dashboard_view");
+  if (pathname === "/") return hasDashboardView();
 
   const rule = PATH_PERMISSIONS.find(({ prefix }) =>
     pathMatchesPrefix(pathname, prefix),
@@ -309,8 +388,14 @@ export function canSubAdminAccessPath(pathname) {
   const scopeRule = PATH_SCOPE_RULES.find(({ prefix }) =>
     pathMatchesPrefix(pathname, prefix),
   );
-  if (scopeRule && !canAccessFeatureScope(scopeRule.feature, scopeRule.scope)) {
-    return false;
+  if (scopeRule) {
+    const needed = scopeRule.scopes || (scopeRule.scope ? [scopeRule.scope] : []);
+    if (
+      needed.length > 0 &&
+      !needed.some((scope) => canAccessFeatureScope(scopeRule.feature, scope))
+    ) {
+      return false;
+    }
   }
   return true;
 }

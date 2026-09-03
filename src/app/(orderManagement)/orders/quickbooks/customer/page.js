@@ -205,19 +205,48 @@ export default function UnpaidPartnerBalance() {
     setSyncPaymentLoading(true);
     const syncedIds = selectedRows.map((r) => Number(r?.orderId)).filter(Boolean);
     try {
-      const response = await PostAPI("qbo/order-payment/sync-multiple", {
-        orderType: "customer",
-        orderIds: syncedIds,
-      });
-      if (response?.data?.status === "success") {
-        // Clear selection so synced order IDs are not kept
+      const response = await PostAPI(
+        "qbo/order-payment/sync-multiple",
+        {
+          orderType: "customer",
+          orderIds: syncedIds,
+        },
+        "",
+        { suppressSuccessToast: true },
+      );
+      const payload = response?.data?.data || {};
+      const status = response?.data?.status;
+      const successCount = payload.successCount ?? 0;
+      const failureCount = payload.failureCount ?? 0;
+      const partialCount = payload.partialCount ?? 0;
+      const message =
+        response?.data?.message ||
+        payload.message ||
+        "Payment sync finished";
+
+      const allFailed =
+        status === "failed" ||
+        (successCount === 0 && partialCount === 0 && failureCount > 0);
+      const mixed =
+        status === "partial-success" ||
+        partialCount > 0 ||
+        (failureCount > 0 && successCount > 0);
+
+      if (allFailed) {
+        error_toaster(message);
+      } else if (mixed) {
+        warning_toaster(message);
+        setSelectedRows([]);
+        reFetch();
+      } else if (status === "success" || response?.data?.success) {
+        success_toaster(message);
         setSelectedRows([]);
         reFetch();
       } else {
-        error_toaster(response?.data?.message);
+        error_toaster(message || "Failed to sync payments");
       }
-    } catch (error) {
-      error_toaster(error?.message || "Failed to sync payments");
+    } catch {
+      // HTTP errors are already toasted by the API interceptor
     } finally {
       setSyncPaymentLoading(false);
     }

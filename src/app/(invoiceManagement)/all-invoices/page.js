@@ -595,7 +595,11 @@ export default function AllInvoices() {
           <MyDataTable
             columns={columns}
             data={datas}
-            placeholder={"Search by Id, invoice number, company name..."}
+            placeholder={
+              invoiceSource === "partner"
+                ? "Search by Id, invoice number, partner name..."
+                : "Search by Id, invoice number, company name..."
+            }
             pagination={true}
             serverPagination={{
               page:

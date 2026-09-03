@@ -60,8 +60,8 @@ export default function SupplierAllOrdersPage({ statusKey }) {
 
   const columns = [
     { field: "id", header: "#", sort: true },
-    { field: "companyName", header: "Company" },
     { field: "noOfItems", header: "No. of Items" },
+    { field: "weight", header: "Weight" },
     ...(statusKey === "new"
       ? []
       : [{ field: "orderCurrentStatus", header: "Status" }]),

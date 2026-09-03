@@ -856,7 +856,13 @@ export default function SubAdmins() {
                                 allFeatures.length > 0 &&
                                 allFeatures.every((feature) => {
                                   const f = formData.features.find((x) => x.feature === feature);
-                                  if (feature === "dashboard") return !!f?.view;
+                                  if (feature === "dashboard") {
+                                    return (
+                                      !!f?.view &&
+                                      !!f.scope_customer &&
+                                      !!f.scope_partner
+                                    );
+                                  }
                                   const crudOn = f && CRUD_ACTIONS.every((a) => f[a]);
                                   if (!crudOn) return false;
                                   if (isScopedSubAdminFeature(feature)) {
@@ -875,6 +881,8 @@ export default function SubAdmins() {
                                       view: checked,
                                       update: false,
                                       delete: false,
+                                      scope_customer: checked,
+                                      scope_partner: checked,
                                     };
                                   }
                                   const row = {

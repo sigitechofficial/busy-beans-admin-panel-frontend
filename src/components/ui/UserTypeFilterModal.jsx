@@ -30,6 +30,9 @@ export default function UserTypeFilterModal({
       return [];
     } else {
       // Single select mode
+      if (initialFilters.userType === "salesRep" && initialFilters.salesRepIds === null) {
+        return { value: "all", label: "ALL" };
+      }
       if (Array.isArray(initialFilters.salesRepIds) && initialFilters.salesRepIds.length > 0) {
         // For single select, take the first ID
         return { value: initialFilters.salesRepIds[0], label: `Sales Rep ${initialFilters.salesRepIds[0]}` };
@@ -46,26 +49,25 @@ export default function UserTypeFilterModal({
   });
   const [showEmployeeDropdown, setShowEmployeeDropdown] = useState(initialFilters.userType === "employee");
 
-  // Fetch sales reps list
-  const { data: salesRepData } = GetAPI("api/v1/admin/sales-rep");
+  const scope = scopeFeature
+    ? getFeatureScope(scopeFeature)
+    : { customer: true, partner: true };
+  const partnerOnly = scope.partner && !scope.customer;
+  const showAllPartnersOption = allowMultiSelect || partnerOnly;
+
+  // Partner list is for the filter picker, not Local Partner management.
+  const { data: salesRepData } = GetAPI(scope.partner ? "api/v1/admin/sales-rep" : "");
   const { data: employeeData } = GetAPI(enableEmployeeOption ? "api/v1/admin/employees" : "");
 
-  const salesRepOptions = allowMultiSelect
-    ? [
-        { value: "all", label: "ALL" },
-        ...(salesRepData?.data?.data
-          ? salesRepData.data.data.map((rep) => ({
-              value: rep.id,
-              label: rep.srName || rep.name,
-            }))
-          : []),
-      ]
-    : (salesRepData?.data?.data
-        ? salesRepData.data.data.map((rep) => ({
-            value: rep.id,
-            label: rep.srName || rep.name,
-          }))
-        : []);
+  const partnerOptions = salesRepData?.data?.data
+    ? salesRepData.data.data.map((rep) => ({
+        value: rep.id,
+        label: rep.srName || rep.name,
+      }))
+    : [];
+  const salesRepOptions = showAllPartnersOption
+    ? [{ value: "all", label: "ALL" }, ...partnerOptions]
+    : partnerOptions;
 
   const employeeOptions = employeeData?.data?.data
     ? employeeData.data.data.map((emp) => ({
@@ -143,7 +145,9 @@ export default function UserTypeFilterModal({
           }
         } else {
           // Single select mode
-          if (Array.isArray(initialFilters.salesRepIds) && initialFilters.salesRepIds.length > 0) {
+          if (initialFilters.salesRepIds === null) {
+            setSelectedSalesReps({ value: "all", label: "ALL" });
+          } else if (Array.isArray(initialFilters.salesRepIds) && initialFilters.salesRepIds.length > 0) {
             const firstId = initialFilters.salesRepIds[0];
             if (salesRepData?.data?.data) {
               const rep = salesRepData.data.data.find(r => r.id === firstId);
@@ -278,6 +282,11 @@ export default function UserTypeFilterModal({
         if (!selectedSalesReps || !selectedSalesReps.value) {
           // No selection - don't apply filter (user must select one)
           return;
+        } else if (selectedSalesReps.value === "all") {
+          filters = {
+            userType: "salesRep",
+            salesRepIds: null,
+          };
         } else {
           filters = {
             userType: "salesRep",
@@ -330,17 +339,14 @@ export default function UserTypeFilterModal({
                 : null
             }
             onChange={handleUserTypeChange}
-            options={(() => {
-              const scope = scopeFeature
-                ? getFeatureScope(scopeFeature)
-                : { customer: true, partner: true };
-              return [
-                ...(scope.customer && scope.partner ? [{ value: "all", label: "All" }] : []),
-                ...(scope.customer ? [{ value: "admin", label: "Admin" }] : []),
-                ...(scope.partner ? [{ value: "salesRep", label: "Local Partner" }] : []),
-                ...(enableEmployeeOption ? [{ value: "employee", label: "Employee" }] : []),
-              ];
-            })()}
+            options={[
+              ...(scope.customer && scope.partner ? [{ value: "all", label: "All" }] : []),
+              ...(scope.customer ? [{ value: "admin", label: "Admin" }] : []),
+              ...(scope.partner ? [{ value: "salesRep", label: "Local Partner" }] : []),
+              ...(enableEmployeeOption && scope.customer
+                ? [{ value: "employee", label: "Employee" }]
+                : []),
+            ]}
             isClearable
           />
         </div>

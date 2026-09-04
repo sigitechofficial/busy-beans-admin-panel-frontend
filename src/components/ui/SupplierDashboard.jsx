@@ -39,6 +39,34 @@ const QUEUE_TILES = [
   },
 ];
 
+const LIST_LIMIT = 10;
+
+function ListHeader({ title, Icon, total, seeAllHref, seeAllTestId }) {
+  const router = useRouter();
+  const count = Number(total) || 0;
+
+  return (
+    <div className="flex items-center justify-between gap-2 mb-3 sm:mb-4">
+      <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 min-w-0">
+        <Icon className="text-theme shrink-0" size={20} />
+        <span className="truncate">
+          {title} ({count.toLocaleString()})
+        </span>
+      </h3>
+      {seeAllHref && count > LIST_LIMIT && (
+        <button
+          type="button"
+          onClick={() => router.push(seeAllHref)}
+          className="text-xs sm:text-sm text-theme hover:underline font-medium shrink-0"
+          data-testid={seeAllTestId}
+        >
+          See all →
+        </button>
+      )}
+    </div>
+  );
+}
+
 function formatAge(hours) {
   const h = Number(hours) || 0;
   if (h < 1) return "< 1h";
@@ -113,16 +141,22 @@ export default function SupplierDashboard() {
   const newCount = Number(payload.newCount) || 0;
   const acknowledgedCount = Number(payload.acknowledgedCount) || 0;
   const shippedLast7Days = Number(payload.shippedLast7Days) || 0;
-  const needsAttention = Array.isArray(payload.needsAttention)
+  const needsAttentionAll = Array.isArray(payload.needsAttention)
     ? payload.needsAttention
     : [];
-  const readyToShip = Array.isArray(payload.readyToShip)
+  const readyToShipAll = Array.isArray(payload.readyToShip)
     ? payload.readyToShip
     : [];
+  const needsAttentionCount =
+    Number(payload.needsAttentionCount) || needsAttentionAll.length;
+  const readyToShipCount =
+    Number(payload.readyToShipCount) || readyToShipAll.length;
+  const needsAttention = needsAttentionAll.slice(0, LIST_LIMIT);
+  const readyToShip = readyToShipAll.slice(0, LIST_LIMIT);
   const counts = { newCount, acknowledgedCount, shippedLast7Days };
   const isEmpty = newCount + acknowledgedCount + shippedLast7Days === 0
-    && needsAttention.length === 0
-    && readyToShip.length === 0;
+    && needsAttentionCount === 0
+    && readyToShipCount === 0;
 
   return (
     <div
@@ -182,10 +216,13 @@ export default function SupplierDashboard() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border border-gray-200 min-w-0">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 mb-3 sm:mb-4">
-                <MdWarningAmber className="text-theme shrink-0" size={20} />
-                Needs attention
-              </h3>
+              <ListHeader
+                title="Needs attention"
+                Icon={MdWarningAmber}
+                total={needsAttentionCount}
+                seeAllHref="/supplier/assigned-orders"
+                seeAllTestId={DASHBOARD.fulfillmentSeeAll("needs-attention")}
+              />
               <OrderRows
                 rows={needsAttention}
                 showReason
@@ -194,10 +231,13 @@ export default function SupplierDashboard() {
             </div>
 
             <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border border-gray-200 min-w-0">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 mb-3 sm:mb-4">
-                <MdOutbound className="text-theme shrink-0" size={20} />
-                Ready to ship
-              </h3>
+              <ListHeader
+                title="Ready to ship"
+                Icon={MdOutbound}
+                total={readyToShipCount}
+                seeAllHref="/supplier/acknowledge-orders"
+                seeAllTestId={DASHBOARD.fulfillmentSeeAll("ready-to-ship")}
+              />
               <OrderRows
                 rows={readyToShip}
                 emptyCopy="No acknowledged orders waiting to ship."

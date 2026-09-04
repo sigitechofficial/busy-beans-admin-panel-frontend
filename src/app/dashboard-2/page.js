@@ -29,6 +29,9 @@ import {
   hasDashboardView,
   isStoredSubAdmin,
 } from "@/utilities/subAdminNav";
+import DashboardFulfillment, {
+  fulfillmentListHrefs,
+} from "@/components/ui/DashboardFulfillment";
 
 export default function Dashboard2() {
   const router = useRouter();
@@ -468,6 +471,8 @@ export default function Dashboard2() {
 
   // Extract data from API response
   const salesResponse = salesData?.data || {};
+  const fulfillment = salesResponse?.fulfillment || {};
+  const fulfillmentHrefs = fulfillmentListHrefs(filters);
 
   // Month-to-Date Sales
   const mtdSales = {
@@ -858,6 +863,11 @@ export default function Dashboard2() {
 
         {/* Content section with side margins - responsive padding */}
         <div className="px-3 sm:px-6 2xl:px-12 space-y-5 sm:space-y-8 max-w-full min-w-0">
+          <DashboardFulfillment
+            fulfillment={fulfillment}
+            listHrefs={fulfillmentHrefs}
+          />
+
           {/* Top Row Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {/* Month-to-Date Sales Card */}

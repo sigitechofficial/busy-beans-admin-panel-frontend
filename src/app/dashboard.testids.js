@@ -20,6 +20,11 @@ const DASHBOARD = {
   statsCardsGrid: "dashboard-stats-cards-grid",
   miniCardsGrid: "dashboard-mini-cards-grid",
 
+  // HQ / local partner fulfillment (dashboard-2)
+  fulfillmentRoot: "dashboard-fulfillment-root",
+  fulfillmentTiles: "dashboard-fulfillment-tiles",
+  fulfillmentSeeAll: (list) => `dashboard-fulfillment-see-all-${list}`,
+
   // supplier: top products
   topProductsSection: "dashboard-top-products-section",
   topProductsGrid: "dashboard-top-products-grid",

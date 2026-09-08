@@ -7,7 +7,7 @@ import MiniLoader from "@/components/ui/MiniLoader";
 import { FaEye } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import dayjs from "dayjs";
 import { useDataContext } from "@/utilities/DataContext";
 import { CiMenuBurger } from "react-icons/ci";
@@ -20,7 +20,7 @@ import selectStyles from "@/utilities/SelectStyle";
 import { defaultFeatureScopeMode, getFeatureScope, showFeatureScopeToggle } from "@/utilities/subAdminNav";
 import { OPS_ORDER_MIN_DATE } from "@/utilities/opsOrderDate";
 
-export default function AllInvoices() {
+function AllInvoices() {
   if (typeof window !== "undefined") {
     var userID = localStorage.getItem("userID");
     var userType = localStorage.getItem("userType");
@@ -772,5 +772,13 @@ export default function AllInvoices() {
         )}
       </Dialog>
     </div>
+  );
+}
+
+export default function AllInvoicesPage() {
+  return (
+    <Suspense fallback={<Loader />}>
+      <AllInvoices />
+    </Suspense>
   );
 }

@@ -141,7 +141,11 @@ export function fulfillmentListHrefs(filters) {
   };
 }
 
-export default function DashboardFulfillment({ fulfillment, listHrefs }) {
+export default function DashboardFulfillment({
+  fulfillment,
+  listHrefs,
+  invoiceSection,
+}) {
   const router = useRouter();
   const payload = fulfillment || {};
   const newCount = Number(payload.newCount) || 0;
@@ -203,6 +207,8 @@ export default function DashboardFulfillment({ fulfillment, listHrefs }) {
           </button>
         ))}
       </div>
+
+      {invoiceSection}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border border-gray-200 min-w-0">

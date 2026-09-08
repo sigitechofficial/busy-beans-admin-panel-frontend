@@ -1211,6 +1211,22 @@ export default function Leftbar(props) {
                       "All Invoices"
                     )}
                   />
+                  <ListItems
+                    title="Overdue (shipped)"
+                    to="/all-invoices?filter=overdueShipped"
+                    data-testid={LEFTBAR.listItem(
+                      "invoiceManagement",
+                      "Overdue (shipped)"
+                    )}
+                  />
+                  <ListItems
+                    title="Shipped not invoiced"
+                    to="/all-invoices?filter=shippedNotInvoiced"
+                    data-testid={LEFTBAR.listItem(
+                      "invoiceManagement",
+                      "Shipped not invoiced"
+                    )}
+                  />
 
                   <ListItems
                     title="Customer Invoices"
@@ -2545,6 +2561,22 @@ export default function Leftbar(props) {
                     data-testid={LEFTBAR.listItem(
                       "invoiceManagement",
                       "All Invoices"
+                    )}
+                  />
+                  <ListItems
+                    title="Overdue (shipped)"
+                    to="/all-invoices?filter=overdueShipped"
+                    data-testid={LEFTBAR.listItem(
+                      "invoiceManagement",
+                      "Overdue (shipped)"
+                    )}
+                  />
+                  <ListItems
+                    title="Shipped not invoiced"
+                    to="/all-invoices?filter=shippedNotInvoiced"
+                    data-testid={LEFTBAR.listItem(
+                      "invoiceManagement",
+                      "Shipped not invoiced"
                     )}
                   />
                   <ListItems

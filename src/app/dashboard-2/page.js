@@ -32,6 +32,10 @@ import {
 import DashboardFulfillment, {
   fulfillmentListHrefs,
 } from "@/components/ui/DashboardFulfillment";
+import DashboardInvoices, {
+  invoiceExceptionHrefs,
+} from "@/components/ui/DashboardInvoices";
+import { hasPermission } from "@/utilities/Permission";
 
 export default function Dashboard2() {
   const router = useRouter();
@@ -473,6 +477,9 @@ export default function Dashboard2() {
   const salesResponse = salesData?.data || {};
   const fulfillment = salesResponse?.fulfillment || {};
   const fulfillmentHrefs = fulfillmentListHrefs(filters);
+  const invoiceExceptions = salesResponse?.invoiceExceptions || {};
+  const invoiceHrefs = invoiceExceptionHrefs(filters);
+  const showInvoiceTiles = hasPermission("invoice_view");
 
   // Month-to-Date Sales
   const mtdSales = {
@@ -866,6 +873,14 @@ export default function Dashboard2() {
           <DashboardFulfillment
             fulfillment={fulfillment}
             listHrefs={fulfillmentHrefs}
+            invoiceSection={
+              showInvoiceTiles ? (
+                <DashboardInvoices
+                  counts={invoiceExceptions}
+                  hrefs={invoiceHrefs}
+                />
+              ) : null
+            }
           />
 
           {/* Top Row Cards */}

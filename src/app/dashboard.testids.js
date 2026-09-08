@@ -25,6 +25,10 @@ const DASHBOARD = {
   fulfillmentTiles: "dashboard-fulfillment-tiles",
   fulfillmentSeeAll: (list) => `dashboard-fulfillment-see-all-${list}`,
 
+  invoiceRoot: "dashboard-invoice-root",
+  invoiceTiles: "dashboard-invoice-tiles",
+  invoiceTile: (key) => `dashboard-invoice-tile-${key}`,
+
   // supplier: top products
   topProductsSection: "dashboard-top-products-section",
   topProductsGrid: "dashboard-top-products-grid",

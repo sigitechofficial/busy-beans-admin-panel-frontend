@@ -21,6 +21,7 @@ import { canAccessFeatureScope, isStoredSubAdmin } from "@/utilities/subAdminNav
 import { error_toaster, success_toaster, info_toaster } from "@/utilities/Toaster";
 import { PostAPI } from "@/utilities/PostAPI";
 import ErrorHandler from "@/utilities/ErrorHandler";
+import { OPS_ORDER_MIN_DATE } from "@/utilities/opsOrderDate";
 
 const SYNC_CHUNK = 100;
 
@@ -96,7 +97,7 @@ export default function QuickBooksInvoicesPulloutSyncPage() {
   const getInitialDateRange = () => {
     const today = dayjs();
     return {
-      startDate: "2025-01-01",
+      startDate: OPS_ORDER_MIN_DATE,
       endDate: today.format("YYYY-MM-DD"),
     };
   };

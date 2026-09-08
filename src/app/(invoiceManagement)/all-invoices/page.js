@@ -6,7 +6,7 @@ import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
 import { FaEye } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import { useDataContext } from "@/utilities/DataContext";
@@ -18,6 +18,7 @@ import { error_toaster } from "@/utilities/Toaster";
 import Select from "react-select";
 import selectStyles from "@/utilities/SelectStyle";
 import { defaultFeatureScopeMode, getFeatureScope, showFeatureScopeToggle } from "@/utilities/subAdminNav";
+import { OPS_ORDER_MIN_DATE } from "@/utilities/opsOrderDate";
 
 export default function AllInvoices() {
   if (typeof window !== "undefined") {
@@ -28,16 +29,48 @@ export default function AllInvoices() {
   let slCounter = 1;
 
   const router = useRouter();
+  const searchParams = useSearchParams();
   const invoiceScope = getFeatureScope("invoice");
   const showInvoiceSourceToggle = showFeatureScopeToggle("invoice");
   const isCustomerOnlyScope = invoiceScope.customer && !invoiceScope.partner;
-  const [type, setType] = useState("all");
+  const filterFromUrl = searchParams.get("filter");
+  const ownerFromUrl = searchParams.get("owner");
+  const [type, setType] = useState(() =>
+    ["overdueShipped", "shippedNotInvoiced", "paid", "unpaid"].includes(
+      filterFromUrl
+    )
+      ? filterFromUrl
+      : "all"
+  );
+
+  useEffect(() => {
+    if (
+      ["overdueShipped", "shippedNotInvoiced", "paid", "unpaid", "all"].includes(
+        filterFromUrl
+      )
+    ) {
+      setType(filterFromUrl);
+    }
+  }, [filterFromUrl]);
+
+  const setInvoiceTab = (next) => {
+    setType(next);
+    const params = new URLSearchParams(searchParams.toString());
+    if (next === "all") params.delete("filter");
+    else params.set("filter", next);
+    const qs = params.toString();
+    router.replace(qs ? `/all-invoices?${qs}` : "/all-invoices", {
+      scroll: false,
+    });
+  };
   const [invoiceSource, setInvoiceSource] = useState(() =>
     defaultFeatureScopeMode("invoice", { customerValue: "customer", partnerValue: "partner" })
   );
-  const [customerInvoiceOwner, setCustomerInvoiceOwner] = useState(
-    isCustomerOnlyScope ? "admin" : "all"
-  );
+  const [customerInvoiceOwner, setCustomerInvoiceOwner] = useState(() => {
+    if (isCustomerOnlyScope) return "admin";
+    if (["all", "admin", "partner"].includes(ownerFromUrl)) return ownerFromUrl;
+    return "all";
+  });
   useEffect(() => {
     const allowed = defaultFeatureScopeMode("invoice", {
       customerValue: "customer",
@@ -50,6 +83,13 @@ export default function AllInvoices() {
       setCustomerInvoiceOwner("admin");
     }
   }, [showInvoiceSourceToggle, invoiceSource, isCustomerOnlyScope, customerInvoiceOwner]);
+  useEffect(() => {
+    if (isCustomerOnlyScope) return;
+    if (["all", "admin", "partner"].includes(ownerFromUrl)) {
+      setCustomerInvoiceOwner(ownerFromUrl);
+      setInvoiceSource("customer");
+    }
+  }, [ownerFromUrl, isCustomerOnlyScope]);
   const [selectedPartnerId, setSelectedPartnerId] = useState(null);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(100);
@@ -74,7 +114,7 @@ export default function AllInvoices() {
   const [dateRange, setDateRange] = useState(() => {
     const today = dayjs();
     return {
-      startDate: "2025-01-01",
+      startDate: OPS_ORDER_MIN_DATE,
       endDate: today.format("YYYY-MM-DD"),
     };
   });
@@ -85,7 +125,7 @@ export default function AllInvoices() {
     let endDate = "";
     switch (filterValue) {
       case "allTime":
-        startDate = "2025-01-01";
+        startDate = OPS_ORDER_MIN_DATE;
         endDate = today.format("YYYY-MM-DD");
         break;
       case "currentYear":
@@ -149,8 +189,8 @@ export default function AllInvoices() {
         error_toaster("Dates cannot be in the future.");
         return;
       }
-      if (start.isBefore(dayjs("2025-01-01"))) {
-        error_toaster("Start date cannot be before January 1, 2025.");
+      if (start.isBefore(dayjs(OPS_ORDER_MIN_DATE))) {
+        error_toaster("Start date cannot be before January 1, 2026.");
         return;
       }
       setDateRange({ startDate: customDates.startDate, endDate: customDates.endDate });
@@ -171,12 +211,22 @@ export default function AllInvoices() {
   };
 
   // Build API URL with pagination, search and date range (gte/lte)
+  const needsInvoiceDate =
+    type !== "shippedNotInvoiced";
+  const exceptionParam =
+    type === "overdueShipped" || type === "shippedNotInvoiced" ? type : "";
   const baseUrl =
     invoiceSource === "customer"
       ? userType === "admin"
-        ? "api/v1/admin/orders?statusId[ne]=6&type=all&invoiceDate[ne]=null"
-        : `api/v1/admin/orders?salesRepId=${userID}&statusId[ne]=6&type=all&invoiceDate[ne]=null`
-      : "api/v1/admin/partner-order/orders-list?statusId[ne]=6&type=all&invoiceDate[ne]=null";
+        ? `api/v1/admin/orders?statusId[ne]=6&type=all${
+            needsInvoiceDate ? "&invoiceDate[ne]=null" : ""
+          }`
+        : `api/v1/admin/orders?salesRepId=${userID}&statusId[ne]=6&type=all${
+            needsInvoiceDate ? "&invoiceDate[ne]=null" : ""
+          }`
+      : `api/v1/admin/partner-order/orders-list?statusId[ne]=6&type=all${
+          needsInvoiceDate ? "&invoiceDate[ne]=null" : ""
+        }`;
 
   const [urlBase, existingQuery] = baseUrl.split("?");
   const params = new URLSearchParams(existingQuery || "");
@@ -206,6 +256,14 @@ export default function AllInvoices() {
   }
   if (userType === "admin" && invoiceSource === "partner" && selectedPartnerId) {
     params.set("salesRepId", selectedPartnerId.toString());
+  }
+  if (exceptionParam) {
+    params.set("invoiceException", exceptionParam);
+  }
+  if (type === "paid") {
+    params.set("paymentStatus", "done");
+  } else if (type === "unpaid") {
+    params.set("paymentStatus", "pending");
   }
   const apiUrl = `${urlBase}?${params.toString()}`;
 
@@ -280,7 +338,9 @@ export default function AllInvoices() {
       : [];
   const resultedOrders = ordersArray.filter((detail, i) => {
     return (
-      (type === "paid"
+      (type === "overdueShipped" || type === "shippedNotInvoiced"
+        ? true
+        : type === "paid"
         ? detail?.paymentStatus === "done"
         : type === "unpaid"
         ? detail?.paymentStatus === "pending"
@@ -410,7 +470,7 @@ export default function AllInvoices() {
             <div className="inline-flex flex-nowrap min-w-max">
               <button
                 onClick={() => {
-                  setType("all");
+                  setInvoiceTab("all");
                   setPage(1);
                 }}
                 className={`${
@@ -421,7 +481,7 @@ export default function AllInvoices() {
               </button>
               <button
                 onClick={() => {
-                  setType("paid");
+                  setInvoiceTab("paid");
                   setPage(1);
                 }}
                 className={`${
@@ -432,7 +492,7 @@ export default function AllInvoices() {
               </button>
               <button
                 onClick={() => {
-                  setType("unpaid");
+                  setInvoiceTab("unpaid");
                   setPage(1);
                 }}
                 className={`${
@@ -440,6 +500,28 @@ export default function AllInvoices() {
                 } shrink-0 whitespace-nowrap -ml-px font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 duration-200`}
               >
                 Unpaid Invoices
+              </button>
+              <button
+                onClick={() => {
+                  setInvoiceTab("overdueShipped");
+                  setPage(1);
+                }}
+                className={`${
+                  type === "overdueShipped" ? "bg-black text-white" : "bg-white text-black"
+                } shrink-0 whitespace-nowrap -ml-px font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 duration-200`}
+              >
+                Overdue (shipped)
+              </button>
+              <button
+                onClick={() => {
+                  setInvoiceTab("shippedNotInvoiced");
+                  setPage(1);
+                }}
+                className={`${
+                  type === "shippedNotInvoiced" ? "bg-black text-white" : "bg-white text-black"
+                } shrink-0 whitespace-nowrap -ml-px font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 duration-200`}
+              >
+                Shipped not invoiced
               </button>
             </div>
           </div>

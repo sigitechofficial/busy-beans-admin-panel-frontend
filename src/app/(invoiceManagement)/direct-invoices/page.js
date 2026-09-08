@@ -27,6 +27,7 @@ export default function IndividualInvoices() {
   const [customerInvoiceOwner, setCustomerInvoiceOwner] = useState(
     isCustomerOnlyScope ? "admin" : "all"
   );
+  const [directFilter, setDirectFilter] = useState("all");
   useEffect(() => {
     const allowed = defaultFeatureScopeMode("invoice", {
       customerValue: "admin",
@@ -61,6 +62,9 @@ export default function IndividualInvoices() {
     customerInvoiceOwner === "partner"
   ) {
     params.set("salesRepId[ne]", "null");
+  }
+  if (directFilter === "overdueShipped") {
+    params.set("invoiceException", "overdueShipped");
   }
   const apiUrl = `${urlBase}?${params.toString()}`;
 
@@ -153,6 +157,28 @@ export default function IndividualInvoices() {
       </div>
 
       <div className="space-y-8 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
+        <div className="overflow-x-auto">
+          <div className="inline-flex flex-nowrap min-w-max">
+            <button
+              onClick={() => setDirectFilter("all")}
+              className={`${
+                directFilter === "all" ? "bg-black text-white" : "bg-white text-black"
+              } shrink-0 whitespace-nowrap font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 duration-200`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setDirectFilter("overdueShipped")}
+              className={`${
+                directFilter === "overdueShipped"
+                  ? "bg-black text-white"
+                  : "bg-white text-black"
+              } shrink-0 whitespace-nowrap -ml-px font-workSans font-medium border border-black px-5 sm:px-8 py-2.5 duration-200`}
+            >
+              Overdue (shipped)
+            </button>
+          </div>
+        </div>
         {userType === "admin" && invoiceSource === "admin" && showInvoiceSourceToggle && (
           <div className="overflow-x-auto">
             <div className="inline-flex flex-nowrap min-w-max">

@@ -11,7 +11,7 @@ import { info_toaster, success_toaster } from "@/utilities/Toaster";
 import dayjs from "dayjs";
 import { useParams, usePathname } from "next/navigation";
 import { Dialog } from "primereact/dialog";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CiMenuBurger } from "react-icons/ci";
 import { FaCheck } from "react-icons/fa";
 import Select from "react-select";
@@ -307,6 +307,37 @@ export default function OrderDetail() {
   const showAction =
     Number(order?.statusId) === 2 || Number(order?.statusId) === 3;
   const statusLine = statusDateLine(order);
+  const shipCardRef = useRef(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
+
+  const exportShipCard = async (mode) => {
+    if (!shipCardRef.current || pdfBusy) return;
+    setPdfBusy(true);
+    try {
+      const html2pdf = (await import("html2pdf.js")).default;
+      const worker = html2pdf()
+        .set({
+          margin: 0.4,
+          filename: `order-${displayId}.pdf`,
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2, backgroundColor: "#ffffff" },
+          jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+        })
+        .from(shipCardRef.current);
+      if (mode === "print") {
+        await worker.toPdf().get("pdf").then((pdf) => {
+          pdf.autoPrint();
+          window.open(pdf.output("bloburl"), "_blank");
+        });
+      } else {
+        await worker.save();
+      }
+    } catch (error) {
+      ErrorHandler(error);
+    } finally {
+      setPdfBusy(false);
+    }
+  };
 
   return isLoading ? (
     <Loader />
@@ -338,6 +369,22 @@ export default function OrderDetail() {
           <div className="flex items-center gap-x-2 ml-auto sm:gap-x-4 [&>button]:py-2 sm:[&>button]:py-3 [&>button]:px-2 sm:[&>button]:px-5 [&>button]:rounded-lg [&>button]:font-nunito [&>button]:font-medium max-sm:[&>button]:text-sm">
             <button
               type="button"
+              className="bg-white text-black border border-black disabled:cursor-not-allowed"
+              disabled={pdfBusy}
+              onClick={() => exportShipCard("print")}
+            >
+              {pdfBusy ? "Preparing…" : "Print"}
+            </button>
+            <button
+              type="button"
+              className="bg-white text-black border border-black disabled:cursor-not-allowed"
+              disabled={pdfBusy}
+              onClick={() => exportShipCard("download")}
+            >
+              {pdfBusy ? "Preparing…" : "Download PDF"}
+            </button>
+            <button
+              type="button"
               className={`bg-black text-white disabled:cursor-not-allowed ${
                 showAction ? "block" : "hidden"
               }`}
@@ -356,7 +403,10 @@ export default function OrderDetail() {
           <MiniLoader />
         ) : (
           <div className="mx-auto flex flex-col lg:flex-row lg:items-start lg:justify-center gap-8 xl:gap-12">
-            <div className="mx-auto lg:mx-0 w-full max-w-[560px] rounded-[16px] bg-white px-6 py-8 font-inter text-[#111] text-[15px] leading-6">
+            <div
+              ref={shipCardRef}
+              className="mx-auto lg:mx-0 w-full max-w-[560px] rounded-[16px] bg-white px-6 py-8 font-inter text-[#111] text-[15px] leading-6"
+            >
             {order?.note && (
               <div className="mb-6 bg-themeYellowDark text-black font-medium py-2 px-4 rounded-md">
                 {order.note}

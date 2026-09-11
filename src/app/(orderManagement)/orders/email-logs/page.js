@@ -28,6 +28,7 @@ const EMAIL_TYPE_OPTIONS = [
   { value: "", label: "All types" },
   { value: "Success", label: "Success" },
   { value: "Failed", label: "Failed" },
+  { value: "Skipped", label: "Skipped" },
   { value: "invoice_sent", label: "Invoice sent" },
   { value: "invoice_reminder", label: "Payment reminder" },
   { value: "paid_receipt", label: "Paid receipt (customer)" },
@@ -171,7 +172,7 @@ export default function EmailLogsPage() {
     const params = new URLSearchParams();
     params.set("page", String(page));
     params.set("limit", String(limit));
-    if (emailType === "Success" || emailType === "Failed") {
+    if (emailType === "Success" || emailType === "Failed" || emailType === "Skipped") {
       params.set("emailSent", emailType);
     } else if (emailType) {
       params.set("emailType", emailType);
@@ -227,6 +228,9 @@ export default function EmailLogsPage() {
 
       success_toaster(
         `Emails sent: ${summary.success ?? 0} succeeded, ${summary.failed ?? 0} failed` +
+          (summary.skipped
+            ? `, ${summary.skipped} skipped`
+            : "") +
           (summary.duplicatesRemoved
             ? ` (${summary.duplicatesRemoved} duplicate${summary.duplicatesRemoved === 1 ? "" : "s"} removed)`
             : "")

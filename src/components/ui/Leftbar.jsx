@@ -714,6 +714,7 @@ export default function Leftbar(props) {
                 pathname.includes("/orders/create") ||
                 pathname.includes("/orders/emails") ||
                 pathname.includes("/orders/email-logs") ||
+                pathname.includes("/orders/email-configuration") ||
                 pathname.includes("/orders/delete-invoice")
               }
               Angle={
@@ -744,6 +745,12 @@ export default function Leftbar(props) {
 
                   <ListItems title="Emails" to="/orders/emails" />
                   <ListItems title="Email Logs" to="/orders/email-logs" />
+                  {!isSubAdmin && (
+                    <ListItems
+                      title="Email Configuration"
+                      to="/orders/email-configuration"
+                    />
+                  )}
                   <ListItems title="Delete Invoice" to="/orders/delete-invoice" />
                 </div>
               </>

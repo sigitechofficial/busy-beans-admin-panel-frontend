@@ -98,6 +98,7 @@ const PATH_PERMISSIONS = [
   { prefix: "/orders/create", permissions: ["orders_view"] },
   { prefix: "/orders/emails", permissions: ["orders_view"] },
   { prefix: "/orders/email-logs", permissions: ["orders_view"] },
+  { prefix: "/orders/email-configuration", permissions: ["orders_view"] },
   { prefix: "/orders/delete-invoice", permissions: ["orders_view"] },
   { prefix: "/orders", permissions: ["customer-orders_view"] },
   { prefix: "/suppliers", permissions: ["supplier_view"] },

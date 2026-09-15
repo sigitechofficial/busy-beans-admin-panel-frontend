@@ -6,7 +6,7 @@ import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
 import { PostAPI } from "@/utilities/PostAPI";
 import { BASE_URL } from "@/utilities/URL";
-import { success_toaster, error_toaster } from "@/utilities/Toaster";
+import { success_toaster, error_toaster, info_toaster } from "@/utilities/Toaster";
 import { Button } from "primereact/button";
 import { getFeatureScope } from "@/utilities/subAdminNav";
 
@@ -50,9 +50,14 @@ export default function Page() {
     try {
       const res = await PostAPI(
         `${BASE_URL}api/v1/admin/order-management/email-helper`,
-        formData
+        formData,
+        "",
+        { suppressSuccessToast: true }
       );
-      if (res?.data?.status) {
+      if (res?.data?.skipped) {
+        info_toaster("Email skipped by email configuration.");
+        reset();
+      } else if (res?.data?.status) {
         success_toaster("Email sent successfully!");
         reset();
       } else {

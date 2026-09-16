@@ -1,9 +1,19 @@
 "use client";
 // utilities/AuthCheck.js
 import { info_toaster } from "@/utilities/Toaster";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { BASE_URL } from "@/utilities/URL";
+
+function isPublicAuthPath(pathname) {
+  if (!pathname) return false;
+  return (
+    pathname.startsWith("/sign-in") ||
+    pathname.includes("/forgot") ||
+    pathname.includes("/verify") ||
+    pathname.includes("/reset") ||
+    pathname.includes("/sales-representative/stripe-account-connected")
+  );
+}
 
 const logout = (router, msg = "Please login first !") => {
   try {
@@ -24,8 +34,11 @@ const logout = (router, msg = "Please login first !") => {
 
 export const AuthCheck = () => {
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
+    if (isPublicAuthPath(pathname)) return;
+
     const token = localStorage.getItem("accessToken");
     const loggedIn = localStorage.getItem("loginStatus");
     const userType = localStorage.getItem("userType");
@@ -43,5 +56,5 @@ export const AuthCheck = () => {
     if (isSubAdmin && isEmployee) {
       return logout(router);
     }
-  }, [router]);
+  }, [pathname, router]);
 };

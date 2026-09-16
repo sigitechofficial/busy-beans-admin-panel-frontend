@@ -85,7 +85,7 @@ export default function EmailConfigurationPage() {
   const pagination = payload.pagination || {};
   const defaultSupplierId = payload.defaultSupplierId || null;
   const currentTab = tabs.find((item) => item.type === tab) || tabs[0];
-  const hasPeople = Boolean(currentTab?.hasPeople);
+  const hasPeople = Boolean(currentTab?.hasPeople) && tab !== "customer";
 
   const patchSetting = async ({ recipientId, emailType, enabled }) => {
     const key = `${recipientId}:${emailType}`;
@@ -212,8 +212,9 @@ export default function EmailConfigurationPage() {
 
       <div className="space-y-6 pb-6 pt-28 2xl:pt-32 px-6 2xl:px-12">
         <p className="text-gray-600 text-sm max-w-3xl">
-          Turn emails on or off by recipient type or by person. Login and
-          forgot-password OTPs stay on for every role.
+          Turn emails on or off by recipient type. Per-customer switches live on
+          each customer profile. Login and forgot-password OTPs stay on for
+          every role.
         </p>
 
         <div className="flex flex-wrap gap-2">
@@ -242,6 +243,9 @@ export default function EmailConfigurationPage() {
           <h3 className="font-semibold text-gray-800">Type defaults</h3>
           <p className="text-sm text-gray-500">
             These apply to everyone in this tab unless a person has an override.
+            {tab === "customer"
+              ? " Per-customer overrides are on the customer profile page."
+              : ""}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             {emails.map((item) => (

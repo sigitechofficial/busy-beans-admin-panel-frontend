@@ -20,6 +20,7 @@ import React, { useEffect, useState, useMemo, useRef } from "react";
 import Select from "react-select";
 import { CiMenuBurger } from "react-icons/ci";
 import { hasPermission } from "@/utilities/Permission";
+import CustomerTransactionalEmails from "@/components/ui/CustomerTransactionalEmails";
 
 function CustomerDetails() {
   const { userId } = useParams();
@@ -29,6 +30,7 @@ function CustomerDetails() {
     var userType = localStorage.getItem("userType");
     var salesRepId = localStorage.getItem("userID");
     var isEmployee = localStorage.getItem("isEmployee") ? true : false;
+    var isSubAdmin = localStorage.getItem("isSubAdmin") === "true";
   }
   const { data: salesRepresentativeData } = GetAPI("api/v1/admin/sales-rep");
   const { data, reFetch } = GetAPI(
@@ -670,6 +672,15 @@ function CustomerDetails() {
           </li>
         </ul> */}
           <ul className="flex items-center text-sm font-medium [&>li]:border-r [&>li]:px-2 [&>li]:cursor-pointer relative text-blue-500">
+            {userType === "admin" && !isEmployee && !isSubAdmin && (
+              <li
+                onClick={() =>
+                  setUserData({ ...userData, modal: true, type: "emails" })
+                }
+              >
+                Emails
+              </li>
+            )}
             {canShowAssignEmployee && (
                 <li
                   onClick={() =>
@@ -1258,7 +1269,12 @@ function CustomerDetails() {
         visible={userData?.modal}
         style={{
           width: "90vw",
-          maxWidth: userData?.type === "localPartner" || userData?.type === "employee" ? "1200px" : "500px",
+          maxWidth:
+            userData?.type === "localPartner" || userData?.type === "employee"
+              ? "1200px"
+              : userData?.type === "emails"
+              ? "720px"
+              : "500px",
         }}
         dismissableMask={true}
         className="font-nunito"
@@ -1268,6 +1284,8 @@ function CustomerDetails() {
           ? "Assign Local Partner"
           : userData?.type === "employee"
           ? "Assign Employee"
+          : userData?.type === "emails"
+          ? "Emails"
           : userData?.type === "delete"
           ? (
             <div className="font-bold text-2xl text-center text-theme-600">
@@ -1322,6 +1340,8 @@ function CustomerDetails() {
               Styles={"space-y-4"}
             />
           </div>
+        ) : userData?.type === "emails" ? (
+          <CustomerTransactionalEmails customerId={userId} />
         ) : userData?.type === "employee" ? (
     <div className="space-y-4">
       <MyDataTable

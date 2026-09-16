@@ -100,7 +100,7 @@ export default function EmailConfigurationPage() {
           enabled,
         },
         "",
-        { suppressSuccessToast: true }
+        { suppressSuccessToast: true },
       );
       await reFetch();
     } catch (error) {
@@ -117,7 +117,7 @@ export default function EmailConfigurationPage() {
         "api/v1/admin/email-settings/default-supplier",
         { supplierId },
         "",
-        { suppressSuccessToast: true }
+        { suppressSuccessToast: true },
       );
       success_toaster("Default supplier updated.");
       await reFetch();
@@ -292,7 +292,9 @@ export default function EmailConfigurationPage() {
                   page: pagination.page ?? page,
                   limit: pagination.limit ?? limit,
                   totalRecords: pagination.total ?? 0,
-                  totalPages: Math.ceil((pagination.total || 0) / (pagination.limit || limit)) || 0,
+                  totalPages:
+                    Math.ceil((pagination.total || 0) / (pagination.limit || limit)) ||
+                    0,
                   onPageChange: setPage,
                   onLimitChange: (nextLimit) => {
                     setLimit(nextLimit);

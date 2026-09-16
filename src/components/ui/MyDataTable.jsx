@@ -582,6 +582,7 @@ export default function MyDataTable({
               key={ind}
               field={col.field}
               header={col.header}
+              body={col.body}
               sortable={col?.sort}
               filter={!!col?.filter}
               filterPlaceholder={col?.filter ? "Search" : undefined}

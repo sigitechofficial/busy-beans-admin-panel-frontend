@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   MdDashboard,
   MdShoppingCart,
@@ -24,6 +24,7 @@ import {
   MdStorefront,
   MdLeaderboard,
   MdPerson,
+  MdCampaign,
 } from "react-icons/md";
 import { FaAngleDown, FaAngleRight, FaAngleUp } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
@@ -37,7 +38,7 @@ import {
   error_toaster,
 } from "@/utilities/Toaster";
 import axios from "axios";
-import { BASE_URL } from "@/utilities/URL";
+import { BASE_URL, CAMPAIGN_BUILDER_URL } from "@/utilities/URL";
 
 import ErrorHandler from "@/utilities/ErrorHandler";
 import GetAPI from "@/utilities/GetAPI";
@@ -47,6 +48,7 @@ import { getMessagingInstance, onMessage } from "@/utilities/firebase";
 import { requestDeviceToken } from "@/utilities/requestFCMToken";
 import { hasPermission } from "@/utilities/Permission";
 import { LEFTBAR } from "@/components/ui/leftbar.testid";
+import { EXPAND_ALL, SidebarSearchInput, firstVisibleNavLink, useSidebarNavFilter } from "@/components/ui/SidebarSearch";
 import { subscribeEmployeeStripeConnected } from "@/utilities/stripeSyncChannel";
 import { supplierNavCount, supplierNavTotal } from "@/utilities/supplierAllOrders";
 import { SUB_ADMIN_PROFILE_PATH, hasDashboardView, canSeeModule, canSeePartnerOrdersModule, canSeeCustomerOrdersModule, canSeeQuickbooksInvoicesModule, canSeeReportManagement, canAccessFeatureScope } from "@/utilities/subAdminNav";
@@ -61,6 +63,26 @@ export default function Leftbar(props) {
   const [isAccountConnected, setIsAccountConnected] = useState(null);
   const [isEmployee, setIsEmployee] = useState(false);
   const [isSubAdmin, setIsSubAdmin] = useState(false);
+
+  /**
+   * Opens the Campaign Builder signed in as this admin. The tab is opened synchronously (so
+   * popup blockers allow it), then pointed at /admin/sso with a one-time code from the API.
+   * Falls back to the builder's normal login page if the code can't be issued.
+   */
+  const openCampaignBuilder = async () => {
+    const tab = window.open("about:blank", "_blank");
+    if (tab) tab.opener = null;
+    let target = `${CAMPAIGN_BUILDER_URL}/admin/login`;
+    try {
+      const res = await PostAPI("api/v1/admin/marketing-sso/code", {}, "", { suppressSuccessToast: true });
+      const code = res?.data?.data?.code;
+      if (code) target = `${CAMPAIGN_BUILDER_URL}/admin/sso?code=${encodeURIComponent(code)}`;
+    } catch {
+      error_toaster("Could not sign you in to the Campaign Builder automatically.");
+    }
+    if (tab) tab.location.href = target;
+    else window.location.href = target;
+  };
   const [employeeStripeAccountState, setEmployeeStripeAccountState] = useState(null);
   const [employeeId, setEmployeeId] = useState(null);
   const [forceUpdate, setForceUpdate] = useState(0); // Force re-render trigger
@@ -212,7 +234,7 @@ export default function Leftbar(props) {
 
   const pathname = usePathname();
   const router = useRouter();
-  const [active, setActive] = useState({
+  const [activeState, setActive] = useState({
     quickbooks: {
       tab: "",
       status: false,
@@ -310,14 +332,22 @@ export default function Leftbar(props) {
     allOrders: { tab: "", status: false },
   });
 
+  // Menu search: while a query is typed every section reads as open (EXPAND_ALL) and the
+  // non-matching entries are hidden (components/ui/SidebarSearch.jsx).
+  const [navSearch, setNavSearch] = useState("");
+  const navRootRef = useRef(null);
+  const navEmptyRef = useRef(null);
+  const active = navSearch.trim() ? EXPAND_ALL : activeState;
+  useSidebarNavFilter(navRootRef, navSearch, navEmptyRef);
+
   const handleActive = (name, status) => {
-    setActive({
-      ...active,
+    setActive((prev) => ({
+      ...prev,
       [name]: {
         tab: name,
         status: !status,
       },
-    });
+    }));
   };
 
   const logoutFunc = () => {
@@ -643,6 +673,10 @@ export default function Leftbar(props) {
         aria-hidden="true"
       />
       <section
+        ref={navRootRef}
+        onClickCapture={(e) => {
+          if (navSearch && e.target.closest?.("a[href]:not([href='#'])")) setNavSearch("");
+        }}
         data-testid={LEFTBAR.root}
         className={`bg-white fixed w-full md:max-w-[240px] lg:max-w-[288px] h-full sm:pb-5 sm:pl-2 border-r-2 z-50
           transition-transform duration-300 ease-out
@@ -688,8 +722,19 @@ export default function Leftbar(props) {
         </button>
       </div>
 
+      {userType && (
+        <SidebarSearchInput
+          value={navSearch}
+          onChange={setNavSearch}
+          onEnter={() => firstVisibleNavLink(navRootRef.current)?.click()}
+        />
+      )}
+      <p ref={navEmptyRef} hidden className="px-5 py-3 text-sm text-gray-500 font-inter">
+        No menu items match &ldquo;{navSearch.trim()}&rdquo;.
+      </p>
+
       {userType === "admin" ? (
-        <ul className="leftbar-nav-scroll flex flex-col space-y-2 md:space-y-1 pt-4 pb-6 overflow-y-auto overflow-x-hidden flex-1 min-h-0 overscroll-contain md:pt-2 md:pb-0 md:h-[90%]">
+        <ul className="leftbar-nav-scroll flex flex-col space-y-2 md:space-y-1 pt-4 pb-6 overflow-y-auto overflow-x-hidden flex-1 min-h-0 overscroll-contain md:pt-2 md:pb-0 md:h-[calc(90%-52px)]">
           {hasDashboardView() && (
             <ListHead
               data-testid={LEFTBAR.dashboardSection}
@@ -1801,6 +1846,17 @@ export default function Leftbar(props) {
               </>
             )}
 
+          {/* Admin → Campaign Builder: single sign-on with a one-time code (60 s, single use) */}
+          {!isSubAdmin && CAMPAIGN_BUILDER_URL && (
+            <ListHead
+              title="Campaign Builder"
+              Icon={MdCampaign}
+              onClick={openCampaignBuilder}
+              active={false}
+              data-testid={LEFTBAR.campaignBuilder}
+            />
+          )}
+
           <div className="mx-2 pb-7">
             <button
               className="w-full font-inter font-medium text-lg sm:text-sm lg:text-base flex items-center gap-x-2 min-h-[44px] py-3 px-3 md:px-2 rounded-lg text-black hover:bg-black hover:text-white active:scale-[0.98] duration-200 touch-manipulation"
@@ -1812,7 +1868,7 @@ export default function Leftbar(props) {
           </div>
         </ul>
       ) : userType === "supplier" ? (
-        <ul className="leftbar-nav-scroll flex flex-col space-y-2 md:space-y-1 pt-4 pb-6 overflow-y-auto overflow-x-hidden flex-1 min-h-0 overscroll-contain md:pt-2 md:pb-0 md:h-[90%]">
+        <ul className="leftbar-nav-scroll flex flex-col space-y-2 md:space-y-1 pt-4 pb-6 overflow-y-auto overflow-x-hidden flex-1 min-h-0 overscroll-contain md:pt-2 md:pb-0 md:h-[calc(90%-52px)]">
           <ListHead
             title="Dashboard"
             to="/"
@@ -2082,7 +2138,7 @@ export default function Leftbar(props) {
           </div>
         </ul>
       ) : userType === "salesRepresentative" ? (
-        <ul className="leftbar-nav-scroll flex flex-col space-y-2 md:space-y-1 pt-4 pb-6 overflow-y-auto overflow-x-hidden flex-1 min-h-0 overscroll-contain md:pt-2 md:pb-0 md:h-[90%]">
+        <ul className="leftbar-nav-scroll flex flex-col space-y-2 md:space-y-1 pt-4 pb-6 overflow-y-auto overflow-x-hidden flex-1 min-h-0 overscroll-contain md:pt-2 md:pb-0 md:h-[calc(90%-52px)]">
           {hasPermission("dashboard_view") && (
             <ListHead
               data-testid={LEFTBAR.dashboardSection}

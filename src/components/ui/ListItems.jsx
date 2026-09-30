@@ -23,6 +23,8 @@ export default function ListItems(props) {
     <Link
       onClick={handleLinkClick}
       data-testid={props["data-testid"]}
+      data-nav-item=""
+      data-nav-title={typeof props.title === "string" ? props.title : undefined}
       className={`flex gap-x-2 justify-between items-center min-h-[44px] py-3 px-3 rounded-lg font-inter font-medium text-themeLightGray hover:bg-theme hover:text-white active:scale-[0.98] duration-200 touch-manipulation
         md:min-h-0 md:py-2 md:px-2
     ${

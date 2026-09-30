@@ -400,3 +400,20 @@ export function canSubAdminAccessPath(pathname) {
   }
   return true;
 }
+
+/** True when a customer order / invoice belongs to a Local Partner (its customer is a partner's customer). */
+export function isLocalPartnerOrder(order) {
+  return Boolean(order?.salesRepId || order?.salesRep?.id || order?.salesRepName);
+}
+
+/**
+ * Invoice actions on one order (Add / Update invoice, Send invoice, reminder, receipt).
+ * Needs `invoice_update` and — for sub-admins — the invoice scope of the order's side:
+ * Local Partner when the order belongs to a local partner, otherwise Admin (customer).
+ * HQ admin ("all") and employees keep their current behaviour (scope does not apply to them).
+ * Frontend check only: the API does not enforce the invoice scope yet.
+ */
+export function canManageOrderInvoice({ partner }) {
+  if (!hasPermission("invoice_update")) return false;
+  return canAccessFeatureScope("invoice", partner ? "partner" : "customer");
+}

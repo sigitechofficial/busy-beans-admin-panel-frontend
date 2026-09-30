@@ -25,6 +25,7 @@ import dayjs from "dayjs";
 import { CiMenuBurger } from "react-icons/ci";
 import { useDataContext } from "@/utilities/DataContext";
 import { hasPermission } from "@/utilities/Permission";
+import { canManageOrderInvoice } from "@/utilities/subAdminNav";
 import { ORDER_DETAIL } from "../../../../(orderManagement)/orders/orders.testids";
 import { FiCopy } from "react-icons/fi";
 import { BASE_URL } from "@/utilities/URL";
@@ -502,7 +503,7 @@ export default function OrderDetail() {
               )} */}
             {!data?.data?.order.selfOrder && (
               <li>
-                {hasPermission("invoice_update") && (
+                {canManageOrderInvoice({ partner: true }) && (
                   <button
                     type="button"
                     disabled={data?.data?.order?.statusId === 6 ? true : false}
@@ -546,7 +547,7 @@ export default function OrderDetail() {
             >
               {/* Dispatch / Supplier Actions - Hidden for invoices */}
 
-              {hasPermission("invoice_update") && (
+              {canManageOrderInvoice({ partner: true }) && (
                 <button
                   type="button"
                   onClick={() => router.push(`${pathname}/add-invoice`)}

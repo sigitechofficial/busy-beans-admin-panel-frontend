@@ -145,7 +145,7 @@ Also configured in the same file / related modules:
 
 - `STRIPE_PUBLIC_KEY` (test vs live by ENV)
 - `GOOGLE_API_KEY`
-- `RECAPTCHA_SITE_KEY` / `RECAPTCHA_SECRET_KEY`
+- `RECAPTCHA_SITE_KEY` (public; the secret is server-only env `RECAPTCHA_SECRET_KEY`, see `.env.example`)
 - Firebase client config (`src/utilities/firebase.js`)
 
 ### Switching environments
@@ -498,7 +498,7 @@ Partner and supplier portals expose **scoped** report subsets.
 | Stripe | `STRIPE_PUBLIC_KEY`, Connect APIs | Card payments & Connect accounts |
 | Firebase FCM | `firebase.js` | Push notifications |
 | Google Maps | `GOOGLE_API_KEY` | Maps / address UX |
-| reCAPTCHA | Keys in `URL.js` + `/api/captcha` | Login abuse protection |
+| reCAPTCHA | Site key in `URL.js`; secret in server env + `/api/captcha` | Login abuse protection |
 | Google Tag Manager | Root layout | Analytics (`GTM-NR8RKGGQ`) |
 | next-intl | `next.config` / locales | `en` / `es` |
 

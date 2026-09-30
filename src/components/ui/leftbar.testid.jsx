@@ -46,6 +46,8 @@ const LEFTBAR = {
   stripeActionButton: "stripe-action-button",
   notificationsButton: "notifications-button",
   notificationsAlert: "notifications-alert",
+  campaignBuilder: "campaign-builder",
+  employeeStripeDashboard: "employee-stripe-dashboard",
 };
 
 export { LEFTBAR };

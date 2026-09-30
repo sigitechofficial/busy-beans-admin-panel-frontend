@@ -24,6 +24,7 @@ import {
   MdStorefront,
   MdLeaderboard,
   MdPerson,
+  MdCampaign,
 } from "react-icons/md";
 import { FaAngleDown, FaAngleRight, FaAngleUp } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
@@ -37,7 +38,7 @@ import {
   error_toaster,
 } from "@/utilities/Toaster";
 import axios from "axios";
-import { BASE_URL } from "@/utilities/URL";
+import { BASE_URL, CAMPAIGN_BUILDER_URL } from "@/utilities/URL";
 
 import ErrorHandler from "@/utilities/ErrorHandler";
 import GetAPI from "@/utilities/GetAPI";
@@ -61,6 +62,26 @@ export default function Leftbar(props) {
   const [isAccountConnected, setIsAccountConnected] = useState(null);
   const [isEmployee, setIsEmployee] = useState(false);
   const [isSubAdmin, setIsSubAdmin] = useState(false);
+
+  /**
+   * Opens the Campaign Builder signed in as this admin. The tab is opened synchronously (so
+   * popup blockers allow it), then pointed at /admin/sso with a one-time code from the API.
+   * Falls back to the builder's normal login page if the code can't be issued.
+   */
+  const openCampaignBuilder = async () => {
+    const tab = window.open("about:blank", "_blank");
+    if (tab) tab.opener = null;
+    let target = `${CAMPAIGN_BUILDER_URL}/admin/login`;
+    try {
+      const res = await PostAPI("api/v1/admin/marketing-sso/code", {}, "", { suppressSuccessToast: true });
+      const code = res?.data?.data?.code;
+      if (code) target = `${CAMPAIGN_BUILDER_URL}/admin/sso?code=${encodeURIComponent(code)}`;
+    } catch {
+      error_toaster("Could not sign you in to the Campaign Builder automatically.");
+    }
+    if (tab) tab.location.href = target;
+    else window.location.href = target;
+  };
   const [employeeStripeAccountState, setEmployeeStripeAccountState] = useState(null);
   const [employeeId, setEmployeeId] = useState(null);
   const [forceUpdate, setForceUpdate] = useState(0); // Force re-render trigger
@@ -1800,6 +1821,17 @@ export default function Leftbar(props) {
                 <hr className="w-full" />
               </>
             )}
+
+          {/* Admin → Campaign Builder: single sign-on with a one-time code (60 s, single use) */}
+          {!isSubAdmin && CAMPAIGN_BUILDER_URL && (
+            <ListHead
+              title="Campaign Builder"
+              Icon={MdCampaign}
+              onClick={openCampaignBuilder}
+              active={false}
+              data-testid={LEFTBAR.campaignBuilder}
+            />
+          )}
 
           <div className="mx-2 pb-7">
             <button

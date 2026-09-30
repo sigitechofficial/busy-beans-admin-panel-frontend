@@ -9,6 +9,17 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // admin.busybeancoffee.com + stageadmin — never index in search engines
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextIntlPlugin(nextConfig);

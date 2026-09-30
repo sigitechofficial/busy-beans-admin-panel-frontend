@@ -18,7 +18,7 @@ export default function ListHead(props) {
   };
 
   return (
-    <li className="mx-2 md:mx-2">
+    <li className="mx-2 md:mx-2" data-nav-head="" data-nav-title={title}>
       <Link href={to || "#"} className="space-y-1 block touch-manipulation">
         <div
           data-testid={dataTestId}

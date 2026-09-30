@@ -20,6 +20,7 @@ import React, { useEffect, useState, useMemo, useRef } from "react";
 import Select from "react-select";
 import { CiMenuBurger } from "react-icons/ci";
 import { hasPermission } from "@/utilities/Permission";
+import { canManageOrderInvoice, isLocalPartnerOrder } from "@/utilities/subAdminNav";
 import CustomerTransactionalEmails from "@/components/ui/CustomerTransactionalEmails";
 
 function CustomerDetails() {
@@ -1023,7 +1024,8 @@ function CustomerDetails() {
               >
                 Add New Address
               </button>
-            {hasPermission("customer_update") && (
+            {hasPermission("customer_update") &&
+              canManageOrderInvoice({ partner: isLocalPartnerOrder(data?.data?.customer) }) && (
             <button
               disabled={isDisable}
               onClick={handleSendInvoice}

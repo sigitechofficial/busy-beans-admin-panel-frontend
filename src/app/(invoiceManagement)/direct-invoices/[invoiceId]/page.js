@@ -25,6 +25,7 @@ import dayjs from "dayjs";
 import { CiMenuBurger } from "react-icons/ci";
 import { useDataContext } from "@/utilities/DataContext";
 import { hasPermission } from "@/utilities/Permission";
+import { canManageOrderInvoice, isLocalPartnerOrder } from "@/utilities/subAdminNav";
 import { ORDER_DETAIL } from "../../../(orderManagement)/orders/orders.testids";
 import { FiCopy } from "react-icons/fi";
 import { QuickbooksPingCheck } from "@/utilities/constants";
@@ -523,7 +524,7 @@ export default function OrderDetail() {
             {data?.data?.order?.invoicePdf ? "Update Invoice" : "Add Invoice"}
           </li> */}
           <li>
-            {hasPermission("invoice_update") && (
+            {canManageOrderInvoice({ partner: isLocalPartnerOrder(data?.data?.order) }) && (
               <button
                 type="button"
                 disabled={data?.data?.order?.statusId === 6 ? true : false}
@@ -665,7 +666,7 @@ export default function OrderDetail() {
                 ? "Invoice reminder"
                 : "Send Invoice"}
             </button> */}
-            {hasPermission("invoice_update") && (
+            {canManageOrderInvoice({ partner: isLocalPartnerOrder(data?.data?.order) }) && (
               <button
                 type="button"
                 onClick={() => router.push(`${pathname}/add-invoice`)}

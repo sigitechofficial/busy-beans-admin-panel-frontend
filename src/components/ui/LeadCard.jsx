@@ -8,6 +8,7 @@ import { formatDateTimeISO } from "@/utilities/constants";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import dayjs from "dayjs";
+import { enquiryLabel, sourceLabel, campaignLabel, formatMoney } from "./leads/leadMeta";
 
 export default function LeadCard({
   lead,
@@ -89,7 +90,7 @@ export default function LeadCard({
       >
         <div className="flex justify-between items-start mb-2">
           <h3 className="text-themeBlue font-bold text-sm hover:underline">
-            {lead.machineName}
+            {lead.machineName || lead.contactName}
           </h3>
           <div className="flex space-x-1 text-themeLightGray opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <button
@@ -140,6 +141,25 @@ export default function LeadCard({
             <p className="text-xs text-themeLightGray font-medium">
               {lead.role}
             </p>
+            <div className="flex flex-wrap gap-1 mt-1.5">
+              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100">
+                {enquiryLabel(lead)}
+              </span>
+              {sourceLabel(lead) && (
+                <span
+                  title={campaignLabel(lead) ? `Campaign: ${campaignLabel(lead)}` : "Source"}
+                  className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-gray-50 text-gray-600 border border-gray-200 max-w-[180px] truncate"
+                >
+                  {sourceLabel(lead)}
+                  {campaignLabel(lead) ? ` · ${campaignLabel(lead)}` : ""}
+                </span>
+              )}
+              {lead.status === "WON" && formatMoney(lead.wonAmount) && (
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-green-50 text-green-700 border border-green-100">
+                  {formatMoney(lead.wonAmount)}
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="flex flex-col items-end gap-1">

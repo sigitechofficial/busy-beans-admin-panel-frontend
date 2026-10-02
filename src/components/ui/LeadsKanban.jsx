@@ -18,11 +18,22 @@ import GetAPI from "@/utilities/GetAPI";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { BASE_URL } from "@/utilities/URL";
+import { useRouter } from "next/navigation";
 import api from "@/utilities/StatusErrorHandler";
 import { Calendar } from "primereact/calendar";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
-import { MdClose, MdFilterList } from "react-icons/md";
+import { MdClose, MdFilterList, MdFileDownload, MdViewColumn, MdViewList } from "react-icons/md";
+import {
+  ENQUIRY_LABELS,
+  LOST_REASONS,
+  enquiryLabel,
+  sourceLabel,
+  campaignLabel,
+  assigneeName,
+  formatMoney,
+  downloadLeadsCsv,
+} from "./leads/leadMeta";
 import {
   DndContext,
   DragOverlay,
@@ -60,7 +71,12 @@ const dateRangeOptions = [
   { value: "custom", label: "Custom Range" },
 ];
 
+const uniqueOptions = (values) =>
+  [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b)).map((v) => ({ value: v, label: v }));
+const tagOptions = ["Hot Lead", "Warm Lead", "Cold Lead"].map((v) => ({ value: v, label: v }));
+
 export default function LeadsKanban() {
+  const router = useRouter();
   const { data, reFetch, isLoading } = GetAPI("api/v1/leads/kanban");
   const { data: countriesData } = GetAPI(
     "api/v1/admin/address-management/country"
@@ -92,6 +108,18 @@ export default function LeadsKanban() {
 
   // Filter State
   const [filterModalVisible, setFilterModalVisible] = useState(false);
+
+  // Quick filters (toolbar) and view
+  const [search, setSearch] = useState("");
+  const [enquiryFilter, setEnquiryFilter] = useState(null);
+  const [sourceFilter, setSourceFilter] = useState(null);
+  const [assigneeFilter, setAssigneeFilter] = useState(null);
+  const [tagFilter, setTagFilter] = useState(null);
+  const [view, setView] = useState("board");
+
+  // Won (deal amount) / Lost (reason) prompt when a card is dropped on those columns
+  const [outcome, setOutcome] = useState(null);
+  const [outcomeSaving, setOutcomeSaving] = useState(false);
 
   // Applied Filters (The truth for the dashboard)
   const [appliedFilters, setAppliedFilters] = useState({
@@ -725,8 +753,22 @@ export default function LeadsKanban() {
     };
 
     const newStatus = statusMap[finalContainer];
+    const movedLead = Object.values(items)
+      .flat()
+      .find((lead) => lead.id === activeId);
 
-    if (newStatus) {
+    if ((newStatus === "WON" || newStatus === "LOST") && movedLead?.status !== newStatus) {
+      setOutcome({
+        type: newStatus === "WON" ? "won" : "lost",
+        lead: movedLead,
+        amount: movedLead?.wonAmount ?? "",
+        reason: LOST_REASONS[0],
+        feedback: "",
+      });
+      return;
+    }
+
+    if (newStatus && movedLead?.status !== newStatus) {
       try {
         const response = await leadsAPI.updateLead(activeId, {
           status: newStatus,
@@ -811,9 +853,72 @@ export default function LeadsKanban() {
     return dayjs(dateStr).isBetween(startDate, endDate, "day", "[]");
   };
 
+  const saveOutcome = async () => {
+    if (!outcome?.lead) return;
+    let amount;
+    if (outcome.type === "won" && String(outcome.amount ?? "").trim() !== "") {
+      amount = Number(outcome.amount);
+      if (!Number.isFinite(amount) || amount < 0) {
+        error_toaster("Enter a deal amount of 0 or more, or leave it empty.");
+        return;
+      }
+    }
+    try {
+      setOutcomeSaving(true);
+      const response =
+        outcome.type === "won"
+          ? await leadsAPI.markAsWon(outcome.lead.id, amount === undefined ? {} : { amount })
+          : await leadsAPI.markAsLost(outcome.lead.id, {
+              reason: outcome.reason,
+              feedback: outcome.feedback.trim() || undefined,
+            });
+      if (!(response?.data?.success || response?.success)) {
+        error_toaster(response?.data?.message || "Failed to move lead");
+      }
+    } catch (error) {
+      error_toaster("Failed to move lead");
+    } finally {
+      setOutcomeSaving(false);
+      setOutcome(null);
+      reFetch();
+    }
+  };
+
+  const cancelOutcome = () => {
+    setOutcome(null);
+    reFetch(); // put the card back
+  };
+
+  const allLeads = useMemo(() => Object.values(items || {}).flat().filter(Boolean), [items]);
+  const enquiryOptions = useMemo(
+    () => Object.entries(ENQUIRY_LABELS).map(([value, label]) => ({ value, label })),
+    []
+  );
+  const sourceOptions = useMemo(() => uniqueOptions(allLeads.map(sourceLabel)), [allLeads]);
+  const assigneeOptions = useMemo(
+    () => [{ value: "__none__", label: "Unassigned" }, ...uniqueOptions(allLeads.map(assigneeName))],
+    [allLeads]
+  );
+
   // Main Filter Logic
   const getFilteredLeads = (leads) => {
+    const q = search.trim().toLowerCase();
     return leads.filter((lead) => {
+      if (q) {
+        const haystack = [lead.company, lead.contactName, lead.contactEmail, lead.contactPhone, lead.machineName, campaignLabel(lead)]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+      if (enquiryFilter && (lead.enquiryType || "machine") !== enquiryFilter.value) return false;
+      if (sourceFilter && sourceLabel(lead) !== sourceFilter.value) return false;
+      if (assigneeFilter) {
+        const name = assigneeName(lead);
+        if (assigneeFilter.value === "__none__" ? name : name !== assigneeFilter.value) return false;
+      }
+      if (tagFilter && lead.tag !== tagFilter.value) return false;
+
       // Filter by Follow-up Date
       const followUpMatch = isDateInRange(
         lead.followUpNextDate,
@@ -883,6 +988,9 @@ export default function LeadsKanban() {
     });
   };
 
+  // Every lead that passes the filters, in column order (list view and CSV export).
+  const visibleLeads = displayColumns.flatMap((col) => getFilteredLeads(items[col.id] || []));
+
   if (isLoading) {
     return <Loader />;
   }
@@ -944,6 +1052,33 @@ export default function LeadsKanban() {
           </div>
 
           <div className="flex items-center gap-4">
+            <div className="flex border rounded-lg overflow-hidden" role="group" aria-label="View">
+              <button
+                onClick={() => setView("board")}
+                title="Board"
+                aria-pressed={view === "board"}
+                className={`px-3 py-2 ${view === "board" ? "bg-theme text-white" : "text-gray-600 hover:bg-gray-50"}`}
+              >
+                <MdViewColumn size={20} />
+              </button>
+              <button
+                onClick={() => setView("list")}
+                title="List"
+                aria-pressed={view === "list"}
+                className={`px-3 py-2 ${view === "list" ? "bg-theme text-white" : "text-gray-600 hover:bg-gray-50"}`}
+              >
+                <MdViewList size={20} />
+              </button>
+            </div>
+            <button
+              onClick={() =>
+                downloadLeadsCsv(visibleLeads, `leads-${dayjs().format("YYYY-MM-DD")}.csv`)
+              }
+              className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50 transition-colors text-gray-700"
+            >
+              <MdFileDownload size={20} />
+              Export CSV
+            </button>
             <button
               onClick={openFilterModal}
               className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50 transition-colors text-gray-700"
@@ -960,7 +1095,81 @@ export default function LeadsKanban() {
           </div>
         </div>
 
+        {/* Quick filters */}
+        <div className="flex flex-wrap items-center gap-3 -mt-4">
+          <InputText
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search company, contact, email, phone, campaign"
+            aria-label="Search leads"
+            className="w-80 !py-2 !text-sm"
+          />
+          {[
+            { value: enquiryFilter, set: setEnquiryFilter, options: enquiryOptions, placeholder: "Enquiry type" },
+            { value: sourceFilter, set: setSourceFilter, options: sourceOptions, placeholder: "Source" },
+            { value: assigneeFilter, set: setAssigneeFilter, options: assigneeOptions, placeholder: "Assigned to" },
+            { value: tagFilter, set: setTagFilter, options: tagOptions, placeholder: "Tag" },
+          ].map((f) => (
+            <div key={f.placeholder} className="w-44 text-sm">
+              <Select
+                instanceId={`lead-filter-${f.placeholder.replace(/\s+/g, "-").toLowerCase()}`}
+                isClearable
+                placeholder={f.placeholder}
+                aria-label={f.placeholder}
+                styles={{ ...selectStyles, menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+                menuPortalTarget={typeof document !== "undefined" ? document.body : null}
+                value={f.value}
+                onChange={(option) => f.set(option || null)}
+                options={f.options}
+              />
+            </div>
+          ))}
+        </div>
+
+        {view === "list" && (
+          <div className="overflow-x-auto border border-borderColor rounded-xl">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 text-left text-gray-600">
+                <tr>
+                  {["Created", "Company", "Contact", "Enquiry", "Source / campaign", "Stage", "Assigned to", "Follow-up", "Won"].map((h) => (
+                    <th key={h} className="px-3 py-2 font-medium whitespace-nowrap">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {visibleLeads.map((lead) => (
+                  <tr
+                    key={lead.id}
+                    onClick={() => router.push(`/leads/${lead.id}`)}
+                    className="border-t hover:bg-gray-50 cursor-pointer"
+                  >
+                    <td className="px-3 py-2 whitespace-nowrap">{lead.createdAt ? dayjs(lead.createdAt).format("DD MMM YYYY") : ""}</td>
+                    <td className="px-3 py-2 font-medium text-themeDark">{lead.company}</td>
+                    <td className="px-3 py-2">
+                      <div>{lead.contactName}</div>
+                      <div className="text-xs text-gray-500">{lead.contactEmail}</div>
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">{enquiryLabel(lead)}</td>
+                    <td className="px-3 py-2">
+                      <div>{sourceLabel(lead)}</div>
+                      {campaignLabel(lead) && <div className="text-xs text-gray-500">{campaignLabel(lead)}</div>}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">{lead.status}</td>
+                    <td className="px-3 py-2 whitespace-nowrap">{assigneeName(lead) || "—"}</td>
+                    <td className="px-3 py-2 whitespace-nowrap">{lead.followUpNextDate ? dayjs(lead.followUpNextDate).format("DD MMM YYYY") : ""}</td>
+                    <td className="px-3 py-2 whitespace-nowrap">{lead.status === "WON" ? formatMoney(lead.wonAmount) : ""}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {visibleLeads.length === 0 && (
+              <p className="text-center text-gray-400 text-sm py-6">No leads match these filters.</p>
+            )}
+          </div>
+        )}
+
         {/* Kanban Board */}
+        {view === "board" && (
         <DndContext
           sensors={sensors}
           collisionDetection={closestCorners}
@@ -991,7 +1200,79 @@ export default function LeadsKanban() {
             {activeLead ? <LeadCard lead={activeLead} /> : null}
           </DragOverlay>
         </DndContext>
+        )}
       </div>
+
+      {/* Won / Lost details */}
+      <Dialog
+        header={outcome?.type === "won" ? "Mark as Won" : "Mark as Lost"}
+        visible={Boolean(outcome)}
+        style={{ width: "420px" }}
+        onHide={cancelOutcome}
+        className="font-inter"
+      >
+        {outcome && (
+          <div className="flex flex-col gap-4 pt-2">
+            <p className="text-sm text-gray-600">
+              {outcome.lead?.company}
+              {outcome.lead?.contactName ? ` · ${outcome.lead.contactName}` : ""}
+            </p>
+            {outcome.type === "won" ? (
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="font-medium text-gray-700">Deal amount (USD)</span>
+                <InputText
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={outcome.amount}
+                  onChange={(e) => setOutcome({ ...outcome, amount: e.target.value })}
+                  placeholder="e.g. 4500"
+                  autoFocus
+                />
+                <span className="text-xs text-gray-500">
+                  Shown as lead revenue in Campaign Builder Analytics (ROAS). You can leave it empty.
+                </span>
+              </label>
+            ) : (
+              <>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="font-medium text-gray-700">Reason</span>
+                  <Select
+                    styles={{ ...selectStyles, menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+                    menuPortalTarget={typeof document !== "undefined" ? document.body : null}
+                    value={{ value: outcome.reason, label: outcome.reason }}
+                    onChange={(option) => setOutcome({ ...outcome, reason: option.value })}
+                    options={LOST_REASONS.map((r) => ({ value: r, label: r }))}
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="font-medium text-gray-700">Customer feedback (optional)</span>
+                  <textarea
+                    rows={3}
+                    value={outcome.feedback}
+                    onChange={(e) => setOutcome({ ...outcome, feedback: e.target.value })}
+                    className="border rounded-lg p-2"
+                  />
+                </label>
+              </>
+            )}
+            <div className="flex justify-end gap-2">
+              <button onClick={cancelOutcome} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">
+                Cancel
+              </button>
+              <button
+                onClick={saveOutcome}
+                disabled={outcomeSaving}
+                className={`px-4 py-2 text-sm text-white rounded-lg disabled:opacity-60 ${
+                  outcome.type === "won" ? "bg-green-600 hover:bg-green-700" : "bg-red-500 hover:bg-red-600"
+                }`}
+              >
+                {outcomeSaving ? "Saving…" : outcome.type === "won" ? "Mark as Won" : "Mark as Lost"}
+              </button>
+            </div>
+          </div>
+        )}
+      </Dialog>
 
       {/* Filter Modal */}
       <Dialog
@@ -1598,7 +1879,7 @@ export default function LeadsKanban() {
                   options={[
                     { value: "Email", label: "Email" },
                     { value: "Phone", label: "Phone" },
-                    { value: "Any", label: "Any" },
+                    { value: "WhatsApp", label: "WhatsApp" },
                   ]}
                   onChange={(e) =>
                     setNewLead({ ...newLead, preferredContact: e.value })
@@ -1637,6 +1918,7 @@ export default function LeadsKanban() {
                   }
                   options={[
                     { value: "Website", label: "Website" },
+                    { value: "Instagram", label: "Instagram" },
                     { value: "Referral", label: "Referral" },
                     { value: "Cold Call", label: "Cold Call" },
                     { value: "WhatsApp", label: "WhatsApp" },

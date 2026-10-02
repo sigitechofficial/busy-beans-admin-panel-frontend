@@ -33,6 +33,7 @@ import { success_toaster, error_toaster } from "@/utilities/Toaster";
 import Loader from "@/components/ui/Loader";
 import LeadCTAButtons from "@/components/ui/LeadCTAButtons";
 import { formatDateTimeISO, formatUSD } from "@/utilities/constants";
+import { enquiryLabel, sourceLabel, formatMoney } from "@/components/ui/leads/leadMeta";
 
 // Helper to generate pipeline based on status
 const generatePipeline = (currentStatus) => {
@@ -90,6 +91,10 @@ export default function LeadDetails() {
   const [siteVisitNotes, setSiteVisitNotes] = useState("");
   const [lostReason, setLostReason] = useState(null);
   const [customerFeedback, setCustomerFeedback] = useState("");
+  const [wonModal, setWonModal] = useState(false);
+  const [wonAmount, setWonAmount] = useState("");
+  const [noteText, setNoteText] = useState("");
+  const [noteSaving, setNoteSaving] = useState(false);
 
   useEffect(() => {
     if (data?.data) {
@@ -105,6 +110,11 @@ export default function LeadDetails() {
         status: apiLead.status,
         tag: apiLead.tag || "Hot Lead",
         leadSource: apiLead.leadSource,
+        enquiry: enquiryLabel(apiLead),
+        source: sourceLabel(apiLead),
+        marketingSource: apiLead.marketingSource || null,
+        wonAmount: apiLead.wonAmount,
+        wonAt: apiLead.wonAt ? formatDateTimeISO(apiLead.wonAt) : null,
         leadDate: apiLead.leadDate
           ? formatDateTimeISO(apiLead.leadDate)
           : "-",
@@ -113,9 +123,7 @@ export default function LeadDetails() {
           type: apiLead.businessType || "-",
           location:
             apiLead.businessLocation ||
-            apiLead.city ||
-            "-" + ", " + apiLead.state ||
-            "-" + ", " + apiLead.country ||
+            [apiLead.city, apiLead.state, apiLead.country].filter(Boolean).join(", ") ||
             "-",
         },
         contact: {
@@ -160,11 +168,16 @@ export default function LeadDetails() {
         lostReason: apiLead.lostReason,
         customerFeedback: apiLead.customerFeedback,
         logs:
-          apiLead.LeadLogs?.map((log, i) => ({
+          apiLead.LeadLogs?.map((log) => ({
             id: log.id,
             type: log.type,
             msg: log.message,
-            user: log.User?.name || i === 0 ? "Customer" : "Administrator",
+            user:
+              log.entityName && log.entityName !== "System"
+                ? log.entityName
+                : log.action === "created"
+                  ? "Website"
+                  : "System",
             date: formatDateTimeISO(log.createdAt),
           })) || [],
         pipeline: generatePipeline(apiLead.status),
@@ -178,17 +191,50 @@ export default function LeadDetails() {
   if (isLoading) return <Loader />;
   if (!lead) return <div className="p-10 text-center">Lead not found</div>;
 
-  const handleMarkWon = async () => {
+  const handleMarkWon = () => {
+    setWonAmount(lead.wonAmount ?? "");
+    setWonModal(true);
+  };
+
+  const confirmMarkWon = async () => {
+    let amount;
+    if (String(wonAmount ?? "").trim() !== "") {
+      amount = Number(wonAmount);
+      if (!Number.isFinite(amount) || amount < 0) {
+        error_toaster("Enter a deal amount of 0 or more, or leave it empty.");
+        return;
+      }
+    }
     try {
-      const response = await leadsAPI.markAsWon(lead.id);
+      const response = await leadsAPI.markAsWon(lead.id, amount === undefined ? {} : { amount });
       if (response?.data?.success || response?.success) {
         success_toaster("Lead marked as WON");
+        setWonModal(false);
         reFetch();
       } else {
         error_toaster(response?.message || "Failed to mark as won");
       }
     } catch (error) {
       error_toaster("Failed to mark as won");
+    }
+  };
+
+  const addNote = async () => {
+    const message = noteText.trim();
+    if (!message) return;
+    try {
+      setNoteSaving(true);
+      const response = await leadsAPI.addComment(lead.id, { message });
+      if (response?.data?.success || response?.success) {
+        setNoteText("");
+        reFetch();
+      } else {
+        error_toaster(response?.data?.message || "Failed to add note");
+      }
+    } catch (error) {
+      error_toaster("Failed to add note");
+    } finally {
+      setNoteSaving(false);
     }
   };
 
@@ -397,8 +443,8 @@ export default function LeadDetails() {
               {lead.company}
             </h1>
             <p className="text-gray-400 text-sm">
-              Lead ID: {lead.leadId} • Created {lead.createdOn} • Source:{" "}
-              {lead.leadSource}
+              Lead ID: {lead.leadId} • Created {lead.createdOn} • {lead.enquiry} • Source:{" "}
+              {lead.source || lead.leadSource}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -539,9 +585,30 @@ export default function LeadDetails() {
                   <FaExternalLinkAlt size={14} />
                 </div>
                 <p className="text-sm text-gray-900">
-                  Source: {lead.leadSource}
+                  Source: {lead.source || lead.leadSource}
                 </p>
               </div>
+              {lead.marketingSource?.campaign && (
+                <div className="flex items-center gap-3">
+                  <div className="text-gray-400">
+                    <MdTrendingUp />
+                  </div>
+                  <p className="text-sm text-gray-900">
+                    Campaign: {lead.marketingSource.campaign}
+                    {lead.marketingSource.content ? ` · ${lead.marketingSource.content}` : ""}
+                  </p>
+                </div>
+              )}
+              {lead.marketingSource?.landingPageSlug && (
+                <div className="flex items-center gap-3">
+                  <div className="text-gray-400">
+                    <MdDescription />
+                  </div>
+                  <p className="text-sm text-gray-900">
+                    Landing page: /lp/{lead.marketingSource.landingPageSlug}
+                  </p>
+                </div>
+              )}
               <div className="flex items-center gap-3">
                 <div className="text-gray-400">
                   <MdCalendarToday />
@@ -852,6 +919,24 @@ export default function LeadDetails() {
           )}
         </div>
 
+        {/* Won deal (if applicable) */}
+        {lead.status === "WON" && (
+          <div className="bg-green-50 border border-green-200 rounded-2xl p-6 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h3 className="text-green-900 text-sm font-bold mb-1 flex items-center gap-2">
+                <MdCheck /> Won
+              </h3>
+              <p className="text-sm text-green-900">
+                Deal amount: <strong>{formatMoney(lead.wonAmount) || "not recorded"}</strong>
+                {lead.wonAt ? ` • ${lead.wonAt}` : ""}
+              </p>
+            </div>
+            <button onClick={handleMarkWon} className="text-xs text-green-800 hover:underline">
+              {formatMoney(lead.wonAmount) ? "Edit amount" : "Add amount"}
+            </button>
+          </div>
+        )}
+
         {/* 7. Lost Lead Info (if applicable) */}
         {lead.status === "LOST" && (
           <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
@@ -882,6 +967,29 @@ export default function LeadDetails() {
           <h3 className="text-gray-900 text-lg font-bold mb-6 flex items-center gap-2">
             <MdHistory /> Activity Logs
           </h3>
+          <div className="mb-6 flex flex-col gap-2">
+            <label htmlFor="lead-note" className="text-sm font-medium text-gray-700">
+              Add a note
+            </label>
+            <textarea
+              id="lead-note"
+              rows={2}
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              maxLength={2000}
+              placeholder="Called, left a voicemail…"
+              className="border rounded-lg p-2 text-sm"
+            />
+            <div className="flex justify-end">
+              <button
+                onClick={addNote}
+                disabled={noteSaving || !noteText.trim()}
+                className="bg-theme text-white px-4 py-1.5 rounded-lg text-sm disabled:opacity-50"
+              >
+                {noteSaving ? "Saving…" : "Add note"}
+              </button>
+            </div>
+          </div>
           <div className="relative border-l-2 border-gray-100 ml-2 space-y-8">
             {lead.logs.map((log) => (
               <div key={log.id} className="ml-6 relative">
@@ -1103,6 +1211,48 @@ export default function LeadDetails() {
               className="px-4 py-2 text-sm text-white bg-theme hover:bg-themeDark rounded-lg"
             >
               Schedule
+            </button>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Won Modal */}
+      <Dialog
+        header="Mark Lead as Won"
+        visible={wonModal}
+        style={{ width: "400px" }}
+        onHide={() => setWonModal(false)}
+        className="font-inter"
+      >
+        <div className="space-y-4 pt-2">
+          <label className="block text-sm font-medium text-gray-700" htmlFor="won-amount">
+            Deal amount (USD)
+          </label>
+          <input
+            id="won-amount"
+            type="number"
+            min="0"
+            step="0.01"
+            value={wonAmount}
+            onChange={(e) => setWonAmount(e.target.value)}
+            placeholder="e.g. 4500"
+            className="w-full border rounded-lg p-2 text-sm"
+          />
+          <p className="text-xs text-gray-500">
+            Shown as lead revenue in Campaign Builder Analytics (ROAS). You can leave it empty.
+          </p>
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => setWonModal(false)}
+              className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmMarkWon}
+              className="px-4 py-2 text-sm text-white bg-green-600 hover:bg-green-700 rounded-lg"
+            >
+              Mark as Won
             </button>
           </div>
         </div>

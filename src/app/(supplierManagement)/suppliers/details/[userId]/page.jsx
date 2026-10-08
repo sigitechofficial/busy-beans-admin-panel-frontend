@@ -1,5 +1,6 @@
 "use client";
 import BackButton from "@/components/ui/BackButton";
+import AuditHistory from "@/components/audit/AuditHistory";
 import Loader from "@/components/ui/Loader";
 import { useDataContext } from "@/utilities/DataContext";
 import GetAPI from "@/utilities/GetAPI";
@@ -300,6 +301,9 @@ export default function LocalPartnerSupplierDetails() {
             </div>
           </div>
         )}
+      <div className="px-6 2xl:px-12 pb-10">
+        <AuditHistory path="supplier" id={userId} title="Supplier history" />
+      </div>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 import BackButton from "@/components/ui/BackButton";
+import AuditHistory from "@/components/audit/AuditHistory";
 import Loader from "@/components/ui/Loader";
 import MiniLoader from "@/components/ui/MiniLoader";
 import MyDataTable from "@/components/ui/MyDataTable";
@@ -1497,6 +1498,9 @@ function CustomerDetails() {
             </div>
           </div>
         </Dialog>
+      <div className="px-6 2xl:px-12 pb-10">
+        <AuditHistory path="customer" id={userId} title="Customer history" />
+      </div>
     </div>
   );
 }

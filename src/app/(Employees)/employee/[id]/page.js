@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
+import AuditHistory from "@/components/audit/AuditHistory";
 import { useState } from "react";
 import Loader from "@/components/ui/Loader";
 import GetAPI from "@/utilities/GetAPI";
@@ -310,6 +311,9 @@ export default function EmployeeDetailPage() {
           </div>
         )}
       </Dialog>
+      <div className="px-6 2xl:px-12 pb-10">
+        <AuditHistory path="employee" id={employeeId} title="Employee history" />
+      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 export const dynamic = "force-dynamic";
 import BackButton from "@/components/ui/BackButton";
+import OrderActivity from "@/components/order/OrderActivity";
 import CusSupInformationCard from "@/components/ui/CusSupInformationCard";
 import { RiArrowDownSLine } from "react-icons/ri";
 import Loader from "@/components/ui/Loader";
@@ -1533,6 +1534,9 @@ export default function OrderDetail() {
             )}
           </form>
         </Dialog>
+        <div className="px-6 2xl:px-12 pb-10">
+          <OrderActivity orderType="customer" orderId={orderID} />
+        </div>
       </div>
     </div>
   );

@@ -30,6 +30,7 @@ import { hasPermission } from "@/utilities/Permission";
 import { INVENTORY_MANAGEMENT } from "../stock.testid";
 import Image from "next/image";
 import { useUserType } from "@/utilities/useUserType";
+import AuditHistory from "@/components/audit/AuditHistory";
 
 export default function Stock() {
   const { isAllowed } = useUserType("admin");
@@ -2049,6 +2050,11 @@ export default function Stock() {
                 </div>
               </div>
             </form>
+          )}
+          {modal === "edit" && productID && loader !== "prefill" && (
+            <div className="mt-6">
+              <AuditHistory path="product" id={productID} title="Product history" />
+            </div>
           )}
         </Dialog>
       </div>

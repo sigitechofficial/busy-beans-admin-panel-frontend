@@ -9,7 +9,9 @@ import { PatchAPI } from "@/utilities/PatchAPI";
 import { hasPermission } from "@/utilities/Permission";
 import { truncateToTwoDecimals } from "@/utilities/numberInput";
 
-export default function InvoicePDFDownload({ invoiceData, reFetch, adminAddress }) {
+export default function InvoicePDFDownload({ invoiceData, reFetch, adminAddress, payUrl }) {
+  // Shareable pay link from the API (carries the invoice's pay code); old form only as a fallback.
+  const paymentLink = payUrl || `https://www.busybeancoffee.com/paymentCheck?orderId=${invoiceData?.id}`;
   const invoiceRef = useRef(null);
 
   const [data, setData] = useState("");
@@ -41,7 +43,7 @@ export default function InvoicePDFDownload({ invoiceData, reFetch, adminAddress 
   };
 
   const handleCopyLink = () => {
-    const link = `https://www.busybeancoffee.com/paymentCheck?orderId=${invoiceData?.id}`;
+    const link = paymentLink;
     navigator.clipboard.writeText(link)
       .then(() => {
         setIsLinkCopied(true);
@@ -378,7 +380,7 @@ export default function InvoicePDFDownload({ invoiceData, reFetch, adminAddress 
           {!isPrint && (
             <>
               <button
-                onClick={() => window.open(`https://www.busybeancoffee.com/paymentCheck?orderId=${invoiceData?.id}`, '_blank')}
+                onClick={() => window.open(paymentLink, '_blank')}
                 className="mb-4 px-4 py-2 bg-theme text-white rounded inline-block hover:bg-theme-dark"
               >
                 Pay Online

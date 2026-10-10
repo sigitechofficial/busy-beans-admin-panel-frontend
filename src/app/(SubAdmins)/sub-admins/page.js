@@ -1,5 +1,6 @@
 "use client";
 import ManagementTab from "@/components/ui/ManagementTab";
+import AuditHistory from "@/components/audit/AuditHistory";
 import MyDataTable from "@/components/ui/MyDataTable";
 import { Dialog } from "primereact/dialog";
 import { useState } from "react";
@@ -53,6 +54,8 @@ function ScopeCell({ checked, disabled, greyed, onChange, testId, first }) {
 }
 
 const CRUD_ACTIONS = ["create", "view", "update", "delete"];
+/** "Edit unit price" on invoices: admin (HQ) customers / local partners' customers. */
+const PRICE_EDIT_ACTIONS = ["edit-price-customer", "edit-price-partner"];
 
 const parsePermissionKey = (key) => {
   if (!key || typeof key !== "string") return null;
@@ -301,7 +304,8 @@ export default function SubAdmins() {
         const permissions = Array.isArray(emp?.permissions) ? emp.permissions : [];
 
         const featuresMap = {};
-        const validActions = new Set(CRUD_ACTIONS);
+        // "edit-price" = Edit unit price (invoice), granted separately from the CRUD columns.
+        const validActions = new Set([...CRUD_ACTIONS, ...PRICE_EDIT_ACTIONS, "edit-price"]);
 
         permissions.forEach((perm) => {
           const parsed = parsePermissionKey(perm?.key);
@@ -327,6 +331,12 @@ export default function SubAdmins() {
           }
         });
 
+        // Older single "Edit unit price" grant = both kinds of customers.
+        if (featuresMap.invoice?.["edit-price"]) {
+          featuresMap.invoice["edit-price-customer"] = true;
+          featuresMap.invoice["edit-price-partner"] = true;
+          delete featuresMap.invoice["edit-price"];
+        }
         const mappedFeatures = Object.values(featuresMap);
         const filteredMapped = mappedFeatures.filter((f) =>
           allFeatures.includes(f.feature)
@@ -849,6 +859,39 @@ export default function SubAdmins() {
                               </tbody>
                             </table>
                           </div>
+                          <div className="px-3 py-2.5 border-t border-gray-200 text-sm">
+                            <p className="font-medium text-gray-800">Edit unit price</p>
+                            <p className="text-xs text-gray-500">
+                              Change the unit price of products while editing a customer invoice. Not included in Select All.
+                            </p>
+                            <div className="mt-2 flex flex-wrap gap-5">
+                              {[
+                                ["edit-price-customer", "Admin customers"],
+                                ["edit-price-partner", "Local partner customers"],
+                              ].map(([action, label]) => (
+                                <label key={action} className="flex items-center gap-2 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={!!formData.features.find((f) => f.feature === "invoice")?.[action]}
+                                    onChange={(e) => {
+                                      const checked = e.target.checked;
+                                      const newFeatures = [...formData.features];
+                                      const idx = newFeatures.findIndex((f) => f.feature === "invoice");
+                                      const base = idx !== -1 ? newFeatures[idx] : emptyFeatureRow("invoice");
+                                      const next = { ...base, [action]: checked };
+                                      delete next["edit-price"];
+                                      if (idx !== -1) newFeatures[idx] = next;
+                                      else newFeatures.push(next);
+                                      setFormData({ ...formData, features: newFeatures });
+                                    }}
+                                    className={`${PERM_CHECKBOX} cursor-pointer`}
+                                    data-testid={SUB_ADMINS.featuresCheckbox(`invoice-${action}`)}
+                                  />
+                                  <span>{label}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
                           <div className="px-3 py-2.5 bg-gray-100 border-t border-gray-200 flex items-center justify-end gap-2">
                             <input
                               type="checkbox"
@@ -892,6 +935,11 @@ export default function SubAdmins() {
                                     update: checked,
                                     delete: checked,
                                   };
+                                  // "Edit unit price" is granted on its own, never by Select All.
+                                  const existingRow = formData.features.find((f) => f.feature === feature);
+                                  for (const action of PRICE_EDIT_ACTIONS) {
+                                    if (existingRow?.[action]) row[action] = true;
+                                  }
                                   if (isScopedSubAdminFeature(feature)) {
                                     row.scope_customer = checked;
                                     row.scope_partner = checked;
@@ -906,6 +954,9 @@ export default function SubAdmins() {
                           </div>
                         </div>
                       </section>
+                      {modal === "edit" && categoryID && (
+                        <AuditHistory path="sub-admin" id={categoryID} title="Sub-admin history (permissions and changes)" />
+                      )}
                     </>
                   )}
                 </div>

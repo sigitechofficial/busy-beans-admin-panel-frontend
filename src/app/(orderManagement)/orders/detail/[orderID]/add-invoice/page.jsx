@@ -5,6 +5,7 @@ import MiniLoader from "@/components/ui/MiniLoader";
 import { useDataContext } from "@/utilities/DataContext";
 import GetAPI from "@/utilities/GetAPI";
 import { PatchAPI } from "@/utilities/PatchAPI";
+import UnitPriceCell, { unitPriceFields, unitPriceProblem } from "@/components/invoice/UnitPriceCell";
 import { selectStyles2 } from "@/utilities/SelectStyle";
 import { success_toaster, info_toaster } from "@/utilities/Toaster";
 import { useParams, useRouter } from "next/navigation";
@@ -95,6 +96,17 @@ export default function AddInvoice() {
 
   let userType = "admin";
 
+  // Unit prices: the server decides who may set them (order details → pricing).
+  const pricing = data?.data?.pricing;
+  const canEditPrice = Boolean(pricing?.canEditUnitPrice);
+  const isDropshipOrder =
+    Boolean(data?.data?.order?.salesRepId) &&
+    data?.data?.order?.salesRep?.partnerType !== "direct-partner";
+  const alreadyEmailed = Boolean(data?.data?.order?.invoiceDate);
+  const [autoTickedEmail, setAutoTickedEmail] = useState(false);
+  // Manually changed unit prices must be confirmed (checkbox) before the invoice can be saved.
+  const [priceConfirmed, setPriceConfirmed] = useState(false);
+
   // States for invoice fields
   const [invoiceFields, setInvoiceFields] = useState({
     invoiceNumber: "",
@@ -171,7 +183,23 @@ export default function AddInvoice() {
             checked: true,
             qty: item.qty || 1,
             weight: item?.singleUnitWeight,
-            unit: item?.price / item?.qty,
+            unit:
+              item?.priceOverride && item?.unitPrice != null
+                ? Number(item.unitPrice)
+                : item?.price / item?.qty,
+            priceOverride: Boolean(item?.priceOverride),
+            savedOverride: Boolean(item?.priceOverride),
+            // Unit price as saved (shown as "from" in the price confirmation)
+            originalUnit:
+              item?.priceOverride && item?.unitPrice != null
+                ? Number(item.unitPrice)
+                : item?.price / item?.qty,
+            // Today's catalog price (server), so "Reset to catalog" shows what will be charged
+            catalogUnit:
+              data?.data?.pricing?.catalogUnitPrices?.[item.productId] ?? item?.catalogUnitPrice ?? null,
+            minUnit: data?.data?.pricing?.minUnitPrices?.[item.productId] ?? null,
+            priceEdited: false,
+            resetPrice: false,
           }))
       );
       const chargesFromItems = (data?.data?.order?.items || [])
@@ -237,6 +265,87 @@ export default function AddInvoice() {
     );
   };
 
+  // Unit price handlers ("Edit unit price" permission). Only changed prices are sent.
+  const handleItemUnitChange = (itemIdx, value) => {
+    setItems((prev) =>
+      prev.map((item, idx) =>
+        idx === itemIdx
+          ? { ...item, unit: value === "" ? "" : Number(value), priceEdited: true, resetPrice: false }
+          : item
+      )
+    );
+  };
+  // Undo: back to the price the invoice had (unsaved edit or pending reset).
+  // Reset to catalog: a saved custom price goes back to today's catalog price on save.
+  const handleItemResetPrice = (itemIdx) => {
+    setItems((prev) =>
+      prev.map((item, idx) => {
+        if (idx !== itemIdx) return item;
+        if (item.priceEdited || item.resetPrice) {
+          return {
+            ...item,
+            unit: item.originalUnit,
+            priceEdited: false,
+            resetPrice: false,
+            priceOverride: item.savedOverride,
+          };
+        }
+        return {
+          ...item,
+          unit: item.catalogUnit != null ? Number(item.catalogUnit) : item.unit,
+          resetPrice: true,
+          priceOverride: false,
+        };
+      })
+    );
+  };
+  const itemResetLabel = (item) =>
+    item.priceEdited || item.resetPrice ? "Undo" : item.savedOverride ? "Reset to catalog" : null;
+  const handleExtraUnitChange = (rowIdx, value) => {
+    setExtraRows((prev) =>
+      prev.map((item, idx) =>
+        idx === rowIdx ? { ...item, unit: value === "" ? "" : Number(value), priceEdited: true } : item
+      )
+    );
+  };
+  const handleExtraResetPrice = (rowIdx) => {
+    setExtraRows((prev) =>
+      prev.map((item, idx) =>
+        idx === rowIdx ? { ...item, unit: item.listUnit, priceEdited: false } : item
+      )
+    );
+  };
+
+  // A price changed on an invoice the customer already received: email the updated one (can be unticked).
+  const priceChanged =
+    items.some((i) => i.priceEdited || i.resetPrice) || extraRows.some((i) => i.priceEdited);
+  useEffect(() => {
+    if (priceChanged && alreadyEmailed && !autoTickedEmail) {
+      setAutoTickedEmail(true);
+      setInvoiceFields((prev) => ({
+        ...prev,
+        emailInvoiceToCustomer: true,
+        invoiceDate: prev.invoiceDate || getToday(),
+      }));
+    }
+  }, [priceChanged, alreadyEmailed, autoTickedEmail]);
+
+  // Unit prices changed by hand in this edit (not "Reset to catalog"): need the confirmation.
+  const manualPriceChanges = [
+    ...items
+      .filter((i) => i.checked && i.priceEdited)
+      .map((i) => ({ key: `i-${i.id}`, name: i.product || i.productName || i.name, qty: i.qty, from: i.originalUnit, to: i.unit })),
+    ...extraRows
+      .filter((r) => r.checked && r.priceEdited)
+      .map((r) => ({ key: `e-${r.id}`, name: r.name || r.product, qty: r.qty, from: r.listUnit, to: r.unit })),
+  ];
+  const priceChangeKey = manualPriceChanges.map((c) => `${c.key}:${c.to}:${c.qty}`).join("|");
+  // Any further price edit needs a fresh confirmation.
+  useEffect(() => {
+    setPriceConfirmed(false);
+  }, [priceChangeKey]);
+  const fmtUnit = (v) => (v === "" || v === null || v === undefined || !Number.isFinite(Number(v)) ? "—" : `$${Number(v).toFixed(2)}`);
+
   // Extra row checkbox handler
   const handleExtraRowCheck = (rowIdx, checked) => {
     setExtraRows((prev) =>
@@ -277,6 +386,12 @@ export default function AddInvoice() {
           name: prod?.name,
           qty: prod?.qty || 1,
           unit: prod?.price,
+          listUnit: prod?.price,
+          minUnit:
+            isDropshipOrder && Number(prod?.wholesalePrice) > 0
+              ? Number(prod.wholesalePrice)
+              : null,
+          priceEdited: false,
           checked: true,
           weight: prod?.weight,
           productCode: prod?.productCode,
@@ -436,6 +551,15 @@ export default function AddInvoice() {
       info_toaster("Please enter a name for all extra charges.");
       return;
     }
+    const priceProblem = unitPriceProblem([...items, ...extraRows]);
+    if (priceProblem) {
+      info_toaster(priceProblem);
+      return;
+    }
+    if (manualPriceChanges.length && !priceConfirmed) {
+      info_toaster("Please confirm the unit price changes first.");
+      return;
+    }
     setLoading(true);
     // Prepare items for API
     const itemsForApi = [
@@ -449,6 +573,8 @@ export default function AddInvoice() {
           productCode: item.productCode,
           qty: item.qty,
           price: item.price,
+          ...(typeof item.id === "number" ? { id: item.id } : {}),
+          ...unitPriceFields(item),
           discount: item.discount,
           wholesalePrice: item.wholesalePrice,
         })),
@@ -463,6 +589,7 @@ export default function AddInvoice() {
           qty: item.qty,
           price: String(item.unit),
           discount: item.discount,
+          ...unitPriceFields(item),
           wholesalePrice: item.wholesalePrice,
         })),
     ];
@@ -503,8 +630,9 @@ export default function AddInvoice() {
         items: itemsForApi,
         order: orderObj,
         typeCharges: chargesForApi,
+        confirmPriceChanges: manualPriceChanges.length > 0 && priceConfirmed,
       }
-    );
+    ).catch(() => ({ data: { status: "error-shown" } }));
 
     if (res?.data?.status === "success") {
       setLoading(false);
@@ -513,7 +641,9 @@ export default function AddInvoice() {
       reFetch();
       router.push(`/orders/detail/${orderID}`);
     } else {
-      info_toaster("something went wrong");
+      if (res?.data?.status !== "error-shown") {
+        info_toaster(res?.data?.message || "something went wrong");
+      }
       setLoading(false);
     }
   };
@@ -794,12 +924,19 @@ export default function AddInvoice() {
                   {(userType === "admin" ||
                     userType === "salesRepresentative") && (
                     <td className="py-2 px-2 text-right border border-gray-200">
-                      {/* $ */}
-                      {item.unit !== undefined
-                        ? item.unit
-                        : item.price !== undefined
-                        ? item.price
-                        : 0}
+                      <UnitPriceCell
+                          value={item.unit}
+                          canEdit={canEditPrice}
+                          edited={item.priceEdited}
+                          custom={item.priceOverride || item.priceEdited}
+                          catalogUnit={item.catalogUnit}
+                          minUnit={item.minUnit}
+                          onChange={(value) => handleItemUnitChange(itemIdx, value)}
+                          onReset={() => handleItemResetPrice(itemIdx)}
+                          resetLabel={itemResetLabel(item)}
+                          note={item.resetPrice ? "Catalog price on save" : null}
+                          testId={`invoice-unit-price-${item.id}`}
+                        />
                     </td>
                   )}
                   {(userType === "admin" ||
@@ -870,17 +1007,18 @@ export default function AddInvoice() {
                   {(userType === "admin" ||
                     userType === "salesRepresentative") && (
                     <td className="py-2 px-2 border border-gray-200 text-right">
-                      <input
-                        type="number"
-                        min={0}
-                        disabled
-                        step="0.01"
-                        className="w-20 border border-gray-200 rounded px-1 py-1 text-right"
-                        value={item.unit ?? 0}
-                        onChange={(e) =>
-                          handleExtraInputChange(idx, "unit", e.target.value)
-                        }
-                      />
+                      <UnitPriceCell
+                          value={item.unit}
+                          canEdit={canEditPrice}
+                          edited={item.priceEdited}
+                          custom={item.priceEdited}
+                          catalogUnit={item.listUnit}
+                          minUnit={item.minUnit}
+                          onChange={(value) => handleExtraUnitChange(idx, value)}
+                          onReset={() => handleExtraResetPrice(idx)}
+                          resetLabel={item.priceEdited ? "Undo" : null}
+                          testId={`invoice-unit-price-${item.id}`}
+                        />
                     </td>
                   )}
                   {(userType === "admin" ||
@@ -1187,11 +1325,40 @@ export default function AddInvoice() {
             />
             <p>Email the invoice to the customer?</p>
           </div>
+          {priceChanged && alreadyEmailed && (
+            <p className="text-xs text-amber-700 -mt-2">
+              Prices changed. The customer has the old invoice, so the updated one will be
+              emailed (untick to skip).
+            </p>
+          )}
+
+          {manualPriceChanges.length > 0 && (
+            <div className="mt-6 rounded-lg border border-amber-300 bg-amber-50 p-4" data-testid="invoice-price-confirmation">
+              <p className="text-sm font-semibold text-amber-900">Unit prices changed by hand</p>
+              <ul className="mt-2 space-y-1 text-sm text-amber-900">
+                {manualPriceChanges.map((c) => (
+                  <li key={c.key}>
+                    {c.name}: {fmtUnit(c.from)} → <strong>{fmtUnit(c.to)}</strong> × {c.qty}
+                  </li>
+                ))}
+              </ul>
+              <label className="mt-3 flex items-start gap-2 text-sm text-amber-900 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="size-5 mt-0.5"
+                  checked={priceConfirmed}
+                  onChange={(e) => setPriceConfirmed(e.target.checked)}
+                  data-testid="invoice-price-confirm-checkbox"
+                />
+                <span>I confirm these unit prices are correct and should be charged on this invoice.</span>
+              </label>
+            </div>
+          )}
 
           <div className="pt-10">
             <button
-              disabled={loading}
-              className="rounded-lg font-inter font-medium text-white px-2 sm:px-3 py-2.5 sm:py-4 bg-theme"
+              disabled={loading || (manualPriceChanges.length > 0 && !priceConfirmed)}
+              className="rounded-lg font-inter font-medium text-white px-2 sm:px-3 py-2.5 sm:py-4 bg-theme disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleCreateInvoice}
               data-testid={ORDER_ADD_INVOICE.submitBtn}
             >

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Switch from "react-switch";
 import { CiMenuBurger } from "react-icons/ci";
 import MyDataTable from "@/components/ui/MyDataTable";
+import EmailRecipientsCard from "@/components/ui/EmailRecipientsCard";
 import Loader from "@/components/ui/Loader";
 import GetAPI from "@/utilities/GetAPI";
 import { PatchAPI } from "@/utilities/PatchAPI";
@@ -216,6 +217,8 @@ export default function EmailConfigurationPage() {
           each customer profile. Login and forgot-password OTPs stay on for
           every role.
         </p>
+
+        <EmailRecipientsCard />
 
         <div className="flex flex-wrap gap-2">
           {tabs.map((item) => (

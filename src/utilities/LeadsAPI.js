@@ -69,10 +69,21 @@ export const leadsAPI = {
   /**
    * Mark lead as WON
    * @param {number} id - Lead ID
+   * @param {Object} [data] - { amount } deal amount (lead revenue in Analytics)
    * @returns {Promise}
    */
-  markAsWon: async (id) => {
-    return await PatchAPI(`api/v1/leads/${id}/won`, {});
+  markAsWon: async (id, data = {}) => {
+    return await PatchAPI(`api/v1/leads/${id}/won`, data);
+  },
+
+  /**
+   * Add a note to the lead's activity timeline
+   * @param {number} id - Lead ID
+   * @param {Object} data - { message }
+   * @returns {Promise}
+   */
+  addComment: async (id, data) => {
+    return await PostAPI(`api/v1/leads/${id}/comments`, data);
   },
 
   /**
